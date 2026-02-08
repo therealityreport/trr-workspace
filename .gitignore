@@ -1,0 +1,12 @@
+# Workspace meta-repo should not track nested repos (they each have their own git history)
+/TRR-APP/
+/TRR-Backend/
+/screenalytics/
+
+# Workspace logs/artifacts
+/.logs/
+
+# Local agent config
+/.claude/
+
+.DS_Store
