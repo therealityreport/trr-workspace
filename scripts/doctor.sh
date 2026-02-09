@@ -43,17 +43,56 @@ fi
 echo ""
 echo "[doctor] Local env:"
 
-if [[ -d "$ROOT/TRR-Backend/.venv" ]]; then
-  echo "  TRR-Backend: .venv present"
-else
-  echo "  TRR-Backend: .venv missing (run: make bootstrap)"
-fi
+REQUIRED_PY_MAJOR=3
+REQUIRED_PY_MINOR=11
 
-if [[ -d "$ROOT/screenalytics/.venv" ]]; then
-  echo "  screenalytics: .venv present"
-else
-  echo "  screenalytics: .venv missing (run: make bootstrap)"
-fi
+venv_py_version_str() {
+  local py="$1"
+  "$py" -c 'import sys; print(f"{sys.version_info[0]}.{sys.version_info[1]}")' 2>/dev/null || echo "unknown"
+}
+
+venv_py_version_ok() {
+  local py="$1"
+  local major minor
+  local out
+
+  out="$("$py" -c 'import sys; print(f"{sys.version_info[0]} {sys.version_info[1]}")' 2>/dev/null || true)"
+  major="${out%% *}"
+  minor="${out##* }"
+  if [[ -z "$major" || -z "$minor" ]]; then
+    return 1
+  fi
+  if (( major > REQUIRED_PY_MAJOR )); then
+    return 0
+  fi
+  if (( major == REQUIRED_PY_MAJOR && minor >= REQUIRED_PY_MINOR )); then
+    return 0
+  fi
+  return 1
+}
+
+check_repo_venv() {
+  local name="$1"
+  local repo_dir="$2"
+  local venv_py="${repo_dir}/.venv/bin/python"
+
+  if [[ -x "$venv_py" ]]; then
+    local ver
+    ver="$(venv_py_version_str "$venv_py")"
+    if venv_py_version_ok "$venv_py"; then
+      echo "  ${name}: .venv present (python ${ver})"
+    else
+      echo "  ${name}: .venv present (python ${ver})" >&2
+      echo "    [doctor] WARNING: ${name} venv python is <${REQUIRED_PY_MAJOR}.${REQUIRED_PY_MINOR}. Run: make bootstrap" >&2
+    fi
+  else
+    echo "  ${name}: .venv missing (run: make bootstrap)"
+  fi
+}
+
+check_repo_venv "TRR-Backend" "$ROOT/TRR-Backend"
+
+check_repo_venv "screenalytics" "$ROOT/screenalytics"
 
 if [[ -f "$ROOT/TRR-APP/pnpm-lock.yaml" ]]; then
   echo "  TRR-APP: pnpm-lock.yaml present"
@@ -63,4 +102,3 @@ fi
 
 echo ""
 echo "[doctor] OK (warnings above may still require action)."
-

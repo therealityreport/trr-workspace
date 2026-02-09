@@ -16,6 +16,7 @@ fi
 
 TRR_BACKEND_PORT="${TRR_BACKEND_PORT:-8000}"
 TRR_APP_PORT="${TRR_APP_PORT:-3000}"
+TRR_APP_HOST="${TRR_APP_HOST:-127.0.0.1}"
 
 # Default to :8001 to avoid clashing with TRR-Backend (:8000).
 SCREENALYTICS_API_PORT="${SCREENALYTICS_API_PORT:-8001}"
@@ -126,11 +127,11 @@ start_bg "TRR_BACKEND" "$TRR_BACKEND_LOG" bash -lc "cd \"$ROOT/TRR-Backend\" && 
 start_bg "TRR_APP" "$TRR_APP_LOG" bash -lc "cd \"$ROOT/TRR-APP/apps/web\" && exec env \
   TRR_API_URL=\"$TRR_API_URL\" \
   SCREENALYTICS_API_URL=\"$SCREENALYTICS_API_URL\" \
-  pnpm exec next dev --webpack -p \"$TRR_APP_PORT\""
+  pnpm exec next dev --webpack -p \"$TRR_APP_PORT\" --hostname \"$TRR_APP_HOST\""
 
 echo ""
 echo "[workspace] URLs:"
-echo "  TRR-APP:               http://127.0.0.1:${TRR_APP_PORT}"
+echo "  TRR-APP:               http://${TRR_APP_HOST}:${TRR_APP_PORT}"
 echo "  TRR-Backend:           ${TRR_API_URL}"
 echo "  screenalytics API:     ${SCREENALYTICS_API_URL}"
 echo "  screenalytics Streamlit: http://127.0.0.1:${SCREENALYTICS_STREAMLIT_PORT}"
