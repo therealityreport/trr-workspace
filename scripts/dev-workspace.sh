@@ -379,10 +379,13 @@ cleanup() {
   echo ""
   echo "[workspace] Shutting down..."
 
-  # Stop in reverse start order.
+  # Stop in reverse start order.  Use actual indices since arrays may be sparse
+  # after unsetting crashed-service entries at runtime.
+  local indices=("${!PIDS[@]}")
   local i
-  for ((i=${#PIDS[@]}-1; i>=0; i--)); do
-    stop_bg "${NAMES[$i]}" "${PIDS[$i]}"
+  for ((i=${#indices[@]}-1; i>=0; i--)); do
+    local idx="${indices[$i]}"
+    stop_bg "${NAMES[$idx]}" "${PIDS[$idx]}"
   done
 
   rm -f "$PIDFILE" >/dev/null 2>&1 || true
