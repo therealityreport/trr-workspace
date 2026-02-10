@@ -8,6 +8,10 @@ LOG_DIR="${ROOT}/.logs/workspace"
 PIDFILE="${LOG_DIR}/pids.env"
 mkdir -p "$LOG_DIR"
 
+# Avoid relying on `#!/usr/bin/env bash` in sub-scripts. If PATH contains a
+# slow/unavailable entry, `/usr/bin/env` can hang while searching for `bash`.
+BASH_BIN="/bin/bash"
+
 # If an old pidfile exists, stop those services first (safe: only kills recorded PIDs).
 if [[ -f "$PIDFILE" ]]; then
   echo "[workspace] Existing pidfile found. Stopping previous workspace services..."
@@ -104,7 +108,7 @@ trap cleanup EXIT INT TERM
 
 echo "[workspace] Starting services..."
 
-start_bg "SCREENALYTICS" "$SCREENALYTICS_LOG" bash -lc "cd \"$ROOT/screenalytics\" && exec env \
+start_bg "SCREENALYTICS" "$SCREENALYTICS_LOG" "$BASH_BIN" -lc "cd \"$ROOT/screenalytics\" && \
   PYTHONUNBUFFERED=1 \
   SCREENALYTICS_ENV=dev \
   SCREENALYTICS_API_URL=\"$SCREENALYTICS_API_URL\" \
@@ -113,20 +117,20 @@ start_bg "SCREENALYTICS" "$SCREENALYTICS_LOG" bash -lc "cd \"$ROOT/screenalytics
   STREAMLIT_PORT=\"$SCREENALYTICS_STREAMLIT_PORT\" \
   WEB_PORT=\"$SCREENALYTICS_WEB_PORT\" \
   DEV_AUTO_YES=1 \
-  ./scripts/dev_auto.sh"
+  exec \"$BASH_BIN\" ./scripts/dev_auto.sh"
 
-start_bg "TRR_BACKEND" "$TRR_BACKEND_LOG" bash -lc "cd \"$ROOT/TRR-Backend\" && exec env \
+start_bg "TRR_BACKEND" "$TRR_BACKEND_LOG" "$BASH_BIN" -lc "cd \"$ROOT/TRR-Backend\" && \
   PYTHONUNBUFFERED=1 \
   TRR_BACKEND_PORT=\"$TRR_BACKEND_PORT\" \
   TRR_API_URL=\"$TRR_API_URL\" \
   SCREENALYTICS_API_URL=\"$SCREENALYTICS_API_URL\" \
   CORS_ALLOW_ORIGINS=\"http://127.0.0.1:${TRR_APP_PORT},http://localhost:${TRR_APP_PORT}\" \
-  ./start-api.sh"
+  exec \"$BASH_BIN\" ./start-api.sh"
 
-start_bg "TRR_APP" "$TRR_APP_LOG" bash -lc "cd \"$ROOT/TRR-APP/apps/web\" && exec env \
+start_bg "TRR_APP" "$TRR_APP_LOG" "$BASH_BIN" -lc "cd \"$ROOT/TRR-APP/apps/web\" && \
   TRR_API_URL=\"$TRR_API_URL\" \
   SCREENALYTICS_API_URL=\"$SCREENALYTICS_API_URL\" \
-  pnpm exec next dev --webpack -p \"$TRR_APP_PORT\""
+  exec pnpm exec next dev --webpack -p \"$TRR_APP_PORT\""
 
 echo ""
 echo "[workspace] URLs:"
