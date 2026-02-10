@@ -497,6 +497,17 @@ if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
     echo "[workspace] WARNING: screenalytics API did not become healthy within 30s (continuing)." >&2
     tail -n 120 "$SCREENALYTICS_LOG" >&2 || true
   fi
+
+  # UI servers can take longer (model warmup, Next dev, etc). Don't fail the workspace if they're slow.
+  if ! wait_http_ok "screenalytics Streamlit" "http://127.0.0.1:${SCREENALYTICS_STREAMLIT_PORT}/" 90; then
+    echo "[workspace] WARNING: screenalytics Streamlit did not become reachable within 90s (continuing)." >&2
+    tail -n 120 "$SCREENALYTICS_LOG" >&2 || true
+  fi
+
+  if ! wait_http_ok "screenalytics Web" "http://127.0.0.1:${SCREENALYTICS_WEB_PORT}/" 90; then
+    echo "[workspace] WARNING: screenalytics Web did not become reachable within 90s (continuing)." >&2
+    tail -n 120 "$SCREENALYTICS_LOG" >&2 || true
+  fi
 fi
 
 # Keep running until one of the processes exits.
