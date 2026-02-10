@@ -45,6 +45,25 @@ fi
 declare -a PIDS=()
 declare -a NAMES=()
 
+kill_tree() {
+  local pid="$1"
+  local sig="${2:-TERM}"
+
+  if [[ -z "${pid}" ]]; then
+    return 0
+  fi
+  if ! kill -0 "$pid" >/dev/null 2>&1; then
+    return 0
+  fi
+
+  local child
+  for child in $(pgrep -P "$pid" 2>/dev/null || true); do
+    kill_tree "$child" "$sig"
+  done
+
+  kill "-${sig}" "$pid" >/dev/null 2>&1 || true
+}
+
 start_bg() {
   local name="$1"
   local log="$2"
@@ -78,7 +97,8 @@ stop_bg() {
   echo "[workspace] Stopping ${name} (pid=${pid})"
 
   # Prefer killing the process group (works when started via setsid).
-  kill -TERM -- "-${pid}" >/dev/null 2>&1 || kill -TERM "${pid}" >/dev/null 2>&1 || true
+  kill -TERM -- "-${pid}" >/dev/null 2>&1 || true
+  kill_tree "$pid" "TERM"
 
   # Grace period.
   for _ in 1 2 3 4 5 6 7 8 9 10; do
@@ -88,7 +108,8 @@ stop_bg() {
     sleep 0.2
   done
 
-  kill -KILL -- "-${pid}" >/dev/null 2>&1 || kill -KILL "${pid}" >/dev/null 2>&1 || true
+  kill -KILL -- "-${pid}" >/dev/null 2>&1 || true
+  kill_tree "$pid" "KILL"
 }
 
 cleanup() {

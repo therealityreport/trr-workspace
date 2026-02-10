@@ -13,6 +13,25 @@ fi
 # shellcheck disable=SC1090
 source "$PIDFILE"
 
+kill_tree() {
+  local pid="$1"
+  local sig="${2:-TERM}"
+
+  if [[ -z "${pid}" ]]; then
+    return 0
+  fi
+  if ! kill -0 "$pid" >/dev/null 2>&1; then
+    return 0
+  fi
+
+  local child
+  for child in $(pgrep -P "$pid" 2>/dev/null || true); do
+    kill_tree "$child" "$sig"
+  done
+
+  kill "-${sig}" "$pid" >/dev/null 2>&1 || true
+}
+
 stop_one() {
   local name="$1"
   local pid="$2"
@@ -26,7 +45,11 @@ stop_one() {
   fi
 
   echo "[workspace] Stopping ${name} (pid=${pid})"
-  kill -TERM -- "-${pid}" >/dev/null 2>&1 || kill -TERM "${pid}" >/dev/null 2>&1 || true
+  # Prefer killing the whole process group (works when started via setsid).
+  # Fall back to killing the full child tree so `make stop` works even when
+  # setsid isn't installed.
+  kill -TERM -- "-${pid}" >/dev/null 2>&1 || true
+  kill_tree "$pid" "TERM"
 
   for _ in 1 2 3 4 5 6 7 8 9 10; do
     if ! kill -0 "$pid" >/dev/null 2>&1; then
@@ -35,7 +58,8 @@ stop_one() {
     sleep 0.2
   done
 
-  kill -KILL -- "-${pid}" >/dev/null 2>&1 || kill -KILL "${pid}" >/dev/null 2>&1 || true
+  kill -KILL -- "-${pid}" >/dev/null 2>&1 || true
+  kill_tree "$pid" "KILL"
 }
 
 # Stop in reverse dependency order.
@@ -45,4 +69,3 @@ stop_one "SCREENALYTICS" "${SCREENALYTICS_PID:-}"
 
 rm -f "$PIDFILE" >/dev/null 2>&1 || true
 echo "[workspace] Stopped."
-
