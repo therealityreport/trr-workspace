@@ -5,6 +5,7 @@
 
 # Workspace logs/artifacts
 /.logs/
+/.playwright-mcp/
 
 # Local agent config
 /.claude/
