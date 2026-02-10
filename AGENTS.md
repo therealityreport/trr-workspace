@@ -60,3 +60,5 @@ Keep these files aligned (when present):
 - `PLAN.md`
 - `OTHER_PROJECTS.md`
 - `STATUS.md`
+
+See `docs/cross-collab/WORKFLOW.md` for the full lifecycle guide and templates.

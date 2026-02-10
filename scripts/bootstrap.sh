@@ -10,10 +10,70 @@ if ! command -v "$PYTHON_BIN" >/dev/null 2>&1; then
   exit 1
 fi
 
+REQUIRED_PY_MAJOR=3
+REQUIRED_PY_MINOR=11
+
+python_version_ok() {
+  local py="$1"
+  local major minor
+  local out
+
+  out="$("$py" -c 'import sys; print(f"{sys.version_info[0]} {sys.version_info[1]}")' 2>/dev/null || true)"
+  major="${out%% *}"
+  minor="${out##* }"
+  if [[ -z "$major" || -z "$minor" ]]; then
+    return 1
+  fi
+
+  if (( major > REQUIRED_PY_MAJOR )); then
+    return 0
+  fi
+  if (( major == REQUIRED_PY_MAJOR && minor >= REQUIRED_PY_MINOR )); then
+    return 0
+  fi
+  return 1
+}
+
+python_version_str() {
+  local py="$1"
+  "$py" -c 'import sys; print(f"{sys.version_info[0]}.{sys.version_info[1]}")' 2>/dev/null || echo "unknown"
+}
+
+venv_path_ok() {
+  local repo_dir="$1"
+  local expected="${repo_dir}/.venv"
+  local activate="${expected}/bin/activate"
+  local actual
+
+  if [[ ! -f "$activate" ]]; then
+    return 1
+  fi
+
+  # venvs are not reliably relocatable; if activation points at a different path,
+  # recreate so scripts and PATH wiring behave as expected.
+  actual="$(grep '^VIRTUAL_ENV=' "$activate" | head -n 1 | cut -d= -f2-)"
+  if [[ -z "$actual" ]]; then
+    return 1
+  fi
+  if [[ "$actual" == "$expected" ]]; then
+    return 0
+  fi
+  return 1
+}
+
 ensure_venv() {
   local repo_dir="$1"
-  if [[ -x "${repo_dir}/.venv/bin/python" ]]; then
-    return 0
+  local venv_py="${repo_dir}/.venv/bin/python"
+
+  if [[ -x "$venv_py" ]]; then
+    if python_version_ok "$venv_py" && venv_path_ok "$repo_dir"; then
+      return 0
+    fi
+
+    local found
+    found="$(python_version_str "$venv_py")"
+    echo "[bootstrap] Recreating venv: ${repo_dir}/.venv (found python ${found}, need >=${REQUIRED_PY_MAJOR}.${REQUIRED_PY_MINOR} and correct venv path)"
+    rm -rf "${repo_dir}/.venv"
   fi
   echo "[bootstrap] Creating venv: ${repo_dir}/.venv (${PYTHON_BIN})"
   "$PYTHON_BIN" -m venv "${repo_dir}/.venv"
@@ -24,22 +84,22 @@ echo "[bootstrap] TRR-APP (pnpm)..."
 
 echo "[bootstrap] TRR-Backend (python deps)..."
 ensure_venv "$ROOT/TRR-Backend"
-"$ROOT/TRR-Backend/.venv/bin/pip" install -r "$ROOT/TRR-Backend/requirements.txt"
+"$ROOT/TRR-Backend/.venv/bin/python" -m pip install -r "$ROOT/TRR-Backend/requirements.txt"
 
 echo "[bootstrap] screenalytics (python deps)..."
 ensure_venv "$ROOT/screenalytics"
-"$ROOT/screenalytics/.venv/bin/pip" install -r "$ROOT/screenalytics/requirements.txt"
+"$ROOT/screenalytics/.venv/bin/python" -m pip install -r "$ROOT/screenalytics/requirements.txt"
 
 SCREENALYTICS_INSTALL_ML="${SCREENALYTICS_INSTALL_ML:-1}"
 if [[ "$SCREENALYTICS_INSTALL_ML" == "1" ]]; then
-  "$ROOT/screenalytics/.venv/bin/pip" install -r "$ROOT/screenalytics/requirements-ml.txt" || {
+  "$ROOT/screenalytics/.venv/bin/python" -m pip install -r "$ROOT/screenalytics/requirements-ml.txt" || {
     echo "[bootstrap] WARNING: screenalytics ML requirements failed. Set SCREENALYTICS_INSTALL_ML=0 to skip." >&2
   }
 else
   echo "[bootstrap] screenalytics: skipping ML requirements (SCREENALYTICS_INSTALL_ML=${SCREENALYTICS_INSTALL_ML})"
 fi
 
-"$ROOT/screenalytics/.venv/bin/pip" install -e "$ROOT/screenalytics/packages/py-screenalytics" || {
+"$ROOT/screenalytics/.venv/bin/python" -m pip install -e "$ROOT/screenalytics/packages/py-screenalytics" || {
   echo "[bootstrap] WARNING: editable install failed: screenalytics/packages/py-screenalytics" >&2
 }
 
@@ -47,4 +107,3 @@ echo "[bootstrap] screenalytics web (npm ci)..."
 (cd "$ROOT/screenalytics/web" && npm ci)
 
 echo "[bootstrap] Done."
-
