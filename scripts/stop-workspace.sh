@@ -129,6 +129,25 @@ descendants_of() {
   printf '%s\n' "${all[@]}" | sort -u | tr '\n' ' '
 }
 
+kill_tree() {
+  local pid="$1"
+  local sig="${2:-TERM}"
+
+  if [[ -z "${pid}" ]]; then
+    return 0
+  fi
+  if ! kill -0 "$pid" >/dev/null 2>&1; then
+    return 0
+  fi
+
+  local child
+  for child in $(pgrep -P "$pid" 2>/dev/null || true); do
+    kill_tree "$child" "$sig"
+  done
+
+  kill "-${sig}" "$pid" >/dev/null 2>&1 || true
+}
+
 stop_one() {
   local name="$1"
   local pid="$2"

@@ -20,6 +20,11 @@ if [[ "$WORKSPACE_STRICT" != "1" ]]; then
 fi
 SCREENALYTICS_DEV_AUTO_ALLOW_DB_ERROR="${DEV_AUTO_ALLOW_DB_ERROR:-$SCREENALYTICS_DEV_AUTO_ALLOW_DB_ERROR_DEFAULT}"
 
+# Avoid relying on `#!/usr/bin/env bash` (or the `env` command) in sub-scripts.
+# If PATH contains a slow/unavailable entry, `/usr/bin/env` can hang while
+# searching for `bash`, leaving services "started" but with no listeners.
+BASH_BIN="/bin/bash"
+
 # If an old pidfile exists, stop those services first (safe: only kills recorded PIDs).
 if [[ -f "$PIDFILE" ]]; then
   echo "[workspace] Existing pidfile found. Stopping previous workspace services..."
@@ -299,6 +304,25 @@ fi
 declare -a PIDS=()
 declare -a NAMES=()
 
+kill_tree() {
+  local pid="$1"
+  local sig="${2:-TERM}"
+
+  if [[ -z "${pid}" ]]; then
+    return 0
+  fi
+  if ! kill -0 "$pid" >/dev/null 2>&1; then
+    return 0
+  fi
+
+  local child
+  for child in $(pgrep -P "$pid" 2>/dev/null || true); do
+    kill_tree "$child" "$sig"
+  done
+
+  kill "-${sig}" "$pid" >/dev/null 2>&1 || true
+}
+
 start_bg() {
   local name="$1"
   local log="$2"
@@ -336,7 +360,8 @@ stop_bg() {
   echo "[workspace] Stopping ${name} (pid=${pid})"
 
   # Prefer killing the process group (works when started via setsid).
-  kill -TERM -- "-${pid}" >/dev/null 2>&1 || kill -TERM "${pid}" >/dev/null 2>&1 || true
+  kill -TERM -- "-${pid}" >/dev/null 2>&1 || true
+  kill_tree "$pid" "TERM"
 
   # Grace period.
   for _ in 1 2 3 4 5 6 7 8 9 10; do
@@ -346,7 +371,8 @@ stop_bg() {
     sleep 0.2
   done
 
-  kill -KILL -- "-${pid}" >/dev/null 2>&1 || kill -KILL "${pid}" >/dev/null 2>&1 || true
+  kill -KILL -- "-${pid}" >/dev/null 2>&1 || true
+  kill_tree "$pid" "KILL"
 }
 
 cleanup() {
@@ -382,7 +408,7 @@ trap cleanup EXIT INT TERM
 echo "[workspace] Starting services..."
 
 if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
-  start_bg "SCREENALYTICS" "$SCREENALYTICS_LOG" bash -lc "cd \"$ROOT/screenalytics\" && exec env \
+  start_bg "SCREENALYTICS" "$SCREENALYTICS_LOG" "$BASH_BIN" -lc "cd \"$ROOT/screenalytics\" && \
     PYTHONUNBUFFERED=1 \
     SCREENALYTICS_ENV=dev \
     SCREENALYTICS_API_URL=\"$SCREENALYTICS_API_URL\" \
@@ -392,28 +418,28 @@ if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
     WEB_PORT=\"$SCREENALYTICS_WEB_PORT\" \
     DEV_AUTO_ALLOW_DB_ERROR=\"$SCREENALYTICS_DEV_AUTO_ALLOW_DB_ERROR\" \
     DEV_AUTO_YES=1 \
-    bash ./scripts/dev_auto.sh"
+    exec \"$BASH_BIN\" ./scripts/dev_auto.sh"
 else
   echo "[workspace] screenalytics disabled for this session (WORKSPACE_SCREENALYTICS=0)."
 fi
 
-start_bg "TRR_BACKEND" "$TRR_BACKEND_LOG" bash -lc "cd \"$ROOT/TRR-Backend\" && exec env \
+start_bg "TRR_BACKEND" "$TRR_BACKEND_LOG" "$BASH_BIN" -lc "cd \"$ROOT/TRR-Backend\" && \
   PYTHONUNBUFFERED=1 \
   TRR_BACKEND_PORT=\"$TRR_BACKEND_PORT\" \
   TRR_API_URL=\"$TRR_API_URL\" \
   SCREENALYTICS_API_URL=\"$SCREENALYTICS_API_URL\" \
   CORS_ALLOW_ORIGINS=\"http://127.0.0.1:${TRR_APP_PORT},http://localhost:${TRR_APP_PORT}\" \
-  bash ./start-api.sh"
+  exec \"$BASH_BIN\" ./start-api.sh"
 
-start_bg "TRR_APP" "$TRR_APP_LOG" bash -lc "cd \"$ROOT/TRR-APP\" && \
+start_bg "TRR_APP" "$TRR_APP_LOG" "$BASH_BIN" -lc "cd \"$ROOT/TRR-APP\" && \
   if [[ -s \"${HOME}/.nvm/nvm.sh\" ]]; then \
     source \"${HOME}/.nvm/nvm.sh\"; \
     nvm use --silent >/dev/null 2>&1 || echo \"[workspace] WARNING: nvm use failed; continuing with current node.\" >&2; \
   fi && \
-  cd \"$ROOT/TRR-APP/apps/web\" && exec env \
+  cd \"$ROOT/TRR-APP/apps/web\" && \
   TRR_API_URL=\"$TRR_API_URL\" \
   SCREENALYTICS_API_URL=\"$SCREENALYTICS_API_URL\" \
-  pnpm exec next dev --webpack -p \"$TRR_APP_PORT\" --hostname \"$TRR_APP_HOST\""
+  exec pnpm exec next dev --webpack -p \"$TRR_APP_PORT\" --hostname \"$TRR_APP_HOST\""
 
 echo ""
 echo "[workspace] URLs:"
@@ -469,6 +495,17 @@ fi
 if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
   if ! wait_http_ok "screenalytics API" "${SCREENALYTICS_API_URL}/healthz" 30; then
     echo "[workspace] WARNING: screenalytics API did not become healthy within 30s (continuing)." >&2
+    tail -n 120 "$SCREENALYTICS_LOG" >&2 || true
+  fi
+
+  # UI servers can take longer (model warmup, Next dev, etc). Don't fail the workspace if they're slow.
+  if ! wait_http_ok "screenalytics Streamlit" "http://127.0.0.1:${SCREENALYTICS_STREAMLIT_PORT}/" 90; then
+    echo "[workspace] WARNING: screenalytics Streamlit did not become reachable within 90s (continuing)." >&2
+    tail -n 120 "$SCREENALYTICS_LOG" >&2 || true
+  fi
+
+  if ! wait_http_ok "screenalytics Web" "http://127.0.0.1:${SCREENALYTICS_WEB_PORT}/" 90; then
+    echo "[workspace] WARNING: screenalytics Web did not become reachable within 90s (continuing)." >&2
     tail -n 120 "$SCREENALYTICS_LOG" >&2 || true
   fi
 fi
