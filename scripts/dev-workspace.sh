@@ -385,21 +385,14 @@ cleanup() {
   echo ""
   echo "[workspace] Shutting down..."
 
-  # Stop in reverse start order.
-  local indices=()
-  local idx
-  # Arrays can be sparse when optional services are unset during runtime.
-  # Iterate over actual indices, then reverse.
-  for idx in "${!PIDS[@]}"; do
-    indices+=("$idx")
+  # Stop in reverse start order.  Use actual indices since arrays may be sparse
+  # after unsetting crashed-service entries at runtime.
+  local indices=("${!PIDS[@]}")
+  local i
+  for ((i=${#indices[@]}-1; i>=0; i--)); do
+    local idx="${indices[$i]}"
+    stop_bg "${NAMES[$idx]-SERVICE_$idx}" "${PIDS[$idx]-}"
   done
-  if [[ ${#indices[@]} -gt 0 ]]; then
-    IFS=$'\n' indices=($(printf '%s\n' "${indices[@]}" | sort -rn))
-    unset IFS
-    for idx in "${indices[@]}"; do
-      stop_bg "${NAMES[$idx]-SERVICE_$idx}" "${PIDS[$idx]-}"
-    done
-  fi
 
   rm -f "$PIDFILE" >/dev/null 2>&1 || true
   echo "[workspace] Done."
