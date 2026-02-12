@@ -12,6 +12,7 @@ mkdir -p "$LOG_DIR"
 WORKSPACE_SCREENALYTICS="${WORKSPACE_SCREENALYTICS:-1}"
 WORKSPACE_STRICT="${WORKSPACE_STRICT:-0}"
 WORKSPACE_FORCE_KILL_PORT_CONFLICTS="${WORKSPACE_FORCE_KILL_PORT_CONFLICTS:-0}"
+WORKSPACE_CLEAN_NEXT_CACHE="${WORKSPACE_CLEAN_NEXT_CACHE:-1}"
 
 # screenalytics dev_auto defaults (may be overridden via env when invoking this script).
 SCREENALYTICS_DEV_AUTO_ALLOW_DB_ERROR_DEFAULT="0"
@@ -376,6 +377,11 @@ stop_bg() {
 }
 
 cleanup() {
+  if [[ "${CLEANUP_RAN:-0}" == "1" ]]; then
+    return 0
+  fi
+  CLEANUP_RAN=1
+
   echo ""
   echo "[workspace] Shutting down..."
 
@@ -385,7 +391,7 @@ cleanup() {
   local i
   for ((i=${#indices[@]}-1; i>=0; i--)); do
     local idx="${indices[$i]}"
-    stop_bg "${NAMES[$idx]}" "${PIDS[$idx]}"
+    stop_bg "${NAMES[$idx]-SERVICE_$idx}" "${PIDS[$idx]-}"
   done
 
   rm -f "$PIDFILE" >/dev/null 2>&1 || true
@@ -440,6 +446,7 @@ start_bg "TRR_APP" "$TRR_APP_LOG" "$BASH_BIN" -lc "cd \"$ROOT/TRR-APP\" && \
     nvm use --silent >/dev/null 2>&1 || echo \"[workspace] WARNING: nvm use failed; continuing with current node.\" >&2; \
   fi && \
   cd \"$ROOT/TRR-APP/apps/web\" && \
+  if [[ \"$WORKSPACE_CLEAN_NEXT_CACHE\" == \"1\" ]]; then rm -rf .next; fi && \
   TRR_API_URL=\"$TRR_API_URL\" \
   SCREENALYTICS_API_URL=\"$SCREENALYTICS_API_URL\" \
   exec pnpm exec next dev --webpack -p \"$TRR_APP_PORT\" --hostname \"$TRR_APP_HOST\""
@@ -518,8 +525,11 @@ while true; do
   local_dead=""
   local_dead_name=""
   for idx in "${!PIDS[@]}"; do
-    pid="${PIDS[$idx]}"
-    name="${NAMES[$idx]}"
+    pid="${PIDS[$idx]-}"
+    name="${NAMES[$idx]-SERVICE_$idx}"
+    if [[ -z "$pid" ]]; then
+      continue
+    fi
     if ! kill -0 "$pid" >/dev/null 2>&1; then
       local_dead="$pid"
       local_dead_name="$name"
