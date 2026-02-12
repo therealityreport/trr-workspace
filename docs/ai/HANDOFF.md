@@ -35,3 +35,24 @@ make dev
 Last updated: 2026-02-09
 Updated by: Codex
 
+
+## 2026-02-12 (Codex) — New planning docs added
+- Added image optimization implementation plan:
+  - `/Users/thomashulihan/Projects/TRR/docs/plans/2026-02-12-image-storage-optimization-plan.md`
+- Added admin UX/product suggestions document (10 concrete proposals):
+  - `/Users/thomashulihan/Projects/TRR/docs/plans/2026-02-12-admin-page-suggestions.md`
+
+## 2026-02-12 (Codex) — Plan docs finalized
+- Finalized both plan docs with implementation status sections and closed checklist items:
+  - `/Users/thomashulihan/Projects/TRR/docs/plans/2026-02-12-image-storage-optimization-plan.md`
+  - `/Users/thomashulihan/Projects/TRR/docs/plans/2026-02-12-admin-page-suggestions.md`
+
+## 2026-02-12 (Codex) — `make dev` stability fix
+- File: `/Users/thomashulihan/Projects/TRR/scripts/dev-workspace.sh`
+- Fixed shutdown crash:
+  - handled sparse `PIDS/NAMES` arrays safely in `cleanup()` to prevent `NAMES[$i]: unbound variable`.
+  - hardened process-monitor loop against unset/sparse indices.
+  - added idempotent cleanup guard to avoid double shutdown output.
+- Reduced intermittent Next route-cache startup failures:
+  - added `WORKSPACE_CLEAN_NEXT_CACHE` (default `1`) and clear `TRR-APP/apps/web/.next` before starting `next dev`.
+  - mitigates stale app-router cache mismatches (e.g. dynamic slug-name conflict after route renames).
