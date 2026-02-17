@@ -509,14 +509,30 @@ if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
   fi
 
   # UI servers can take longer (model warmup, Next dev, etc). Don't fail the workspace if they're slow.
-  if ! wait_http_ok "screenalytics Streamlit" "http://127.0.0.1:${SCREENALYTICS_STREAMLIT_PORT}/" 90; then
+  SCREENALYTICS_STREAMLIT_OK=0
+  if wait_http_ok "screenalytics Streamlit" "http://127.0.0.1:${SCREENALYTICS_STREAMLIT_PORT}/" 90; then
+    SCREENALYTICS_STREAMLIT_OK=1
+  else
     echo "[workspace] WARNING: screenalytics Streamlit did not become reachable within 90s (continuing)." >&2
     tail -n 120 "$SCREENALYTICS_LOG" >&2 || true
   fi
 
-  if ! wait_http_ok "screenalytics Web" "http://127.0.0.1:${SCREENALYTICS_WEB_PORT}/" 90; then
+  SCREENALYTICS_WEB_OK=0
+  if wait_http_ok "screenalytics Web" "http://127.0.0.1:${SCREENALYTICS_WEB_PORT}/" 90; then
+    SCREENALYTICS_WEB_OK=1
+  else
     echo "[workspace] WARNING: screenalytics Web did not become reachable within 90s (continuing)." >&2
     tail -n 120 "$SCREENALYTICS_LOG" >&2 || true
+  fi
+
+  # Auto-open screenalytics UIs in browser tabs
+  if [[ "$SCREENALYTICS_STREAMLIT_OK" -eq 1 ]]; then
+    echo "[workspace] Opening screenalytics Streamlit in browser..."
+    open "http://127.0.0.1:${SCREENALYTICS_STREAMLIT_PORT}/" 2>/dev/null || true
+  fi
+  if [[ "$SCREENALYTICS_WEB_OK" -eq 1 ]]; then
+    echo "[workspace] Opening screenalytics Web in browser..."
+    open "http://127.0.0.1:${SCREENALYTICS_WEB_PORT}/" 2>/dev/null || true
   fi
 fi
 
