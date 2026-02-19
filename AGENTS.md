@@ -11,8 +11,11 @@ Repos in this workspace:
 ## One-Command Dev (Workspace)
 Run from `/Users/thomashulihan/Projects/TRR`:
 - `make bootstrap` (one-time dependency setup)
-- `make dev` (run workspace services)
+- `make dev` (daily default: TRR-APP + TRR-Backend; screenalytics disabled)
+- `WORKSPACE_SCREENALYTICS=1 make dev` (opt in to full screenalytics local stack)
 - `make stop` (stop only services started by `make dev`)
+- `make down` (tear down screenalytics docker compose infra)
+- `make stop && make down` (full cleanup)
 - `make logs` (tail workspace logs)
 
 Default URLs:

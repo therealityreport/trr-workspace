@@ -12,12 +12,23 @@ Use this file as the fast execution playbook; when in doubt, follow `AGENTS.md`.
 From `/Users/thomashulihan/Projects/TRR`:
 ```bash
 make bootstrap
+# Default daily mode: TRR-APP + TRR-Backend (no screenalytics)
 make dev
 ```
 
-Stop services started by workspace dev mode:
+Opt in to full screenalytics local stack when needed:
+```bash
+WORKSPACE_SCREENALYTICS=1 make dev
+```
+
+Stop services started by workspace dev mode (processes only):
 ```bash
 make stop
+```
+
+Full cleanup (processes + screenalytics docker compose):
+```bash
+make stop && make down
 ```
 
 Tail logs:
