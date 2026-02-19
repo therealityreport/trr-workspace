@@ -426,6 +426,7 @@ if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
     STREAMLIT_PORT=\"$SCREENALYTICS_STREAMLIT_PORT\" \
     WEB_PORT=\"$SCREENALYTICS_WEB_PORT\" \
     DEV_AUTO_ALLOW_DB_ERROR=\"$SCREENALYTICS_DEV_AUTO_ALLOW_DB_ERROR\" \
+    DEV_AUTO_OPEN_BROWSER=0 \
     DEV_AUTO_YES=1 \
     exec \"$BASH_BIN\" ./scripts/dev_auto.sh"
 else
@@ -521,6 +522,13 @@ if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
 fi
 
 # Keep running until one of the processes exits.
+APP_DEV_URL="http://${TRR_APP_HOST}:${TRR_APP_PORT}"
+SCREENALYTICS_WEB_DEV_URL=""
+if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
+  SCREENALYTICS_WEB_DEV_URL="http://127.0.0.1:${SCREENALYTICS_WEB_PORT}"
+fi
+bash "$ROOT/scripts/open-workspace-dev-window.sh" "$APP_DEV_URL" "$SCREENALYTICS_WEB_DEV_URL"
+
 while true; do
   local_dead=""
   local_dead_name=""

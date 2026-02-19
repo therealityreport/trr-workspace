@@ -88,6 +88,9 @@ ensure_venv "$ROOT/TRR-Backend"
 
 echo "[bootstrap] screenalytics (python deps)..."
 ensure_venv "$ROOT/screenalytics"
+# Remove stale, unmanaged packages that commonly survive from older local setups
+# and trigger resolver warnings against the lock-driven stack.
+"$ROOT/screenalytics/.venv/bin/python" -m pip uninstall -y facenet-pytorch >/dev/null 2>&1 || true
 "$ROOT/screenalytics/.venv/bin/python" -m pip install -r "$ROOT/screenalytics/requirements.txt"
 
 SCREENALYTICS_INSTALL_ML="${SCREENALYTICS_INSTALL_ML:-1}"
