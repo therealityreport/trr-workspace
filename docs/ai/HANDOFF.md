@@ -2,6 +2,15 @@
 
 Purpose: persistent state for multi-turn AI agent sessions affecting workspace-level tooling (`make dev` / `make stop`).
 
+## 2026-02-19 (Codex) — fresh `make dev` browser window orchestration
+- Added `scripts/open-workspace-dev-window.sh` to enforce workspace browser behavior:
+  - closes existing tabs only for configured TRR-APP and screenalytics Web origins (exact host+port match, path-agnostic),
+  - opens a brand-new browser window with fresh tabs for TRR-APP and optional screenalytics Web.
+- Updated `scripts/dev-workspace.sh`:
+  - disables nested screenalytics browser opens via `DEV_AUTO_OPEN_BROWSER=0` when launched from workspace,
+  - replaces single-tab TRR-APP open call with `open-workspace-dev-window.sh`,
+  - opens TRR-APP + screenalytics Web (`:8080`) in one fresh window when screenalytics is enabled.
+
 ## Changes In This Session (2026-02-09)
 
 - `scripts/dev-workspace.sh`
@@ -32,8 +41,14 @@ make dev
 
 ---
 
-Last updated: 2026-02-09
-Updated by: Codex
+Last updated: 2026-02-19
+Updated by: Codex (GPT-5)
+
+## 2026-02-17 (Codex) — `make dev` one-tab browser behavior
+- Added `/Users/thomashulihan/Projects/TRR/scripts/open-or-refresh-browser-tab.sh` to reuse existing browser tabs for service URLs.
+- Wired `scripts/dev-workspace.sh` to open/refresh `TRR-APP` at `http://127.0.0.1:${TRR_APP_PORT}` on each `make dev`.
+- Replaced hardcoded `open` calls in `screenalytics/scripts/dev_auto.sh` so Streamlit/Web tabs are reused when present.
+- Behavior now prefers Chrome → Safari tab reuse and falls back to opening a new tab if those automation paths are unavailable.
 
 
 ## 2026-02-12 (Codex) — New planning docs added

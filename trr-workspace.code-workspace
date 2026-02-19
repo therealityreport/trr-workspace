@@ -1,9 +1,9 @@
 {
   "folders": [
-    { "path": ".", "name": "TRR (workspace)" },
-    { "path": "TRR-APP", "name": "TRR-APP" },
-    { "path": "TRR-Backend", "name": "TRR-Backend" },
-    { "path": "screenalytics", "name": "screenalytics" }
+    {
+      "path": ".",
+      "name": "TRR (workspace)"
+    }
   ],
   "settings": {
     "python.terminal.activateEnvironment": true
