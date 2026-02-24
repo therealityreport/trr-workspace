@@ -1,0 +1,4 @@
+interface:
+  display_name: "Multi-Repo PR Merge Sync"
+  short_description: "Commit, PR, check, fix, merge, and sync all repos"
+  default_prompt: "Use $multi-repo-pr-merge-sync to commit all workspace repos, keep one PR per repo, resolve failing checks immediately, merge to main, and verify local/remote main are identical."
