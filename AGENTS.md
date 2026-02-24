@@ -11,12 +11,24 @@ Repos in this workspace:
 ## One-Command Dev (Workspace)
 Run from `/Users/thomashulihan/Projects/TRR`:
 - `make bootstrap` (one-time dependency setup)
-- `make dev` (daily default: TRR-APP + TRR-Backend; screenalytics disabled)
-- `WORKSPACE_SCREENALYTICS=1 make dev` (opt in to full screenalytics local stack)
+- `make dev` (daily default: TRR-APP + TRR-Backend + screenalytics)
+- `make dev-lite` (TRR-APP + TRR-Backend only; screenalytics disabled)
+- `make dev-cloud` (screenalytics enabled, Docker bypass mode)
+- `make dev-full` (screenalytics enabled with local Docker Redis/MinIO)
+- `make status` (workspace snapshot: modes, PIDs, ports, health)
 - `make stop` (stop only services started by `make dev`)
-- `make down` (tear down screenalytics docker compose infra)
+- `make down` (tear down screenalytics docker compose infra; safe no-op if Docker is unavailable/stopped)
 - `make stop && make down` (full cleanup)
 - `make logs` (tail workspace logs)
+
+Startup tuning:
+- `WORKSPACE_CLEAN_NEXT_CACHE=1 make dev` (force clean Next.js rebuild; default is cache reuse)
+- `WORKSPACE_OPEN_BROWSER=0 make dev` (skip browser tab refresh/open)
+- `make doctor` accepts any Python interpreter resolving to `>=3.11` (`PYTHON_BIN` override supported)
+- `SCREENALYTICS_API_URL=https://... make dev` (override backend/app target screenalytics endpoint)
+- `WORKSPACE_HEALTH_TIMEOUT_APP=90 make dev` (tune startup wait windows; see other `WORKSPACE_HEALTH_TIMEOUT_*` vars)
+- Previous run logs are archived under `/Users/thomashulihan/Projects/TRR/.logs/workspace/archive/<timestamp>/`
+- `SCREENALYTICS_DOCKER_FORCE_RECREATE=1` (when running `screenalytics/scripts/dev_auto.sh` directly)
 
 Default URLs:
 - TRR-APP: `http://127.0.0.1:3000`
