@@ -12,14 +12,36 @@ Use this file as the fast execution playbook; when in doubt, follow `AGENTS.md`.
 From `/Users/thomashulihan/Projects/TRR`:
 ```bash
 make bootstrap
-# Default daily mode: TRR-APP + TRR-Backend (no screenalytics)
+# Default daily mode: TRR-APP + TRR-Backend + screenalytics
 make dev
 ```
 
-Opt in to full screenalytics local stack when needed:
+Alternative workspace modes:
 ```bash
-WORKSPACE_SCREENALYTICS=1 make dev
+make dev-lite   # TRR-APP + TRR-Backend only
+make dev-cloud  # screenalytics enabled, Docker bypass mode
+make dev-full   # screenalytics enabled with local Docker infra
 ```
+
+`make dev` uses screenalytics Docker-bypass mode by default (managed Redis/S3 setups).
+Opt into local Docker Redis/MinIO on the default target when needed:
+```bash
+WORKSPACE_SCREENALYTICS_SKIP_DOCKER=0 make dev
+```
+
+Startup tuning:
+```bash
+WORKSPACE_CLEAN_NEXT_CACHE=1 make dev  # force clean Next.js cache rebuild
+WORKSPACE_OPEN_BROWSER=0 make dev      # skip browser tab refresh/open
+SCREENALYTICS_API_URL=https://... make dev  # override backend/app screenalytics target
+WORKSPACE_HEALTH_TIMEOUT_APP=90 make dev    # tune startup health wait windows
+```
+Health tuning vars also include:
+`WORKSPACE_HEALTH_CURL_MAX_TIME`,
+`WORKSPACE_HEALTH_TIMEOUT_BACKEND`,
+`WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_API`,
+`WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_STREAMLIT`,
+`WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_WEB`.
 
 Stop services started by workspace dev mode (processes only):
 ```bash
@@ -30,10 +52,17 @@ Full cleanup (processes + screenalytics docker compose):
 ```bash
 make stop && make down
 ```
+`make down` is safe in no-Docker workflows (it no-ops when Docker is missing or stopped).
+It also uses `docker compose down --remove-orphans` when Docker is available.
 
 Tail logs:
 ```bash
 make logs
+```
+
+Workspace status snapshot (modes, PIDs, ports, health):
+```bash
+make status
 ```
 
 ## Default URLs
@@ -42,6 +71,12 @@ make logs
 - screenalytics API: `http://127.0.0.1:8001`
 - screenalytics Streamlit: `http://127.0.0.1:8501`
 - screenalytics Web: `http://127.0.0.1:8080`
+
+## Tooling Notes
+- `make doctor` accepts any Python interpreter resolving to `>=3.11`.
+- Override interpreter selection with `PYTHON_BIN` when needed.
+- Previous run workspace logs are archived in `/Users/thomashulihan/Projects/TRR/.logs/workspace/archive/<timestamp>/`.
+- For direct screenalytics startup (`screenalytics/scripts/dev_auto.sh`), use `SCREENALYTICS_DOCKER_FORCE_RECREATE=1` to force container recreation.
 
 ## Mandatory Workflow
 1. Follow fixed implementation order:
