@@ -9,10 +9,18 @@ PIDFILE="${LOG_DIR}/pids.env"
 mkdir -p "$LOG_DIR"
 
 # Workspace toggles
-WORKSPACE_SCREENALYTICS="${WORKSPACE_SCREENALYTICS:-0}"
+WORKSPACE_SCREENALYTICS="${WORKSPACE_SCREENALYTICS:-1}"
+WORKSPACE_SCREENALYTICS_SKIP_DOCKER="${WORKSPACE_SCREENALYTICS_SKIP_DOCKER:-1}"
 WORKSPACE_STRICT="${WORKSPACE_STRICT:-0}"
 WORKSPACE_FORCE_KILL_PORT_CONFLICTS="${WORKSPACE_FORCE_KILL_PORT_CONFLICTS:-0}"
-WORKSPACE_CLEAN_NEXT_CACHE="${WORKSPACE_CLEAN_NEXT_CACHE:-1}"
+WORKSPACE_CLEAN_NEXT_CACHE="${WORKSPACE_CLEAN_NEXT_CACHE:-0}"
+WORKSPACE_OPEN_BROWSER="${WORKSPACE_OPEN_BROWSER:-1}"
+WORKSPACE_HEALTH_CURL_MAX_TIME="${WORKSPACE_HEALTH_CURL_MAX_TIME:-2}"
+WORKSPACE_HEALTH_TIMEOUT_BACKEND="${WORKSPACE_HEALTH_TIMEOUT_BACKEND:-30}"
+WORKSPACE_HEALTH_TIMEOUT_APP="${WORKSPACE_HEALTH_TIMEOUT_APP:-60}"
+WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_API="${WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_API:-30}"
+WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_STREAMLIT="${WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_STREAMLIT:-90}"
+WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_WEB="${WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_WEB:-90}"
 
 # screenalytics dev_auto defaults (may be overridden via env when invoking this script).
 SCREENALYTICS_DEV_AUTO_ALLOW_DB_ERROR_DEFAULT="0"
@@ -42,11 +50,33 @@ SCREENALYTICS_STREAMLIT_PORT="${SCREENALYTICS_STREAMLIT_PORT:-8501}"
 SCREENALYTICS_WEB_PORT="${SCREENALYTICS_WEB_PORT:-8080}"
 
 TRR_API_URL="http://127.0.0.1:${TRR_BACKEND_PORT}"
-SCREENALYTICS_API_URL="http://127.0.0.1:${SCREENALYTICS_API_PORT}"
+SCREENALYTICS_LOCAL_API_URL="http://127.0.0.1:${SCREENALYTICS_API_PORT}"
+SCREENALYTICS_API_URL="${SCREENALYTICS_API_URL:-$SCREENALYTICS_LOCAL_API_URL}"
+SCREENALYTICS_LOCAL_HEALTH_URL="${SCREENALYTICS_LOCAL_API_URL}/healthz"
 
 TRR_BACKEND_LOG="${LOG_DIR}/trr-backend.log"
 TRR_APP_LOG="${LOG_DIR}/trr-app.log"
 SCREENALYTICS_LOG="${LOG_DIR}/screenalytics.log"
+
+# Preserve prior run logs for troubleshooting.
+RUN_TS="$(date +%Y%m%d-%H%M%S)"
+ARCHIVE_DIR="${LOG_DIR}/archive/${RUN_TS}"
+rotated_any=0
+for log in "$TRR_BACKEND_LOG" "$TRR_APP_LOG" "$SCREENALYTICS_LOG"; do
+  if [[ -f "$log" && -s "$log" ]]; then
+    rotated_any=1
+    break
+  fi
+done
+if [[ "$rotated_any" -eq 1 ]]; then
+  mkdir -p "$ARCHIVE_DIR"
+  for log in "$TRR_BACKEND_LOG" "$TRR_APP_LOG" "$SCREENALYTICS_LOG"; do
+    if [[ -f "$log" ]]; then
+      mv "$log" "$ARCHIVE_DIR/$(basename "$log")"
+    fi
+  done
+  echo "[workspace] Archived previous logs to ${ARCHIVE_DIR}"
+fi
 
 : > "$TRR_BACKEND_LOG"
 : > "$TRR_APP_LOG"
@@ -211,47 +241,51 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# Optional screenalytics gating (docker is required only when screenalytics is enabled)
+# Optional screenalytics gating (docker is required only when screenalytics is enabled and skip mode is off)
 # ---------------------------------------------------------------------------
 if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
-  if ! command -v docker >/dev/null 2>&1; then
-    if [[ "$WORKSPACE_STRICT" == "1" ]]; then
-      echo "[workspace] ERROR: docker not found (required for screenalytics)." >&2
-      exit 1
-    fi
-    echo "[workspace] WARNING: docker not found; disabling screenalytics for this session." >&2
-    WORKSPACE_SCREENALYTICS=0
-  elif ! docker info >/dev/null 2>&1; then
-    echo "[workspace] Docker daemon is not running. Starting Docker..."
-    if [[ "$(uname)" == "Darwin" ]]; then
-      if [[ -d "/Applications/Docker.app" ]]; then
-        open -a Docker
-        echo "[workspace] Waiting for Docker daemon..."
-        for i in $(seq 1 60); do
-          if docker info >/dev/null 2>&1; then
-            echo "[workspace] Docker daemon is ready."
-            break
-          fi
-          sleep 1
-          if (( i % 10 == 0 )); then
-            echo "[workspace]   Still waiting... (${i}s elapsed)"
-          fi
-        done
-      fi
-    fi
-
-    if ! docker info >/dev/null 2>&1; then
+  if [[ "$WORKSPACE_SCREENALYTICS_SKIP_DOCKER" != "1" ]]; then
+    if ! command -v docker >/dev/null 2>&1; then
       if [[ "$WORKSPACE_STRICT" == "1" ]]; then
-        echo "[workspace] ERROR: Docker daemon is not running (required for screenalytics)." >&2
+        echo "[workspace] ERROR: docker not found (required for screenalytics)." >&2
         exit 1
       fi
-      echo "[workspace] WARNING: Docker daemon not available; disabling screenalytics for this session." >&2
+      echo "[workspace] WARNING: docker not found; disabling screenalytics for this session." >&2
       WORKSPACE_SCREENALYTICS=0
+    elif ! docker info >/dev/null 2>&1; then
+      echo "[workspace] Docker daemon is not running. Starting Docker..."
+      if [[ "$(uname)" == "Darwin" ]]; then
+        if [[ -d "/Applications/Docker.app" ]]; then
+          open -a Docker
+          echo "[workspace] Waiting for Docker daemon..."
+          for i in $(seq 1 60); do
+            if docker info >/dev/null 2>&1; then
+              echo "[workspace] Docker daemon is ready."
+              break
+            fi
+            sleep 1
+            if (( i % 10 == 0 )); then
+              echo "[workspace]   Still waiting... (${i}s elapsed)"
+            fi
+          done
+        fi
+      fi
+
+      if ! docker info >/dev/null 2>&1; then
+        if [[ "$WORKSPACE_STRICT" == "1" ]]; then
+          echo "[workspace] ERROR: Docker daemon is not running (required for screenalytics)." >&2
+          exit 1
+        fi
+        echo "[workspace] WARNING: Docker daemon not available; disabling screenalytics for this session." >&2
+        WORKSPACE_SCREENALYTICS=0
+      else
+        echo "[workspace] Docker daemon is running."
+      fi
     else
       echo "[workspace] Docker daemon is running."
     fi
   else
-    echo "[workspace] Docker daemon is running."
+    echo "[workspace] WORKSPACE_SCREENALYTICS_SKIP_DOCKER=1; skipping Docker preflight and compose infra startup."
   fi
 
   if [[ "$WORKSPACE_SCREENALYTICS" == "1" && "$HAVE_LSOF" -eq 1 ]]; then
@@ -295,7 +329,7 @@ if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
     fi
   fi
 
-  if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
+  if [[ "$WORKSPACE_SCREENALYTICS" == "1" && "$WORKSPACE_SCREENALYTICS_SKIP_DOCKER" != "1" ]]; then
     # Start screenalytics infrastructure (Redis + MinIO) before services.
     echo "[workspace] Starting Docker infrastructure (Redis + MinIO)..."
     docker compose -f "${ROOT}/screenalytics/infra/docker/compose.yaml" up -d
@@ -410,8 +444,17 @@ trap cleanup EXIT INT TERM
   echo "SCREENALYTICS_WEB_PORT=${SCREENALYTICS_WEB_PORT}"
   echo "TRR_API_URL=\"${TRR_API_URL}\""
   echo "SCREENALYTICS_API_URL=\"${SCREENALYTICS_API_URL}\""
+  echo "SCREENALYTICS_LOCAL_API_URL=\"${SCREENALYTICS_LOCAL_API_URL}\""
   echo "WORKSPACE_SCREENALYTICS=${WORKSPACE_SCREENALYTICS}"
+  echo "WORKSPACE_SCREENALYTICS_SKIP_DOCKER=${WORKSPACE_SCREENALYTICS_SKIP_DOCKER}"
   echo "WORKSPACE_STRICT=${WORKSPACE_STRICT}"
+  echo "WORKSPACE_OPEN_BROWSER=${WORKSPACE_OPEN_BROWSER}"
+  echo "WORKSPACE_HEALTH_CURL_MAX_TIME=${WORKSPACE_HEALTH_CURL_MAX_TIME}"
+  echo "WORKSPACE_HEALTH_TIMEOUT_BACKEND=${WORKSPACE_HEALTH_TIMEOUT_BACKEND}"
+  echo "WORKSPACE_HEALTH_TIMEOUT_APP=${WORKSPACE_HEALTH_TIMEOUT_APP}"
+  echo "WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_API=${WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_API}"
+  echo "WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_STREAMLIT=${WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_STREAMLIT}"
+  echo "WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_WEB=${WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_WEB}"
 } >>"$PIDFILE"
 
 echo "[workspace] Starting services..."
@@ -420,11 +463,12 @@ if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
   start_bg "SCREENALYTICS" "$SCREENALYTICS_LOG" "$BASH_BIN" -lc "cd \"$ROOT/screenalytics\" && \
     PYTHONUNBUFFERED=1 \
     SCREENALYTICS_ENV=dev \
-    SCREENALYTICS_API_URL=\"$SCREENALYTICS_API_URL\" \
-    API_BASE_URL=\"$SCREENALYTICS_API_URL\" \
+    SCREENALYTICS_API_URL=\"$SCREENALYTICS_LOCAL_API_URL\" \
+    API_BASE_URL=\"$SCREENALYTICS_LOCAL_API_URL\" \
     API_PORT=\"$SCREENALYTICS_API_PORT\" \
     STREAMLIT_PORT=\"$SCREENALYTICS_STREAMLIT_PORT\" \
     WEB_PORT=\"$SCREENALYTICS_WEB_PORT\" \
+    SCREENALYTICS_SKIP_DOCKER=\"$WORKSPACE_SCREENALYTICS_SKIP_DOCKER\" \
     DEV_AUTO_ALLOW_DB_ERROR=\"$SCREENALYTICS_DEV_AUTO_ALLOW_DB_ERROR\" \
     DEV_AUTO_OPEN_BROWSER=0 \
     DEV_AUTO_YES=1 \
@@ -457,9 +501,15 @@ echo "[workspace] URLs:"
 echo "  TRR-APP:               http://${TRR_APP_HOST}:${TRR_APP_PORT}"
 echo "  TRR-Backend:           ${TRR_API_URL}"
 if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
-  echo "  screenalytics API:     ${SCREENALYTICS_API_URL}"
+  echo "  screenalytics API target: ${SCREENALYTICS_API_URL}"
+  if [[ "$SCREENALYTICS_API_URL" != "$SCREENALYTICS_LOCAL_API_URL" ]]; then
+    echo "  screenalytics API local:  ${SCREENALYTICS_LOCAL_API_URL}"
+  fi
   echo "  screenalytics Streamlit: http://127.0.0.1:${SCREENALYTICS_STREAMLIT_PORT}"
   echo "  screenalytics Web:     http://127.0.0.1:${SCREENALYTICS_WEB_PORT}"
+  if [[ "$WORKSPACE_SCREENALYTICS_SKIP_DOCKER" == "1" ]]; then
+    echo "  screenalytics infra:   Docker bypass enabled (WORKSPACE_SCREENALYTICS_SKIP_DOCKER=1)"
+  fi
 else
   echo "  screenalytics:         (disabled)"
 fi
@@ -480,7 +530,7 @@ wait_http_ok() {
   local seconds="$3"
 
   for _ in $(seq 1 "$seconds"); do
-    if curl -fsS --max-time 2 "$url" >/dev/null 2>&1; then
+    if curl -fsS --max-time "$WORKSPACE_HEALTH_CURL_MAX_TIME" "$url" >/dev/null 2>&1; then
       echo "[workspace] ${name} is up: ${url}"
       return 0
     fi
@@ -491,59 +541,61 @@ wait_http_ok() {
 }
 
 echo "[workspace] Checking service health..."
-if ! wait_http_ok "TRR-Backend" "${TRR_API_URL}/health" 30; then
-  echo "[workspace] ERROR: TRR-Backend did not become healthy within 30s." >&2
+if ! wait_http_ok "TRR-Backend" "${TRR_API_URL}/health" "$WORKSPACE_HEALTH_TIMEOUT_BACKEND"; then
+  echo "[workspace] ERROR: TRR-Backend did not become healthy within ${WORKSPACE_HEALTH_TIMEOUT_BACKEND}s." >&2
   tail -n 80 "$TRR_BACKEND_LOG" >&2 || true
   exit 1
 fi
 
-if ! wait_http_ok "TRR-APP" "http://${TRR_APP_HOST}:${TRR_APP_PORT}/" 60; then
-  echo "[workspace] ERROR: TRR-APP did not become reachable within 60s." >&2
+if ! wait_http_ok "TRR-APP" "http://${TRR_APP_HOST}:${TRR_APP_PORT}/" "$WORKSPACE_HEALTH_TIMEOUT_APP"; then
+  echo "[workspace] ERROR: TRR-APP did not become reachable within ${WORKSPACE_HEALTH_TIMEOUT_APP}s." >&2
   tail -n 120 "$TRR_APP_LOG" >&2 || true
   exit 1
 fi
 
 if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
-  if ! wait_http_ok "screenalytics API" "${SCREENALYTICS_API_URL}/healthz" 30; then
-    echo "[workspace] WARNING: screenalytics API did not become healthy within 30s (continuing)." >&2
+  if ! wait_http_ok "screenalytics API" "$SCREENALYTICS_LOCAL_HEALTH_URL" "$WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_API"; then
+    echo "[workspace] WARNING: screenalytics API did not become healthy within ${WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_API}s (continuing)." >&2
     tail -n 120 "$SCREENALYTICS_LOG" >&2 || true
   fi
 
   # UI servers can take longer (model warmup, Next dev, etc). Don't fail the workspace if they're slow.
   SCREENALYTICS_STREAMLIT_OK=0
-  if wait_http_ok "screenalytics Streamlit" "http://127.0.0.1:${SCREENALYTICS_STREAMLIT_PORT}/" 90; then
+  if wait_http_ok "screenalytics Streamlit" "http://127.0.0.1:${SCREENALYTICS_STREAMLIT_PORT}/" "$WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_STREAMLIT"; then
     SCREENALYTICS_STREAMLIT_OK=1
   else
-    echo "[workspace] WARNING: screenalytics Streamlit did not become reachable within 90s (continuing)." >&2
+    echo "[workspace] WARNING: screenalytics Streamlit did not become reachable within ${WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_STREAMLIT}s (continuing)." >&2
     tail -n 120 "$SCREENALYTICS_LOG" >&2 || true
   fi
 
   SCREENALYTICS_WEB_OK=0
-  if wait_http_ok "screenalytics Web" "http://127.0.0.1:${SCREENALYTICS_WEB_PORT}/" 90; then
+  if wait_http_ok "screenalytics Web" "http://127.0.0.1:${SCREENALYTICS_WEB_PORT}/" "$WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_WEB"; then
     SCREENALYTICS_WEB_OK=1
   else
-    echo "[workspace] WARNING: screenalytics Web did not become reachable within 90s (continuing)." >&2
+    echo "[workspace] WARNING: screenalytics Web did not become reachable within ${WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_WEB}s (continuing)." >&2
     tail -n 120 "$SCREENALYTICS_LOG" >&2 || true
   fi
 
-  # Auto-open screenalytics UIs in browser tabs
-  if [[ "$SCREENALYTICS_STREAMLIT_OK" -eq 1 ]]; then
-    echo "[workspace] Opening screenalytics Streamlit in browser..."
-    open "http://127.0.0.1:${SCREENALYTICS_STREAMLIT_PORT}/" 2>/dev/null || true
-  fi
-  if [[ "$SCREENALYTICS_WEB_OK" -eq 1 ]]; then
-    echo "[workspace] Opening screenalytics Web in browser..."
-    open "http://127.0.0.1:${SCREENALYTICS_WEB_PORT}/" 2>/dev/null || true
-  fi
 fi
 
 # Keep running until one of the processes exits.
 APP_DEV_URL="http://${TRR_APP_HOST}:${TRR_APP_PORT}"
+SCREENALYTICS_STREAMLIT_DEV_URL=""
 SCREENALYTICS_WEB_DEV_URL=""
 if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
-  SCREENALYTICS_WEB_DEV_URL="http://127.0.0.1:${SCREENALYTICS_WEB_PORT}"
+  if [[ "${SCREENALYTICS_STREAMLIT_OK:-0}" -eq 1 ]]; then
+    SCREENALYTICS_STREAMLIT_DEV_URL="http://127.0.0.1:${SCREENALYTICS_STREAMLIT_PORT}"
+  fi
+  if [[ "${SCREENALYTICS_WEB_OK:-0}" -eq 1 ]]; then
+    SCREENALYTICS_WEB_DEV_URL="http://127.0.0.1:${SCREENALYTICS_WEB_PORT}"
+  fi
 fi
-bash "$ROOT/scripts/open-workspace-dev-window.sh" "$APP_DEV_URL" "$SCREENALYTICS_WEB_DEV_URL"
+if [[ "$WORKSPACE_OPEN_BROWSER" == "1" ]]; then
+  echo "[workspace] Syncing workspace browser tabs..."
+  bash "$ROOT/scripts/open-workspace-dev-window.sh" "$APP_DEV_URL" "$SCREENALYTICS_STREAMLIT_DEV_URL" "$SCREENALYTICS_WEB_DEV_URL"
+else
+  echo "[workspace] Skipping browser sync (WORKSPACE_OPEN_BROWSER=0)."
+fi
 
 while true; do
   local_dead=""
