@@ -2,6 +2,26 @@
 
 Purpose: persistent state for multi-turn AI agent sessions affecting workspace-level tooling (`make dev` / `make stop`).
 
+## 2026-02-24 (Codex) — admin-host local defaults + tab-refresh collision hardening
+- Updated `/Users/thomashulihan/Projects/TRR/scripts/dev-workspace.sh`:
+  - now injects TRR-APP admin host defaults into the launched `next dev` process when unset:
+    - `ADMIN_APP_ORIGIN=http://admin.localhost:3000`
+    - `ADMIN_APP_HOSTS=admin.localhost,localhost,127.0.0.1,[::1]`
+    - `ADMIN_ENFORCE_HOST=true`
+    - `ADMIN_STRICT_HOST_ROUTING=false`
+  - persists the above values in pidfile metadata.
+  - startup URL output now includes canonical admin URL line:
+    - `TRR-APP Admin: http://admin.localhost:3000`
+- Updated `/Users/thomashulihan/Projects/TRR/scripts/open-or-refresh-browser-tab.sh`:
+  - removed broad localhost-family wildcard matching on port `3000`.
+  - refresh matching is now limited to:
+    - exact target URL/prefix, plus
+    - explicit localhost/127 alias pair only.
+  - prevents unrelated admin/public localhost tabs from being force-refreshed together.
+- Validation executed:
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/dev-workspace.sh` (pass)
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/open-or-refresh-browser-tab.sh` (pass)
+
 ## 2026-02-24 (Codex) — runtime hardening pass (endpoint override, health tuning, log archive, compose/runtime polish)
 - Updated `/Users/thomashulihan/Projects/TRR/scripts/dev-workspace.sh`:
   - `SCREENALYTICS_API_URL` now honors env override (default remains local `http://127.0.0.1:${SCREENALYTICS_API_PORT}`),
