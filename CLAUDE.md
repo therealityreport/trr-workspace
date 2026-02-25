@@ -1,4 +1,4 @@
-# TRR Workspace — Claude/Codex Playbook
+# TRR Workspace — Codex/Claude Playbook
 
 Canonical workspace policy: `/Users/thomashulihan/Projects/TRR/AGENTS.md`.
 Use this file as the fast execution playbook; when in doubt, follow `AGENTS.md`.
@@ -100,6 +100,7 @@ make status
 ## Skill Activation (Workspace)
 Use skills intentionally by task signal.
 
+- `orchestrate-plan-execution`: Codex-primary default entrypoint for non-trivial plan + execute tasks; routes checkpoint, parallel, or strict review-loop execution (Claude secondary).
 - `figma-frontend-design-engineer`: Figma MCP-driven design-to-code implementation with frontend quality gates.
 - `senior-backend`: backend routes, schema/migrations, API contract work.
 - `senior-frontend`: TRR-APP UI/admin/App Router/perf/a11y.
@@ -118,7 +119,7 @@ Skill guardrails:
 - Do not use AWS skill unless AWS is explicitly in scope.
 - Do not run stack evaluator for routine implementation where stack is already fixed.
 
-## Multi-Repo Session Command
+## Multi-Repo Session Command (Claude Secondary)
 ```bash
 claude --add-dir TRR-Backend --add-dir TRR-APP --add-dir screenalytics
 ```

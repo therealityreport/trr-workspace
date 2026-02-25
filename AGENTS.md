@@ -78,7 +78,7 @@ After changes:
 See `docs/cross-collab/WORKFLOW.md` for lifecycle/templates.
 
 ## Skill Routing (Workspace)
-Use the smallest set of skills that fully covers the task.
+Use the smallest set of skills that fully covers the task after the mandatory default skill chain is applied.
 
 Installed paths:
 - `/Users/thomashulihan/.codex/skills/figma-frontend-design-engineer`
@@ -92,8 +92,46 @@ Installed paths:
 - `/Users/thomashulihan/.codex/skills/tdd-guide`
 - `/Users/thomashulihan/.codex/skills/tech-stack-evaluator`
 - `/Users/thomashulihan/.codex/skills/aws-solution-architect`
+- `/Users/thomashulihan/.codex/skills/skillcreator`
+- `/Users/thomashulihan/.codex/skills/write-plan-codex`
+- `/Users/thomashulihan/.codex/skills/orchestrate-plan-execution`
+
+## Default Skill Chain (Mandatory)
+Apply this chain for all non-trivial implementation tasks (any task that changes repo-tracked files, validates behavior for a change, or prepares commit/PR/handoff artifacts):
+1. `orchestrate-plan-execution`
+2. `senior-fullstack`
+3. `senior-backend` or `senior-frontend` (pick by primary surface)
+4. `senior-qa`
+5. `code-reviewer`
+
+Step 3 primary surface rule:
+- Use `senior-backend` when backend/schema/API/pipeline contract risk is present.
+- Use `senior-frontend` when UI/rendering/interaction is primary and no backend/schema/API/pipeline contract risk is present.
+- Tie-breaker when both surfaces are touched:
+  - pick `senior-backend` if any contract/schema/pipeline semantics are changed;
+  - otherwise pick `senior-frontend`.
+
+Exceptions:
+- Trivial read-only tasks and simple Q&A do not require the chain.
+- Explicit user override may skip or alter chain steps.
+- If a required skill is unavailable, use the closest fallback and document it.
+
+Precedence and composition:
+- User-requested skills are additive by default.
+- `orchestrate-plan-execution` is the Codex-primary default plan+execute entrypoint and internally applies planning/routing discipline; Claude usage is secondary and must follow the same chain.
+- Domain-specific skills (`figma-frontend-design-engineer`, `senior-devops`, `senior-architect`, etc.) may be added as needed, but do not replace the five baseline steps when the trigger rule applies.
+- Record default-chain compliance for qualifying tasks in repo handoff entries:
+  - `default_skill_chain_applied` (`true|false`)
+  - `default_skill_chain_used` (ordered list)
+  - `default_skill_chain_exception_reason` (required when not applied)
 
 ### Skill Triggers
+- `orchestrate-plan-execution`
+  - Trigger: Codex-primary default entrypoint for non-trivial plan + execute tasks; selects execution mode and enforces checkpoints.
+- `skillforge`
+  - Trigger: skill triage/routing and skill-evolution decisions when refining or creating skills.
+- `write-plan-codex`
+  - Trigger: planning-only requests, or when a plan needs revision without immediate execution.
 - `figma-frontend-design-engineer`
   - Trigger: Figma URL/node-driven UI implementation, parity audits, and design-system mapped frontend delivery.
   - Primary repo: `TRR-APP`.
