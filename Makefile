@@ -8,20 +8,21 @@
 # Startup tuning:
 # WORKSPACE_CLEAN_NEXT_CACHE=1 make dev  # force clean Next.js cache
 # WORKSPACE_OPEN_BROWSER=0 make dev      # skip browser tab refresh/open
+# OPEN_OR_REFRESH_DEBUG=1 make dev     # trace browser-tab matching while syncing
 dev:
-	@bash scripts/dev-workspace.sh
+	@OPEN_OR_REFRESH_DEBUG=1 WORKSPACE_OPEN_BROWSER=0 bash scripts/dev-workspace.sh
 
-# Lightweight mode: TRR-APP + TRR-Backend only (no screenalytics).
+# Lightweight mode: TRR-APP + TRR-Backend + screenalytics API (no screenalytics UIs).
 dev-lite:
-	@WORKSPACE_SCREENALYTICS=0 bash scripts/dev-workspace.sh
+	@OPEN_OR_REFRESH_DEBUG=1 WORKSPACE_OPEN_BROWSER=0 WORKSPACE_SCREENALYTICS=1 WORKSPACE_SCREENALYTICS_SKIP_DOCKER=1 WORKSPACE_SCREENALYTICS_START_UIS=0 bash scripts/dev-workspace.sh
 
 # Cloud-backed screenalytics mode (no local Docker infra).
 dev-cloud:
-	@WORKSPACE_SCREENALYTICS=1 WORKSPACE_SCREENALYTICS_SKIP_DOCKER=1 bash scripts/dev-workspace.sh
+	@OPEN_OR_REFRESH_DEBUG=1 WORKSPACE_OPEN_BROWSER=0 WORKSPACE_SCREENALYTICS=1 WORKSPACE_SCREENALYTICS_SKIP_DOCKER=1 bash scripts/dev-workspace.sh
 
 # Full local screenalytics mode (with Docker Redis/MinIO).
 dev-full:
-	@WORKSPACE_SCREENALYTICS=1 WORKSPACE_SCREENALYTICS_SKIP_DOCKER=0 bash scripts/dev-workspace.sh
+	@OPEN_OR_REFRESH_DEBUG=1 WORKSPACE_OPEN_BROWSER=0 WORKSPACE_SCREENALYTICS=1 WORKSPACE_SCREENALYTICS_SKIP_DOCKER=0 bash scripts/dev-workspace.sh
 
 # Workspace status snapshot (PIDs, ports, health).
 status:

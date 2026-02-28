@@ -96,15 +96,24 @@ Installed paths:
 - `/Users/thomashulihan/.codex/skills/write-plan-codex`
 - `/Users/thomashulihan/.codex/skills/orchestrate-plan-execution`
 
-## Default Skill Chain (Mandatory)
-Apply this chain for all non-trivial implementation tasks (any task that changes repo-tracked files, validates behavior for a change, or prepares commit/PR/handoff artifacts):
+## Default Skill Chains (Mandatory)
+Planning-request chain (always apply when the user explicitly asks to make/write/revise a plan, regardless of triviality):
+1. `write-plan-codex`
+2. `orchestrate-plan-execution`
+3. `senior-fullstack`
+4. `senior-backend`
+5. `senior-frontend`
+6. `senior-qa`
+7. `code-reviewer`
+
+Non-trivial implementation chain (apply for implementation tasks that change repo-tracked files, validate behavior for a change, or prepare commit/PR/handoff artifacts):
 1. `orchestrate-plan-execution`
 2. `senior-fullstack`
 3. `senior-backend` or `senior-frontend` (pick by primary surface)
 4. `senior-qa`
 5. `code-reviewer`
 
-Step 3 primary surface rule:
+Implementation chain step 3 primary surface rule:
 - Use `senior-backend` when backend/schema/API/pipeline contract risk is present.
 - Use `senior-frontend` when UI/rendering/interaction is primary and no backend/schema/API/pipeline contract risk is present.
 - Tie-breaker when both surfaces are touched:
@@ -112,14 +121,16 @@ Step 3 primary surface rule:
   - otherwise pick `senior-frontend`.
 
 Exceptions:
-- Trivial read-only tasks and simple Q&A do not require the chain.
+- Trivial read-only tasks and simple Q&A do not require the implementation chain unless the user explicitly requests planning.
 - Explicit user override may skip or alter chain steps.
 - If a required skill is unavailable, use the closest fallback and document it.
 
 Precedence and composition:
 - User-requested skills are additive by default.
+- Planning requests always pair `write-plan-codex` with `orchestrate-plan-execution`; do not select only one of them.
+- Planning requests always include both `senior-backend` and `senior-frontend`; do not reduce this to a single primary-surface pick.
 - `orchestrate-plan-execution` is the Codex-primary default plan+execute entrypoint and internally applies planning/routing discipline; Claude usage is secondary and must follow the same chain.
-- Domain-specific skills (`figma-frontend-design-engineer`, `senior-devops`, `senior-architect`, etc.) may be added as needed, but do not replace the five baseline steps when the trigger rule applies.
+- Domain-specific skills (`figma-frontend-design-engineer`, `senior-devops`, `senior-architect`, etc.) may be added as needed, but do not replace baseline steps of the active default chain when the trigger rule applies.
 - Record default-chain compliance for qualifying tasks in repo handoff entries:
   - `default_skill_chain_applied` (`true|false`)
   - `default_skill_chain_used` (ordered list)
@@ -127,11 +138,11 @@ Precedence and composition:
 
 ### Skill Triggers
 - `orchestrate-plan-execution`
-  - Trigger: Codex-primary default entrypoint for non-trivial plan + execute tasks; selects execution mode and enforces checkpoints.
+  - Trigger: mandatory pair with `write-plan-codex` for explicit planning requests, and Codex-primary default entrypoint for non-trivial plan + execute tasks; selects execution mode and enforces checkpoints.
 - `skillforge`
   - Trigger: skill triage/routing and skill-evolution decisions when refining or creating skills.
 - `write-plan-codex`
-  - Trigger: planning-only requests, or when a plan needs revision without immediate execution.
+  - Trigger: mandatory for explicit planning requests (always paired with `orchestrate-plan-execution`), and when a plan needs revision without immediate implementation.
 - `figma-frontend-design-engineer`
   - Trigger: Figma URL/node-driven UI implementation, parity audits, and design-system mapped frontend delivery.
   - Primary repo: `TRR-APP`.
@@ -161,6 +172,14 @@ Precedence and composition:
   - Trigger: AWS-specific architecture/IaC/cost optimization only.
 
 ### Skill Sequencing by Task Type
+- Planning request (plan-only or plan-first):
+  1. `write-plan-codex`
+  2. `orchestrate-plan-execution`
+  3. `senior-fullstack`
+  4. `senior-backend`
+  5. `senior-frontend`
+  6. `senior-qa`
+  7. `code-reviewer`
 - Backend-first cross-repo feature:
   1. `senior-architect` (if design/contract tradeoff)
   2. `senior-backend`
