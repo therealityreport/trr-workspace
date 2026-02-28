@@ -15,6 +15,7 @@ WORKSPACE_STRICT="${WORKSPACE_STRICT:-0}"
 WORKSPACE_FORCE_KILL_PORT_CONFLICTS="${WORKSPACE_FORCE_KILL_PORT_CONFLICTS:-0}"
 WORKSPACE_CLEAN_NEXT_CACHE="${WORKSPACE_CLEAN_NEXT_CACHE:-0}"
 WORKSPACE_OPEN_BROWSER="${WORKSPACE_OPEN_BROWSER:-1}"
+WORKSPACE_SCREENALYTICS_START_UIS="${WORKSPACE_SCREENALYTICS_START_UIS:-1}"
 WORKSPACE_HEALTH_CURL_MAX_TIME="${WORKSPACE_HEALTH_CURL_MAX_TIME:-2}"
 WORKSPACE_HEALTH_TIMEOUT_BACKEND="${WORKSPACE_HEALTH_TIMEOUT_BACKEND:-30}"
 WORKSPACE_HEALTH_TIMEOUT_APP="${WORKSPACE_HEALTH_TIMEOUT_APP:-60}"
@@ -306,7 +307,7 @@ if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
       WORKSPACE_SCREENALYTICS=0
     fi
 
-    if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
+    if [[ "$WORKSPACE_SCREENALYTICS" == "1" && "$WORKSPACE_SCREENALYTICS_START_UIS" == "1" ]]; then
       rc=0
       ensure_port_free "$SCREENALYTICS_STREAMLIT_PORT" "screenalytics Streamlit" 0 || rc=$?
       if [[ "$rc" -ne 0 ]]; then
@@ -319,7 +320,7 @@ if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
       fi
     fi
 
-    if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
+    if [[ "$WORKSPACE_SCREENALYTICS" == "1" && "$WORKSPACE_SCREENALYTICS_START_UIS" == "1" ]]; then
       rc=0
       ensure_port_free "$SCREENALYTICS_WEB_PORT" "screenalytics Web" 0 || rc=$?
       if [[ "$rc" -ne 0 ]]; then
@@ -477,6 +478,7 @@ if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
     STREAMLIT_PORT=\"$SCREENALYTICS_STREAMLIT_PORT\" \
     WEB_PORT=\"$SCREENALYTICS_WEB_PORT\" \
     SCREENALYTICS_SKIP_DOCKER=\"$WORKSPACE_SCREENALYTICS_SKIP_DOCKER\" \
+    SCREENALYTICS_START_UIS=\"$WORKSPACE_SCREENALYTICS_START_UIS\" \
     DEV_AUTO_ALLOW_DB_ERROR=\"$SCREENALYTICS_DEV_AUTO_ALLOW_DB_ERROR\" \
     DEV_AUTO_OPEN_BROWSER=0 \
     DEV_AUTO_YES=1 \
@@ -518,8 +520,13 @@ if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
   if [[ "$SCREENALYTICS_API_URL" != "$SCREENALYTICS_LOCAL_API_URL" ]]; then
     echo "  screenalytics API local:  ${SCREENALYTICS_LOCAL_API_URL}"
   fi
-  echo "  screenalytics Streamlit: http://127.0.0.1:${SCREENALYTICS_STREAMLIT_PORT}"
-  echo "  screenalytics Web:     http://127.0.0.1:${SCREENALYTICS_WEB_PORT}"
+  if [[ "$WORKSPACE_SCREENALYTICS_START_UIS" == "1" ]]; then
+    echo "  screenalytics Streamlit: http://127.0.0.1:${SCREENALYTICS_STREAMLIT_PORT}"
+    echo "  screenalytics Web:     http://127.0.0.1:${SCREENALYTICS_WEB_PORT}"
+  else
+    echo "  screenalytics Streamlit: (disabled in workspace mode)"
+    echo "  screenalytics Web:     (disabled in workspace mode)"
+  fi
   if [[ "$WORKSPACE_SCREENALYTICS_SKIP_DOCKER" == "1" ]]; then
     echo "  screenalytics infra:   Docker bypass enabled (WORKSPACE_SCREENALYTICS_SKIP_DOCKER=1)"
   fi
@@ -572,21 +579,23 @@ if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
     tail -n 120 "$SCREENALYTICS_LOG" >&2 || true
   fi
 
-  # UI servers can take longer (model warmup, Next dev, etc). Don't fail the workspace if they're slow.
   SCREENALYTICS_STREAMLIT_OK=0
-  if wait_http_ok "screenalytics Streamlit" "http://127.0.0.1:${SCREENALYTICS_STREAMLIT_PORT}/" "$WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_STREAMLIT"; then
-    SCREENALYTICS_STREAMLIT_OK=1
-  else
-    echo "[workspace] WARNING: screenalytics Streamlit did not become reachable within ${WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_STREAMLIT}s (continuing)." >&2
-    tail -n 120 "$SCREENALYTICS_LOG" >&2 || true
-  fi
-
   SCREENALYTICS_WEB_OK=0
-  if wait_http_ok "screenalytics Web" "http://127.0.0.1:${SCREENALYTICS_WEB_PORT}/" "$WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_WEB"; then
-    SCREENALYTICS_WEB_OK=1
-  else
-    echo "[workspace] WARNING: screenalytics Web did not become reachable within ${WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_WEB}s (continuing)." >&2
-    tail -n 120 "$SCREENALYTICS_LOG" >&2 || true
+  if [[ "$WORKSPACE_SCREENALYTICS_START_UIS" == "1" ]]; then
+    # UI servers can take longer (model warmup, Next dev, etc). Don't fail the workspace if they're slow.
+    if wait_http_ok "screenalytics Streamlit" "http://127.0.0.1:${SCREENALYTICS_STREAMLIT_PORT}/" "$WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_STREAMLIT"; then
+      SCREENALYTICS_STREAMLIT_OK=1
+    else
+      echo "[workspace] WARNING: screenalytics Streamlit did not become reachable within ${WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_STREAMLIT}s (continuing)." >&2
+      tail -n 120 "$SCREENALYTICS_LOG" >&2 || true
+    fi
+
+    if wait_http_ok "screenalytics Web" "http://127.0.0.1:${SCREENALYTICS_WEB_PORT}/" "$WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_WEB"; then
+      SCREENALYTICS_WEB_OK=1
+    else
+      echo "[workspace] WARNING: screenalytics Web did not become reachable within ${WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_WEB}s (continuing)." >&2
+      tail -n 120 "$SCREENALYTICS_LOG" >&2 || true
+    fi
   fi
 
 fi
