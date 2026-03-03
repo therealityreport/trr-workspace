@@ -24,6 +24,7 @@ Run from `/Users/thomashulihan/Projects/TRR`:
 Startup tuning:
 - `WORKSPACE_CLEAN_NEXT_CACHE=1 make dev` (force clean Next.js rebuild; default is cache reuse)
 - `WORKSPACE_OPEN_BROWSER=0 make dev` (skip browser tab refresh/open)
+- `WORKSPACE_OPEN_SCREENALYTICS_TABS=1 make dev` (opt in to opening screenalytics Streamlit/Web tabs from `make dev`)
 - `make doctor` accepts any Python interpreter resolving to `>=3.11` (`PYTHON_BIN` override supported)
 - `SCREENALYTICS_API_URL=https://... make dev` (override backend/app target screenalytics endpoint)
 - `WORKSPACE_HEALTH_TIMEOUT_APP=90 make dev` (tune startup wait windows; see other `WORKSPACE_HEALTH_TIMEOUT_*` vars)
@@ -36,6 +37,29 @@ Default URLs:
 - screenalytics API: `http://127.0.0.1:8001`
 - screenalytics Streamlit: `http://127.0.0.1:8501`
 - screenalytics Web: `http://127.0.0.1:8080`
+
+## Browser Access (Mandatory for All Web Browsing)
+All web browsing MUST use the dedicated agent Chrome instance launched via `make chrome-agent`.
+This Chrome profile is pre-authenticated with the agent Gmail account (`codex@thereality.report`)
+and any social media / third-party sites the agent needs access to.
+
+Authentication methods by platform:
+- **TikTok** — Sign in with Gmail (`codex@thereality.report`)
+- **Reddit** — Sign in with Gmail (`codex@thereality.report`)
+- **Instagram** — Direct login (credentials stored in Chrome profile)
+- **Threads** — Sign in with Instagram
+
+Rules:
+- Run `make chrome-agent` before any browser-based task (or confirm it is already running).
+- Use Chrome DevTools MCP (`--browserUrl http://127.0.0.1:9222`) for page interaction.
+- Never launch a separate browser instance for web tasks; always connect to port 9222.
+- Never ask the user for credentials; sessions are pre-stored in the agent Chrome profile.
+- If a session has expired (login page encountered), inform the user and ask them to re-authenticate manually in the agent Chrome window.
+
+Commands:
+- `make chrome-agent` — start agent Chrome (no-ops if already running)
+- `make chrome-agent-stop` — stop agent Chrome
+- `curl http://localhost:9222/json/version` — verify connectivity
 
 ## Start-of-Session Checklist
 1. Read `/Users/thomashulihan/Projects/TRR/CLAUDE.md`.

@@ -1,0 +1,206 @@
+{
+  "url": "http://admin.localhost:3000/7782652f-783a-488b-8860-41b97de32e75/s6/social/w2/instagram",
+  "sampledCount": 11,
+  "totalCardOverlays": 11,
+  "sampled": [
+    {
+      "sourceId": "DPPm1NtARX3",
+      "cardMarkerCount": 1,
+      "drawerMarkerCount": 0,
+      "drawerExists": false,
+      "sampleLabels": [
+        "Lisa Barlow"
+      ],
+      "sampleStyles": [
+        "left: 50%; top: 50%;"
+      ],
+      "cardScreenshot": "/Users/thomashulihan/Projects/TRR/output/spotcheck/week2/01_DPPm1NtARX3_card.png",
+      "drawerScreenshot": null,
+      "countsMatch": false
+    },
+    {
+      "sourceId": "DPO_J6aFIG1",
+      "cardMarkerCount": 1,
+      "drawerMarkerCount": 0,
+      "drawerExists": false,
+      "sampleLabels": [
+        "Lisa Barlow"
+      ],
+      "sampleStyles": [
+        "left: 0%; top: 0%;"
+      ],
+      "cardScreenshot": "/Users/thomashulihan/Projects/TRR/output/spotcheck/week2/02_DPO_J6aFIG1_card.png",
+      "drawerScreenshot": null,
+      "countsMatch": false
+    },
+    {
+      "sourceId": "DPO9JA7D87R",
+      "cardMarkerCount": 7,
+      "drawerMarkerCount": 0,
+      "drawerExists": false,
+      "sampleLabels": [
+        "Heather Gay",
+        "Meredith Marks",
+        "Lisa Barlow",
+        "Angie Katsanevas"
+      ],
+      "sampleStyles": [
+        "left: 40.7%; top: 30.9%;",
+        "left: 50.18%; top: 26.4%;",
+        "left: 48.77%; top: 26.4%;",
+        "left: 48.77%; top: 29.49%;"
+      ],
+      "cardScreenshot": "/Users/thomashulihan/Projects/TRR/output/spotcheck/week2/03_DPO9JA7D87R_card.png",
+      "drawerScreenshot": null,
+      "countsMatch": false
+    },
+    {
+      "sourceId": "DPO8NJlCYL5",
+      "cardMarkerCount": 7,
+      "drawerMarkerCount": 0,
+      "drawerExists": false,
+      "sampleLabels": [
+        "Heather Gay",
+        "Meredith Marks",
+        "Lisa Barlow",
+        "Angie Katsanevas"
+      ],
+      "sampleStyles": [
+        "left: 0%; top: 0%;",
+        "left: 0%; top: 0%;",
+        "left: 0%; top: 0%;",
+        "left: 0%; top: 0%;"
+      ],
+      "cardScreenshot": "/Users/thomashulihan/Projects/TRR/output/spotcheck/week2/04_DPO8NJlCYL5_card.png",
+      "drawerScreenshot": null,
+      "countsMatch": false
+    },
+    {
+      "sourceId": "DPOwXgej-Tn",
+      "cardMarkerCount": 3,
+      "drawerMarkerCount": 0,
+      "drawerExists": false,
+      "sampleLabels": [
+        "Bravo",
+        "Meredith Marks",
+        "Lisa Barlow"
+      ],
+      "sampleStyles": [
+        "left: 0%; top: 0%;",
+        "left: 0%; top: 0%;",
+        "left: 0%; top: 0%;"
+      ],
+      "cardScreenshot": "/Users/thomashulihan/Projects/TRR/output/spotcheck/week2/05_DPOwXgej-Tn_card.png",
+      "drawerScreenshot": null,
+      "countsMatch": false
+    },
+    {
+      "sourceId": "DPMvo4ogL4f",
+      "cardMarkerCount": 1,
+      "drawerMarkerCount": 0,
+      "drawerExists": false,
+      "sampleLabels": [
+        "Angie Katsanevas"
+      ],
+      "sampleStyles": [
+        "left: 0%; top: 0%;"
+      ],
+      "cardScreenshot": "/Users/thomashulihan/Projects/TRR/output/spotcheck/week2/06_DPMvo4ogL4f_card.png",
+      "drawerScreenshot": null,
+      "countsMatch": false
+    },
+    {
+      "sourceId": "DPJZd-1j_E2",
+      "cardMarkerCount": 7,
+      "drawerMarkerCount": 0,
+      "drawerExists": false,
+      "sampleLabels": [
+        "Heather Gay",
+        "Meredith Marks",
+        "Britani Bateman",
+        "Angie Katsanevas"
+      ],
+      "sampleStyles": [
+        "left: 39.85%; top: 29.21%;",
+        "left: 31.01%; top: 56.78%;",
+        "left: 91.88%; top: 19.1%;",
+        "left: 60.93%; top: 69.34%;"
+      ],
+      "cardScreenshot": "/Users/thomashulihan/Projects/TRR/output/spotcheck/week2/07_DPJZd-1j_E2_card.png",
+      "drawerScreenshot": null,
+      "countsMatch": false
+    },
+    {
+      "sourceId": "DPE4-UkDCl_",
+      "cardMarkerCount": 1,
+      "drawerMarkerCount": 0,
+      "drawerExists": false,
+      "sampleLabels": [
+        "Bronwyn Newport"
+      ],
+      "sampleStyles": [
+        "left: 50%; top: 50%;"
+      ],
+      "cardScreenshot": "/Users/thomashulihan/Projects/TRR/output/spotcheck/week2/08_DPE4-UkDCl__card.png",
+      "drawerScreenshot": null,
+      "countsMatch": false
+    },
+    {
+      "sourceId": "DPE_1R3EpfX",
+      "cardMarkerCount": 1,
+      "drawerMarkerCount": 0,
+      "drawerExists": false,
+      "sampleLabels": [
+        "Oliver Sims IV"
+      ],
+      "sampleStyles": [
+        "left: 0%; top: 0%;"
+      ],
+      "cardScreenshot": "/Users/thomashulihan/Projects/TRR/output/spotcheck/week2/09_DPE_1R3EpfX_card.png",
+      "drawerScreenshot": null,
+      "countsMatch": false
+    },
+    {
+      "sourceId": "DPAAXBkgU9V",
+      "cardMarkerCount": 8,
+      "drawerMarkerCount": 0,
+      "drawerExists": false,
+      "sampleLabels": [
+        "Heather Gay",
+        "Meredith Marks",
+        "Lisa Barlow",
+        "Britani Bateman"
+      ],
+      "sampleStyles": [
+        "left: 61.4%; top: 30.62%;",
+        "left: 61.4%; top: 24.16%;",
+        "left: 54.74%; top: 34.55%;",
+        "left: 75.44%; top: 45.22%;"
+      ],
+      "cardScreenshot": "/Users/thomashulihan/Projects/TRR/output/spotcheck/week2/10_DPAAXBkgU9V_card.png",
+      "drawerScreenshot": null,
+      "countsMatch": false
+    },
+    {
+      "sourceId": "DO9zzM0gVEf",
+      "cardMarkerCount": 7,
+      "drawerMarkerCount": 0,
+      "drawerExists": false,
+      "sampleLabels": [
+        "Heather Gay",
+        "Meredith Marks",
+        "Lisa Barlow",
+        "Angie Katsanevas"
+      ],
+      "sampleStyles": [
+        "left: 44.19%; top: 77.48%;",
+        "left: 59.77%; top: 28.37%;",
+        "left: 51.78%; top: 52.17%;",
+        "left: 46.43%; top: 73.33%;"
+      ],
+      "cardScreenshot": "/Users/thomashulihan/Projects/TRR/output/spotcheck/week2/11_DO9zzM0gVEf_card.png",
+      "drawerScreenshot": null,
+      "countsMatch": false
+    }
+  ]
+}

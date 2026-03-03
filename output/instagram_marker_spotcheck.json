@@ -1,0 +1,90 @@
+{
+  "startedAt": "2026-03-03T05:04:08.441Z",
+  "base": "http://admin.localhost:3000",
+  "sampledTarget": 12,
+  "sampledCount": 0,
+  "weeks": [
+    {
+      "week": 1,
+      "url": "http://admin.localhost:3000/rhoslc/s6/social/w1/instagram",
+      "hasLogin": false,
+      "markerCards": 0,
+      "sampled": [],
+      "error": null
+    },
+    {
+      "week": 2,
+      "url": "http://admin.localhost:3000/rhoslc/s6/social/w2/instagram",
+      "hasLogin": false,
+      "markerCards": 0,
+      "sampled": [],
+      "error": null
+    },
+    {
+      "week": 6,
+      "url": "http://admin.localhost:3000/rhoslc/s6/social/w6/instagram",
+      "hasLogin": false,
+      "markerCards": 0,
+      "sampled": [],
+      "error": null
+    },
+    {
+      "week": 7,
+      "url": "http://admin.localhost:3000/rhoslc/s6/social/w7/instagram",
+      "hasLogin": false,
+      "markerCards": 0,
+      "sampled": [],
+      "error": null
+    },
+    {
+      "week": 9,
+      "url": "http://admin.localhost:3000/rhoslc/s6/social/w9/instagram",
+      "hasLogin": false,
+      "markerCards": 0,
+      "sampled": [],
+      "error": null
+    },
+    {
+      "week": 10,
+      "url": "http://admin.localhost:3000/rhoslc/s6/social/w10/instagram",
+      "hasLogin": false,
+      "markerCards": 0,
+      "sampled": [],
+      "error": null
+    },
+    {
+      "week": 12,
+      "url": "http://admin.localhost:3000/rhoslc/s6/social/w12/instagram",
+      "hasLogin": false,
+      "markerCards": 0,
+      "sampled": [],
+      "error": null
+    },
+    {
+      "week": 13,
+      "url": "http://admin.localhost:3000/rhoslc/s6/social/w13/instagram",
+      "hasLogin": false,
+      "markerCards": 0,
+      "sampled": [],
+      "error": null
+    },
+    {
+      "week": 20,
+      "url": "http://admin.localhost:3000/rhoslc/s6/social/w20/instagram",
+      "hasLogin": false,
+      "markerCards": 0,
+      "sampled": [],
+      "error": null
+    },
+    {
+      "week": 21,
+      "url": "http://admin.localhost:3000/rhoslc/s6/social/w21/instagram",
+      "hasLogin": false,
+      "markerCards": 0,
+      "sampled": [],
+      "error": null
+    }
+  ],
+  "blocked": null,
+  "finishedAt": "2026-03-03T05:06:27.666Z"
+}
