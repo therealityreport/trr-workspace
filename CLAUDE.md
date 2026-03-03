@@ -33,6 +33,7 @@ Startup tuning:
 ```bash
 WORKSPACE_CLEAN_NEXT_CACHE=1 make dev  # force clean Next.js cache rebuild
 WORKSPACE_OPEN_BROWSER=0 make dev      # skip browser tab refresh/open
+WORKSPACE_OPEN_SCREENALYTICS_TABS=1 make dev  # opt in to opening screenalytics Streamlit/Web tabs
 SCREENALYTICS_API_URL=https://... make dev  # override backend/app screenalytics target
 WORKSPACE_HEALTH_TIMEOUT_APP=90 make dev    # tune startup health wait windows
 ```
@@ -41,7 +42,8 @@ Health tuning vars also include:
 `WORKSPACE_HEALTH_TIMEOUT_BACKEND`,
 `WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_API`,
 `WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_STREAMLIT`,
-`WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_WEB`.
+`WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_WEB`,
+`WORKSPACE_BACKEND_HEALTH_GRACE_SECONDS` (default 90; delays runtime health watchdog after startup to avoid false warnings during initial browser load).
 
 Stop services started by workspace dev mode (processes only):
 ```bash
@@ -71,6 +73,36 @@ make status
 - screenalytics API: `http://127.0.0.1:8001`
 - screenalytics Streamlit: `http://127.0.0.1:8501`
 - screenalytics Web: `http://127.0.0.1:8080`
+
+## Chrome Agent (Mandatory for All Web Browsing)
+All web browsing MUST go through the agent Chrome instance on port 9222.
+This profile is pre-authenticated with `codex@thereality.report` and linked social/third-party accounts.
+
+Authentication methods by platform:
+- **TikTok** — Sign in with Gmail (`codex@thereality.report`)
+- **Reddit** — Sign in with Gmail (`codex@thereality.report`)
+- **Instagram** — Direct login (credentials stored in Chrome profile)
+- **Threads** — Sign in with Instagram
+
+```bash
+make chrome-agent       # start (no-ops if already running)
+make chrome-agent-stop  # stop
+```
+
+Rules:
+- Always use agent Chrome for web tasks. Never launch a separate browser.
+- Chrome DevTools MCP is configured with `--browserUrl http://127.0.0.1:9222`.
+- Never ask users for credentials. Sessions are stored in the Chrome profile.
+- If a login page appears (expired session), tell the user to re-auth in the agent Chrome window.
+
+Environment overrides:
+```bash
+CHROME_AGENT_PROFILE_DIR=~/.chrome-profiles/alt make chrome-agent  # custom profile
+CHROME_AGENT_DEBUG_PORT=9333 make chrome-agent                     # custom port
+CHROME_AGENT_HEADLESS=1 make chrome-agent                          # headless mode
+```
+
+Verify: `curl http://localhost:9222/json/version`
 
 ## Tooling Notes
 - `make doctor` accepts any Python interpreter resolving to `>=3.11`.
