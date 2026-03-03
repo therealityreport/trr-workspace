@@ -2,6 +2,72 @@
 
 Purpose: persistent state for multi-turn AI agent sessions affecting workspace-level tooling (`make dev` / `make stop`).
 
+## 2026-03-01 (Codex) — Refresh Details connect-timeout stabilization via non-reload default + mode/preflight diagnostics
+- Updated `/Users/thomashulihan/Projects/TRR/scripts/dev-workspace.sh`:
+  - workspace now defaults `TRR_BACKEND_RELOAD=0` (non-reload) unless explicitly overridden,
+  - validates `TRR_BACKEND_RELOAD` (`0|1`) and persists value in pidfile metadata,
+  - passes `TRR_BACKEND_RELOAD` through backend launch env,
+  - startup URL summary now prints backend mode (`reload` vs `non-reload`).
+- Updated `/Users/thomashulihan/Projects/TRR/scripts/status-workspace.sh`:
+  - prints `TRR_BACKEND_RELOAD` in status snapshot,
+  - adds lightweight reload-churn heuristic warning when reload markers are frequent in recent backend logs.
+- Updated `/Users/thomashulihan/Projects/TRR/Makefile`:
+  - `dev` comments now document reload opt-in (`TRR_BACKEND_RELOAD=1 make dev`).
+- Updated `/Users/thomashulihan/Projects/TRR/TRR-Backend/start-api.sh`:
+  - startup now logs backend mode (reload/non-reload) for operator clarity.
+- Validation executed:
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/dev-workspace.sh` (pass)
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/status-workspace.sh` (pass)
+  - `bash -n /Users/thomashulihan/Projects/TRR/TRR-Backend/start-api.sh` (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR status` (pass; reported `TRR_BACKEND_RELOAD: 0 (non-reload)` and healthy backend/app/screenalytics)
+- default_skill_chain_applied: true
+- default_skill_chain_used:
+  - `orchestrate-plan-execution`
+  - `senior-fullstack`
+  - `senior-backend`
+  - `senior-qa`
+  - `code-reviewer`
+- default_skill_chain_exception_reason: ``
+
+## 2026-02-28 (Codex) — `make dev` default suppresses screenalytics tabs (API startup unchanged)
+- Updated `/Users/thomashulihan/Projects/TRR/Makefile`:
+  - `dev` now injects `WORKSPACE_OPEN_SCREENALYTICS_TABS="${WORKSPACE_OPEN_SCREENALYTICS_TABS:-0}"` so default `make dev` opens only TRR-APP tab.
+  - `dev-lite`, `dev-cloud`, and `dev-full` remain unchanged.
+  - usage comments now document `WORKSPACE_OPEN_SCREENALYTICS_TABS=1 make dev` opt-in.
+- Updated `/Users/thomashulihan/Projects/TRR/scripts/dev-workspace.sh`:
+  - added `WORKSPACE_OPEN_SCREENALYTICS_TABS` runtime toggle (script default `1`),
+  - persisted `WORKSPACE_OPEN_SCREENALYTICS_TABS` in pidfile metadata,
+  - browser sync now clears Streamlit/Web tab targets when `WORKSPACE_OPEN_SCREENALYTICS_TABS!=1`,
+  - startup paths, `DEV_AUTO_OPEN_BROWSER=0`, and health checks (including `/healthz`) are unchanged.
+- Updated `/Users/thomashulihan/Projects/TRR/scripts/status-workspace.sh`:
+  - now prints `WORKSPACE_OPEN_SCREENALYTICS_TABS` under workspace modes.
+- Updated `/Users/thomashulihan/Projects/TRR/AGENTS.md` and `/Users/thomashulihan/Projects/TRR/CLAUDE.md`:
+  - startup tuning docs now include the new opt-in env var for `make dev`.
+- Validation executed:
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/dev-workspace.sh` (pass)
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/status-workspace.sh` (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR -n dev` (pass; recipe includes defaulted `WORKSPACE_OPEN_SCREENALYTICS_TABS`)
+  - `WORKSPACE_OPEN_SCREENALYTICS_TABS=1 make -C /Users/thomashulihan/Projects/TRR -n dev` (pass; opt-in path preserved)
+  - `make -C /Users/thomashulihan/Projects/TRR -n dev-cloud` (pass; unchanged)
+  - `make -C /Users/thomashulihan/Projects/TRR -n dev-full` (pass; unchanged)
+  - `make -C /Users/thomashulihan/Projects/TRR dev` (pass for behavior verification; terminated with Ctrl+C/exit 130 by design)
+    - observed: `screenalytics API is up: http://127.0.0.1:8001/healthz`
+    - observed: `Screenalytics tab sync disabled (WORKSPACE_OPEN_SCREENALYTICS_TABS=0).`
+    - observed browser sync opened only `TRR APP/Admin`
+  - `WORKSPACE_OPEN_SCREENALYTICS_TABS=1 make -C /Users/thomashulihan/Projects/TRR dev` (pass for behavior verification; terminated with Ctrl+C/exit 130 by design)
+    - observed: `screenalytics API is up: http://127.0.0.1:8001/healthz`
+    - observed browser sync opened `TRR APP/Admin`, `screenalytics Streamlit`, and `screenalytics Web`
+  - `WORKSPACE_OPEN_BROWSER=0 make -C /Users/thomashulihan/Projects/TRR dev` + `make -C /Users/thomashulihan/Projects/TRR status` (pass)
+    - status output includes `WORKSPACE_OPEN_SCREENALYTICS_TABS: 0` from loaded pidfile.
+- default_skill_chain_applied: true
+- default_skill_chain_used:
+  - `orchestrate-plan-execution`
+  - `senior-fullstack`
+  - `senior-backend`
+  - `senior-qa`
+  - `code-reviewer`
+- default_skill_chain_exception_reason: n/a
+
 ## 2026-02-24 (Codex) — admin-host local defaults + tab-refresh collision hardening
 - Updated `/Users/thomashulihan/Projects/TRR/scripts/dev-workspace.sh`:
   - now injects TRR-APP admin host defaults into the launched `next dev` process when unset:

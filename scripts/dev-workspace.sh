@@ -15,12 +15,84 @@ WORKSPACE_STRICT="${WORKSPACE_STRICT:-0}"
 WORKSPACE_FORCE_KILL_PORT_CONFLICTS="${WORKSPACE_FORCE_KILL_PORT_CONFLICTS:-0}"
 WORKSPACE_CLEAN_NEXT_CACHE="${WORKSPACE_CLEAN_NEXT_CACHE:-0}"
 WORKSPACE_OPEN_BROWSER="${WORKSPACE_OPEN_BROWSER:-1}"
+WORKSPACE_OPEN_SCREENALYTICS_TABS="${WORKSPACE_OPEN_SCREENALYTICS_TABS:-1}"
 WORKSPACE_HEALTH_CURL_MAX_TIME="${WORKSPACE_HEALTH_CURL_MAX_TIME:-2}"
 WORKSPACE_HEALTH_TIMEOUT_BACKEND="${WORKSPACE_HEALTH_TIMEOUT_BACKEND:-30}"
 WORKSPACE_HEALTH_TIMEOUT_APP="${WORKSPACE_HEALTH_TIMEOUT_APP:-60}"
 WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_API="${WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_API:-30}"
 WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_STREAMLIT="${WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_STREAMLIT:-90}"
 WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_WEB="${WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_WEB:-90}"
+WORKSPACE_BACKEND_AUTO_RESTART="${WORKSPACE_BACKEND_AUTO_RESTART:-1}"
+WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS="${WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS:-5}"
+WORKSPACE_BACKEND_HEALTH_FAILURE_THRESHOLD="${WORKSPACE_BACKEND_HEALTH_FAILURE_THRESHOLD:-6}"
+WORKSPACE_BACKEND_HEALTH_CURL_MAX_TIME="${WORKSPACE_BACKEND_HEALTH_CURL_MAX_TIME:-30}"
+WORKSPACE_BACKEND_HEALTH_GRACE_SECONDS="${WORKSPACE_BACKEND_HEALTH_GRACE_SECONDS:-90}"
+WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_IGNORE="${WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_IGNORE:-1}"
+WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_STREAK="${WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_STREAK:-6}"
+TRR_BACKEND_RELOAD="${TRR_BACKEND_RELOAD:-0}"
+TRR_BACKEND_WORKERS="${TRR_BACKEND_WORKERS:-2}"
+TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER="${TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER:-0}"
+TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS="${TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS:-25000}"
+TRR_SOCIAL_PROXY_DEFAULT_TIMEOUT_MS="${TRR_SOCIAL_PROXY_DEFAULT_TIMEOUT_MS:-45000}"
+TRR_REDDIT_CACHE_LOOKUP_TIMEOUT_MS="${TRR_REDDIT_CACHE_LOOKUP_TIMEOUT_MS:-20000}"
+TRR_REDDIT_CACHE_LOOKUP_RETRIES="${TRR_REDDIT_CACHE_LOOKUP_RETRIES:-1}"
+
+if ! [[ "$WORKSPACE_BACKEND_AUTO_RESTART" =~ ^[01]$ ]]; then
+  echo "[workspace] WARNING: invalid WORKSPACE_BACKEND_AUTO_RESTART='${WORKSPACE_BACKEND_AUTO_RESTART}', using 1." >&2
+  WORKSPACE_BACKEND_AUTO_RESTART="1"
+fi
+if ! [[ "$WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS" =~ ^[1-9][0-9]*$ ]]; then
+  echo "[workspace] WARNING: invalid WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS='${WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS}', using 5." >&2
+  WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS="5"
+fi
+if ! [[ "$WORKSPACE_BACKEND_HEALTH_FAILURE_THRESHOLD" =~ ^[1-9][0-9]*$ ]]; then
+  echo "[workspace] WARNING: invalid WORKSPACE_BACKEND_HEALTH_FAILURE_THRESHOLD='${WORKSPACE_BACKEND_HEALTH_FAILURE_THRESHOLD}', using 6." >&2
+  WORKSPACE_BACKEND_HEALTH_FAILURE_THRESHOLD="6"
+fi
+if ! [[ "$WORKSPACE_BACKEND_HEALTH_CURL_MAX_TIME" =~ ^[1-9][0-9]*$ ]]; then
+  echo "[workspace] WARNING: invalid WORKSPACE_BACKEND_HEALTH_CURL_MAX_TIME='${WORKSPACE_BACKEND_HEALTH_CURL_MAX_TIME}', using 30." >&2
+  WORKSPACE_BACKEND_HEALTH_CURL_MAX_TIME="30"
+fi
+if ! [[ "$WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_IGNORE" =~ ^[01]$ ]]; then
+  echo "[workspace] WARNING: invalid WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_IGNORE='${WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_IGNORE}', using 1." >&2
+  WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_IGNORE="1"
+fi
+if ! [[ "$WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_STREAK" =~ ^[1-9][0-9]*$ ]]; then
+  echo "[workspace] WARNING: invalid WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_STREAK='${WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_STREAK}', using 6." >&2
+  WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_STREAK="6"
+fi
+if ! [[ "$WORKSPACE_BACKEND_HEALTH_GRACE_SECONDS" =~ ^[0-9]+$ ]]; then
+  echo "[workspace] WARNING: invalid WORKSPACE_BACKEND_HEALTH_GRACE_SECONDS='${WORKSPACE_BACKEND_HEALTH_GRACE_SECONDS}', using 90." >&2
+  WORKSPACE_BACKEND_HEALTH_GRACE_SECONDS="90"
+fi
+if ! [[ "$TRR_BACKEND_WORKERS" =~ ^[1-9][0-9]*$ ]]; then
+  echo "[workspace] WARNING: invalid TRR_BACKEND_WORKERS='${TRR_BACKEND_WORKERS}', using 1." >&2
+  TRR_BACKEND_WORKERS="1"
+fi
+if ! [[ "$TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER" =~ ^[01]$ ]]; then
+  echo "[workspace] WARNING: invalid TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER='${TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER}', using 0." >&2
+  TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER="0"
+fi
+if ! [[ "$TRR_BACKEND_RELOAD" =~ ^[01]$ ]]; then
+  echo "[workspace] WARNING: invalid TRR_BACKEND_RELOAD='${TRR_BACKEND_RELOAD}', using 0." >&2
+  TRR_BACKEND_RELOAD="0"
+fi
+if ! [[ "$TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS" =~ ^[1-9][0-9]*$ ]]; then
+  echo "[workspace] WARNING: invalid TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS='${TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS}', using 25000." >&2
+  TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS="25000"
+fi
+if ! [[ "$TRR_SOCIAL_PROXY_DEFAULT_TIMEOUT_MS" =~ ^[1-9][0-9]*$ ]]; then
+  echo "[workspace] WARNING: invalid TRR_SOCIAL_PROXY_DEFAULT_TIMEOUT_MS='${TRR_SOCIAL_PROXY_DEFAULT_TIMEOUT_MS}', using 45000." >&2
+  TRR_SOCIAL_PROXY_DEFAULT_TIMEOUT_MS="45000"
+fi
+if ! [[ "$TRR_REDDIT_CACHE_LOOKUP_TIMEOUT_MS" =~ ^[1-9][0-9]*$ ]]; then
+  echo "[workspace] WARNING: invalid TRR_REDDIT_CACHE_LOOKUP_TIMEOUT_MS='${TRR_REDDIT_CACHE_LOOKUP_TIMEOUT_MS}', using 20000." >&2
+  TRR_REDDIT_CACHE_LOOKUP_TIMEOUT_MS="20000"
+fi
+if ! [[ "$TRR_REDDIT_CACHE_LOOKUP_RETRIES" =~ ^[0-9]+$ ]]; then
+  echo "[workspace] WARNING: invalid TRR_REDDIT_CACHE_LOOKUP_RETRIES='${TRR_REDDIT_CACHE_LOOKUP_RETRIES}', using 1." >&2
+  TRR_REDDIT_CACHE_LOOKUP_RETRIES="1"
+fi
 
 # screenalytics dev_auto defaults (may be overridden via env when invoking this script).
 SCREENALYTICS_DEV_AUTO_ALLOW_DB_ERROR_DEFAULT="0"
@@ -54,6 +126,7 @@ SCREENALYTICS_STREAMLIT_PORT="${SCREENALYTICS_STREAMLIT_PORT:-8501}"
 SCREENALYTICS_WEB_PORT="${SCREENALYTICS_WEB_PORT:-8080}"
 
 TRR_API_URL="http://127.0.0.1:${TRR_BACKEND_PORT}"
+BACKEND_HEALTH_URL="${TRR_API_URL}/health"
 SCREENALYTICS_LOCAL_API_URL="http://127.0.0.1:${SCREENALYTICS_API_PORT}"
 SCREENALYTICS_API_URL="${SCREENALYTICS_API_URL:-$SCREENALYTICS_LOCAL_API_URL}"
 SCREENALYTICS_LOCAL_HEALTH_URL="${SCREENALYTICS_LOCAL_API_URL}/healthz"
@@ -114,6 +187,13 @@ port_listeners() {
     return 0
   fi
   (lsof -nP -iTCP:"$port" -sTCP:LISTEN -t 2>/dev/null || true) | sort -u | tr '\n' ' '
+}
+
+backend_has_active_connections() {
+  if [[ "$HAVE_LSOF" -ne 1 ]]; then
+    return 1
+  fi
+  lsof -nP -iTCP:"$TRR_BACKEND_PORT" -sTCP:ESTABLISHED -t 2>/dev/null | grep -q .
 }
 
 pid_ppid() {
@@ -342,6 +422,11 @@ fi
 
 declare -a PIDS=()
 declare -a NAMES=()
+LAST_STARTED_PID=""
+BACKEND_HEALTH_FAILURES=0
+BACKEND_HEALTH_BUSY_TIMEOUT_STREAK_COUNT=0
+BACKEND_LAST_HEALTH_CHECK_AT=0
+TRR_BACKEND_PID=""
 
 kill_tree() {
   local pid="$1"
@@ -360,6 +445,22 @@ kill_tree() {
   done
 
   kill "-${sig}" "$pid" >/dev/null 2>&1 || true
+}
+
+process_or_group_alive() {
+  local pid="$1"
+  if [[ -z "${pid}" ]]; then
+    return 1
+  fi
+  if kill -0 "$pid" >/dev/null 2>&1; then
+    return 0
+  fi
+  # Session leaders can exit while children in the same process group keep running.
+  # Treat the group as alive if any members remain.
+  if pgrep -g "$pid" >/dev/null 2>&1; then
+    return 0
+  fi
+  return 1
 }
 
 start_bg() {
@@ -381,8 +482,63 @@ start_bg() {
   local pid=$!
   PIDS+=("$pid")
   NAMES+=("$name")
+  LAST_STARTED_PID="$pid"
   echo "${name}_PID=${pid}" >>"$PIDFILE"
   echo "[workspace] ${name} started (pid=${pid})"
+}
+
+start_bg_no_setsid() {
+  local name="$1"
+  local log="$2"
+  shift 2
+
+  "$@" >>"$log" 2>&1 &
+
+  local pid=$!
+  PIDS+=("$pid")
+  NAMES+=("$name")
+  LAST_STARTED_PID="$pid"
+  echo "${name}_PID=${pid}" >>"$PIDFILE"
+  echo "[workspace] ${name} started (pid=${pid})"
+}
+
+write_pidfile_runtime_value() {
+  local key="$1"
+  local value="$2"
+  echo "${key}=${value}" >>"$PIDFILE"
+}
+
+find_service_index() {
+  local target_name="$1"
+  local indices=("${!NAMES[@]}")
+  local i idx
+  for ((i=${#indices[@]}-1; i>=0; i--)); do
+    idx="${indices[$i]}"
+    if [[ "${NAMES[$idx]-}" == "$target_name" ]]; then
+      echo "$idx"
+      return 0
+    fi
+  done
+  return 1
+}
+
+start_trr_backend() {
+  start_bg "TRR_BACKEND" "$TRR_BACKEND_LOG" "$BASH_BIN" -lc "cd \"$ROOT/TRR-Backend\" && \
+    PYTHONUNBUFFERED=1 \
+    TRR_BACKEND_PORT=\"$TRR_BACKEND_PORT\" \
+    TRR_BACKEND_RELOAD=\"$TRR_BACKEND_RELOAD\" \
+    TRR_BACKEND_WORKERS=\"$TRR_BACKEND_WORKERS\" \
+    TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER=\"$TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER\" \
+    TRR_API_URL=\"$TRR_API_URL\" \
+    SCREENALYTICS_API_URL=\"$SCREENALYTICS_API_URL\" \
+    CORS_ALLOW_ORIGINS=\"http://127.0.0.1:${TRR_APP_PORT},http://localhost:${TRR_APP_PORT}\" \
+    exec \"$BASH_BIN\" ./start-api.sh"
+
+  TRR_BACKEND_PID="$LAST_STARTED_PID"
+  BACKEND_HEALTH_FAILURES=0
+  BACKEND_HEALTH_BUSY_TIMEOUT_STREAK_COUNT=0
+  BACKEND_LAST_HEALTH_CHECK_AT=0
+  write_pidfile_runtime_value "TRR_BACKEND_PID" "$TRR_BACKEND_PID"
 }
 
 stop_bg() {
@@ -392,7 +548,7 @@ stop_bg() {
   if [[ -z "${pid}" ]]; then
     return 0
   fi
-  if ! kill -0 "$pid" >/dev/null 2>&1; then
+  if ! process_or_group_alive "$pid"; then
     return 0
   fi
 
@@ -435,7 +591,9 @@ cleanup() {
   rm -f "$PIDFILE" >/dev/null 2>&1 || true
   echo "[workspace] Done."
 }
-trap cleanup EXIT INT TERM
+trap cleanup EXIT
+trap 'cleanup; exit 130' INT
+trap 'cleanup; exit 143' TERM
 
 # Initialize pidfile (used by `make stop`) with config for this run.
 : >"$PIDFILE"
@@ -457,12 +615,27 @@ trap cleanup EXIT INT TERM
   echo "WORKSPACE_SCREENALYTICS_SKIP_DOCKER=${WORKSPACE_SCREENALYTICS_SKIP_DOCKER}"
   echo "WORKSPACE_STRICT=${WORKSPACE_STRICT}"
   echo "WORKSPACE_OPEN_BROWSER=${WORKSPACE_OPEN_BROWSER}"
+  echo "WORKSPACE_OPEN_SCREENALYTICS_TABS=${WORKSPACE_OPEN_SCREENALYTICS_TABS}"
   echo "WORKSPACE_HEALTH_CURL_MAX_TIME=${WORKSPACE_HEALTH_CURL_MAX_TIME}"
   echo "WORKSPACE_HEALTH_TIMEOUT_BACKEND=${WORKSPACE_HEALTH_TIMEOUT_BACKEND}"
   echo "WORKSPACE_HEALTH_TIMEOUT_APP=${WORKSPACE_HEALTH_TIMEOUT_APP}"
   echo "WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_API=${WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_API}"
   echo "WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_STREAMLIT=${WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_STREAMLIT}"
   echo "WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_WEB=${WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_WEB}"
+  echo "WORKSPACE_BACKEND_AUTO_RESTART=${WORKSPACE_BACKEND_AUTO_RESTART}"
+  echo "WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS=${WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS}"
+  echo "WORKSPACE_BACKEND_HEALTH_FAILURE_THRESHOLD=${WORKSPACE_BACKEND_HEALTH_FAILURE_THRESHOLD}"
+  echo "WORKSPACE_BACKEND_HEALTH_CURL_MAX_TIME=${WORKSPACE_BACKEND_HEALTH_CURL_MAX_TIME}"
+  echo "WORKSPACE_BACKEND_HEALTH_GRACE_SECONDS=${WORKSPACE_BACKEND_HEALTH_GRACE_SECONDS}"
+  echo "WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_IGNORE=${WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_IGNORE}"
+  echo "WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_STREAK=${WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_STREAK}"
+  echo "TRR_BACKEND_WORKERS=${TRR_BACKEND_WORKERS}"
+  echo "TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER=${TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER}"
+  echo "TRR_BACKEND_RELOAD=${TRR_BACKEND_RELOAD}"
+  echo "TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS=${TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS}"
+  echo "TRR_SOCIAL_PROXY_DEFAULT_TIMEOUT_MS=${TRR_SOCIAL_PROXY_DEFAULT_TIMEOUT_MS}"
+  echo "TRR_REDDIT_CACHE_LOOKUP_TIMEOUT_MS=${TRR_REDDIT_CACHE_LOOKUP_TIMEOUT_MS}"
+  echo "TRR_REDDIT_CACHE_LOOKUP_RETRIES=${TRR_REDDIT_CACHE_LOOKUP_RETRIES}"
 } >>"$PIDFILE"
 
 echo "[workspace] Starting services..."
@@ -485,15 +658,11 @@ else
   echo "[workspace] screenalytics disabled for this session (WORKSPACE_SCREENALYTICS=0)."
 fi
 
-start_bg "TRR_BACKEND" "$TRR_BACKEND_LOG" "$BASH_BIN" -lc "cd \"$ROOT/TRR-Backend\" && \
-  PYTHONUNBUFFERED=1 \
-  TRR_BACKEND_PORT=\"$TRR_BACKEND_PORT\" \
-  TRR_API_URL=\"$TRR_API_URL\" \
-  SCREENALYTICS_API_URL=\"$SCREENALYTICS_API_URL\" \
-  CORS_ALLOW_ORIGINS=\"http://127.0.0.1:${TRR_APP_PORT},http://localhost:${TRR_APP_PORT}\" \
-  exec \"$BASH_BIN\" ./start-api.sh"
+start_trr_backend
 
-start_bg "TRR_APP" "$TRR_APP_LOG" "$BASH_BIN" -lc "cd \"$ROOT/TRR-APP\" && \
+# Keep TRR_APP attached to its parent shell process; with setsid wrappers,
+# Next.js can re-parent and make PID tracking flaky.
+start_bg_no_setsid "TRR_APP" "$TRR_APP_LOG" "$BASH_BIN" -c "cd \"$ROOT/TRR-APP\" && \
   if [[ -s \"${HOME}/.nvm/nvm.sh\" ]]; then \
     source \"${HOME}/.nvm/nvm.sh\"; \
     nvm use --silent >/dev/null 2>&1 || echo \"[workspace] WARNING: nvm use failed; continuing with current node.\" >&2; \
@@ -502,17 +671,22 @@ start_bg "TRR_APP" "$TRR_APP_LOG" "$BASH_BIN" -lc "cd \"$ROOT/TRR-APP\" && \
   if [[ \"$WORKSPACE_CLEAN_NEXT_CACHE\" == \"1\" ]]; then rm -rf .next; fi && \
   TRR_API_URL=\"$TRR_API_URL\" \
   SCREENALYTICS_API_URL=\"$SCREENALYTICS_API_URL\" \
+  TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS=\"$TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS\" \
+  TRR_SOCIAL_PROXY_DEFAULT_TIMEOUT_MS=\"$TRR_SOCIAL_PROXY_DEFAULT_TIMEOUT_MS\" \
+  TRR_REDDIT_CACHE_LOOKUP_TIMEOUT_MS=\"$TRR_REDDIT_CACHE_LOOKUP_TIMEOUT_MS\" \
+  TRR_REDDIT_CACHE_LOOKUP_RETRIES=\"$TRR_REDDIT_CACHE_LOOKUP_RETRIES\" \
   ADMIN_APP_ORIGIN=\"$ADMIN_APP_ORIGIN\" \
   ADMIN_APP_HOSTS=\"$ADMIN_APP_HOSTS\" \
   ADMIN_ENFORCE_HOST=\"$ADMIN_ENFORCE_HOST\" \
   ADMIN_STRICT_HOST_ROUTING=\"$ADMIN_STRICT_HOST_ROUTING\" \
-  exec pnpm exec next dev --webpack -p \"$TRR_APP_PORT\" --hostname \"$TRR_APP_HOST\""
+  exec ./node_modules/.bin/next dev --webpack -p \"$TRR_APP_PORT\" --hostname \"$TRR_APP_HOST\""
 
 echo ""
 echo "[workspace] URLs:"
 echo "  TRR-APP:               http://${TRR_APP_HOST}:${TRR_APP_PORT}"
 echo "  TRR-APP Admin:         ${ADMIN_APP_ORIGIN}"
 echo "  TRR-Backend:           ${TRR_API_URL}"
+echo "  TRR-Backend mode:      $([[ \"$TRR_BACKEND_RELOAD\" == \"1\" ]] && echo \"reload\" || echo \"non-reload\")"
 if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
   echo "  screenalytics API target: ${SCREENALYTICS_API_URL}"
   if [[ "$SCREENALYTICS_API_URL" != "$SCREENALYTICS_LOCAL_API_URL" ]]; then
@@ -554,7 +728,7 @@ wait_http_ok() {
 }
 
 echo "[workspace] Checking service health..."
-if ! wait_http_ok "TRR-Backend" "${TRR_API_URL}/health" "$WORKSPACE_HEALTH_TIMEOUT_BACKEND"; then
+if ! wait_http_ok "TRR-Backend" "$BACKEND_HEALTH_URL" "$WORKSPACE_HEALTH_TIMEOUT_BACKEND"; then
   echo "[workspace] ERROR: TRR-Backend did not become healthy within ${WORKSPACE_HEALTH_TIMEOUT_BACKEND}s." >&2
   tail -n 80 "$TRR_BACKEND_LOG" >&2 || true
   exit 1
@@ -604,34 +778,125 @@ if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
   fi
 fi
 if [[ "$WORKSPACE_OPEN_BROWSER" == "1" ]]; then
+  BROWSER_SCREENALYTICS_STREAMLIT_URL="$SCREENALYTICS_STREAMLIT_DEV_URL"
+  BROWSER_SCREENALYTICS_WEB_URL="$SCREENALYTICS_WEB_DEV_URL"
+  if [[ "$WORKSPACE_OPEN_SCREENALYTICS_TABS" != "1" ]]; then
+    BROWSER_SCREENALYTICS_STREAMLIT_URL=""
+    BROWSER_SCREENALYTICS_WEB_URL=""
+    echo "[workspace] Screenalytics tab sync disabled (WORKSPACE_OPEN_SCREENALYTICS_TABS=0)."
+  fi
   echo "[workspace] Syncing workspace browser tabs..."
-  bash "$ROOT/scripts/open-workspace-dev-window.sh" "$APP_DEV_URL" "$SCREENALYTICS_STREAMLIT_DEV_URL" "$SCREENALYTICS_WEB_DEV_URL"
+  bash "$ROOT/scripts/open-workspace-dev-window.sh" "$APP_DEV_URL" "$BROWSER_SCREENALYTICS_STREAMLIT_URL" "$BROWSER_SCREENALYTICS_WEB_URL"
 else
   echo "[workspace] Skipping browser sync (WORKSPACE_OPEN_BROWSER=0)."
 fi
 
+# Delay the runtime health watchdog to avoid false-positive warnings during
+# the initial burst of browser requests that can saturate backend workers.
+if (( WORKSPACE_BACKEND_HEALTH_GRACE_SECONDS > 0 )); then
+  BACKEND_LAST_HEALTH_CHECK_AT=$(( $(date +%s) + WORKSPACE_BACKEND_HEALTH_GRACE_SECONDS ))
+fi
+
 while true; do
+  if [[ "$WORKSPACE_BACKEND_AUTO_RESTART" == "1" ]]; then
+    now_ts="$(date +%s)"
+    if (( now_ts - BACKEND_LAST_HEALTH_CHECK_AT >= WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS )); then
+      BACKEND_LAST_HEALTH_CHECK_AT="$now_ts"
+
+      if curl -fsS --max-time "$WORKSPACE_BACKEND_HEALTH_CURL_MAX_TIME" "$BACKEND_HEALTH_URL" >/dev/null 2>&1; then
+        if (( BACKEND_HEALTH_FAILURES > 0 )); then
+          echo "[workspace] TRR-Backend health recovered after ${BACKEND_HEALTH_FAILURES} failed probe(s)."
+        fi
+        BACKEND_HEALTH_FAILURES=0
+        BACKEND_HEALTH_BUSY_TIMEOUT_STREAK_COUNT=0
+      else
+        probe_rc="$?"
+        failure_threshold="$WORKSPACE_BACKEND_HEALTH_FAILURE_THRESHOLD"
+        is_busy_timeout=0
+        if [[ "$probe_rc" -eq 28 ]] && backend_has_active_connections; then
+          is_busy_timeout=1
+        fi
+        should_restart=0
+        if [[ "$is_busy_timeout" -eq 1 && "$WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_IGNORE" == "1" ]]; then
+          BACKEND_HEALTH_BUSY_TIMEOUT_STREAK_COUNT=$((BACKEND_HEALTH_BUSY_TIMEOUT_STREAK_COUNT + 1))
+          BACKEND_HEALTH_FAILURES=0
+          echo "[workspace] WARNING: TRR-Backend health probe timed out with active connections (busy streak ${BACKEND_HEALTH_BUSY_TIMEOUT_STREAK_COUNT}/${WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_STREAK}, rc=${probe_rc})."
+          if (( BACKEND_HEALTH_BUSY_TIMEOUT_STREAK_COUNT >= WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_STREAK )); then
+            should_restart=1
+          fi
+        else
+          BACKEND_HEALTH_BUSY_TIMEOUT_STREAK_COUNT=0
+          BACKEND_HEALTH_FAILURES=$((BACKEND_HEALTH_FAILURES + 1))
+          if [[ "$is_busy_timeout" -eq 1 ]]; then
+            echo "[workspace] WARNING: TRR-Backend health probe timed out with active connections (${BACKEND_HEALTH_FAILURES}/${failure_threshold}, rc=${probe_rc})."
+          else
+            echo "[workspace] WARNING: TRR-Backend health probe failed (${BACKEND_HEALTH_FAILURES}/${failure_threshold}, rc=${probe_rc})."
+          fi
+          if (( BACKEND_HEALTH_FAILURES >= failure_threshold )); then
+            should_restart=1
+          fi
+        fi
+
+        if [[ "$should_restart" -eq 1 ]]; then
+          backend_idx="$(find_service_index "TRR_BACKEND" || true)"
+          backend_pid="${TRR_BACKEND_PID:-}"
+          if [[ -n "$backend_idx" ]]; then
+            backend_pid="${PIDS[$backend_idx]-$backend_pid}"
+          fi
+
+          echo "[workspace] Restarting TRR-Backend after repeated health failures..."
+          stop_bg "TRR_BACKEND" "$backend_pid"
+          if [[ -n "$backend_idx" ]]; then
+            unset "PIDS[$backend_idx]"
+            unset "NAMES[$backend_idx]"
+          fi
+          start_trr_backend
+          if ! wait_http_ok "TRR-Backend" "$BACKEND_HEALTH_URL" "$WORKSPACE_HEALTH_TIMEOUT_BACKEND"; then
+            echo "[workspace] ERROR: TRR-Backend did not recover after auto-restart." >&2
+            tail -n 120 "$TRR_BACKEND_LOG" >&2 || true
+            exit 1
+          fi
+        fi
+        continue
+      fi
+    fi
+  fi
+
   local_dead=""
   local_dead_name=""
+  local_dead_idx=""
   for idx in "${!PIDS[@]}"; do
     pid="${PIDS[$idx]-}"
     name="${NAMES[$idx]-SERVICE_$idx}"
     if [[ -z "$pid" ]]; then
       continue
     fi
-    if ! kill -0 "$pid" >/dev/null 2>&1; then
+    if ! process_or_group_alive "$pid"; then
       local_dead="$pid"
       local_dead_name="$name"
+      local_dead_idx="$idx"
       break
     fi
   done
   if [[ -n "$local_dead" ]]; then
-    if [[ "$local_dead_name" == "SCREENALYTICS" && "$WORKSPACE_STRICT" != "1" ]]; then
+    if [[ "$local_dead_name" == "TRR_BACKEND" && "$WORKSPACE_BACKEND_AUTO_RESTART" == "1" ]]; then
+      echo ""
+      echo "[workspace] WARNING: TRR_BACKEND exited (pid=${local_dead}); restarting automatically."
+      unset "PIDS[$local_dead_idx]"
+      unset "NAMES[$local_dead_idx]"
+      start_trr_backend
+      if ! wait_http_ok "TRR-Backend" "$BACKEND_HEALTH_URL" "$WORKSPACE_HEALTH_TIMEOUT_BACKEND"; then
+        echo "[workspace] ERROR: TRR-Backend did not recover after process exit restart." >&2
+        tail -n 120 "$TRR_BACKEND_LOG" >&2 || true
+        exit 1
+      fi
+      continue
+    elif [[ "$local_dead_name" == "SCREENALYTICS" && "$WORKSPACE_STRICT" != "1" ]]; then
       echo ""
       echo "[workspace] WARNING: screenalytics exited (pid=${local_dead}). Continuing (WORKSPACE_STRICT=0)."
       tail -n 120 "$SCREENALYTICS_LOG" >&2 || true
-      unset 'PIDS[idx]'
-      unset 'NAMES[idx]'
+      unset "PIDS[$local_dead_idx]"
+      unset "NAMES[$local_dead_idx]"
     else
       echo ""
       echo "[workspace] WARNING: ${local_dead_name} exited (pid=${local_dead}). Check logs under ${LOG_DIR}."
