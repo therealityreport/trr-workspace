@@ -3,11 +3,21 @@ set -euo pipefail
 
 URL="${1:-}"
 LABEL="${2:-browser tab}"
+MODE_RAW="${WORKSPACE_BROWSER_TAB_SYNC_MODE:-reuse_no_reload}"
+MODE="$(printf '%s' "$MODE_RAW" | tr '[:upper:]' '[:lower:]')"
 
 if [[ -z "$URL" ]]; then
   echo "[open-or-refresh-browser-tab] ERROR: URL is required."
   exit 2
 fi
+
+case "$MODE" in
+  reuse_no_reload|reload_first|reload_all) ;;
+  *)
+    echo "[open-or-refresh-browser-tab] WARNING: invalid WORKSPACE_BROWSER_TAB_SYNC_MODE='${MODE_RAW}', using reuse_no_reload."
+    MODE="reuse_no_reload"
+    ;;
+esac
 
 URL_NO_SLASH="${URL%/}"
 if [[ -z "$URL_NO_SLASH" ]]; then
@@ -46,22 +56,26 @@ refresh_chrome_tabs() {
   local url_with_slash="$3"
   local alt_url_no_slash="${4:-}"
   local alt_url_with_slash="${5:-}"
+  local mode="${6:-reuse_no_reload}"
 
-  osascript - "$target_url" "$url_no_slash" "$url_with_slash" "$alt_url_no_slash" "$alt_url_with_slash" 2>/dev/null <<'APPLESCRIPT' || return 1
+  osascript - "$target_url" "$url_no_slash" "$url_with_slash" "$alt_url_no_slash" "$alt_url_with_slash" "$mode" 2>/dev/null <<'APPLESCRIPT' || return 1
 on run argv
   set targetURL to item 1 of argv
   set targetURLNoSlash to item 2 of argv
   set targetURLWithSlash to item 3 of argv
   set altURLNoSlash to item 4 of argv
   set altURLWithSlash to item 5 of argv
+  set syncMode to item 6 of argv
 
   tell application "Google Chrome"
     activate
     if (count of every window) is 0 then
-      return "0"
+      return "0|0"
     end if
 
-    set refreshedCount to 0
+    set matchedCount to 0
+    set reloadedCount to 0
+    set reloadedFirst to false
     set firstWindowIndex to 0
     set firstTabIndex to 0
     set windowCounter to 0
@@ -72,8 +86,15 @@ on run argv
         set aTab to tab tabIndex of aWindow
         set tabURL to URL of aTab
         if my urlMatches(tabURL, targetURL, targetURLNoSlash, targetURLWithSlash, altURLNoSlash, altURLWithSlash) then
-          tell aTab to reload
-          set refreshedCount to refreshedCount + 1
+          set matchedCount to matchedCount + 1
+          if syncMode is "reload_all" then
+            tell aTab to reload
+            set reloadedCount to reloadedCount + 1
+          else if syncMode is "reload_first" and reloadedFirst is false then
+            tell aTab to reload
+            set reloadedCount to reloadedCount + 1
+            set reloadedFirst to true
+          end if
           if firstWindowIndex is 0 then
             set firstWindowIndex to windowCounter
             set firstTabIndex to tabIndex
@@ -82,13 +103,13 @@ on run argv
       end repeat
     end repeat
 
-    if refreshedCount > 0 then
+    if matchedCount > 0 then
       set focusWindow to window firstWindowIndex
       set active tab index of focusWindow to firstTabIndex
       set index of focusWindow to 1
     end if
 
-    return refreshedCount as text
+    return (matchedCount as text) & "|" & (reloadedCount as text)
   end tell
 end run
 
@@ -121,22 +142,26 @@ refresh_safari_tabs() {
   local url_with_slash="$3"
   local alt_url_no_slash="${4:-}"
   local alt_url_with_slash="${5:-}"
+  local mode="${6:-reuse_no_reload}"
 
-  osascript - "$target_url" "$url_no_slash" "$url_with_slash" "$alt_url_no_slash" "$alt_url_with_slash" 2>/dev/null <<'APPLESCRIPT' || return 1
+  osascript - "$target_url" "$url_no_slash" "$url_with_slash" "$alt_url_no_slash" "$alt_url_with_slash" "$mode" 2>/dev/null <<'APPLESCRIPT' || return 1
 on run argv
   set targetURL to item 1 of argv
   set targetURLNoSlash to item 2 of argv
   set targetURLWithSlash to item 3 of argv
   set altURLNoSlash to item 4 of argv
   set altURLWithSlash to item 5 of argv
+  set syncMode to item 6 of argv
 
   tell application "Safari"
     activate
     if (count of every window) is 0 then
-      return "0"
+      return "0|0"
     end if
 
-    set refreshedCount to 0
+    set matchedCount to 0
+    set reloadedCount to 0
+    set reloadedFirst to false
     set firstWindowIndex to 0
     set firstTabIndex to 0
     set windowCounter to 0
@@ -148,8 +173,15 @@ on run argv
         set tabCounter to tabCounter + 1
         set tabURL to URL of aTab
         if my urlMatches(tabURL, targetURL, targetURLNoSlash, targetURLWithSlash, altURLNoSlash, altURLWithSlash) then
-          do JavaScript "window.location.reload();" in aTab
-          set refreshedCount to refreshedCount + 1
+          set matchedCount to matchedCount + 1
+          if syncMode is "reload_all" then
+            do JavaScript "window.location.reload();" in aTab
+            set reloadedCount to reloadedCount + 1
+          else if syncMode is "reload_first" and reloadedFirst is false then
+            do JavaScript "window.location.reload();" in aTab
+            set reloadedCount to reloadedCount + 1
+            set reloadedFirst to true
+          end if
           if firstWindowIndex is 0 then
             set firstWindowIndex to windowCounter
             set firstTabIndex to tabCounter
@@ -158,13 +190,13 @@ on run argv
       end repeat
     end repeat
 
-    if refreshedCount > 0 then
+    if matchedCount > 0 then
       set focusWindow to window firstWindowIndex
       set current tab of focusWindow to tab firstTabIndex of focusWindow
       set index of focusWindow to 1
     end if
 
-    return refreshedCount as text
+    return (matchedCount as text) & "|" & (reloadedCount as text)
   end tell
 end run
 
@@ -192,25 +224,39 @@ APPLESCRIPT
 }
 
 if [[ "$(uname)" != "Darwin" ]]; then
-  echo "[open-or-refresh-browser-tab] Opening (non-macOS): ${LABEL} -> ${URL}"
+  echo "[open-or-refresh-browser-tab] Opening (non-macOS): ${LABEL} -> ${URL} (mode=${MODE})"
   open_with_default "$URL"
   exit 0
 fi
 
 if command -v osascript >/dev/null 2>&1; then
-  refreshed_count="$(refresh_chrome_tabs "$URL" "$URL_NO_SLASH" "$URL_WITH_SLASH" "$ALT_URL_NO_SLASH" "$ALT_URL_WITH_SLASH" || true)"
-  if [[ "$refreshed_count" =~ ^[0-9]+$ ]] && (( refreshed_count > 0 )); then
-    echo "[open-or-refresh-browser-tab] Refreshed ${refreshed_count} existing Chrome tab(s): ${LABEL} -> ${URL}"
+  chrome_result="$(refresh_chrome_tabs "$URL" "$URL_NO_SLASH" "$URL_WITH_SLASH" "$ALT_URL_NO_SLASH" "$ALT_URL_WITH_SLASH" "$MODE" || true)"
+  if [[ "$chrome_result" =~ ^([0-9]+)\|([0-9]+)$ ]]; then
+    matched_count="${BASH_REMATCH[1]}"
+    reloaded_count="${BASH_REMATCH[2]}"
+  else
+    matched_count=0
+    reloaded_count=0
+  fi
+  if (( matched_count > 0 )); then
+    echo "[open-or-refresh-browser-tab] Reused ${matched_count} Chrome tab(s), reloaded ${reloaded_count} (mode=${MODE}): ${LABEL} -> ${URL}"
     exit 0
   fi
 
-  refreshed_count="$(refresh_safari_tabs "$URL" "$URL_NO_SLASH" "$URL_WITH_SLASH" "$ALT_URL_NO_SLASH" "$ALT_URL_WITH_SLASH" || true)"
-  if [[ "$refreshed_count" =~ ^[0-9]+$ ]] && (( refreshed_count > 0 )); then
-    echo "[open-or-refresh-browser-tab] Refreshed ${refreshed_count} existing Safari tab(s): ${LABEL} -> ${URL}"
+  safari_result="$(refresh_safari_tabs "$URL" "$URL_NO_SLASH" "$URL_WITH_SLASH" "$ALT_URL_NO_SLASH" "$ALT_URL_WITH_SLASH" "$MODE" || true)"
+  if [[ "$safari_result" =~ ^([0-9]+)\|([0-9]+)$ ]]; then
+    matched_count="${BASH_REMATCH[1]}"
+    reloaded_count="${BASH_REMATCH[2]}"
+  else
+    matched_count=0
+    reloaded_count=0
+  fi
+  if (( matched_count > 0 )); then
+    echo "[open-or-refresh-browser-tab] Reused ${matched_count} Safari tab(s), reloaded ${reloaded_count} (mode=${MODE}): ${LABEL} -> ${URL}"
     exit 0
   fi
 fi
 
-echo "[open-or-refresh-browser-tab] Opening new tab: ${LABEL} -> ${URL}"
+echo "[open-or-refresh-browser-tab] Opening new tab (mode=${MODE}): ${LABEL} -> ${URL}"
 open_with_default "$URL"
 exit 0

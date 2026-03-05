@@ -20,6 +20,8 @@ need curl
 
 REQUIRED_PY_MAJOR=3
 REQUIRED_PY_MINOR=11
+REQUIRED_NODE_MAJOR=24
+REQUIRED_NODE_DEFAULT_ALIAS="${REQUIRED_NODE_MAJOR}"
 
 python_version_str() {
   local py="$1"
@@ -46,6 +48,48 @@ python_version_ok() {
     return 0
   fi
   return 1
+}
+
+node_major_version() {
+  local raw
+  raw="$(node --version 2>/dev/null || true)"
+  echo "${raw}" | sed -E 's/^v([0-9]+).*/\1/'
+}
+
+node_version_string() {
+  node --version 2>/dev/null || echo "unknown"
+}
+
+trim_space() {
+  echo "$1" | tr -d '[:space:]'
+}
+
+try_activate_required_node_with_nvm() {
+  local nvm_dir nvm_sh target_alias target_from_file
+
+  nvm_dir="${NVM_DIR:-$HOME/.nvm}"
+  nvm_sh="${nvm_dir}/nvm.sh"
+  target_alias="$REQUIRED_NODE_DEFAULT_ALIAS"
+
+  if [[ -f "$ROOT/.nvmrc" ]]; then
+    target_from_file="$(trim_space "$(cat "$ROOT/.nvmrc" 2>/dev/null || true)")"
+    if [[ -n "$target_from_file" ]]; then
+      target_alias="$target_from_file"
+    fi
+  fi
+
+  if [[ ! -s "$nvm_sh" ]]; then
+    return 1
+  fi
+
+  # shellcheck disable=SC1090
+  source "$nvm_sh"
+  if ! command -v nvm >/dev/null 2>&1; then
+    return 1
+  fi
+
+  nvm use --silent "$target_alias" >/dev/null 2>&1 || return 1
+  return 0
 }
 
 resolve_python_bin() {
@@ -88,8 +132,33 @@ if ! python_version_ok "$PYTHON_BIN"; then
   exit 1
 fi
 
+NODE_MAJOR="$(node_major_version)"
+if [[ -z "$NODE_MAJOR" ]] || ! [[ "$NODE_MAJOR" =~ ^[0-9]+$ ]]; then
+  echo "[doctor] Node version check failed: unable to parse '$(node_version_string)'" >&2
+  exit 1
+fi
+if (( NODE_MAJOR < REQUIRED_NODE_MAJOR )); then
+  echo "[doctor] Node $(node_version_string) does not satisfy required ${REQUIRED_NODE_MAJOR}.x baseline. Attempting nvm auto-switch..." >&2
+  if try_activate_required_node_with_nvm; then
+    NODE_MAJOR="$(node_major_version)"
+    if [[ -n "$NODE_MAJOR" && "$NODE_MAJOR" =~ ^[0-9]+$ ]] && (( NODE_MAJOR >= REQUIRED_NODE_MAJOR )); then
+      echo "[doctor] Node auto-switch successful: $(node_version_string)" >&2
+    fi
+  fi
+fi
+if [[ -z "$NODE_MAJOR" ]] || ! [[ "$NODE_MAJOR" =~ ^[0-9]+$ ]] || (( NODE_MAJOR < REQUIRED_NODE_MAJOR )); then
+  echo "[doctor] Node version check failed: $(node_version_string)" >&2
+  echo "[doctor] Node ${REQUIRED_NODE_MAJOR}.x+ is required for workspace JS tooling." >&2
+  echo "[doctor] TRR-APP CI still runs a Node 22 compatibility lane, but local baseline is Node ${REQUIRED_NODE_MAJOR}.x." >&2
+  echo "[doctor] Tried nvm auto-switch but baseline is still unmet." >&2
+  echo "[doctor] Remediation:" >&2
+  echo "[doctor]   source ~/.nvm/nvm.sh && nvm use ${REQUIRED_NODE_DEFAULT_ALIAS}" >&2
+  echo "[doctor]   source ~/.nvm/nvm.sh && nvm install ${REQUIRED_NODE_DEFAULT_ALIAS}" >&2
+  exit 1
+fi
+
 echo "[doctor] Versions:"
-echo "  node: $({ node --version; } 2>/dev/null)"
+echo "  node: $(node_version_string)"
 echo "  pnpm: $({ pnpm --version; } 2>/dev/null)"
 echo "  python: ${PYTHON_BIN} ($({ ${PYTHON_BIN} --version; } 2>/dev/null))"
 
