@@ -1,0 +1,33 @@
+# Codex Skills Registry
+
+- `api-gateway`
+- `aws-solution-architect`
+- `chatgpt-apps`
+- `cloudwatch`
+- `code-reviewer`
+- `deploy`
+- `ec2`
+- `eventbridge`
+- `figma`
+- `figma-frontend-design-engineer`
+- `figma-implement-design`
+- `git-feature-implementer`
+- `git-feature-installer`
+- `iam`
+- `lambda`
+- `orchestrate-plan-execution`
+- `s3`
+- `secrets-manager`
+- `senior-architect`
+- `senior-backend`
+- `senior-devops`
+- `senior-frontend`
+- `senior-fullstack`
+- `senior-qa`
+- `skillcreator`
+- `social-ingestion-reliability`
+- `sqs`
+- `step-functions`
+- `tdd-guide`
+- `tech-stack-evaluator`
+- `write-plan-codex`

@@ -227,6 +227,8 @@ cleanup_port() {
 if [[ -f "$PIDFILE" ]]; then
   # Stop in reverse dependency order.
   stop_one "TRR_APP" "${TRR_APP_PID:-}"
+  stop_one "TRR_REMOTE_WORKERS" "${TRR_REMOTE_WORKERS_PID:-}"
+  stop_one "TRR_SOCIAL_WORKER" "${TRR_SOCIAL_WORKER_PID:-}"
   stop_one "TRR_BACKEND" "${TRR_BACKEND_PID:-}"
   stop_one "SCREENALYTICS" "${SCREENALYTICS_PID:-}"
 fi
