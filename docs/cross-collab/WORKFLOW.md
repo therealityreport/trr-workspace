@@ -31,6 +31,19 @@ rg -n "TRR-APP TASK{old}|TRR-Backend TASK{old}|screenalytics TASK{old}" \
   TRR-Backend/docs/cross-collab/ TRR-APP/docs/cross-collab/ screenalytics/docs/cross-collab/
 ```
 
+### Task Scaffolder (Recommended)
+
+Use the workspace scaffolder to create new task folders with templates:
+
+```bash
+cd /Users/thomashulihan/Projects/TRR
+./scripts/new-cross-collab-task.sh \
+  --repos TRR-Backend,TRR-APP,screenalytics \
+  --title "Your task title"
+```
+
+This creates the next sequential `TASK{N}` in each selected repo with `PLAN.md`, `OTHER_PROJECTS.md`, and `STATUS.md`.
+
 ## Section 3 — Templates
 
 ### 3a. PLAN.md Template

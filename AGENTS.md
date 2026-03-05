@@ -1,35 +1,57 @@
 # AGENTS — TRR Workspace (Canonical Cross-Repo Rules)
 
 This file is the canonical cross-repo operating policy for agents in this workspace.
-Repo-specific rules in each repo's `AGENTS.md` and `CLAUDE.md` are mandatory and additive.
+`CLAUDE.md` files are pointer shims only.
 
 Repos in this workspace:
 - `TRR-Backend/` (FastAPI + Supabase-first pipeline)
 - `TRR-APP/` (Next.js + Firebase)
 - `screenalytics/` (FastAPI + Streamlit + ML pipeline)
 
+Workspace runtime baseline:
+- Node `24.x` primary for JS tooling (with targeted Node `22` compatibility lanes where defined)
+- Python `3.11.9` primary (with Python `3.12` canary lanes in CI)
+
 ## One-Command Dev (Workspace)
 Run from `/Users/thomashulihan/Projects/TRR`:
 - `make bootstrap` (one-time dependency setup)
-- `make dev` (daily default: TRR-APP + TRR-Backend + screenalytics)
+- `make preflight` (required pre-check before `make dev*`; doctor + env contract + policy drift checks)
+- `make dev` (daily default: laptop-safe `local-lite` profile with remote-enforced long jobs)
 - `make dev-lite` (TRR-APP + TRR-Backend only; screenalytics disabled)
 - `make dev-cloud` (screenalytics enabled, Docker bypass mode)
 - `make dev-full` (screenalytics enabled with local Docker Redis/MinIO)
 - `make status` (workspace snapshot: modes, PIDs, ports, health)
+- `make status` / `bash scripts/status-workspace.sh --json` (human or JSON status output)
+- `make smoke` (startup sanity checks: pids, ports, health)
+- `make check-policy` (AGENTS/CLAUDE drift rules)
+- `make env-contract` (regenerate workspace env matrix doc)
 - `make stop` (stop only services started by `make dev`)
 - `make down` (tear down screenalytics docker compose infra; safe no-op if Docker is unavailable/stopped)
 - `make stop && make down` (full cleanup)
 - `make logs` (tail workspace logs)
+- `make logs-prune` (archive retention pruning by age/size)
+- `make test-fast`, `make test-full`, `make test-changed`
+- `make mcp-aws-status` (show AWS MCP profile state)
+- `make mcp-aws-on` (enable AWS MCP profile for AWS tasks)
+- `make mcp-aws-off` (disable AWS MCP profile after AWS tasks)
 
 Startup tuning:
+- `PROFILE=local-lite make dev` (load defaults from `profiles/local-lite.env`; explicit env vars still override)
+- `PROFILE=local-cloud make dev`
+- `PROFILE=local-full make dev`
 - `WORKSPACE_CLEAN_NEXT_CACHE=1 make dev` (force clean Next.js rebuild; default is cache reuse)
 - `WORKSPACE_OPEN_BROWSER=0 make dev` (skip browser tab refresh/open)
-- `WORKSPACE_OPEN_SCREENALYTICS_TABS=1 make dev` (opt in to opening screenalytics Streamlit/Web tabs from `make dev`)
-- `make doctor` accepts any Python interpreter resolving to `>=3.11` (`PYTHON_BIN` override supported)
+- `WORKSPACE_SOCIAL_WORKER_MEDIA_MIRROR=0 WORKSPACE_SOCIAL_WORKER_COMMENT_MEDIA_MIRROR=0 make dev` (opt out of mirror worker stages when local worker pool is enabled)
+- `WORKSPACE_BROWSER_TAB_SYNC_MODE=reuse_no_reload make dev` (default; reuse/focus matching tabs without reload)
+- `WORKSPACE_BROWSER_TAB_SYNC_MODE=reload_first make dev` (reload only first matching tab)
+- `WORKSPACE_BROWSER_TAB_SYNC_MODE=reload_all make dev` (reload all matching tabs)
+- `WORKSPACE_TRR_JOB_PLANE_MODE=local make dev` (opt in to local API-owned long-job execution)
+- `WORKSPACE_TRR_JOB_PLANE_MODE=remote WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE=1 make dev` (remote worker-owned long jobs)
+- `WORKSPACE_TRR_REMOTE_WORKERS_ENABLED=1 make dev` (start admin/reddit/google-news remote worker loops locally)
+- `WORKSPACE_OPEN_SCREENALYTICS_TABS=1 make dev` (opt in to opening screenalytics Streamlit/Web tabs)
 - `SCREENALYTICS_API_URL=https://... make dev` (override backend/app target screenalytics endpoint)
 - `WORKSPACE_HEALTH_TIMEOUT_APP=90 make dev` (tune startup wait windows; see other `WORKSPACE_HEALTH_TIMEOUT_*` vars)
-- Previous run logs are archived under `/Users/thomashulihan/Projects/TRR/.logs/workspace/archive/<timestamp>/`
-- `SCREENALYTICS_DOCKER_FORCE_RECREATE=1` (when running `screenalytics/scripts/dev_auto.sh` directly)
+- Full env contract: `/Users/thomashulihan/Projects/TRR/docs/workspace/env-contract.md`
 
 Default URLs:
 - TRR-APP: `http://127.0.0.1:3000`
@@ -38,36 +60,25 @@ Default URLs:
 - screenalytics Streamlit: `http://127.0.0.1:8501`
 - screenalytics Web: `http://127.0.0.1:8080`
 
-## Browser Access (Mandatory for All Web Browsing)
-All web browsing MUST use the dedicated agent Chrome instance launched via `make chrome-agent`.
-This Chrome profile is pre-authenticated with the agent Gmail account (`codex@thereality.report`)
-and any social media / third-party sites the agent needs access to.
-
-Authentication methods by platform:
-- **TikTok** — Sign in with Gmail (`codex@thereality.report`)
-- **Reddit** — Sign in with Gmail (`codex@thereality.report`)
-- **Instagram** — Direct login (credentials stored in Chrome profile)
-- **Threads** — Sign in with Instagram
-
-Rules:
-- Run `make chrome-agent` before any browser-based task (or confirm it is already running).
-- Use Chrome DevTools MCP (`--browserUrl http://127.0.0.1:9222`) for page interaction.
-- Never launch a separate browser instance for web tasks; always connect to port 9222.
-- Never ask the user for credentials; sessions are pre-stored in the agent Chrome profile.
-- If a session has expired (login page encountered), inform the user and ask them to re-authenticate manually in the agent Chrome window.
+## Browser Access (Mandatory)
+All web browsing MUST use agent-managed Chrome through `scripts/codex-chrome-devtools-mcp.sh`.
+Do not launch ad-hoc browsers outside this management flow.
 
 Commands:
-- `make chrome-agent` — start agent Chrome (no-ops if already running)
-- `make chrome-agent-stop` — stop agent Chrome
-- `curl http://localhost:9222/json/version` — verify connectivity
+- `make chrome-agent`
+- `make chrome-agent-stop`
+- `make chrome-agent-stop-all`
+- `make chrome-agent-status`
+- `make chrome-agent-seed-sync`
+- `curl http://localhost:9222/json/version`
 
 ## Start-of-Session Checklist
-1. Read `/Users/thomashulihan/Projects/TRR/CLAUDE.md`.
-2. Read the touched repo's `CLAUDE.md` and `AGENTS.md`.
+1. Read this file first.
+2. Read touched repo `AGENTS.md`.
 3. Check cross-collab folders:
-   - `TRR-Backend/docs/cross-collab/`
-   - `TRR-APP/docs/cross-collab/`
-   - `screenalytics/docs/cross-collab/`
+- `TRR-Backend/docs/cross-collab/`
+- `TRR-APP/docs/cross-collab/`
+- `screenalytics/docs/cross-collab/`
 4. Confirm current task impact (backend contract, data model, consumer changes, UI/admin changes).
 
 ## Cross-Repo Implementation Order (Must Follow)
@@ -77,8 +88,7 @@ Commands:
 
 ## Shared Contracts (Must Not Drift)
 TRR-APP -> TRR-Backend:
-- API base from `TRR_API_URL`, normalized to `/api/v1` in
-  `TRR-APP/apps/web/src/lib/server/trr-api/backend.ts`.
+- API base from `TRR_API_URL`, normalized to `/api/v1` in `TRR-APP/apps/web/src/lib/server/trr-api/backend.ts`.
 - Do not break response shapes without same-session consumer updates in TRR-APP.
 
 TRR-Backend <-> screenalytics:
@@ -87,125 +97,69 @@ TRR-Backend <-> screenalytics:
 - If schema/views change, update TRR-Backend first, then screenalytics.
 
 Shared secrets:
-- `TRR_INTERNAL_ADMIN_SHARED_SECRET`: shared between TRR-APP and TRR-Backend (internal admin proxy).
-- `SCREENALYTICS_SERVICE_TOKEN`: service-to-service access to TRR-Backend `/api/v1/screenalytics/*`.
+- `TRR_INTERNAL_ADMIN_SHARED_SECRET`
+- `SCREENALYTICS_SERVICE_TOKEN`
 
 ## Validation and Handoff (Required)
 After changes:
 1. Run fast checks in each touched repo.
 2. Update `docs/ai/HANDOFF.md` in each touched repo.
 3. If cross-repo task folder exists, keep these aligned when present:
-   - `PLAN.md`
-   - `OTHER_PROJECTS.md`
-   - `STATUS.md`
+- `PLAN.md`
+- `OTHER_PROJECTS.md`
+- `STATUS.md`
+4. Use `scripts/new-cross-collab-task.sh` to scaffold new task docs consistently.
 
-See `docs/cross-collab/WORKFLOW.md` for lifecycle/templates.
+## Skill Routing (Codex-Only)
+Only reference Codex-installed skills as normative policy.
+Full registry: `/Users/thomashulihan/Projects/TRR/docs/agent-governance/codex_skills.md`
 
-## Skill Routing (Workspace)
-Use the smallest set of skills that fully covers the task after the mandatory default skill chain is applied.
-
-Installed paths:
-- `/Users/thomashulihan/.codex/skills/figma-frontend-design-engineer`
-- `/Users/thomashulihan/.codex/skills/senior-architect`
-- `/Users/thomashulihan/.codex/skills/senior-frontend`
-- `/Users/thomashulihan/.codex/skills/senior-backend`
-- `/Users/thomashulihan/.codex/skills/senior-fullstack`
-- `/Users/thomashulihan/.codex/skills/senior-qa`
-- `/Users/thomashulihan/.codex/skills/senior-devops`
-- `/Users/thomashulihan/.codex/skills/code-reviewer`
-- `/Users/thomashulihan/.codex/skills/tdd-guide`
-- `/Users/thomashulihan/.codex/skills/tech-stack-evaluator`
-- `/Users/thomashulihan/.codex/skills/aws-solution-architect`
-- `/Users/thomashulihan/.codex/skills/skillcreator`
-- `/Users/thomashulihan/.codex/skills/write-plan-codex`
-- `/Users/thomashulihan/.codex/skills/orchestrate-plan-execution`
-
-## Default Skill Chain (Mandatory)
-Apply this chain for all non-trivial implementation tasks (any task that changes repo-tracked files, validates behavior for a change, or prepares commit/PR/handoff artifacts):
+Default skill chain for non-trivial implementation tasks:
 1. `orchestrate-plan-execution`
 2. `senior-fullstack`
-3. `senior-backend` or `senior-frontend` (pick by primary surface)
+3. `senior-backend` or `senior-frontend` (by primary surface)
 4. `senior-qa`
 5. `code-reviewer`
 
-Step 3 primary surface rule:
-- Use `senior-backend` when backend/schema/API/pipeline contract risk is present.
-- Use `senior-frontend` when UI/rendering/interaction is primary and no backend/schema/API/pipeline contract risk is present.
-- Tie-breaker when both surfaces are touched:
-  - pick `senior-backend` if any contract/schema/pipeline semantics are changed;
-  - otherwise pick `senior-frontend`.
+Primary mappings:
+- `senior-backend`: backend/schema/API/pipeline contract risk
+- `senior-frontend`: UI/rendering/interaction with stable contracts
+- `senior-devops`: CI/deploy operations
+- `senior-architect`: architecture/ADR decisions
+- `tdd-guide`: test-first delivery
+- `aws-solution-architect`: AWS-only architecture/cost/IaC tasks
+- `figma-frontend-design-engineer`: Figma URL/node-driven frontend work
 
-Exceptions:
-- Trivial read-only tasks and simple Q&A do not require the chain.
-- Explicit user override may skip or alter chain steps.
-- If a required skill is unavailable, use the closest fallback and document it.
+## MCP Invocation Matrix
+Use these MCPs and invoke them as follows:
 
-Precedence and composition:
-- User-requested skills are additive by default.
-- `orchestrate-plan-execution` is the Codex-primary default plan+execute entrypoint and internally applies planning/routing discipline; Claude usage is secondary and must follow the same chain.
-- Domain-specific skills (`figma-frontend-design-engineer`, `senior-devops`, `senior-architect`, etc.) may be added as needed, but do not replace the five baseline steps when the trigger rule applies.
-- Record default-chain compliance for qualifying tasks in repo handoff entries:
-  - `default_skill_chain_applied` (`true|false`)
-  - `default_skill_chain_used` (ordered list)
-  - `default_skill_chain_exception_reason` (required when not applied)
+| MCP Server | Invoke When |
+|---|---|
+| `chrome-devtools` | Any web browsing, authenticated social platform flows, browser inspection, and UI interaction in managed Chrome. |
+| `figma` | Figma cloud design context, screenshots, variables, assets, and Code Connect mapping. |
+| `figma-desktop` | Local desktop Figma workflows only when desktop bridge is enabled. |
+| `github` | Remote repo metadata, PR/issue lookup, and GitHub-hosted MCP actions. |
+| `supabase` | Supabase DB/schema operations, migrations, functions, storage, and logs. |
+| `awslabs-core` | First step for AWS prompt understanding and intent decomposition. |
+| `awslabs-aws-api` | Concrete AWS CLI execution through validated API wrapper. |
+| `awslabs-aws-docs` | AWS documentation search/read when behavior is uncertain or source confirmation is needed. |
+| `awslabs-pricing` | AWS pricing lookups and cost analysis flows. |
+| `awslabs-cloudwatch` | CloudWatch alarms/logs/metrics analysis and incident diagnostics. |
+| `awsknowledge` | AWS architecture tie-breakers and service-selection guidance. |
+| `awsiac` | IaC best-practice validation and generation hardening checks. |
 
-### Skill Triggers
-- `orchestrate-plan-execution`
-  - Trigger: Codex-primary default entrypoint for non-trivial plan + execute tasks; selects execution mode and enforces checkpoints.
-- `skillforge`
-  - Trigger: skill triage/routing and skill-evolution decisions when refining or creating skills.
-- `write-plan-codex`
-  - Trigger: planning-only requests, or when a plan needs revision without immediate execution.
-- `figma-frontend-design-engineer`
-  - Trigger: Figma URL/node-driven UI implementation, parity audits, and design-system mapped frontend delivery.
-  - Primary repo: `TRR-APP`.
-- `senior-backend`
-  - Trigger: FastAPI endpoints, schema/migrations, API contracts, backend performance/security.
-  - Primary repos: `TRR-Backend`, `screenalytics` API surfaces.
-- `senior-frontend`
-  - Trigger: Next.js App Router/UI/admin UX, bundle/perf/a11y improvements.
-  - Primary repo: `TRR-APP`.
-- `senior-fullstack`
-  - Trigger: coordinated API+UI+data flow changes across repos.
-  - Primary scope: cross-repo integration tasks.
-- `senior-qa`
-  - Trigger: test additions/fixes, coverage hardening, release verification.
-  - Primary scope: touched repos with behavior changes.
-- `code-reviewer`
-  - Trigger: review requests, risk scanning, PR/file prioritization.
-- `tdd-guide`
-  - Trigger: test-first implementation, red-green-refactor workflow.
-- `senior-devops`
-  - Trigger: CI pipelines, deployment readiness, Terraform/module checks.
-- `senior-architect`
-  - Trigger: architecture decisions, dependency/layer analysis, ADR support, baseline-vs-current diffing.
-- `tech-stack-evaluator`
-  - Trigger: stack/tool comparisons, TCO, migration risk/effort analysis.
-- `aws-solution-architect`
-  - Trigger: AWS-specific architecture/IaC/cost optimization only.
+### AWS MCP Profile Workflow
+- For AWS tasks, proactively invoke AWS MCPs in this order: `awslabs-core` -> service MCPs (`awslabs-aws-api`, `awslabs-aws-docs`, `awslabs-cloudwatch`, `awslabs-pricing`, `awsknowledge`, `awsiac`) as needed by the task.
+- Before starting AWS-heavy sessions, run `make mcp-aws-on` and restart the Codex session.
+- After AWS work is complete, run `make mcp-aws-off` and restart the Codex session.
+- If an AWS MCP required by the task is disabled/unavailable, pause and request MCP profile enablement instead of guessing.
 
-### Skill Sequencing by Task Type
-- Backend-first cross-repo feature:
-  1. `senior-architect` (if design/contract tradeoff)
-  2. `senior-backend`
-  3. `senior-fullstack` (if integration implications)
-  4. `senior-frontend`
-  5. `senior-qa`
-- Review/refactor request:
-  1. `code-reviewer`
-  2. `tdd-guide` (if implementing fixes test-first)
-  3. `senior-qa`
-- Release/deployment hardening:
-  1. `senior-devops`
-  2. `senior-qa`
-  3. `aws-solution-architect` only if AWS is in scope.
-- Figma-driven UI implementation:
-  1. `figma-frontend-design-engineer`
-  2. `senior-qa`
-  3. `code-reviewer`
+## External Plugin Ecosystems
+Treat `~/.claude/plugins` as external plugin metadata and cache inventory only.
+Do not use plugin marketplace skill lists as normative routing policy for this workspace.
+Treat local legacy browser artifacts in this workspace as non-policy metadata only; policy remains Chrome DevTools MCP.
 
-### Guardrails
-- Prefer `figma-frontend-design-engineer` over separate Figma/frontend skills when a concrete Figma source is provided.
-- Do not use `aws-solution-architect` for non-AWS deployments unless AWS migration/options are explicitly requested.
-- Do not use `tech-stack-evaluator` for routine implementation tasks when stack choice is already fixed by repo conventions.
-- Do not violate cross-repo order: backend contract/schema first, downstream consumers second, UI last.
+## Drift Prevention
+- Canonical policy lives in `AGENTS.md` only.
+- `CLAUDE.md` must remain a short pointer shim.
+- If conflict exists between files, `AGENTS.md` wins.
