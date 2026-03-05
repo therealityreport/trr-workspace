@@ -3,11 +3,15 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LOG_DIR="${ROOT}/.logs/workspace"
-PIDFILE="${LOG_DIR}/chrome-agent.pid"
 
 PROFILE_DIR="${CHROME_AGENT_PROFILE_DIR:-${HOME}/.chrome-profiles/claude-agent}"
 DEBUG_PORT="${CHROME_AGENT_DEBUG_PORT:-9222}"
 HEADLESS="${CHROME_AGENT_HEADLESS:-0}"
+
+PIDFILE="${LOG_DIR}/chrome-agent-${DEBUG_PORT}.pid"
+LOGFILE="${LOG_DIR}/chrome-agent-${DEBUG_PORT}.log"
+STATEFILE="${LOG_DIR}/chrome-agent-${DEBUG_PORT}.env"
+LEGACY_PIDFILE="${LOG_DIR}/chrome-agent.pid"
 
 mkdir -p "$LOG_DIR"
 
@@ -79,7 +83,7 @@ echo "[chrome-agent]   Binary:  ${CHROME_BIN}"
 echo "[chrome-agent]   Profile: ${PROFILE_DIR}"
 echo "[chrome-agent]   Port:    ${DEBUG_PORT}"
 
-"$CHROME_BIN" "${CHROME_FLAGS[@]}" >"${LOG_DIR}/chrome-agent.log" 2>&1 &
+"$CHROME_BIN" "${CHROME_FLAGS[@]}" >"${LOGFILE}" 2>&1 &
 CHROME_PID=$!
 
 # Wait briefly for Chrome to start listening
@@ -93,15 +97,24 @@ done
 # Verify it's actually listening
 if ! curl -sf "http://localhost:${DEBUG_PORT}/json/version" >/dev/null 2>&1; then
   echo "[chrome-agent] WARNING: Chrome started (pid=${CHROME_PID}) but port ${DEBUG_PORT} not responding yet."
-  echo "[chrome-agent] Check ${LOG_DIR}/chrome-agent.log for errors."
+  echo "[chrome-agent] Check ${LOGFILE} for errors."
 else
   echo "[chrome-agent] Chrome agent ready."
 fi
 
 # Write pidfile
 echo "$CHROME_PID" >"$PIDFILE"
+cat >"$STATEFILE" <<EOF
+DEBUG_PORT=${DEBUG_PORT}
+PROFILE_DIR=${PROFILE_DIR}
+HEADLESS=${HEADLESS}
+PID=${CHROME_PID}
+EOF
+if [[ "$DEBUG_PORT" == "9222" ]]; then
+  echo "$CHROME_PID" >"$LEGACY_PIDFILE"
+fi
 echo "[chrome-agent]   PID:     ${CHROME_PID}"
-echo "[chrome-agent]   Logs:    ${LOG_DIR}/chrome-agent.log"
+echo "[chrome-agent]   Logs:    ${LOGFILE}"
 echo "[chrome-agent]   DevTools: http://localhost:${DEBUG_PORT}"
 
 if [[ "$FIRST_RUN" == "1" ]]; then

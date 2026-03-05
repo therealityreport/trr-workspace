@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Orchestrate multi-repo commit -> PR -> checks -> merge -> main sync."""
+"""Orchestrate multi-repo commit -> PR -> checks -> revise -> merge -> main sync."""
 
 from __future__ import annotations
 
@@ -9,6 +9,7 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
 import time
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -20,6 +21,24 @@ MAX_FOLLOWUP_CYCLES = 5
 TRR_ORDER = ["TRR-Backend", "screenalytics", "TRR-APP"]
 FAIL_CONCLUSIONS = {"FAILURE", "FAILED", "TIMED_OUT", "CANCELLED", "ACTION_REQUIRED", "STARTUP_FAILURE"}
 PASS_CONCLUSIONS = {"SUCCESS", "NEUTRAL", "SKIPPED"}
+MERGE_STATE_REQUIRES_BASE_UPDATE = {"BEHIND", "DIRTY"}
+MERGE_RECOVERY_HINTS = (
+    "not up to date",
+    "out-of-date",
+    "update branch",
+    "merge conflict",
+    "not mergeable",
+    "cannot be merged",
+    "dirty",
+)
+ACTIONABLE_BOT_FEEDBACK_RE = re.compile(
+    r"\\b(fail(?:ed|ing)?|error|fix|please|must|should|required|suggest(?:ion|ed)?|warning|conflict|behind|blocked|nit)\\b",
+    re.IGNORECASE,
+)
+NON_ACTIONABLE_BOT_FEEDBACK_RE = re.compile(
+    r"\\b(lgtm|looks\\s+good|approved|thank\\s+you|thanks|no\\s+changes\\s+required)\\b",
+    re.IGNORECASE,
+)
 EXCLUDED_DIR_NAMES = {
     ".git",
     ".logs",
@@ -65,18 +84,27 @@ def slugify(value: str) -> str:
     return re.sub(r"-+", "-", slug)
 
 
+def parse_json(raw: str, fallback: Any) -> Any:
+    try:
+        return json.loads(raw)
+    except Exception:
+        return fallback
+
+
 def run_cmd(
     args: list[str],
     *,
     cwd: Path | None = None,
     check: bool = True,
     text: bool = True,
+    env: dict[str, str] | None = None,
 ) -> subprocess.CompletedProcess[str]:
     result = subprocess.run(
         args,
         cwd=str(cwd) if cwd else None,
         text=text,
         capture_output=True,
+        env=env,
     )
     if check and result.returncode != 0:
         stderr = (result.stderr or "").strip()
@@ -84,6 +112,16 @@ def run_cmd(
         detail = stderr or stdout or f"exit {result.returncode}"
         raise OrchestrationError(f"Command failed: {' '.join(args)}\n{detail}")
     return result
+
+
+def run_shell(command: str, *, cwd: Path, env: dict[str, str]) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        ["/bin/zsh", "-lc", command],
+        cwd=str(cwd),
+        env=env,
+        text=True,
+        capture_output=True,
+    )
 
 
 def write_json_report(path: Path | None, report: dict[str, Any]) -> None:
@@ -191,6 +229,14 @@ def working_tree_dirty(repo: RepoTarget) -> bool:
     return bool(result.stdout.strip())
 
 
+def _repo_slug(repo: RepoTarget) -> str:
+    remote = run_cmd(["git", "-C", str(repo.path), "remote", "get-url", "origin"]).stdout.strip()
+    m = re.search(r"github\.com[:/](.+?)(?:\.git)?$", remote)
+    if not m:
+        raise OrchestrationError(f"{repo.name}: unable to derive GitHub repo slug from origin URL: {remote}")
+    return m.group(1)
+
+
 def preflight(repos: list[RepoTarget], base_branch: str) -> None:
     log("[preflight] Verifying gh auth status...")
     run_cmd(["gh", "auth", "status"])
@@ -247,6 +293,18 @@ def stage_and_commit(
     return out
 
 
+def commit_if_dirty(repo: RepoTarget, commit_message: str) -> dict[str, Any]:
+    outcome = stage_and_commit(
+        repo,
+        create_noop=False,
+        commit_message=commit_message,
+        noop_commit_message="",
+    )
+    if outcome.get("created_commit"):
+        outcome["head_sha"] = run_cmd(["git", "-C", str(repo.path), "rev-parse", "HEAD"]).stdout.strip()
+    return outcome
+
+
 def push_branch(repo: RepoTarget, branch_name: str) -> None:
     run_cmd(["git", "-C", str(repo.path), "push", "-u", "origin", branch_name])
 
@@ -269,7 +327,7 @@ def get_or_create_pr(repo: RepoTarget, branch_name: str, base_branch: str) -> tu
             "number,url",
         ]
     )
-    items = json.loads(existing.stdout or "[]")
+    items = parse_json(existing.stdout or "[]", [])
     if items:
         item = items[0]
         return int(item["number"]), str(item["url"])
@@ -304,20 +362,9 @@ def get_or_create_pr(repo: RepoTarget, branch_name: str, base_branch: str) -> tu
     return parse_pr_number(url), url
 
 
-def _repo_slug(repo: RepoTarget) -> str:
-    # Works for standard GitHub remotes like https://github.com/org/repo.git
-    remote = run_cmd(["git", "-C", str(repo.path), "remote", "get-url", "origin"]).stdout.strip()
-    m = re.search(r"github\.com[:/](.+?)(?:\.git)?$", remote)
-    if not m:
-        raise OrchestrationError(f"{repo.name}: unable to derive GitHub repo slug from origin URL: {remote}")
-    return m.group(1)
-
-
 def fetch_checks(repo: RepoTarget, pr_number: int) -> list[dict[str, Any]]:
-    raw = run_cmd(
-        ["gh", "pr", "view", str(pr_number), "--repo", _repo_slug(repo), "--json", "statusCheckRollup"]
-    )
-    payload = json.loads(raw.stdout or "{}")
+    raw = run_cmd(["gh", "pr", "view", str(pr_number), "--repo", _repo_slug(repo), "--json", "statusCheckRollup"])
+    payload = parse_json(raw.stdout or "{}", {})
     checks = payload.get("statusCheckRollup") or []
 
     out: list[dict[str, Any]] = []
@@ -332,7 +379,6 @@ def fetch_checks(repo: RepoTarget, pr_number: int) -> list[dict[str, Any]]:
             success = completed and conclusion in PASS_CONCLUSIONS
             failed = completed and conclusion in FAIL_CONCLUSIONS
         else:
-            # StatusContext
             name = str(check.get("context") or check.get("name") or "")
             state = str(check.get("state") or "").upper()
             details_url = check.get("targetUrl")
@@ -420,7 +466,7 @@ def fetch_run_progress(repo: RepoTarget, checks: list[dict[str, Any]]) -> list[d
                 }
             )
             continue
-        payload = json.loads(viewed.stdout or "{}")
+        payload = parse_json(viewed.stdout or "{}", {})
         jobs = payload.get("jobs") or []
         in_progress_jobs = []
         for job in jobs:
@@ -544,7 +590,6 @@ def wait_for_checks(
                     last_change = time.time()
                     time.sleep(3)
                     continue
-                # No run IDs were available to rerun, so treat this as a hard stall.
                 return {
                     "result": "stalled_admin_fallback" if allow_admin_merge_on_stall else "stalled_no_admin",
                     "checks": checks,
@@ -553,15 +598,14 @@ def wait_for_checks(
                     "rerun_events": rerun_events,
                     "reason": "stalled_checks_no_rerunnable_runs",
                 }
-            else:
-                return {
-                    "result": "stalled_admin_fallback" if allow_admin_merge_on_stall else "stalled_no_admin",
-                    "checks": checks,
-                    "failing_checks": [],
-                    "reruns_used": reruns_used,
-                    "rerun_events": rerun_events,
-                    "reason": "stalled_checks",
-                }
+            return {
+                "result": "stalled_admin_fallback" if allow_admin_merge_on_stall else "stalled_no_admin",
+                "checks": checks,
+                "failing_checks": [],
+                "reruns_used": reruns_used,
+                "rerun_events": rerun_events,
+                "reason": "stalled_checks",
+            }
 
         time.sleep(check_poll_seconds)
 
@@ -577,6 +621,7 @@ def merge_pr(repo: RepoTarget, pr_number: int, *, admin: bool) -> dict[str, Any]
         "ok": ok,
         "used_admin": admin,
         "output": text.strip(),
+        "returncode": result.returncode,
     }
 
 
@@ -597,6 +642,366 @@ def sync_main(repo: RepoTarget, base_branch: str) -> dict[str, Any]:
     }
 
 
+def list_local_branches(repo: RepoTarget) -> list[str]:
+    raw = run_cmd(["git", "-C", str(repo.path), "for-each-ref", "--format=%(refname:short)", "refs/heads"])
+    return [line.strip() for line in (raw.stdout or "").splitlines() if line.strip()]
+
+
+def cleanup_non_main_local_branches(repo: RepoTarget, base_branch: str) -> dict[str, Any]:
+    branches = list_local_branches(repo)
+    deleted: list[str] = []
+    failed: list[dict[str, str]] = []
+
+    for branch in branches:
+        if branch == base_branch:
+            continue
+        removed = run_cmd(["git", "-C", str(repo.path), "branch", "-D", branch], check=False)
+        if removed.returncode == 0:
+            deleted.append(branch)
+            continue
+        failed.append(
+            {
+                "branch": branch,
+                "error": ((removed.stderr or "") + "\n" + (removed.stdout or "")).strip() or f"exit {removed.returncode}",
+            }
+        )
+
+    run_cmd(["git", "-C", str(repo.path), "fetch", "--prune", "origin"], check=False)
+    remaining = list_local_branches(repo)
+
+    return {
+        "deleted": deleted,
+        "failed": failed,
+        "remaining": remaining,
+        "only_base_branch_remaining": remaining == [base_branch],
+    }
+
+
+def fetch_pr_metadata(repo: RepoTarget, pr_number: int) -> dict[str, Any]:
+    raw = run_cmd(
+        [
+            "gh",
+            "pr",
+            "view",
+            str(pr_number),
+            "--repo",
+            _repo_slug(repo),
+            "--json",
+            "mergeStateStatus,reviewDecision,isDraft,title,url",
+        ],
+        check=False,
+    )
+    if raw.returncode != 0:
+        return {
+            "merge_state_status": "UNKNOWN",
+            "review_decision": "",
+            "is_draft": False,
+            "error": ((raw.stderr or "") + "\n" + (raw.stdout or "")).strip() or f"exit {raw.returncode}",
+        }
+
+    payload = parse_json(raw.stdout or "{}", {})
+    return {
+        "merge_state_status": str(payload.get("mergeStateStatus") or "UNKNOWN").upper(),
+        "review_decision": str(payload.get("reviewDecision") or "").upper(),
+        "is_draft": bool(payload.get("isDraft") or False),
+        "title": payload.get("title"),
+        "url": payload.get("url"),
+    }
+
+
+def _is_bot(user: dict[str, Any] | None) -> bool:
+    if not user:
+        return False
+    login = str(user.get("login") or "")
+    user_type = str(user.get("type") or "")
+    return user_type.lower() == "bot" or login.endswith("[bot]")
+
+
+def fetch_bot_feedback(repo: RepoTarget, pr_number: int) -> list[dict[str, Any]]:
+    slug = _repo_slug(repo)
+    endpoints = [
+        ("review", f"repos/{slug}/pulls/{pr_number}/reviews?per_page=100"),
+        ("issue_comment", f"repos/{slug}/issues/{pr_number}/comments?per_page=100"),
+        ("review_comment", f"repos/{slug}/pulls/{pr_number}/comments?per_page=100"),
+    ]
+    out: list[dict[str, Any]] = []
+
+    for source, endpoint in endpoints:
+        response = run_cmd(["gh", "api", endpoint], check=False)
+        if response.returncode != 0:
+            out.append(
+                {
+                    "fingerprint": f"{source}:error",
+                    "source": source,
+                    "author": "",
+                    "created_at": now_iso(),
+                    "body": "",
+                    "actionable": False,
+                    "error": ((response.stderr or "") + "\n" + (response.stdout or "")).strip() or f"exit {response.returncode}",
+                }
+            )
+            continue
+
+        payload = parse_json(response.stdout or "[]", [])
+        if not isinstance(payload, list):
+            continue
+
+        for item in payload:
+            user = item.get("user") if isinstance(item, dict) else None
+            if not _is_bot(user if isinstance(user, dict) else None):
+                continue
+
+            item_id = item.get("id")
+            body = str(item.get("body") or "").strip()
+            state = str(item.get("state") or "").upper()
+            created_at = str(item.get("created_at") or item.get("submitted_at") or "")
+            author = str((user or {}).get("login") or "")
+
+            actionable = False
+            if source == "review":
+                if state in {"CHANGES_REQUESTED", "REQUEST_CHANGES"}:
+                    actionable = True
+                elif body and ACTIONABLE_BOT_FEEDBACK_RE.search(body) and not NON_ACTIONABLE_BOT_FEEDBACK_RE.search(body):
+                    actionable = True
+            elif body and ACTIONABLE_BOT_FEEDBACK_RE.search(body) and not NON_ACTIONABLE_BOT_FEEDBACK_RE.search(body):
+                actionable = True
+
+            out.append(
+                {
+                    "fingerprint": f"{source}:{item_id}",
+                    "source": source,
+                    "id": item_id,
+                    "author": author,
+                    "created_at": created_at,
+                    "state": state,
+                    "path": item.get("path"),
+                    "line": item.get("line") or item.get("original_line"),
+                    "body": body,
+                    "actionable": actionable,
+                    "url": item.get("html_url"),
+                }
+            )
+
+    out.sort(key=lambda item: str(item.get("created_at") or ""))
+    return out
+
+
+def list_unmerged_files(repo: RepoTarget) -> list[str]:
+    raw = run_cmd(["git", "-C", str(repo.path), "diff", "--name-only", "--diff-filter=U"], check=False)
+    return [line.strip() for line in (raw.stdout or "").splitlines() if line.strip()]
+
+
+def merge_in_progress(repo: RepoTarget) -> bool:
+    probe = run_cmd(["git", "-C", str(repo.path), "rev-parse", "-q", "--verify", "MERGE_HEAD"], check=False)
+    return probe.returncode == 0
+
+
+def has_merge_recovery_hint(output: str) -> bool:
+    lowered = output.lower()
+    return any(token in lowered for token in MERGE_RECOVERY_HINTS)
+
+
+def run_revision_command(
+    repo: RepoTarget,
+    *,
+    branch_name: str,
+    pr_number: int,
+    revision_command: str,
+    reason: str,
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    if not revision_command.strip():
+        return {
+            "ok": False,
+            "applied": False,
+            "reason": "revision_command_not_configured",
+            "command": revision_command,
+        }
+
+    context_file = Path(tempfile.gettempdir()) / (
+        f"multi-repo-sync-{slugify(repo.name)}-pr{pr_number}-{slugify(reason)}-{int(time.time())}.json"
+    )
+    context_file.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+
+    env = os.environ.copy()
+    env.update(
+        {
+            "WORKSPACE_AGENT_REPO_NAME": repo.name,
+            "WORKSPACE_AGENT_REPO_PATH": str(repo.path),
+            "WORKSPACE_AGENT_BRANCH": branch_name,
+            "WORKSPACE_AGENT_PR_NUMBER": str(pr_number),
+            "WORKSPACE_AGENT_REASON": reason,
+            "WORKSPACE_AGENT_CONTEXT_FILE": str(context_file),
+        }
+    )
+
+    command_result = run_shell(revision_command, cwd=repo.path, env=env)
+    output = ((command_result.stdout or "") + "\n" + (command_result.stderr or "")).strip()
+
+    return {
+        "ok": command_result.returncode == 0,
+        "applied": False,
+        "reason": "command_exit_nonzero" if command_result.returncode != 0 else "command_succeeded",
+        "command": revision_command,
+        "exit_code": command_result.returncode,
+        "output": output,
+        "context_file": str(context_file),
+    }
+
+
+def apply_revision_and_push(
+    repo: RepoTarget,
+    *,
+    branch_name: str,
+    pr_number: int,
+    reason: str,
+    payload: dict[str, Any],
+    revision_command: str,
+    commit_message: str,
+) -> dict[str, Any]:
+    run_cmd(["git", "-C", str(repo.path), "checkout", branch_name])
+    command_outcome = run_revision_command(
+        repo,
+        branch_name=branch_name,
+        pr_number=pr_number,
+        revision_command=revision_command,
+        reason=reason,
+        payload=payload,
+    )
+    if not command_outcome["ok"]:
+        return command_outcome
+
+    commit_outcome = commit_if_dirty(repo, commit_message)
+    command_outcome["commit"] = commit_outcome
+    if not commit_outcome.get("created_commit"):
+        command_outcome["ok"] = False
+        command_outcome["reason"] = "command_made_no_changes"
+        return command_outcome
+
+    push_branch(repo, branch_name)
+    command_outcome["applied"] = True
+    command_outcome["reason"] = "applied_and_pushed"
+    return command_outcome
+
+
+def update_branch_with_base(
+    repo: RepoTarget,
+    *,
+    branch_name: str,
+    base_branch: str,
+    pr_number: int,
+    revision_command: str,
+) -> dict[str, Any]:
+    run_cmd(["git", "-C", str(repo.path), "checkout", branch_name])
+    run_cmd(["git", "-C", str(repo.path), "fetch", "origin", base_branch])
+
+    merge_attempt = run_cmd(["git", "-C", str(repo.path), "merge", "--no-edit", f"origin/{base_branch}"], check=False)
+    text = ((merge_attempt.stdout or "") + "\n" + (merge_attempt.stderr or "")).strip()
+    if merge_attempt.returncode == 0:
+        push = run_cmd(["git", "-C", str(repo.path), "push", "-u", "origin", branch_name], check=False)
+        return {
+            "ok": True,
+            "updated": True,
+            "conflicts": [],
+            "merge_output": text,
+            "push_output": ((push.stdout or "") + "\n" + (push.stderr or "")).strip(),
+            "used_revision_command": False,
+        }
+
+    conflicts = list_unmerged_files(repo)
+    if not conflicts:
+        run_cmd(["git", "-C", str(repo.path), "merge", "--abort"], check=False)
+        return {
+            "ok": False,
+            "updated": False,
+            "conflicts": [],
+            "reason": "base_merge_failed_no_conflicts",
+            "merge_output": text,
+            "used_revision_command": False,
+        }
+
+    if not revision_command.strip():
+        run_cmd(["git", "-C", str(repo.path), "merge", "--abort"], check=False)
+        return {
+            "ok": False,
+            "updated": False,
+            "conflicts": conflicts,
+            "reason": "merge_conflict_needs_manual_resolution",
+            "merge_output": text,
+            "used_revision_command": False,
+        }
+
+    revision_payload = {
+        "event": "merge_conflict",
+        "repo": repo.name,
+        "repo_path": str(repo.path),
+        "pr_number": pr_number,
+        "branch": branch_name,
+        "base_branch": base_branch,
+        "conflict_files": conflicts,
+        "merge_output": text,
+    }
+    revision_outcome = run_revision_command(
+        repo,
+        branch_name=branch_name,
+        pr_number=pr_number,
+        revision_command=revision_command,
+        reason="merge_conflict",
+        payload=revision_payload,
+    )
+    if not revision_outcome["ok"]:
+        run_cmd(["git", "-C", str(repo.path), "merge", "--abort"], check=False)
+        return {
+            "ok": False,
+            "updated": False,
+            "conflicts": conflicts,
+            "reason": "merge_conflict_revision_command_failed",
+            "merge_output": text,
+            "used_revision_command": True,
+            "revision": revision_outcome,
+        }
+
+    unresolved = list_unmerged_files(repo)
+    if unresolved:
+        run_cmd(["git", "-C", str(repo.path), "merge", "--abort"], check=False)
+        return {
+            "ok": False,
+            "updated": False,
+            "conflicts": unresolved,
+            "reason": "merge_conflict_unresolved_after_revision_command",
+            "merge_output": text,
+            "used_revision_command": True,
+            "revision": revision_outcome,
+        }
+
+    if merge_in_progress(repo):
+        run_cmd(["git", "-C", str(repo.path), "add", "-A"])
+        finish_merge = run_cmd(["git", "-C", str(repo.path), "commit", "--no-edit"], check=False)
+        if finish_merge.returncode != 0:
+            run_cmd(["git", "-C", str(repo.path), "merge", "--abort"], check=False)
+            return {
+                "ok": False,
+                "updated": False,
+                "conflicts": [],
+                "reason": "merge_conflict_failed_to_finalize_merge_commit",
+                "merge_output": text,
+                "used_revision_command": True,
+                "revision": revision_outcome,
+                "finalize_output": ((finish_merge.stdout or "") + "\n" + (finish_merge.stderr or "")).strip(),
+            }
+
+    push = run_cmd(["git", "-C", str(repo.path), "push", "-u", "origin", branch_name], check=False)
+    return {
+        "ok": True,
+        "updated": True,
+        "conflicts": conflicts,
+        "merge_output": text,
+        "push_output": ((push.stdout or "") + "\n" + (push.stderr or "")).strip(),
+        "used_revision_command": True,
+        "revision": revision_outcome,
+    }
+
+
 def process_repo(
     repo: RepoTarget,
     *,
@@ -607,19 +1012,24 @@ def process_repo(
     log(f"[repo:{repo.name}] cycle={cycle_index}")
     base_branch = args.base_branch
     date_tag = datetime.now(UTC).strftime("%Y-%m-%d")
-    base_branch_name = f"{args.branch_prefix}/{date_tag}-{slugify(repo.name)}-sync"
+    branch_name = f"{args.branch_prefix}/{date_tag}-{slugify(repo.name)}-sync"
 
     result: dict[str, Any] = {
         "name": repo.name,
         "path": str(repo.path),
         "cycle": cycle_index,
         "status": "pending",
-        "branch": None,
+        "branch": branch_name,
         "commit_sha": None,
         "pr_number": None,
         "pr_url": None,
         "checks": None,
         "check_result": None,
+        "check_cycles": [],
+        "merge_attempts": [],
+        "bot_feedback_events": [],
+        "base_update_events": [],
+        "revision_events": [],
         "merge": None,
     }
 
@@ -628,21 +1038,20 @@ def process_repo(
 
     if dry_run:
         result["status"] = "planned"
-        result["planned_branch"] = base_branch_name
         result["planned_actions"] = [
             "ensure_branch",
             "git_add",
             "commit_or_noop",
             "push_branch",
-            "create_pr",
+            "create_or_reuse_pr",
             "wait_checks",
-            "merge",
+            "collect_bot_feedback",
+            "run_revision_command_if_needed",
+            "merge_or_reconcile_base",
             "sync_main",
+            "cleanup_non_main_local_branches",
         ]
         return result
-
-    branch_name = base_branch_name
-    result["branch"] = branch_name
 
     ensure_branch(repo, branch_name, base_branch)
     commit_outcome = stage_and_commit(
@@ -664,35 +1073,155 @@ def process_repo(
     result["pr_number"] = pr_number
     result["pr_url"] = pr_url
 
-    check_outcome = wait_for_checks(
-        repo,
-        pr_number,
-        ci_timeout_min=args.ci_timeout_min,
-        hung_threshold_min=args.hung_threshold_min,
-        stall_threshold_min=args.stall_threshold_min,
-        stall_reruns=args.stall_reruns,
-        check_poll_seconds=args.check_poll_seconds,
-        allow_admin_merge_on_stall=args.allow_admin_merge_on_stall,
-    )
-    result["checks"] = check_outcome.get("checks")
-    result["check_result"] = check_outcome
+    handled_feedback_fingerprints: set[str] = set()
+    revision_cycles = 0
 
-    check_result = check_outcome["result"]
-    if check_result == "needs_fix":
-        result["status"] = "needs_fix"
-        return result
-    if check_result == "stalled_no_admin":
-        result["status"] = "stalled_no_admin"
-        return result
+    while revision_cycles <= args.max_revision_cycles:
+        check_outcome = wait_for_checks(
+            repo,
+            pr_number,
+            ci_timeout_min=args.ci_timeout_min,
+            hung_threshold_min=args.hung_threshold_min,
+            stall_threshold_min=args.stall_threshold_min,
+            stall_reruns=args.stall_reruns,
+            check_poll_seconds=args.check_poll_seconds,
+            allow_admin_merge_on_stall=args.allow_admin_merge_on_stall,
+        )
+        result["check_cycles"].append(check_outcome)
+        result["checks"] = check_outcome.get("checks")
+        result["check_result"] = check_outcome
 
-    merge_admin = check_result == "stalled_admin_fallback"
-    merge_outcome = merge_pr(repo, pr_number, admin=merge_admin)
-    result["merge"] = merge_outcome
-    if not merge_outcome["ok"]:
+        check_result = check_outcome["result"]
+        if check_result == "needs_fix":
+            fix_payload = {
+                "event": "failing_checks",
+                "repo": repo.name,
+                "repo_path": str(repo.path),
+                "pr_number": pr_number,
+                "pr_url": pr_url,
+                "branch": branch_name,
+                "base_branch": base_branch,
+                "check_outcome": check_outcome,
+            }
+            revision_event = apply_revision_and_push(
+                repo,
+                branch_name=branch_name,
+                pr_number=pr_number,
+                reason="failing_checks",
+                payload=fix_payload,
+                revision_command=args.revision_command,
+                commit_message=f"chore: address CI feedback ({repo.name})",
+            )
+            result["revision_events"].append(revision_event)
+            if revision_event.get("applied"):
+                revision_cycles += 1
+                continue
+            result["status"] = "needs_fix"
+            result["blocking_reason"] = revision_event.get("reason")
+            result["failing_checks"] = check_outcome.get("failing_checks")
+            return result
+
+        if check_result == "stalled_no_admin":
+            result["status"] = "stalled_no_admin"
+            return result
+
+        metadata = fetch_pr_metadata(repo, pr_number)
+        result["pr_metadata"] = metadata
+
+        bot_feedback = fetch_bot_feedback(repo, pr_number)
+        result["latest_bot_feedback"] = bot_feedback
+        new_feedback = [
+            item
+            for item in bot_feedback
+            if item.get("actionable")
+            and item.get("fingerprint")
+            and item["fingerprint"] not in handled_feedback_fingerprints
+        ]
+        if new_feedback:
+            feedback_event = {
+                "timestamp": now_iso(),
+                "count": len(new_feedback),
+                "items": new_feedback,
+            }
+            result["bot_feedback_events"].append(feedback_event)
+
+            revision_payload = {
+                "event": "bot_feedback",
+                "repo": repo.name,
+                "repo_path": str(repo.path),
+                "pr_number": pr_number,
+                "pr_url": pr_url,
+                "branch": branch_name,
+                "base_branch": base_branch,
+                "metadata": metadata,
+                "bot_feedback": new_feedback,
+            }
+            revision_event = apply_revision_and_push(
+                repo,
+                branch_name=branch_name,
+                pr_number=pr_number,
+                reason="bot_feedback",
+                payload=revision_payload,
+                revision_command=args.revision_command,
+                commit_message=f"chore: address bot feedback ({repo.name})",
+            )
+            result["revision_events"].append(revision_event)
+            if revision_event.get("applied"):
+                handled_feedback_fingerprints.update(item["fingerprint"] for item in new_feedback if item.get("fingerprint"))
+                revision_cycles += 1
+                continue
+            result["status"] = "needs_bot_revision"
+            result["blocking_reason"] = revision_event.get("reason")
+            result["bot_feedback"] = new_feedback
+            return result
+
+        merge_state_status = str(metadata.get("merge_state_status") or "UNKNOWN").upper()
+        if merge_state_status in MERGE_STATE_REQUIRES_BASE_UPDATE:
+            base_update = update_branch_with_base(
+                repo,
+                branch_name=branch_name,
+                base_branch=base_branch,
+                pr_number=pr_number,
+                revision_command=args.revision_command,
+            )
+            result["base_update_events"].append(base_update)
+            if base_update.get("ok"):
+                continue
+            result["status"] = "conflict_needs_fix"
+            result["blocking_reason"] = base_update.get("reason")
+            return result
+
+        merge_admin = check_result == "stalled_admin_fallback"
+        merge_outcome = merge_pr(repo, pr_number, admin=merge_admin)
+        result["merge_attempts"].append(merge_outcome)
+
+        if merge_outcome["ok"]:
+            result["merge"] = merge_outcome
+            result["status"] = "merged"
+            return result
+
+        if has_merge_recovery_hint(merge_outcome.get("output", "")):
+            base_update = update_branch_with_base(
+                repo,
+                branch_name=branch_name,
+                base_branch=base_branch,
+                pr_number=pr_number,
+                revision_command=args.revision_command,
+            )
+            result["base_update_events"].append(base_update)
+            if base_update.get("ok"):
+                continue
+            result["merge"] = merge_outcome
+            result["status"] = "conflict_needs_fix"
+            result["blocking_reason"] = base_update.get("reason")
+            return result
+
+        result["merge"] = merge_outcome
         result["status"] = "merge_failed"
         return result
 
-    result["status"] = "merged"
+    result["status"] = "revision_cycle_limit"
+    result["blocking_reason"] = "Exceeded max revision cycles"
     return result
 
 
@@ -709,6 +1238,16 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--stall-reruns", type=int, default=1)
     parser.add_argument("--allow-admin-merge-on-stall", type=parse_bool, default=True)
     parser.add_argument("--create-noop-pr-for-clean", type=parse_bool, default=True)
+    parser.add_argument(
+        "--revision-command",
+        default="",
+        help=(
+            "Optional shell command to auto-fix failing checks, merge conflicts, and bot feedback. "
+            "Context is passed through WORKSPACE_AGENT_* env vars."
+        ),
+    )
+    parser.add_argument("--max-revision-cycles", type=int, default=5)
+    parser.add_argument("--delete-non-main-local-branches", type=parse_bool, default=True)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--json-report", default="")
     parser.add_argument("--repos", default="", help="Comma-separated repo paths (absolute or relative to workspace root).")
@@ -723,6 +1262,8 @@ def main(argv: list[str]) -> int:
         raise OrchestrationError("--hung-threshold-min must be >= 1")
     if args.stall_threshold_min < args.hung_threshold_min:
         raise OrchestrationError("--stall-threshold-min must be >= --hung-threshold-min")
+    if args.max_revision_cycles < 0:
+        raise OrchestrationError("--max-revision-cycles must be >= 0")
 
     workspace_root = Path(args.workspace_root).resolve()
     if not workspace_root.is_absolute():
@@ -747,6 +1288,9 @@ def main(argv: list[str]) -> int:
             "stall_reruns": args.stall_reruns,
             "allow_admin_merge_on_stall": args.allow_admin_merge_on_stall,
             "create_noop_pr_for_clean": args.create_noop_pr_for_clean,
+            "revision_command": args.revision_command,
+            "max_revision_cycles": args.max_revision_cycles,
+            "delete_non_main_local_branches": args.delete_non_main_local_branches,
             "dry_run": args.dry_run,
         },
         "repos_discovered": [],
@@ -776,7 +1320,14 @@ def main(argv: list[str]) -> int:
                 repo_result = process_repo(repo, cycle_index=cycle, args=args, dry_run=args.dry_run)
                 cycle_payload["repos"].append(repo_result)
 
-                if repo_result["status"] in {"needs_fix", "stalled_no_admin", "merge_failed"}:
+                if repo_result["status"] in {
+                    "needs_fix",
+                    "needs_bot_revision",
+                    "conflict_needs_fix",
+                    "revision_cycle_limit",
+                    "stalled_no_admin",
+                    "merge_failed",
+                }:
                     had_blocking_issue = True
                     break
 
@@ -800,6 +1351,19 @@ def main(argv: list[str]) -> int:
                 sync_info = {"name": repo.name, "path": str(repo.path)}
                 details = sync_main(repo, args.base_branch)
                 sync_info.update(details)
+
+                if args.delete_non_main_local_branches:
+                    cleanup = cleanup_non_main_local_branches(repo, args.base_branch)
+                    sync_info["local_branch_cleanup"] = cleanup
+                    if cleanup.get("failed"):
+                        raise OrchestrationError(
+                            f"{repo.name}: failed to delete non-{args.base_branch} local branches: {cleanup['failed']}"
+                        )
+                    if not cleanup.get("only_base_branch_remaining"):
+                        raise OrchestrationError(
+                            f"{repo.name}: local branches remaining after cleanup: {cleanup.get('remaining')}"
+                        )
+
                 sync_payload.append(sync_info)
                 if details["working_tree_dirty"]:
                     dirty_after_sync.append(repo)
@@ -813,7 +1377,7 @@ def main(argv: list[str]) -> int:
                 report["success"] = True
                 report["ended_at"] = now_iso()
                 write_json_report(report_path, report)
-                log("[result] Success: all repos merged and local/remote main are in sync.")
+                log("[result] Success: all repos merged, local/remote main are in sync, and local branches are clean.")
                 return 0
 
             cycle += 1

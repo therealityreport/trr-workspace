@@ -1,23 +1,22 @@
 ---
 name: multi-repo-pr-merge-sync
-description: Commit and push all changes across multiple git repositories in a workspace, create one PR per repo (including optional no-op PRs for clean repos), handle failing checks immediately, rerun hung checks without waiting the full stall window, merge to main, and verify local main equals origin/main at the end. Use when the user asks for end-to-end multi-repo GitHub commit/PR/check/merge synchronization.
+description: Commit and push all changes across multiple git repositories in a workspace, create one PR per repo, wait for checks, process bot feedback, resolve base-branch conflicts, push revisions, merge to main, and enforce final local main parity with only main branch remaining locally.
 ---
 
 # Multi-Repo PR Merge Sync
 
 ## Overview
-Use this skill to run a deterministic multi-repo release loop: detect repos, commit, open PRs, monitor checks, handle stalled CI, merge, and enforce final `main` parity.
-
-Run the orchestrator script instead of manually repeating git/gh steps.
-
-## Preconditions
-- Verify `gh auth status` succeeds with `repo` and `workflow` scopes.
-- Verify the workspace root is an absolute path.
-- Expect base branch `main` unless explicitly overridden.
+Use this skill to run an end-to-end multi-repo release loop:
+1. Detect repos and enforce TRR ordering.
+2. Commit all repo changes and create/reuse one PR per repo.
+3. Wait for CI checks, rerun stalled checks, and process bot feedback.
+4. Apply automated revisions through a configured revision command.
+5. Resolve base-branch conflicts by updating PR branches.
+6. Merge each PR, sync local `main` to `origin/main`, and remove non-`main` local branches.
 
 ## Primary Command
 ```bash
-python scripts/orchestrate_multi_repo_pr_merge_sync.py \
+python skills/multi-repo-pr-merge-sync/scripts/orchestrate_multi_repo_pr_merge_sync.py \
   --workspace-root /absolute/workspace/path \
   --base-branch main \
   --branch-prefix codex \
@@ -29,14 +28,43 @@ python scripts/orchestrate_multi_repo_pr_merge_sync.py \
   --stall-reruns 1 \
   --allow-admin-merge-on-stall true \
   --create-noop-pr-for-clean true \
+  --revision-command '<your auto-fix command>' \
+  --max-revision-cycles 5 \
+  --delete-non-main-local-branches true \
   --json-report /tmp/multi-repo-sync-report.json
 ```
+
+Workspace wrapper:
+```bash
+make workspace-pr-agent
+```
+
+Default wrapper revision command:
+- `python3 /Users/thomashulihan/Projects/TRR/scripts/workspace-pr-agent-revision.py`
+- disable with `WORKSPACE_PR_AGENT_REVISION_COMMAND=none`
+- disable Codex assist inside revision helper with `WORKSPACE_PR_AGENT_REVISION_USE_CODEX=0`
+- MCP-first revision mode (default on):
+  - `WORKSPACE_PR_AGENT_REVISION_USE_GITHUB_MCP=1`
+  - `WORKSPACE_PR_AGENT_REVISION_REQUIRE_GITHUB_MCP=1` to fail fast when MCP auth is unavailable
+
+## Revision Command Contract
+`--revision-command` is optional but required for full autonomous fix loops.
+
+The command runs in the target repo working directory and receives:
+- `WORKSPACE_AGENT_REPO_NAME`
+- `WORKSPACE_AGENT_REPO_PATH`
+- `WORKSPACE_AGENT_BRANCH`
+- `WORKSPACE_AGENT_PR_NUMBER`
+- `WORKSPACE_AGENT_REASON` (`failing_checks|bot_feedback|merge_conflict`)
+- `WORKSPACE_AGENT_CONTEXT_FILE` (JSON payload with details)
+
+If the revision command edits files, the orchestrator auto-commits and pushes updates to the same PR branch.
 
 ## CLI Contract
 Required:
 - `--workspace-root <abs-path>`
 
-Optional:
+Common options:
 - `--base-branch main`
 - `--branch-prefix codex`
 - `--repo-order auto|alpha`
@@ -47,60 +75,40 @@ Optional:
 - `--stall-reruns 1`
 - `--allow-admin-merge-on-stall true|false`
 - `--create-noop-pr-for-clean true|false`
+- `--revision-command '<command>'`
+- `--max-revision-cycles 5`
+- `--delete-non-main-local-branches true|false`
 - `--dry-run`
 - `--json-report <path>`
 - `--repos <comma-separated paths>`
 
-## Execution Workflow
-1. Discover actual git repo roots in the workspace root (or use `--repos` override).
-2. Include the workspace root itself when it is a git repo.
-3. Order repos:
-- Auto mode enforces `TRR-Backend -> screenalytics -> TRR-APP` when present.
-- Otherwise use alphabetical ordering.
-4. Run preflight (`gh auth`, `origin`, `fetch origin/main`).
-5. For each repo:
-- Create/switch sync branch.
-- Reuse the same deterministic branch/PR for follow-up commits in the same run (one PR per repo).
-- Stage all changes and commit.
-- Create no-op commit if clean and no-op mode enabled.
-- Push branch and create/reuse PR.
-- Monitor checks until pass, fail, or stall timeout.
-6. Handle check states:
-- `needs_fix`: stop and return structured failure details.
-- `hung_candidate`: no state progress for `hung-threshold-min`, rerun/cancel immediately (no long passive wait).
-- `stalled_admin_fallback`: merge with `--admin` only if allowed.
-- `passed`: normal merge.
-7. Sync each repo back to `main`, pull `origin/main`, enforce SHA parity.
-8. If post-merge local changes appear, automatically open follow-up PR cycles until clean/synced or cycle cap reached.
-
-## Fix Loop Contract
-When the script returns `needs_fix`:
-1. Read JSON report for repo, PR URL, and failing checks.
-2. Implement fixes in the affected repo.
-3. Commit and push updates to the same PR branch.
-4. Re-run this skill scoped to that repo:
-```bash
-python scripts/orchestrate_multi_repo_pr_merge_sync.py \
-  --workspace-root /absolute/workspace/path \
-  --repos repo-name-or-path \
-  --json-report /tmp/multi-repo-sync-report.json
-```
-5. Repeat until merge succeeds.
-
-## Output Contract
-The script prints human-readable progress and writes a machine-readable JSON report containing:
-- discovered repos
-- per-repo branch, commit SHA, PR URL/number
-- check states, failures, reruns, stall events
-- merge result
-- final local vs `origin/main` parity
-
 ## Guardrails
 - Never force-push `main`.
-- Never run destructive git reset/checkout operations.
+- Keep one active PR per repo and push follow-up fixes to that same PR.
 - Use admin merge only after stall detection and rerun exhaustion.
-- Always report per-repo PR URLs and final SHA parity.
+- Do not merge with unresolved bot feedback when revision automation is enabled.
+- Enforce final state per repo:
+  1. checked out on `main`
+  2. `HEAD == origin/main`
+  3. clean working tree
+  4. no local branches other than `main` (or configured base branch)
 
-## References
-- For stall policy details, read `references/ci-stall-handling.md`.
-- For TRR ordering and cross-repo constraints, read `references/trr-ordering-and-guards.md`.
+## Output Contract
+JSON report includes:
+- discovered repos and processing order
+- PR metadata and status-check outcomes
+- bot feedback events and revision attempts
+- conflict/base-update events
+- merge attempts
+- final sync and local branch cleanup results
+
+## Failure Contract
+Blocking statuses include:
+- `needs_fix`
+- `needs_bot_revision`
+- `conflict_needs_fix`
+- `revision_cycle_limit`
+- `stalled_no_admin`
+- `merge_failed`
+
+When blocked, inspect the JSON report and re-run after fixing or adjusting `--revision-command`.
