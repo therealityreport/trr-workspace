@@ -12,6 +12,7 @@ stop_by_port() {
   local pidfile="${LOG_DIR}/chrome-agent-${port}.pid"
   local statefile="${LOG_DIR}/chrome-agent-${port}.env"
   local legacy_pidfile="${LOG_DIR}/chrome-agent.pid"
+  local reservefile="${LOG_DIR}/codex-chrome-port-${port}.reserve"
 
   if [[ ! -f "$pidfile" ]]; then
     # Backward compatibility for old 9222 pidfile naming.
@@ -29,6 +30,7 @@ stop_by_port() {
           # shellcheck disable=SC2086
           kill -KILL $pids >/dev/null 2>&1 || true
           echo "[chrome-agent] Stopped listeners on ${port}."
+          rm -f "$reservefile"
         else
           echo "[chrome-agent] Nothing running on port ${port}."
         fi
@@ -45,6 +47,7 @@ stop_by_port() {
   if [[ "$port" == "9222" ]]; then
     rm -f "$legacy_pidfile"
   fi
+  rm -f "$reservefile"
 
   if [[ -z "$CHROME_PID" ]] || ! kill -0 "$CHROME_PID" >/dev/null 2>&1; then
     echo "[chrome-agent] Not running for port ${port} (pid=${CHROME_PID:-?})."

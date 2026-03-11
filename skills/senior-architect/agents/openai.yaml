@@ -1,0 +1,5 @@
+interface:
+  display_name: "Senior Architect (TRR Workspace)"
+  short_description: "Workspace-local canonical owner for TRR architecture decisions, ADR framing, boundary design, and long-term tradeoffs."
+  default_prompt: "Use $senior-architect to decide this TRR architecture change and capture the tradeoffs clearly."
+

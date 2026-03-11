@@ -1,0 +1,5 @@
+interface:
+  display_name: "Senior DevOps (TRR Workspace)"
+  short_description: "Workspace-local canonical owner for TRR release safety, CI/CD hardening, rollback readiness, and observability gates."
+  default_prompt: "Use $senior-devops to harden this TRR deployment or operational change before release."
+

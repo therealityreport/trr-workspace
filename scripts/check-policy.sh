@@ -10,12 +10,10 @@ AGENTS_FILES=(
   "$ROOT/screenalytics/AGENTS.md"
 )
 
-CLAUDE_FILES=(
-  "$ROOT/CLAUDE.md"
-  "$ROOT/TRR-Backend/CLAUDE.md"
-  "$ROOT/TRR-APP/CLAUDE.md"
-  "$ROOT/screenalytics/CLAUDE.md"
-)
+CLAUDE_FILES=()
+while IFS= read -r file; do
+  CLAUDE_FILES+=("$file")
+done < <(find "$ROOT" -type f -name 'CLAUDE.md' | sort)
 
 POLICY_SCAN_FILES=(
   "${AGENTS_FILES[@]}"
@@ -36,6 +34,56 @@ for file in "${AGENTS_FILES[@]}"; do
 
   if ! rg -q '^## MCP Invocation Matrix' "$file"; then
     echo "[check-policy] ERROR: missing MCP matrix section in $file" >&2
+    failures=$((failures + 1))
+  fi
+
+  if ! rg -q '^### Before Each Plan' "$file"; then
+    echo "[check-policy] ERROR: missing planning-skill subsection in $file" >&2
+    failures=$((failures + 1))
+  fi
+
+  if ! rg -q 'Review the skills available' "$file"; then
+    echo "[check-policy] ERROR: missing skill-review rule in $file" >&2
+    failures=$((failures + 1))
+  fi
+
+  if ! rg -q 'Choose the minimum skill set' "$file"; then
+    echo "[check-policy] ERROR: missing minimum-skill rule in $file" >&2
+    failures=$((failures + 1))
+  fi
+
+  if ! rg -q 'plan writing' "$file"; then
+    echo "[check-policy] ERROR: missing plan-writing skill rule in $file" >&2
+    failures=$((failures + 1))
+  fi
+
+  if ! rg -q 'implementation' "$file"; then
+    echo "[check-policy] ERROR: missing implementation-skill rule in $file" >&2
+    failures=$((failures + 1))
+  fi
+
+  if ! rg -q 'fall back to workspace-local, then globally canonical' "$file"; then
+    echo "[check-policy] ERROR: missing canonical fallback order in $file" >&2
+    failures=$((failures + 1))
+  fi
+
+  if ! rg -q '^### AWS Deploy Rule' "$file"; then
+    echo "[check-policy] ERROR: missing AWS deploy-rule subsection in $file" >&2
+    failures=$((failures + 1))
+  fi
+
+  if ! rg -q 'deployable AWS/cloud-infra/backend' "$file"; then
+    echo "[check-policy] ERROR: missing deploy trigger definition in $file" >&2
+    failures=$((failures + 1))
+  fi
+
+  if ! rg -q 'Required checks must pass before deploy' "$file"; then
+    echo "[check-policy] ERROR: missing checks-before-deploy rule in $file" >&2
+    failures=$((failures + 1))
+  fi
+
+  if ! rg -q 'Implementation is not complete until the AWS deployment is executed successfully' "$file"; then
+    echo "[check-policy] ERROR: missing auto-deploy completion rule in $file" >&2
     failures=$((failures + 1))
   fi
 done
@@ -60,6 +108,11 @@ for file in "${CLAUDE_FILES[@]}"; do
 
   if ! rg -qi 'authoritative|conflict.*AGENTS\.md|AGENTS\.md.*wins' "$file"; then
     echo "[check-policy] ERROR: $file missing AGENTS authority/conflict rule." >&2
+    failures=$((failures + 1))
+  fi
+
+  if ! rg -qi 'pointer shim' "$file"; then
+    echo "[check-policy] ERROR: $file missing pointer-shim rule." >&2
     failures=$((failures + 1))
   fi
 done

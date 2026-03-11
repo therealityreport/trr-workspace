@@ -59,9 +59,11 @@ if [[ -f "$PIDFILE" ]]; then
   HAVE_PIDFILE=1
 fi
 
+HAVE_WATCHDOG_STATE=0
 if [[ -f "$BACKEND_WATCHDOG_STATE_FILE" ]]; then
   # shellcheck disable=SC1090
   source "$BACKEND_WATCHDOG_STATE_FILE" || true
+  HAVE_WATCHDOG_STATE=1
 fi
 
 if ! [[ "${BACKEND_RESTART_COUNT:-0}" =~ ^[0-9]+$ ]]; then
@@ -75,6 +77,40 @@ value_or_na() {
     return 0
   fi
   echo "$value"
+}
+
+runtime_value_or_na() {
+  local value="${1:-}"
+  if [[ "$HAVE_PIDFILE" -ne 1 ]]; then
+    echo "n/a"
+    return 0
+  fi
+  value_or_na "$value"
+}
+
+watchdog_value_or_na() {
+  local value="${1:-}"
+  if [[ "$HAVE_PIDFILE" -ne 1 && "$HAVE_WATCHDOG_STATE" -ne 1 ]]; then
+    echo "n/a"
+    return 0
+  fi
+  value_or_na "$value"
+}
+
+watchdog_restart_count_display() {
+  if [[ "$HAVE_PIDFILE" -ne 1 && "$HAVE_WATCHDOG_STATE" -ne 1 ]]; then
+    echo "n/a"
+    return 0
+  fi
+  echo "${BACKEND_RESTART_COUNT:-0}"
+}
+
+watchdog_restart_count_json() {
+  if [[ "$HAVE_PIDFILE" -ne 1 && "$HAVE_WATCHDOG_STATE" -ne 1 ]]; then
+    echo "null"
+    return 0
+  fi
+  echo "${BACKEND_RESTART_COUNT:-0}"
 }
 
 pid_state() {
@@ -202,6 +238,9 @@ backend_health_status() {
 }
 
 screenalytics_enabled() {
+  if [[ "$HAVE_PIDFILE" -ne 1 ]]; then
+    return 1
+  fi
   if [[ "${WORKSPACE_SCREENALYTICS:-}" == "0" ]]; then
     return 1
   fi
@@ -209,6 +248,10 @@ screenalytics_enabled() {
 }
 
 backend_reload_mode() {
+  if [[ "$HAVE_PIDFILE" -ne 1 ]]; then
+    echo "n/a"
+    return 0
+  fi
   if [[ "${TRR_BACKEND_RELOAD:-0}" == "1" ]]; then
     echo "reload"
     return 0
@@ -251,43 +294,54 @@ TRR_BACKEND_LISTENERS="$(port_listeners "${TRR_BACKEND_PORT}")"
 SCREENALYTICS_API_LISTENERS="$(port_listeners "${SCREENALYTICS_API_PORT}")"
 SCREENALYTICS_STREAMLIT_LISTENERS="$(port_listeners "${SCREENALYTICS_STREAMLIT_PORT}")"
 SCREENALYTICS_WEB_LISTENERS="$(port_listeners "${SCREENALYTICS_WEB_PORT}")"
+RUN_STATE="$([[ "$HAVE_PIDFILE" -eq 1 ]] && echo active || echo inactive)"
+BACKEND_WATCHDOG_STATE_LABEL="active"
+if [[ "$HAVE_PIDFILE" -ne 1 ]]; then
+  if [[ "$HAVE_WATCHDOG_STATE" -eq 1 ]]; then
+    BACKEND_WATCHDOG_STATE_LABEL="last_run_telemetry"
+  else
+    BACKEND_WATCHDOG_STATE_LABEL="inactive"
+  fi
+fi
 
 if [[ "$OUTPUT_FORMAT" == "json" ]]; then
   cat <<JSON
 {
   "root": "$(json_escape "$ROOT")",
+  "run_state": "$(json_escape "$RUN_STATE")",
   "pidfile": {
     "path": "$(json_escape "$PIDFILE")",
-    "loaded": $([[ "$HAVE_PIDFILE" -eq 1 ]] && echo true || echo false)
+    "loaded": $([[ "$HAVE_PIDFILE" -eq 1 ]] && echo true || echo false),
+    "active": $([[ "$HAVE_PIDFILE" -eq 1 ]] && echo true || echo false)
   },
   "modes": {
-    "workspace_screenalytics": "$(json_escape "${WORKSPACE_SCREENALYTICS:-}")",
-    "workspace_screenalytics_skip_docker": "$(json_escape "${WORKSPACE_SCREENALYTICS_SKIP_DOCKER:-}")",
-    "workspace_open_browser": "$(json_escape "${WORKSPACE_OPEN_BROWSER:-}")",
-    "workspace_browser_tab_sync_mode": "$(json_escape "${WORKSPACE_BROWSER_TAB_SYNC_MODE:-}")",
-    "workspace_open_screenalytics_tabs": "$(json_escape "${WORKSPACE_OPEN_SCREENALYTICS_TABS:-}")",
-    "workspace_strict": "$(json_escape "${WORKSPACE_STRICT:-}")",
-    "workspace_backend_auto_restart": "$(json_escape "${WORKSPACE_BACKEND_AUTO_RESTART:-}")",
-    "workspace_backend_health_interval_seconds": "$(json_escape "${WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS:-}")",
-    "workspace_backend_health_failure_threshold": "$(json_escape "${WORKSPACE_BACKEND_HEALTH_FAILURE_THRESHOLD:-}")",
-    "workspace_backend_health_curl_max_time": "$(json_escape "${WORKSPACE_BACKEND_HEALTH_CURL_MAX_TIME:-}")",
-    "workspace_status_backend_health_curl_max_time": "$(json_escape "${WORKSPACE_STATUS_BACKEND_HEALTH_CURL_MAX_TIME:-}")",
-    "workspace_social_worker_enabled": "$(json_escape "${WORKSPACE_SOCIAL_WORKER_ENABLED:-}")",
-    "workspace_social_worker_posts": "$(json_escape "${WORKSPACE_SOCIAL_WORKER_POSTS:-}")",
-    "workspace_social_worker_comments": "$(json_escape "${WORKSPACE_SOCIAL_WORKER_COMMENTS:-}")",
-    "workspace_social_worker_media_mirror": "$(json_escape "${WORKSPACE_SOCIAL_WORKER_MEDIA_MIRROR:-}")",
-    "workspace_social_worker_comment_media_mirror": "$(json_escape "${WORKSPACE_SOCIAL_WORKER_COMMENT_MEDIA_MIRROR:-}")",
-    "workspace_social_worker_interval_sec": "$(json_escape "${WORKSPACE_SOCIAL_WORKER_INTERVAL_SEC:-}")",
-    "workspace_trr_job_plane_mode": "$(json_escape "${WORKSPACE_TRR_JOB_PLANE_MODE:-}")",
-    "workspace_trr_long_job_enforce_remote": "$(json_escape "${WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE:-}")",
-    "workspace_trr_remote_workers_enabled": "$(json_escape "${WORKSPACE_TRR_REMOTE_WORKERS_ENABLED:-}")",
-    "workspace_trr_remote_admin_workers": "$(json_escape "${WORKSPACE_TRR_REMOTE_ADMIN_WORKERS:-}")",
-    "workspace_trr_remote_reddit_workers": "$(json_escape "${WORKSPACE_TRR_REMOTE_REDDIT_WORKERS:-}")",
-    "workspace_trr_remote_google_news_workers": "$(json_escape "${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS:-}")",
-    "workspace_trr_remote_worker_poll_seconds": "$(json_escape "${WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS:-}")",
-    "workspace_trr_remote_google_news_lease_seconds": "$(json_escape "${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_LEASE_SECONDS:-}")",
-    "trr_backend_reload": "$(json_escape "${TRR_BACKEND_RELOAD:-}")",
-    "profile": "$(json_escape "${PROFILE:-}")"
+    "workspace_screenalytics": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_SCREENALYTICS:-}")")",
+    "workspace_screenalytics_skip_docker": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_SCREENALYTICS_SKIP_DOCKER:-}")")",
+    "workspace_open_browser": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_OPEN_BROWSER:-}")")",
+    "workspace_browser_tab_sync_mode": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_BROWSER_TAB_SYNC_MODE:-}")")",
+    "workspace_open_screenalytics_tabs": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_OPEN_SCREENALYTICS_TABS:-}")")",
+    "workspace_strict": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_STRICT:-}")")",
+    "workspace_backend_auto_restart": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_BACKEND_AUTO_RESTART:-}")")",
+    "workspace_backend_health_interval_seconds": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS:-}")")",
+    "workspace_backend_health_failure_threshold": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_BACKEND_HEALTH_FAILURE_THRESHOLD:-}")")",
+    "workspace_backend_health_curl_max_time": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_BACKEND_HEALTH_CURL_MAX_TIME:-}")")",
+    "workspace_status_backend_health_curl_max_time": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_STATUS_BACKEND_HEALTH_CURL_MAX_TIME:-}")")",
+    "workspace_social_worker_enabled": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_SOCIAL_WORKER_ENABLED:-}")")",
+    "workspace_social_worker_posts": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_SOCIAL_WORKER_POSTS:-}")")",
+    "workspace_social_worker_comments": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_SOCIAL_WORKER_COMMENTS:-}")")",
+    "workspace_social_worker_media_mirror": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_SOCIAL_WORKER_MEDIA_MIRROR:-}")")",
+    "workspace_social_worker_comment_media_mirror": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_SOCIAL_WORKER_COMMENT_MEDIA_MIRROR:-}")")",
+    "workspace_social_worker_interval_sec": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_SOCIAL_WORKER_INTERVAL_SEC:-}")")",
+    "workspace_trr_job_plane_mode": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_JOB_PLANE_MODE:-}")")",
+    "workspace_trr_long_job_enforce_remote": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE:-}")")",
+    "workspace_trr_remote_workers_enabled": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_WORKERS_ENABLED:-}")")",
+    "workspace_trr_remote_admin_workers": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_ADMIN_WORKERS:-}")")",
+    "workspace_trr_remote_reddit_workers": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_REDDIT_WORKERS:-}")")",
+    "workspace_trr_remote_google_news_workers": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS:-}")")",
+    "workspace_trr_remote_worker_poll_seconds": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS:-}")")",
+    "workspace_trr_remote_google_news_lease_seconds": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_LEASE_SECONDS:-}")")",
+    "trr_backend_reload": "$(json_escape "$(runtime_value_or_na "${TRR_BACKEND_RELOAD:-}")")",
+    "profile": "$(json_escape "$(runtime_value_or_na "${PROFILE:-}")")"
   },
   "processes": {
     "trr_app": {"pid": "$(json_escape "${TRR_APP_PID:-}")", "running": $(pid_running_json "${TRR_APP_PID:-}")},
@@ -312,10 +366,11 @@ if [[ "$OUTPUT_FORMAT" == "json" ]]; then
     "screenalytics_api_status": "$(json_escape "$SCREENALYTICS_HEALTH_STATUS")"
   },
   "backend_watchdog": {
-    "restart_count": ${BACKEND_RESTART_COUNT:-0},
-    "last_restart_reason": "$(json_escape "${BACKEND_LAST_RESTART_REASON:-}")",
-    "last_restart_at": "$(json_escape "${BACKEND_LAST_RESTART_AT:-}")",
-    "last_restart_probe_rc": "$(json_escape "${BACKEND_LAST_RESTART_PROBE_RC:-}")"
+    "state": "$(json_escape "$BACKEND_WATCHDOG_STATE_LABEL")",
+    "restart_count": $(watchdog_restart_count_json),
+    "last_restart_reason": "$(json_escape "$(watchdog_value_or_na "${BACKEND_LAST_RESTART_REASON:-}")")",
+    "last_restart_at": "$(json_escape "$(watchdog_value_or_na "${BACKEND_LAST_RESTART_AT:-}")")",
+    "last_restart_probe_rc": "$(json_escape "$(watchdog_value_or_na "${BACKEND_LAST_RESTART_PROBE_RC:-}")")"
   },
   "timestamp_utc": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 }
@@ -327,39 +382,41 @@ echo "[status] Workspace status snapshot"
 echo "[status] Root: ${ROOT}"
 if [[ "$HAVE_PIDFILE" -eq 1 ]]; then
   echo "[status] Pidfile: ${PIDFILE} (loaded)"
+  echo "[status] Workspace run: active"
 else
   echo "[status] Pidfile: ${PIDFILE} (not found)"
+  echo "[status] Workspace run: inactive"
 fi
 echo ""
 
 echo "[status] Workspace modes:"
-echo "  WORKSPACE_SCREENALYTICS: $(value_or_na "${WORKSPACE_SCREENALYTICS:-}")"
-echo "  WORKSPACE_SCREENALYTICS_SKIP_DOCKER: $(value_or_na "${WORKSPACE_SCREENALYTICS_SKIP_DOCKER:-}")"
-echo "  WORKSPACE_OPEN_BROWSER: $(value_or_na "${WORKSPACE_OPEN_BROWSER:-}")"
-echo "  WORKSPACE_BROWSER_TAB_SYNC_MODE: $(value_or_na "${WORKSPACE_BROWSER_TAB_SYNC_MODE:-}")"
-echo "  WORKSPACE_OPEN_SCREENALYTICS_TABS: $(value_or_na "${WORKSPACE_OPEN_SCREENALYTICS_TABS:-}")"
-echo "  WORKSPACE_STRICT: $(value_or_na "${WORKSPACE_STRICT:-}")"
-echo "  WORKSPACE_BACKEND_AUTO_RESTART: $(value_or_na "${WORKSPACE_BACKEND_AUTO_RESTART:-}")"
-echo "  WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS: $(value_or_na "${WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS:-}")"
-echo "  WORKSPACE_BACKEND_HEALTH_FAILURE_THRESHOLD: $(value_or_na "${WORKSPACE_BACKEND_HEALTH_FAILURE_THRESHOLD:-}")"
-echo "  WORKSPACE_BACKEND_HEALTH_CURL_MAX_TIME: $(value_or_na "${WORKSPACE_BACKEND_HEALTH_CURL_MAX_TIME:-}")"
-echo "  WORKSPACE_STATUS_BACKEND_HEALTH_CURL_MAX_TIME: $(value_or_na "${WORKSPACE_STATUS_BACKEND_HEALTH_CURL_MAX_TIME:-}")"
-echo "  WORKSPACE_SOCIAL_WORKER_ENABLED: $(value_or_na "${WORKSPACE_SOCIAL_WORKER_ENABLED:-}")"
-echo "  WORKSPACE_SOCIAL_WORKER_POSTS: $(value_or_na "${WORKSPACE_SOCIAL_WORKER_POSTS:-}")"
-echo "  WORKSPACE_SOCIAL_WORKER_COMMENTS: $(value_or_na "${WORKSPACE_SOCIAL_WORKER_COMMENTS:-}")"
-echo "  WORKSPACE_SOCIAL_WORKER_MEDIA_MIRROR: $(value_or_na "${WORKSPACE_SOCIAL_WORKER_MEDIA_MIRROR:-}")"
-echo "  WORKSPACE_SOCIAL_WORKER_COMMENT_MEDIA_MIRROR: $(value_or_na "${WORKSPACE_SOCIAL_WORKER_COMMENT_MEDIA_MIRROR:-}")"
-echo "  WORKSPACE_SOCIAL_WORKER_INTERVAL_SEC: $(value_or_na "${WORKSPACE_SOCIAL_WORKER_INTERVAL_SEC:-}")"
-echo "  WORKSPACE_TRR_JOB_PLANE_MODE: $(value_or_na "${WORKSPACE_TRR_JOB_PLANE_MODE:-}")"
-echo "  WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE: $(value_or_na "${WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE:-}")"
-echo "  WORKSPACE_TRR_REMOTE_WORKERS_ENABLED: $(value_or_na "${WORKSPACE_TRR_REMOTE_WORKERS_ENABLED:-}")"
-echo "  WORKSPACE_TRR_REMOTE_ADMIN_WORKERS: $(value_or_na "${WORKSPACE_TRR_REMOTE_ADMIN_WORKERS:-}")"
-echo "  WORKSPACE_TRR_REMOTE_REDDIT_WORKERS: $(value_or_na "${WORKSPACE_TRR_REMOTE_REDDIT_WORKERS:-}")"
-echo "  WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS: $(value_or_na "${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS:-}")"
-echo "  WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS: $(value_or_na "${WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS:-}")"
-echo "  WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_LEASE_SECONDS: $(value_or_na "${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_LEASE_SECONDS:-}")"
-echo "  TRR_BACKEND_RELOAD: $(value_or_na "${TRR_BACKEND_RELOAD:-}") ($(backend_reload_mode))"
-echo "  PROFILE: $(value_or_na "${PROFILE:-}")"
+echo "  WORKSPACE_SCREENALYTICS: $(runtime_value_or_na "${WORKSPACE_SCREENALYTICS:-}")"
+echo "  WORKSPACE_SCREENALYTICS_SKIP_DOCKER: $(runtime_value_or_na "${WORKSPACE_SCREENALYTICS_SKIP_DOCKER:-}")"
+echo "  WORKSPACE_OPEN_BROWSER: $(runtime_value_or_na "${WORKSPACE_OPEN_BROWSER:-}")"
+echo "  WORKSPACE_BROWSER_TAB_SYNC_MODE: $(runtime_value_or_na "${WORKSPACE_BROWSER_TAB_SYNC_MODE:-}")"
+echo "  WORKSPACE_OPEN_SCREENALYTICS_TABS: $(runtime_value_or_na "${WORKSPACE_OPEN_SCREENALYTICS_TABS:-}")"
+echo "  WORKSPACE_STRICT: $(runtime_value_or_na "${WORKSPACE_STRICT:-}")"
+echo "  WORKSPACE_BACKEND_AUTO_RESTART: $(runtime_value_or_na "${WORKSPACE_BACKEND_AUTO_RESTART:-}")"
+echo "  WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS: $(runtime_value_or_na "${WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS:-}")"
+echo "  WORKSPACE_BACKEND_HEALTH_FAILURE_THRESHOLD: $(runtime_value_or_na "${WORKSPACE_BACKEND_HEALTH_FAILURE_THRESHOLD:-}")"
+echo "  WORKSPACE_BACKEND_HEALTH_CURL_MAX_TIME: $(runtime_value_or_na "${WORKSPACE_BACKEND_HEALTH_CURL_MAX_TIME:-}")"
+echo "  WORKSPACE_STATUS_BACKEND_HEALTH_CURL_MAX_TIME: $(runtime_value_or_na "${WORKSPACE_STATUS_BACKEND_HEALTH_CURL_MAX_TIME:-}")"
+echo "  WORKSPACE_SOCIAL_WORKER_ENABLED: $(runtime_value_or_na "${WORKSPACE_SOCIAL_WORKER_ENABLED:-}")"
+echo "  WORKSPACE_SOCIAL_WORKER_POSTS: $(runtime_value_or_na "${WORKSPACE_SOCIAL_WORKER_POSTS:-}")"
+echo "  WORKSPACE_SOCIAL_WORKER_COMMENTS: $(runtime_value_or_na "${WORKSPACE_SOCIAL_WORKER_COMMENTS:-}")"
+echo "  WORKSPACE_SOCIAL_WORKER_MEDIA_MIRROR: $(runtime_value_or_na "${WORKSPACE_SOCIAL_WORKER_MEDIA_MIRROR:-}")"
+echo "  WORKSPACE_SOCIAL_WORKER_COMMENT_MEDIA_MIRROR: $(runtime_value_or_na "${WORKSPACE_SOCIAL_WORKER_COMMENT_MEDIA_MIRROR:-}")"
+echo "  WORKSPACE_SOCIAL_WORKER_INTERVAL_SEC: $(runtime_value_or_na "${WORKSPACE_SOCIAL_WORKER_INTERVAL_SEC:-}")"
+echo "  WORKSPACE_TRR_JOB_PLANE_MODE: $(runtime_value_or_na "${WORKSPACE_TRR_JOB_PLANE_MODE:-}")"
+echo "  WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE: $(runtime_value_or_na "${WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE:-}")"
+echo "  WORKSPACE_TRR_REMOTE_WORKERS_ENABLED: $(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_WORKERS_ENABLED:-}")"
+echo "  WORKSPACE_TRR_REMOTE_ADMIN_WORKERS: $(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_ADMIN_WORKERS:-}")"
+echo "  WORKSPACE_TRR_REMOTE_REDDIT_WORKERS: $(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_REDDIT_WORKERS:-}")"
+echo "  WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS: $(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS:-}")"
+echo "  WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS: $(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS:-}")"
+echo "  WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_LEASE_SECONDS: $(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_LEASE_SECONDS:-}")"
+echo "  TRR_BACKEND_RELOAD: $(runtime_value_or_na "${TRR_BACKEND_RELOAD:-}") ($(backend_reload_mode))"
+echo "  PROFILE: $(runtime_value_or_na "${PROFILE:-}")"
 echo ""
 
 echo "[status] Process states:"
@@ -393,10 +450,11 @@ fi
 echo ""
 
 echo "[status] Backend watchdog:"
-echo "  restart_count: ${BACKEND_RESTART_COUNT}"
-echo "  last_restart_reason: $(value_or_na "${BACKEND_LAST_RESTART_REASON:-}")"
-echo "  last_restart_at: $(value_or_na "${BACKEND_LAST_RESTART_AT:-}")"
-echo "  last_restart_probe_rc: $(value_or_na "${BACKEND_LAST_RESTART_PROBE_RC:-}")"
+echo "  state: ${BACKEND_WATCHDOG_STATE_LABEL}"
+echo "  restart_count: $(watchdog_restart_count_display)"
+echo "  last_restart_reason: $(watchdog_value_or_na "${BACKEND_LAST_RESTART_REASON:-}")"
+echo "  last_restart_at: $(watchdog_value_or_na "${BACKEND_LAST_RESTART_AT:-}")"
+echo "  last_restart_probe_rc: $(watchdog_value_or_na "${BACKEND_LAST_RESTART_PROBE_RC:-}")"
 
 if [[ "${BACKEND_HEALTH_STATUS}" == "hung/unresponsive" ]]; then
   echo ""

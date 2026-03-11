@@ -9,7 +9,7 @@
 | `awslabs-cloudwatch` | `command` | CloudWatch alarms/logs/metrics analysis. |
 | `awslabs-core` | `command` | AWS prompt understanding and intent decomposition. |
 | `awslabs-pricing` | `command` | AWS pricing lookup and cost analysis. |
-| `chrome-devtools` | `command` | Browser navigation/inspection and authenticated web automation in managed Chrome. |
+| `chrome-devtools` | `command` | Browser navigation/inspection and authenticated web automation in managed Chrome. Enabled for all chats in this workspace and documented as a mandatory always-on capability. |
 | `figma` | `url` | Figma cloud design context, screenshots, variables, code connect. |
 | `figma-desktop` | `url` | Local desktop Figma workflows when enabled. |
 | `github` | `url` | GitHub metadata and MCP-hosted remote operations. |
