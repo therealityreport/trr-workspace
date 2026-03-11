@@ -18,6 +18,9 @@ if ! bash "$ROOT/scripts/chrome-agent-status.sh"; then
   echo "[preflight] WARNING: chrome-agent-status check failed." >&2
 fi
 
+echo "[preflight] Checking Chrome DevTools MCP readiness..."
+bash "$ROOT/scripts/chrome-devtools-mcp-status.sh"
+
 if [[ -d "$ROOT/.playwright-mcp" ]]; then
   echo "[preflight] NOTE: '$ROOT/.playwright-mcp' exists and is treated as legacy/local-only." >&2
   echo "[preflight] NOTE: Workspace policy is Chrome DevTools MCP only." >&2

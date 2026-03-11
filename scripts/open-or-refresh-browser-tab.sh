@@ -120,19 +120,54 @@ on urlMatches(tabURL, targetURL, targetURLNoSlash, targetURLWithSlash, altURLNoS
   if (tabURL = targetURL) or (tabURL = targetURLNoSlash) or (tabURL = targetURLWithSlash) then
     return true
   end if
-  if (tabURL starts with targetURLWithSlash) or (tabURL starts with targetURLNoSlash) then
-    return true
-  end if
   if altURLNoSlash is not "" then
     if (tabURL = altURLNoSlash) or (tabURL = altURLWithSlash) then
       return true
     end if
+  end if
+  if my isRootWorkspaceUrl(targetURLNoSlash, targetURLWithSlash, altURLNoSlash, altURLWithSlash) then
+    return false
+  end if
+  if (tabURL starts with targetURLWithSlash) or (tabURL starts with targetURLNoSlash) then
+    return true
+  end if
+  if altURLNoSlash is not "" then
     if (tabURL starts with altURLWithSlash) or (tabURL starts with altURLNoSlash) then
       return true
     end if
   end if
   return false
 end urlMatches
+
+on isRootWorkspaceUrl(targetURLNoSlash, targetURLWithSlash, altURLNoSlash, altURLWithSlash)
+  if my isBareOrigin(targetURLNoSlash) or my isBareOrigin(targetURLWithSlash) then
+    return true
+  end if
+  if altURLNoSlash is not "" then
+    if my isBareOrigin(altURLNoSlash) or my isBareOrigin(altURLWithSlash) then
+      return true
+    end if
+  end if
+  return false
+end isRootWorkspaceUrl
+
+on isBareOrigin(candidateURL)
+  if candidateURL is missing value or candidateURL is "" then
+    return false
+  end if
+  if candidateURL ends with "/" then
+    set trimmedURL to text 1 thru -2 of candidateURL
+  else
+    set trimmedURL to candidateURL
+  end if
+  considering case
+    if trimmedURL starts with "http://" or trimmedURL starts with "https://" then
+      set slashOffset to offset of "/" in text ((offset of "://" in trimmedURL) + 3) thru -1 of trimmedURL
+      return slashOffset is 0
+    end if
+  end considering
+  return false
+end isBareOrigin
 APPLESCRIPT
 }
 
@@ -207,19 +242,54 @@ on urlMatches(tabURL, targetURL, targetURLNoSlash, targetURLWithSlash, altURLNoS
   if (tabURL = targetURL) or (tabURL = targetURLNoSlash) or (tabURL = targetURLWithSlash) then
     return true
   end if
-  if (tabURL starts with targetURLWithSlash) or (tabURL starts with targetURLNoSlash) then
-    return true
-  end if
   if altURLNoSlash is not "" then
     if (tabURL = altURLNoSlash) or (tabURL = altURLWithSlash) then
       return true
     end if
+  end if
+  if my isRootWorkspaceUrl(targetURLNoSlash, targetURLWithSlash, altURLNoSlash, altURLWithSlash) then
+    return false
+  end if
+  if (tabURL starts with targetURLWithSlash) or (tabURL starts with targetURLNoSlash) then
+    return true
+  end if
+  if altURLNoSlash is not "" then
     if (tabURL starts with altURLWithSlash) or (tabURL starts with altURLNoSlash) then
       return true
     end if
   end if
   return false
 end urlMatches
+
+on isRootWorkspaceUrl(targetURLNoSlash, targetURLWithSlash, altURLNoSlash, altURLWithSlash)
+  if my isBareOrigin(targetURLNoSlash) or my isBareOrigin(targetURLWithSlash) then
+    return true
+  end if
+  if altURLNoSlash is not "" then
+    if my isBareOrigin(altURLNoSlash) or my isBareOrigin(altURLWithSlash) then
+      return true
+    end if
+  end if
+  return false
+end isRootWorkspaceUrl
+
+on isBareOrigin(candidateURL)
+  if candidateURL is missing value or candidateURL is "" then
+    return false
+  end if
+  if candidateURL ends with "/" then
+    set trimmedURL to text 1 thru -2 of candidateURL
+  else
+    set trimmedURL to candidateURL
+  end if
+  considering case
+    if trimmedURL starts with "http://" or trimmedURL starts with "https://" then
+      set slashOffset to offset of "/" in text ((offset of "://" in trimmedURL) + 3) thru -1 of trimmedURL
+      return slashOffset is 0
+    end if
+  end considering
+  return false
+end isBareOrigin
 APPLESCRIPT
 }
 

@@ -1,0 +1,5 @@
+interface:
+  display_name: "Code Reviewer (TRR Workspace)"
+  short_description: "Workspace-local canonical owner for TRR code review focused on bugs, regressions, security prompts, contract drift, and missing tests."
+  default_prompt: "Use $code-reviewer to audit these TRR changes for bugs, regressions, security gaps, and missing tests."
+

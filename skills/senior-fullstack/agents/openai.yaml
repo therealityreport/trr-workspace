@@ -1,0 +1,5 @@
+interface:
+  display_name: "Senior Fullstack (TRR Workspace)"
+  short_description: "Workspace-local canonical owner for TRR cross-repo contract-coupled implementation across backend, consumers, and UI."
+  default_prompt: "Use $senior-fullstack to coordinate this TRR cross-repo change with contract-safe sequencing."
+
