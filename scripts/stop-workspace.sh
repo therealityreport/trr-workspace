@@ -148,6 +148,35 @@ kill_tree() {
   kill "-${sig}" "$pid" >/dev/null 2>&1 || true
 }
 
+stop_manager() {
+  local pid="$1"
+
+  if [[ -z "${pid}" ]]; then
+    return 1
+  fi
+  if [[ "$pid" == "$$" ]]; then
+    return 1
+  fi
+  if ! kill -0 "$pid" >/dev/null 2>&1; then
+    echo "[workspace] Workspace manager not running (pid=${pid})."
+    return 1
+  fi
+
+  echo "[workspace] Stopping workspace manager (pid=${pid})"
+  kill -TERM "$pid" >/dev/null 2>&1 || true
+
+  for _ in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50; do
+    if [[ ! -f "$PIDFILE" ]]; then
+      return 0
+    fi
+    sleep 0.2
+  done
+
+  echo "[workspace] Workspace manager did not shut down cleanly; forcing termination."
+  kill -KILL "$pid" >/dev/null 2>&1 || true
+  return 1
+}
+
 stop_one() {
   local name="$1"
   local pid="$2"
@@ -224,8 +253,15 @@ cleanup_port() {
   fi
 }
 
+MANAGER_STOP_SUCCEEDED=0
 if [[ -f "$PIDFILE" ]]; then
-  # Stop in reverse dependency order.
+  if stop_manager "${WORKSPACE_MANAGER_PID:-}"; then
+    MANAGER_STOP_SUCCEEDED=1
+  fi
+fi
+
+if [[ -f "$PIDFILE" && "$MANAGER_STOP_SUCCEEDED" -ne 1 ]]; then
+  # Fallback: stop individual services in reverse dependency order.
   stop_one "TRR_APP" "${TRR_APP_PID:-}"
   stop_one "TRR_REMOTE_WORKERS" "${TRR_REMOTE_WORKERS_PID:-}"
   stop_one "TRR_SOCIAL_WORKER" "${TRR_SOCIAL_WORKER_PID:-}"

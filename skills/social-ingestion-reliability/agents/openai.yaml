@@ -1,0 +1,5 @@
+interface:
+  display_name: "Social Ingestion Reliability (TRR Workspace)"
+  short_description: "Workspace-local canonical owner for TRR social ingestion auth, retries, worker orchestration, persistence correctness, and observability."
+  default_prompt: "Use $social-ingestion-reliability to diagnose or harden this TRR social ingestion path."
+

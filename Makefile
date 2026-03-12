@@ -2,7 +2,7 @@
 	dev dev-lite dev-cloud dev-full \
 	preflight env-contract check-policy smoke status stop logs logs-prune \
 	bootstrap doctor test test-fast test-full test-changed test-env-sensitive \
-	down chrome-agent chrome-agent-stop chrome-agent-status chrome-agent-stop-all chrome-agent-seed-sync \
+	down chrome-agent chrome-agent-shared chrome-agent-visual chrome-agent-stop chrome-agent-status chrome-agent-stop-all chrome-agent-seed-sync chrome-devtools-mcp-status \
 	mcp-aws-on mcp-aws-off mcp-aws-status \
 	workspace-pr-agent
 
@@ -14,8 +14,9 @@
 # PROFILE=local-full make dev
 # Startup tuning:
 # WORKSPACE_CLEAN_NEXT_CACHE=1 make dev  # force clean Next.js cache
-# WORKSPACE_OPEN_BROWSER=0 make dev      # skip browser tab refresh/open
-# WORKSPACE_BROWSER_TAB_SYNC_MODE=reuse_no_reload make dev  # default: focus matching tab without reload
+# WORKSPACE_OPEN_BROWSER=1 make dev      # opt in to browser tab refresh/open
+# WORKSPACE_BACKEND_AUTO_RESTART=1 make dev  # opt in to backend watchdog auto-restart
+# WORKSPACE_BROWSER_TAB_SYNC_MODE=reuse_no_reload make dev  # browser sync strategy when enabled
 # WORKSPACE_BROWSER_TAB_SYNC_MODE=reload_first make dev     # reload only the first matching tab
 # WORKSPACE_BROWSER_TAB_SYNC_MODE=reload_all make dev       # legacy behavior: reload every matching tab
 # WORKSPACE_OPEN_SCREENALYTICS_TABS=1 make dev  # opt in to screenalytics Streamlit/Web tabs
@@ -103,6 +104,16 @@ down:
 chrome-agent:
 	@bash scripts/chrome-agent.sh
 
+# Launch the visible shared managed Chrome profile on port 9222.
+# Use this when you want shared auth/session state across chats or manual browser inspection.
+chrome-agent-shared:
+	@CHROME_AGENT_DEBUG_PORT=9222 CHROME_AGENT_HEADLESS=0 bash scripts/chrome-agent.sh
+
+# Run the Codex Chrome MCP wrapper in isolated, visible mode.
+# Intended for visual wrapper diagnostics or headful Codex/browser sessions.
+chrome-agent-visual:
+	@CODEX_CHROME_MODE=isolated CODEX_CHROME_ISOLATED_HEADLESS=0 bash scripts/codex-chrome-devtools-mcp.sh
+
 chrome-agent-stop:
 	@bash scripts/stop-chrome-agent.sh
 
@@ -114,6 +125,9 @@ chrome-agent-stop-all:
 
 chrome-agent-seed-sync:
 	@bash scripts/chrome-agent-seed-sync.sh
+
+chrome-devtools-mcp-status:
+	@bash scripts/chrome-devtools-mcp-status.sh
 
 mcp-aws-on:
 	@bash scripts/mcp-profile.sh aws-on
