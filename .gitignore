@@ -7,7 +7,22 @@
 /.logs/
 /.playwright-mcp/
 
+# Temp/scratch directories
+/.codex-tmp/
+/.tmp/
+/.artifacts/
+
+# Output artifacts (screenshots, IAM policies, etc.)
+/output/
+
+# Non-repo project folders
+/BRAVOTV/
+
+# External data
+/.external/
+
 # Local agent config
 /.claude/
 
+# OS
 .DS_Store
