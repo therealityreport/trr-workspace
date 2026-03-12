@@ -1,8 +1,8 @@
 .PHONY: \
 	dev dev-lite dev-cloud dev-full \
-	preflight env-contract check-policy smoke status stop logs logs-prune \
+	preflight preflight-diagnostics env-contract check-policy smoke status stop logs logs-prune \
 	bootstrap doctor test test-fast test-full test-changed test-env-sensitive \
-	down chrome-agent chrome-agent-shared chrome-agent-visual chrome-agent-stop chrome-agent-status chrome-agent-stop-all chrome-agent-seed-sync chrome-devtools-mcp-status \
+	down chrome-devtools-mcp-status \
 	mcp-aws-on mcp-aws-off mcp-aws-status \
 	workspace-pr-agent
 
@@ -25,6 +25,9 @@ dev: preflight
 	@PROFILE="$${PROFILE:-local-lite}" \
 	WORKSPACE_TRR_JOB_PLANE_MODE=remote \
 	WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE=1 \
+	WORKSPACE_TRR_REMOTE_EXECUTOR=modal \
+	WORKSPACE_TRR_MODAL_ENABLED=1 \
+	WORKSPACE_TRR_MODAL_ADMIN_OPERATION_FUNCTION=run_admin_operation_v2 \
 	WORKSPACE_SOCIAL_WORKER_ENABLED=0 \
 	WORKSPACE_TRR_REMOTE_WORKERS_ENABLED=0 \
 	WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS=0 \
@@ -44,6 +47,9 @@ dev-full: preflight
 
 preflight:
 	@bash scripts/preflight.sh
+
+preflight-diagnostics:
+	@WORKSPACE_PREFLIGHT_DIAGNOSTICS=1 bash scripts/preflight.sh
 
 env-contract:
 	@bash scripts/workspace-env-contract.sh --generate
@@ -94,37 +100,6 @@ test-env-sensitive:
 # Use "make stop && make down" for a full cleanup.
 down:
 	@bash scripts/down-screenalytics-infra.sh
-
-# Launch Chrome with a dedicated agent profile and remote debugging enabled.
-# First run: manually log into the agent Gmail/accounts in the opened window.
-# Sessions persist across restarts in ~/.chrome-profiles/claude-agent.
-# Override profile: CHROME_AGENT_PROFILE_DIR=... make chrome-agent
-# Override port:    CHROME_AGENT_DEBUG_PORT=9333 make chrome-agent
-# Headless mode:    CHROME_AGENT_HEADLESS=1 make chrome-agent
-chrome-agent:
-	@bash scripts/chrome-agent.sh
-
-# Launch the visible shared managed Chrome profile on port 9222.
-# Use this when you want shared auth/session state across chats or manual browser inspection.
-chrome-agent-shared:
-	@CHROME_AGENT_DEBUG_PORT=9222 CHROME_AGENT_HEADLESS=0 bash scripts/chrome-agent.sh
-
-# Run the Codex Chrome MCP wrapper in isolated, visible mode.
-# Intended for visual wrapper diagnostics or headful Codex/browser sessions.
-chrome-agent-visual:
-	@CODEX_CHROME_MODE=isolated CODEX_CHROME_ISOLATED_HEADLESS=0 bash scripts/codex-chrome-devtools-mcp.sh
-
-chrome-agent-stop:
-	@bash scripts/stop-chrome-agent.sh
-
-chrome-agent-status:
-	@bash scripts/chrome-agent-status.sh
-
-chrome-agent-stop-all:
-	@CHROME_AGENT_STOP_ALL=1 bash scripts/stop-chrome-agent.sh
-
-chrome-agent-seed-sync:
-	@bash scripts/chrome-agent-seed-sync.sh
 
 chrome-devtools-mcp-status:
 	@bash scripts/chrome-devtools-mcp-status.sh

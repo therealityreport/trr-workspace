@@ -1,6 +1,166 @@
 # Session Handoff (TRR Workspace)
 
 Purpose: persistent state for multi-turn AI agent sessions affecting workspace-level tooling (`make dev` / `make stop`).
+## Latest Update (2026-03-12 16:24 EDT) — `make dev` and all shipped local profiles now pin the canonical TRR Modal contract
+
+- primary_skill: `senior-devops`
+- supporting_skills:
+  - `senior-backend`
+- mcp_tools_used:
+  - primary: `functions.exec_command`
+  - fallback: `functions.apply_patch`
+- risk_class: `medium` (workspace startup contract for remote job execution changed)
+- files_changed:
+  - `/Users/thomashulihan/Projects/TRR/Makefile`
+  - `/Users/thomashulihan/Projects/TRR/profiles/local-lite.env`
+  - `/Users/thomashulihan/Projects/TRR/profiles/local-cloud.env`
+  - `/Users/thomashulihan/Projects/TRR/profiles/local-full.env`
+  - `/Users/thomashulihan/Projects/TRR/docs/ai/HANDOFF.md`
+- behavior_summary:
+  - Made the workspace `make dev` entrypoint explicitly Modal-first by pinning:
+    - `WORKSPACE_TRR_REMOTE_EXECUTOR=modal`
+    - `WORKSPACE_TRR_MODAL_ENABLED=1`
+    - `WORKSPACE_TRR_MODAL_ADMIN_OPERATION_FUNCTION=run_admin_operation_v2`
+  - Expanded all shipped local profiles (`local-lite`, `local-cloud`, `local-full`) so they now declare the same canonical Modal app/function/secret contract instead of relying on partial defaults.
+  - Corrected `local-lite` from the older admin function name `run_admin_operation` to `run_admin_operation_v2`, so dev and production now target the same admin-operation function name.
+- validation_evidence:
+  - `rg -n "WORKSPACE_TRR_MODAL|WORKSPACE_TRR_REMOTE_EXECUTOR|WORKSPACE_TRR_JOB_PLANE_MODE" /Users/thomashulihan/Projects/TRR/Makefile /Users/thomashulihan/Projects/TRR/profiles/local-*.env`
+- downstream_repos_impacted:
+  - `TRR-Backend`: `yes` (workspace startup now matches the live backend Modal contract)
+  - `TRR-APP`: `no`
+  - `screenalytics`: `no`
+- default_skill_chain_applied: `false`
+- default_skill_chain_used:
+  - `senior-devops`
+  - `senior-backend`
+- default_skill_chain_exception_reason: `Workspace-level startup contract alignment only; no cross-repo feature implementation required.`
+
+## Latest Update (2026-03-12 15:40 EST) — `make preflight` now has opt-in interrupt diagnostics with per-phase signal tracing
+
+- primary_skill: `senior-devops`
+- supporting_skills:
+  - `senior-qa`
+- mcp_tools_used:
+  - primary: `functions.exec_command`
+  - fallback: `functions.apply_patch`
+- risk_class: `medium` (workspace preflight execution and policy-check diagnostics changed)
+- files_changed:
+  - `/Users/thomashulihan/Projects/TRR/scripts/lib/preflight-diagnostics.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/preflight.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/check-policy.sh`
+  - `/Users/thomashulihan/Projects/TRR/Makefile`
+  - `/Users/thomashulihan/Projects/TRR/docs/workspace/preflight-doctor.md`
+  - `/Users/thomashulihan/Projects/TRR/docs/ai/HANDOFF.md`
+- behavior_summary:
+  - Added opt-in preflight diagnostics under `WORKSPACE_PREFLIGHT_DIAGNOSTICS=1`, writing append-only logs to `.logs/workspace/preflight-diagnostics/<timestamp>-preflight-<pid>.log`.
+  - Added a shared diagnostics helper that records `session_start`, `phase_start`, `phase_end`, `signal_received`, `process_snapshot`, and `exit` with process metadata including pid, ppid, pgid, sid, tty, cwd, and parent command.
+  - Wrapped all `preflight.sh` phases (`doctor`, `env-contract`, `check-policy`, `chrome-devtools-mcp-status`) so the active child pid, command, and elapsed time are captured in diagnostics mode.
+  - Added `INT`, `TERM`, `HUP`, and `EXIT` traps in `preflight.sh`, plus `INT`, `TERM`, `HUP`, and `EXIT` traps in `check-policy.sh`, so both the top-level preflight shell and the suspected hot-spot phase leave diagnostic evidence when interrupted.
+  - Added `make preflight-diagnostics` as the operator entrypoint and documented the workflow, log location, intentional interrupt reproduction, and snapshot interpretation in `docs/workspace/preflight-doctor.md`.
+  - Fixed a Bash background-job signal edge case in `preflight.sh` by launching phase children through a tiny Perl `exec` shim that restores default `INT`/`TERM`/`HUP` handling before the script starts. Without that reset, `check-policy.sh` could inherit ignored interrupt handling and fail to log its own `signal_received` event during group-delivered `SIGINT`.
+  - Kept diagnostics default-off and low-noise: normal `make preflight` output and behavior are unchanged, and no diagnostic log is created unless explicitly enabled.
+- validation_evidence:
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/lib/preflight-diagnostics.sh /Users/thomashulihan/Projects/TRR/scripts/preflight.sh /Users/thomashulihan/Projects/TRR/scripts/check-policy.sh` (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR check-policy` (pass)
+  - `count_before=$(find .logs/workspace/preflight-diagnostics -type f 2>/dev/null | wc -l | tr -d ' '); make -C /Users/thomashulihan/Projects/TRR preflight; count_after=...` (pass; `DIAG_LOG_COUNT_BEFORE=16`, `DIAG_LOG_COUNT_AFTER=16`, confirming default-off mode does not create a diagnostics log)
+  - `make -C /Users/thomashulihan/Projects/TRR preflight-diagnostics` (pass; created `.logs/workspace/preflight-diagnostics/20260312T193945Z-preflight-9215.log` with all four phases recorded)
+  - Deterministic interrupt test while `env-contract` was active using a Python harness that launched `make preflight` in a separate process group and sent `SIGINT` to that group (pass; log `20260312T193747Z-preflight-1450.log` captured `signal_received`, `process_snapshot`, and `exit_code=130` for `preflight.sh`, terminal surfaced `make: *** [preflight] Interrupt: 2`)
+  - Deterministic interrupt test while `check-policy.sh` had already emitted `session_start` using the same separate-process-group harness (pass; log `20260312T193927Z-preflight-7756.log` captured `signal_received` for both `preflight.sh` and `check-policy.sh`, plus `check-policy.sh` `exit_code=130`, and terminal surfaced `make: *** [preflight] Interrupt: 2`)
+- downstream_repos_impacted:
+  - `TRR-Backend`: `no`
+  - `TRR-APP`: `no`
+  - `screenalytics`: `no`
+- default_skill_chain_applied: `false`
+- default_skill_chain_used:
+  - `senior-devops`
+  - `senior-qa`
+- default_skill_chain_exception_reason: `Workspace-only shell instrumentation and validation task with no product-surface code changes.`
+
+## Latest Update (2026-03-12 15:36 EST) — Chrome DevTools MCP now defaults to wrapper-managed shared Chrome, with no public `make chrome-agent-*` workflow
+
+- primary_skill: `orchestrate-plan-execution`
+- supporting_skills:
+  - `senior-devops`
+- mcp_tools_used:
+  - primary: `functions.exec_command`
+  - fallback: `functions.apply_patch`
+- risk_class: `medium` (workspace browser tooling defaults and local Codex MCP config changed)
+- files_changed:
+  - `/Users/thomashulihan/Projects/TRR/scripts/codex-chrome-devtools-mcp.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-status.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/preflight.sh`
+  - `/Users/thomashulihan/Projects/TRR/Makefile`
+  - `/Users/thomashulihan/Projects/TRR/AGENTS.md`
+  - `/Users/thomashulihan/.codex/config.toml`
+  - `/Users/thomashulihan/Projects/TRR/docs/ai/HANDOFF.md`
+- behavior_summary:
+  - Changed the Chrome DevTools MCP wrapper default from `isolated` to `shared`, so new Codex sessions automatically target the persistent managed Chrome profile on port `9222`.
+  - Added `env = { CODEX_CHROME_MODE = "shared" }` to the local Codex MCP server config so the default is explicit at the registration layer, not only inside the wrapper script.
+  - Removed the public `make chrome-agent*` launch targets from the workspace Makefile so manual browser bootstrap is no longer part of the normal operator workflow.
+  - Simplified `preflight.sh` to validate Chrome DevTools MCP readiness directly instead of surfacing the old `chrome-agent-status` check as part of the expected path.
+  - Updated the MCP status script wording so an inactive shared endpoint is reported as on-demand auto-start behavior instead of a misleading `unreachable` state.
+  - Updated workspace policy in `AGENTS.md` so the documented default is now `shared + headful`, auto-started by the wrapper, with isolated modes reserved for explicit overrides only.
+- validation_evidence:
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/codex-chrome-devtools-mcp.sh /Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-status.sh /Users/thomashulihan/Projects/TRR/scripts/preflight.sh /Users/thomashulihan/Projects/TRR/scripts/chrome-agent.sh /Users/thomashulihan/Projects/TRR/scripts/stop-chrome-agent.sh` (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR chrome-devtools-mcp-status` (pass; now reports `Shared 9222 endpoint: inactive (wrapper auto-starts on demand)`)
+  - `CODEX_CHROME_SKIP_BROWSER_BOOT=1 codex mcp list` (pass; `chrome-devtools` shows `CODEX_CHROME_MODE=*****` in the MCP env)
+  - `codex exec --json -C /Users/thomashulihan/Projects/TRR "Use chrome-devtools to open https://example.com and reply with the page title only."` (pass; fresh Codex subprocess auto-used `chrome-devtools` and returned `Example Domain` without any manual `make chrome-agent-*` prep)
+- downstream_repos_impacted:
+  - `TRR-Backend`: `no`
+  - `TRR-APP`: `no`
+  - `screenalytics`: `no`
+- default_skill_chain_applied: `false`
+- default_skill_chain_used:
+  - `orchestrate-plan-execution`
+  - `senior-devops`
+- default_skill_chain_exception_reason: `Workspace tooling and local Codex config cleanup rather than product-surface implementation.`
+
+## Latest Update (2026-03-12 15:08 EST) — Chrome MCP preflight now survives Node 22 shells and npm exec cache corruption
+
+- primary_skill: `senior-devops`
+- supporting_skills:
+  - `senior-qa`
+- mcp_tools_used:
+  - primary: `functions.exec_command`
+  - fallback: `functions.apply_patch`
+- risk_class: `medium` (workspace preflight/browser-tooling bootstrap path changed)
+- files_changed:
+  - `/Users/thomashulihan/Projects/TRR/scripts/lib/node-baseline.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/doctor.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/preflight.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/codex-chrome-devtools-mcp.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-status.sh`
+  - `/Users/thomashulihan/Projects/TRR/docs/ai/HANDOFF.md`
+- behavior_summary:
+  - Extracted shared Node-baseline activation into `scripts/lib/node-baseline.sh` and sourced it from both `preflight.sh` and `doctor.sh`, so a Node 24 `nvm use` now happens in the parent preflight shell instead of only inside `doctor.sh`.
+  - Kept `doctor.sh` as the version reporter, but removed its duplicated Node activation helpers so the reported Node version and the runtime Node used by later commands stay aligned.
+  - Hardened the Chrome DevTools MCP wrapper to:
+    - enforce the same Node baseline when invoked directly,
+    - use a workspace-scoped npm exec cache at `/Users/thomashulihan/Projects/TRR/.tmp/chrome-devtools-mcp/npm-cache`,
+    - pin `chrome-devtools-mcp@0.20.0`,
+    - clear only the wrapper cache and retry once on `ENOTEMPTY` cache-corruption failures.
+  - Added a test-only env hook `CODEX_CHROME_MCP_TEST_FORCE_ENOTEMPTY_ONCE=1` so the one-shot cache-recovery path can be validated deterministically without depending on real npm cache corruption.
+  - Updated MCP readiness to clean dead port reservations and stale managed-Chrome runtime files during the status check instead of only reporting them.
+  - Tightened readiness semantics for isolated mode: missing seed profile is now a hard failure when no existing isolated Chrome profiles are available.
+- validation_evidence:
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/lib/node-baseline.sh /Users/thomashulihan/Projects/TRR/scripts/doctor.sh /Users/thomashulihan/Projects/TRR/scripts/preflight.sh /Users/thomashulihan/Projects/TRR/scripts/codex-chrome-devtools-mcp.sh /Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-status.sh` (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR check-policy` (pass)
+  - `source ~/.nvm/nvm.sh && nvm use 22 >/dev/null && make -C /Users/thomashulihan/Projects/TRR chrome-devtools-mcp-status` (pass; cleaned stale reserve `codex-chrome-port-9337.reserve`, smoke check passed)
+  - `source ~/.nvm/nvm.sh && nvm use 22 >/dev/null && make -C /Users/thomashulihan/Projects/TRR preflight` (pass; `doctor.sh` reported `node: v24.14.0`, Chrome MCP readiness passed)
+  - `.tmp/chrome-devtools-mcp/npm-cache/_logs/2026-03-12T19_03_49_773Z-debug-0.log` shows the wrapper invoked `npm exec` with `/Users/thomashulihan/.nvm/versions/node/v24.14.0/bin/node` and the pinned workspace cache path
+  - `CODEX_CHROME_MCP_TEST_FORCE_ENOTEMPTY_ONCE=1 make -C /Users/thomashulihan/Projects/TRR chrome-devtools-mcp-status` (pass; logged `Detected corrupt workspace npm exec cache ... clearing and retrying once`, then smoke check passed)
+  - `tmp_config="$(mktemp)"` with `enabled = false`, then `CODEX_CONFIG_FILE="$tmp_config" bash /Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-status.sh` (expected fail; actionable `chrome-devtools MCP is not enabled` error)
+  - `source ~/.nvm/nvm.sh && nvm use 22 >/dev/null && make -C /Users/thomashulihan/Projects/TRR dev` followed by external `make -C /Users/thomashulihan/Projects/TRR stop` (pass for default local-lite startup; preflight succeeded under Node 22 shell, TRR-Backend and TRR-APP reached health, Docker remained warning-only)
+- downstream_repos_impacted:
+  - `TRR-Backend`: `no`
+  - `TRR-APP`: `no`
+  - `screenalytics`: `no`
+- default_skill_chain_applied: `false`
+- default_skill_chain_used:
+  - `senior-devops`
+  - `senior-qa`
+- default_skill_chain_exception_reason: `Workspace tooling hardening task with no product-surface code changes.`
+
 ## Latest Update (2026-03-07 14:05 EST) — manager-first `make stop` and inactive `make status` reporting fixed
 
 - primary_skill: `orchestrate-plan-execution`
