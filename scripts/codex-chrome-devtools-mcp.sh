@@ -10,11 +10,12 @@ END_PORT="${CODEX_CHROME_PORT_RANGE_END:-9399}"
 FORCED_PORT="${CODEX_CHROME_PORT:-}"
 SEED_PROFILE_DIR="${CODEX_CHROME_SEED_PROFILE_DIR:-${HOME}/.chrome-profiles/claude-agent}"
 ISOLATED_HEADLESS="${CODEX_CHROME_ISOLATED_HEADLESS:-1}"
+SKIP_BROWSER_BOOT="${CODEX_CHROME_SKIP_BROWSER_BOOT:-0}"
 
 BROWSER_PORT=""
 RESERVATION_FILE=""
 STOP_ON_EXIT=0
-MCP_PID=""
+CLEANUP_DONE=0
 
 mkdir -p "$LOG_DIR"
 
@@ -25,6 +26,25 @@ log() {
 fail() {
   log "ERROR: $*"
   exit 1
+}
+
+is_info_invocation() {
+  if [[ "$#" -eq 0 ]]; then
+    return 1
+  fi
+
+  local arg
+  for arg in "$@"; do
+    case "$arg" in
+      --help|-h|help|--version|-v|-V|version)
+        ;;
+      *)
+        return 1
+        ;;
+    esac
+  done
+
+  return 0
 }
 
 is_port_listening() {
@@ -164,20 +184,27 @@ seed_profile_if_needed() {
 }
 
 cleanup() {
-  local rc=$?
-  if [[ -n "$MCP_PID" ]] && kill -0 "$MCP_PID" >/dev/null 2>&1; then
-    kill -TERM "$MCP_PID" >/dev/null 2>&1 || true
+  if [[ "$CLEANUP_DONE" == "1" ]]; then
+    return 0
   fi
+  CLEANUP_DONE=1
+
   if [[ -n "$RESERVATION_FILE" ]]; then
     rm -f "$RESERVATION_FILE"
   fi
   if [[ "$STOP_ON_EXIT" == "1" ]] && [[ -n "$BROWSER_PORT" ]]; then
     CHROME_AGENT_DEBUG_PORT="$BROWSER_PORT" bash "${ROOT}/scripts/stop-chrome-agent.sh" >/dev/null 2>&1 || true
   fi
-  return $rc
 }
 
-trap cleanup EXIT
+trap 'cleanup' EXIT
+trap 'cleanup; exit 130' INT
+trap 'cleanup; exit 129' HUP
+trap 'cleanup; exit 143' TERM
+
+if [[ "$SKIP_BROWSER_BOOT" == "1" ]] || is_info_invocation "$@"; then
+  exec npx -y chrome-devtools-mcp "$@"
+fi
 
 case "$MODE" in
   shared)
@@ -212,6 +239,6 @@ case "$MODE" in
 esac
 
 log "Using Chrome DevTools endpoint http://127.0.0.1:${BROWSER_PORT} (mode=${MODE})"
-npx -y chrome-devtools-mcp --browserUrl "http://127.0.0.1:${BROWSER_PORT}" "$@" &
-MCP_PID=$!
-wait "$MCP_PID"
+# Keep the MCP server in the foreground so Codex can complete the stdio handshake.
+# Backgrounding the process causes stdin to be detached in non-interactive shells.
+npx -y chrome-devtools-mcp --browserUrl "http://127.0.0.1:${BROWSER_PORT}" "$@"

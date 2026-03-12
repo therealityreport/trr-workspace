@@ -40,6 +40,16 @@ if [[ -z "$CHROME_BIN" ]]; then
   exit 1
 fi
 
+launch_chrome() {
+  if [[ "$(uname)" == "Darwin" ]] && [[ "$HEADLESS" != "1" ]] && command -v open >/dev/null 2>&1; then
+    nohup open -na "/Applications/Google Chrome.app" --args "${CHROME_FLAGS[@]}" >/dev/null 2>&1 &
+  else
+    # Use nohup so the browser survives non-interactive shell exit in make/script launches.
+    nohup "$CHROME_BIN" "${CHROME_FLAGS[@]}" >"${LOGFILE}" 2>&1 &
+  fi
+  CHROME_PID=$!
+}
+
 # --- Check if already running on the debugging port ---
 port_pid() {
   if command -v lsof >/dev/null 2>&1; then
@@ -83,8 +93,7 @@ echo "[chrome-agent]   Binary:  ${CHROME_BIN}"
 echo "[chrome-agent]   Profile: ${PROFILE_DIR}"
 echo "[chrome-agent]   Port:    ${DEBUG_PORT}"
 
-"$CHROME_BIN" "${CHROME_FLAGS[@]}" >"${LOGFILE}" 2>&1 &
-CHROME_PID=$!
+launch_chrome
 
 # Wait briefly for Chrome to start listening
 for _ in 1 2 3 4 5 6 7 8 9 10; do
@@ -99,6 +108,10 @@ if ! curl -sf "http://localhost:${DEBUG_PORT}/json/version" >/dev/null 2>&1; the
   echo "[chrome-agent] WARNING: Chrome started (pid=${CHROME_PID}) but port ${DEBUG_PORT} not responding yet."
   echo "[chrome-agent] Check ${LOGFILE} for errors."
 else
+  listening_pid="$(port_pid)"
+  if [[ -n "$listening_pid" ]]; then
+    CHROME_PID="$listening_pid"
+  fi
   echo "[chrome-agent] Chrome agent ready."
 fi
 

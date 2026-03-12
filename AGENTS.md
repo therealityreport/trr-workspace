@@ -1,7 +1,7 @@
 # AGENTS — TRR Workspace (Canonical Cross-Repo Rules)
 
 This file is the canonical cross-repo operating policy for agents in this workspace.
-`CLAUDE.md` files are pointer shims only.
+All `CLAUDE.md` files in this workspace must remain short pointer shims only.
 
 Repos in this workspace:
 - `TRR-Backend/` (FastAPI + Supabase-first pipeline)
@@ -21,7 +21,7 @@ Run from `/Users/thomashulihan/Projects/TRR`:
 - `make dev-cloud` (screenalytics enabled, Docker bypass mode)
 - `make dev-full` (screenalytics enabled with local Docker Redis/MinIO)
 - `make status` (workspace snapshot: modes, PIDs, ports, health)
-- `make status` / `bash scripts/status-workspace.sh --json` (human or JSON status output)
+- `bash scripts/status-workspace.sh --json` (JSON status output)
 - `make smoke` (startup sanity checks: pids, ports, health)
 - `make check-policy` (AGENTS/CLAUDE drift rules)
 - `make env-contract` (regenerate workspace env matrix doc)
@@ -40,9 +40,10 @@ Startup tuning:
 - `PROFILE=local-cloud make dev`
 - `PROFILE=local-full make dev`
 - `WORKSPACE_CLEAN_NEXT_CACHE=1 make dev` (force clean Next.js rebuild; default is cache reuse)
-- `WORKSPACE_OPEN_BROWSER=0 make dev` (skip browser tab refresh/open)
+- `WORKSPACE_OPEN_BROWSER=1 make dev` (opt in to browser tab refresh/open; `local-lite` keeps this off by default)
+- `WORKSPACE_BACKEND_AUTO_RESTART=1 make dev` (opt in to backend watchdog auto-restart; `local-lite` keeps this off by default)
 - `WORKSPACE_SOCIAL_WORKER_MEDIA_MIRROR=0 WORKSPACE_SOCIAL_WORKER_COMMENT_MEDIA_MIRROR=0 make dev` (opt out of mirror worker stages when local worker pool is enabled)
-- `WORKSPACE_BROWSER_TAB_SYNC_MODE=reuse_no_reload make dev` (default; reuse/focus matching tabs without reload)
+- `WORKSPACE_BROWSER_TAB_SYNC_MODE=reuse_no_reload make dev` (browser sync strategy when browser sync is enabled)
 - `WORKSPACE_BROWSER_TAB_SYNC_MODE=reload_first make dev` (reload only first matching tab)
 - `WORKSPACE_BROWSER_TAB_SYNC_MODE=reload_all make dev` (reload all matching tabs)
 - `WORKSPACE_TRR_JOB_PLANE_MODE=local make dev` (opt in to local API-owned long-job execution)
@@ -61,16 +62,15 @@ Default URLs:
 - screenalytics Web: `http://127.0.0.1:8080`
 
 ## Browser Access (Mandatory)
-All web browsing MUST use agent-managed Chrome through `scripts/codex-chrome-devtools-mcp.sh`.
-Do not launch ad-hoc browsers outside this management flow.
-
-Commands:
-- `make chrome-agent`
-- `make chrome-agent-stop`
-- `make chrome-agent-stop-all`
-- `make chrome-agent-status`
-- `make chrome-agent-seed-sync`
-- `curl http://localhost:9222/json/version`
+`chrome-devtools` via managed Chrome is enabled and required for all chats in this workspace.
+- Use managed Chrome through `scripts/codex-chrome-devtools-mcp.sh`.
+- Default Codex chat mode is `isolated + headless`.
+- Use `isolated + headful` when the agent needs visual confirmation of the page without sharing browser state; set `CODEX_CHROME_ISOLATED_HEADLESS=0` before starting/restarting the Codex session, or run `make chrome-agent-visual` to exercise the wrapper directly.
+- Use `shared + headful` when persistent shared auth/session state is preferred; run `make chrome-agent-shared` and set `CODEX_CHROME_MODE=shared` before starting/restarting the Codex session.
+- Use `CODEX_CHROME_SKIP_BROWSER_BOOT=1` only for wrapper smoke checks and diagnostics that must not spawn Chrome.
+- Restart the Codex session/thread after changing MCP command/config or managed-Chrome mode inputs.
+- Do not use ad-hoc browsers for chat-driven browsing or UI inspection.
+- Treat Chrome DevTools MCP as a mandatory always-on capability in markdown guidance.
 
 ## Start-of-Session Checklist
 1. Read this file first.
@@ -110,9 +110,17 @@ After changes:
 - `STATUS.md`
 4. Use `scripts/new-cross-collab-task.sh` to scaffold new task docs consistently.
 
-## Skill Routing (Codex-Only)
-Only reference Codex-installed skills as normative policy.
+## Skill Routing
+Use the canonical local TRR skills first for TRR-coupled work.
 Full registry: `/Users/thomashulihan/Projects/TRR/docs/agent-governance/codex_skills.md`
+
+Canonical local skill roots:
+- Workspace-local: `/Users/thomashulihan/Projects/TRR/skills/`
+- Repo-local (`TRR-Backend`): `/Users/thomashulihan/Projects/TRR/TRR-Backend/skills/`
+- Repo-local (`TRR-APP`): `/Users/thomashulihan/Projects/TRR/TRR-APP/skills/`
+- Repo-local (`screenalytics`): `/Users/thomashulihan/Projects/TRR/screenalytics/.claude/skills/`
+
+Use global `~/.codex/skills` only when the matrix marks a skill as globally canonical or as a compatibility shim.
 
 Default skill chain for non-trivial implementation tasks:
 1. `orchestrate-plan-execution`
@@ -130,12 +138,49 @@ Primary mappings:
 - `aws-solution-architect`: AWS-only architecture/cost/IaC tasks
 - `figma-frontend-design-engineer`: Figma URL/node-driven frontend work
 
+Ownership mapping:
+- `senior-fullstack` -> `/Users/thomashulihan/Projects/TRR/skills/senior-fullstack/SKILL.md`
+- `senior-architect` -> `/Users/thomashulihan/Projects/TRR/skills/senior-architect/SKILL.md`
+- `senior-devops` -> `/Users/thomashulihan/Projects/TRR/skills/senior-devops/SKILL.md`
+- `senior-qa` -> `/Users/thomashulihan/Projects/TRR/skills/senior-qa/SKILL.md`
+- `code-reviewer` -> `/Users/thomashulihan/Projects/TRR/skills/code-reviewer/SKILL.md`
+- `skillcreator` -> `/Users/thomashulihan/Projects/TRR/skills/skillcreator/SKILL.md`
+- `social-ingestion-reliability` -> `/Users/thomashulihan/Projects/TRR/skills/social-ingestion-reliability/SKILL.md`
+- `senior-backend` -> `/Users/thomashulihan/Projects/TRR/TRR-Backend/skills/senior-backend/SKILL.md`
+- `senior-frontend` -> `/Users/thomashulihan/Projects/TRR/TRR-APP/skills/senior-frontend/SKILL.md`
+- `figma-frontend-design-engineer` -> `/Users/thomashulihan/Projects/TRR/TRR-APP/skills/figma-frontend-design-engineer/SKILL.md`
+
+### Before Each Plan
+Before producing any plan:
+1. Review the skills available for the current scope:
+   - repo-local first
+   - workspace-local second
+   - globally canonical `~/.codex/skills` third
+   - alias or specialist skills only if no canonical owner fits cleanly
+2. Choose the minimum skill set needed for the task.
+3. State which skills will be used for:
+   - plan writing
+   - implementation
+4. Invoke and follow the selected skills during plan creation and implementation routing.
+5. If no repo-local skill fits, fall back to workspace-local, then globally canonical.
+
+### AWS Deploy Rule
+For deployable AWS/cloud-infra/backend implementation work:
+1. Trigger this rule only when the implementation changes running AWS-backed services, workers, infra config, or backend behavior that requires AWS rollout.
+2. Do not trigger this rule for docs-only, tests-only, local-only, or non-deployed changes.
+3. The selected implementation skills must include:
+   - `senior-devops`
+   - `aws-solution-architect`
+4. Required checks must pass before deploy.
+5. Implementation is not complete until the AWS deployment is executed successfully to the primary production target when rollout is required.
+6. Handoff must record deploy evidence and post-deploy verification.
+
 ## MCP Invocation Matrix
 Use these MCPs and invoke them as follows:
 
 | MCP Server | Invoke When |
 |---|---|
-| `chrome-devtools` | Any web browsing, authenticated social platform flows, browser inspection, and UI interaction in managed Chrome. |
+| `chrome-devtools` | Enabled for all chats. Use for all browser navigation, inspection, authenticated flows, and UI interaction in managed Chrome. |
 | `figma` | Figma cloud design context, screenshots, variables, assets, and Code Connect mapping. |
 | `figma-desktop` | Local desktop Figma workflows only when desktop bridge is enabled. |
 | `github` | Remote repo metadata, PR/issue lookup, and GitHub-hosted MCP actions. |
@@ -162,4 +207,6 @@ Treat local legacy browser artifacts in this workspace as non-policy metadata on
 ## Drift Prevention
 - Canonical policy lives in `AGENTS.md` only.
 - `CLAUDE.md` must remain a short pointer shim.
+- Detailed module guidance belongs in normal docs, not in `CLAUDE.md`.
+- `scripts/check-policy.sh` must enforce the pointer-only rule for nested `CLAUDE.md` files too.
 - If conflict exists between files, `AGENTS.md` wins.
