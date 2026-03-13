@@ -1,6 +1,36 @@
 # Session Handoff (TRR Workspace)
 
 Purpose: persistent state for multi-turn AI agent sessions affecting workspace-level tooling (`make dev` / `make stop`).
+## Latest Update (2026-03-13 18:00 EDT) — workspace file now models one workspace with exactly three repo folders
+
+- primary_skill: `senior-devops`
+- supporting_skills:
+  - `senior-qa`
+- mcp_tools_used:
+  - primary: `functions.exec_command`
+  - fallback: `functions.apply_patch`
+- risk_class: `low` (workspace editor configuration only)
+- files_changed:
+  - `/Users/thomashulihan/Projects/TRR/trr-workspace.code-workspace`
+  - `/Users/thomashulihan/Projects/TRR/docs/ai/HANDOFF.md`
+- behavior_summary:
+  - Removed the root `TRR` folder from the checked-in VS Code workspace file so the workspace now models exactly one workspace containing the three project repos: `TRR-Backend`, `TRR-App`, and `TRR-Screenalytics`.
+  - Removed the workspace-only terminal cwd override tied to the deleted root folder, leaving only `python.terminal.activateEnvironment` at the workspace level.
+- validation_evidence:
+  - Parsed `/Users/thomashulihan/Projects/TRR/trr-workspace.code-workspace` as valid JSON after conflict resolution.
+  - Verified the workspace folder list is exactly:
+    - `TRR-Backend`
+    - `TRR-App`
+    - `TRR-Screenalytics`
+- downstream_repos_impacted:
+  - `TRR-Backend`: `no`
+  - `TRR-APP`: `no`
+  - `screenalytics`: `no`
+- default_skill_chain_applied: `false`
+- default_skill_chain_used:
+  - `senior-devops`
+  - `senior-qa`
+- default_skill_chain_exception_reason: `Workspace-only follow-up fix to align the checked-in VS Code workspace with the intended three-repo structure.`
 ## Latest Update (2026-03-13 07:08 EDT) — `make dev` defaults are quiet again, so open tabs stop getting dogpiled by workspace automation
 
 - primary_skill: `orchestrate-plan-execution`
