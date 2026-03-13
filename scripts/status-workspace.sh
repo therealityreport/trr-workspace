@@ -26,7 +26,7 @@ WORKSPACE_BACKEND_AUTO_RESTART="${WORKSPACE_BACKEND_AUTO_RESTART:-1}"
 WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS="${WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS:-5}"
 WORKSPACE_BACKEND_HEALTH_FAILURE_THRESHOLD="${WORKSPACE_BACKEND_HEALTH_FAILURE_THRESHOLD:-6}"
 WORKSPACE_BACKEND_HEALTH_CURL_MAX_TIME="${WORKSPACE_BACKEND_HEALTH_CURL_MAX_TIME:-30}"
-WORKSPACE_STATUS_BACKEND_HEALTH_CURL_MAX_TIME="${WORKSPACE_STATUS_BACKEND_HEALTH_CURL_MAX_TIME:-5}"
+WORKSPACE_STATUS_BACKEND_HEALTH_CURL_MAX_TIME="${WORKSPACE_STATUS_BACKEND_HEALTH_CURL_MAX_TIME:-1}"
 WORKSPACE_SOCIAL_WORKER_ENABLED="${WORKSPACE_SOCIAL_WORKER_ENABLED:-1}"
 WORKSPACE_SOCIAL_WORKER_POSTS="${WORKSPACE_SOCIAL_WORKER_POSTS:-6}"
 WORKSPACE_SOCIAL_WORKER_COMMENTS="${WORKSPACE_SOCIAL_WORKER_COMMENTS:-6}"
@@ -35,10 +35,13 @@ WORKSPACE_SOCIAL_WORKER_COMMENT_MEDIA_MIRROR="${WORKSPACE_SOCIAL_WORKER_COMMENT_
 WORKSPACE_SOCIAL_WORKER_INTERVAL_SEC="${WORKSPACE_SOCIAL_WORKER_INTERVAL_SEC:-2}"
 WORKSPACE_TRR_JOB_PLANE_MODE="${WORKSPACE_TRR_JOB_PLANE_MODE:-remote}"
 WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE="${WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE:-1}"
+WORKSPACE_TRR_REMOTE_EXECUTOR="${WORKSPACE_TRR_REMOTE_EXECUTOR:-modal}"
+WORKSPACE_TRR_MODAL_ENABLED="${WORKSPACE_TRR_MODAL_ENABLED:-1}"
 WORKSPACE_TRR_REMOTE_WORKERS_ENABLED="${WORKSPACE_TRR_REMOTE_WORKERS_ENABLED:-1}"
 WORKSPACE_TRR_REMOTE_ADMIN_WORKERS="${WORKSPACE_TRR_REMOTE_ADMIN_WORKERS:-1}"
 WORKSPACE_TRR_REMOTE_REDDIT_WORKERS="${WORKSPACE_TRR_REMOTE_REDDIT_WORKERS:-1}"
 WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS="${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS:-1}"
+WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS="${WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS:-0}"
 WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS="${WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS:-2}"
 WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_LEASE_SECONDS="${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_LEASE_SECONDS:-300}"
 TRR_BACKEND_RELOAD="${TRR_BACKEND_RELOAD:-0}"
@@ -49,7 +52,7 @@ WORKSPACE_BACKEND_LAST_RESTART_AT="${WORKSPACE_BACKEND_LAST_RESTART_AT:-}"
 WORKSPACE_BACKEND_LAST_RESTART_PROBE_RC="${WORKSPACE_BACKEND_LAST_RESTART_PROBE_RC:-}"
 
 if ! [[ "$WORKSPACE_STATUS_BACKEND_HEALTH_CURL_MAX_TIME" =~ ^[1-9][0-9]*$ ]]; then
-  WORKSPACE_STATUS_BACKEND_HEALTH_CURL_MAX_TIME="5"
+  WORKSPACE_STATUS_BACKEND_HEALTH_CURL_MAX_TIME="1"
 fi
 
 HAVE_PIDFILE=0
@@ -111,6 +114,38 @@ watchdog_restart_count_json() {
     return 0
   fi
   echo "${BACKEND_RESTART_COUNT:-0}"
+}
+
+remote_execution_summary() {
+  if [[ "$HAVE_PIDFILE" -ne 1 ]]; then
+    echo "n/a"
+    return 0
+  fi
+  if [[ "${WORKSPACE_TRR_REMOTE_WORKERS_ENABLED:-0}" != "1" ]]; then
+    echo "disabled"
+    return 0
+  fi
+  if [[ "${WORKSPACE_TRR_REMOTE_EXECUTOR:-}" == "modal" && "${WORKSPACE_TRR_MODAL_ENABLED:-}" == "1" ]]; then
+    echo "modal_dispatch_active (local claim loops skipped)"
+    return 0
+  fi
+  echo "local_claim_loops"
+}
+
+remote_workers_process_state() {
+  if [[ "$HAVE_PIDFILE" -ne 1 ]]; then
+    echo "n/a"
+    return 0
+  fi
+  if [[ "${WORKSPACE_TRR_REMOTE_WORKERS_ENABLED:-0}" != "1" ]]; then
+    echo "disabled"
+    return 0
+  fi
+  if [[ "${WORKSPACE_TRR_REMOTE_EXECUTOR:-}" == "modal" && "${WORKSPACE_TRR_MODAL_ENABLED:-}" == "1" ]]; then
+    echo "not started locally (Modal dispatch active)"
+    return 0
+  fi
+  pid_state "${TRR_REMOTE_WORKERS_PID:-}"
 }
 
 pid_state() {
@@ -205,7 +240,7 @@ backend_health_status() {
     return 0
   fi
 
-  if curl -fsS --max-time "$WORKSPACE_HEALTH_CURL_MAX_TIME" "$url" >/dev/null 2>&1; then
+  if curl -fsS --max-time "$WORKSPACE_STATUS_BACKEND_HEALTH_CURL_MAX_TIME" "$url" >/dev/null 2>&1; then
     echo "ok"
     return 0
   fi
@@ -334,10 +369,13 @@ if [[ "$OUTPUT_FORMAT" == "json" ]]; then
     "workspace_social_worker_interval_sec": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_SOCIAL_WORKER_INTERVAL_SEC:-}")")",
     "workspace_trr_job_plane_mode": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_JOB_PLANE_MODE:-}")")",
     "workspace_trr_long_job_enforce_remote": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE:-}")")",
+    "workspace_trr_remote_executor": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_EXECUTOR:-}")")",
+    "workspace_trr_modal_enabled": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_MODAL_ENABLED:-}")")",
     "workspace_trr_remote_workers_enabled": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_WORKERS_ENABLED:-}")")",
     "workspace_trr_remote_admin_workers": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_ADMIN_WORKERS:-}")")",
     "workspace_trr_remote_reddit_workers": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_REDDIT_WORKERS:-}")")",
     "workspace_trr_remote_google_news_workers": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS:-}")")",
+    "workspace_trr_remote_social_workers": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS:-}")")",
     "workspace_trr_remote_worker_poll_seconds": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS:-}")")",
     "workspace_trr_remote_google_news_lease_seconds": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_LEASE_SECONDS:-}")")",
     "trr_backend_reload": "$(json_escape "$(runtime_value_or_na "${TRR_BACKEND_RELOAD:-}")")",
@@ -371,6 +409,11 @@ if [[ "$OUTPUT_FORMAT" == "json" ]]; then
     "last_restart_reason": "$(json_escape "$(watchdog_value_or_na "${BACKEND_LAST_RESTART_REASON:-}")")",
     "last_restart_at": "$(json_escape "$(watchdog_value_or_na "${BACKEND_LAST_RESTART_AT:-}")")",
     "last_restart_probe_rc": "$(json_escape "$(watchdog_value_or_na "${BACKEND_LAST_RESTART_PROBE_RC:-}")")"
+  },
+  "remote_execution": {
+    "summary": "$(json_escape "$(remote_execution_summary)")",
+    "local_claim_loop_pid": "$(json_escape "${TRR_REMOTE_WORKERS_PID:-}")",
+    "local_claim_loops_running": $(pid_running_json "${TRR_REMOTE_WORKERS_PID:-}")
   },
   "timestamp_utc": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 }
@@ -409,10 +452,13 @@ echo "  WORKSPACE_SOCIAL_WORKER_COMMENT_MEDIA_MIRROR: $(runtime_value_or_na "${W
 echo "  WORKSPACE_SOCIAL_WORKER_INTERVAL_SEC: $(runtime_value_or_na "${WORKSPACE_SOCIAL_WORKER_INTERVAL_SEC:-}")"
 echo "  WORKSPACE_TRR_JOB_PLANE_MODE: $(runtime_value_or_na "${WORKSPACE_TRR_JOB_PLANE_MODE:-}")"
 echo "  WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE: $(runtime_value_or_na "${WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE:-}")"
+echo "  WORKSPACE_TRR_REMOTE_EXECUTOR: $(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_EXECUTOR:-}")"
+echo "  WORKSPACE_TRR_MODAL_ENABLED: $(runtime_value_or_na "${WORKSPACE_TRR_MODAL_ENABLED:-}")"
 echo "  WORKSPACE_TRR_REMOTE_WORKERS_ENABLED: $(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_WORKERS_ENABLED:-}")"
 echo "  WORKSPACE_TRR_REMOTE_ADMIN_WORKERS: $(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_ADMIN_WORKERS:-}")"
 echo "  WORKSPACE_TRR_REMOTE_REDDIT_WORKERS: $(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_REDDIT_WORKERS:-}")"
 echo "  WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS: $(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS:-}")"
+echo "  WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS: $(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS:-}")"
 echo "  WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS: $(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS:-}")"
 echo "  WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_LEASE_SECONDS: $(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_LEASE_SECONDS:-}")"
 echo "  TRR_BACKEND_RELOAD: $(runtime_value_or_na "${TRR_BACKEND_RELOAD:-}") ($(backend_reload_mode))"
@@ -422,7 +468,7 @@ echo ""
 echo "[status] Process states:"
 echo "  TRR_APP: $(pid_state "${TRR_APP_PID:-}")"
 echo "  TRR_SOCIAL_WORKER: $(pid_state "${TRR_SOCIAL_WORKER_PID:-}")"
-echo "  TRR_REMOTE_WORKERS: $(pid_state "${TRR_REMOTE_WORKERS_PID:-}")"
+echo "  TRR_REMOTE_WORKERS: $(remote_workers_process_state)"
 echo "  TRR_BACKEND: $(pid_state "${TRR_BACKEND_PID:-}")"
 if screenalytics_enabled; then
   echo "  SCREENALYTICS: $(pid_state "${SCREENALYTICS_PID:-}")"
@@ -455,13 +501,16 @@ echo "  restart_count: $(watchdog_restart_count_display)"
 echo "  last_restart_reason: $(watchdog_value_or_na "${BACKEND_LAST_RESTART_REASON:-}")"
 echo "  last_restart_at: $(watchdog_value_or_na "${BACKEND_LAST_RESTART_AT:-}")"
 echo "  last_restart_probe_rc: $(watchdog_value_or_na "${BACKEND_LAST_RESTART_PROBE_RC:-}")"
+echo ""
+echo "[status] Remote execution:"
+echo "  summary: $(remote_execution_summary)"
 
 if [[ "${BACKEND_HEALTH_STATUS}" == "hung/unresponsive" ]]; then
   echo ""
   if [[ "${WORKSPACE_BACKEND_AUTO_RESTART:-1}" == "1" ]]; then
     echo "[status] Recommendation: backend appears hung; watchdog is enabled. Check '${LOG_DIR}/trr-backend.log' and '${LOG_DIR}/backend-watchdog-events.jsonl'."
   else
-    echo "[status] Recommendation: backend appears hung; run 'make stop && make dev-lite' or set WORKSPACE_BACKEND_AUTO_RESTART=1."
+    echo "[status] Recommendation: backend appears hung; run 'make stop && make dev' or set WORKSPACE_BACKEND_AUTO_RESTART=1."
   fi
 fi
 

@@ -2,9 +2,15 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "${ROOT}/scripts/lib/node-baseline.sh"
+
 LOG_DIR="${ROOT}/.logs/workspace"
 PORT_LOCKFILE="${LOG_DIR}/codex-chrome-port.lock"
-MODE="${CODEX_CHROME_MODE:-isolated}"
+MCP_CACHE_DIR="${CODEX_CHROME_MCP_CACHE_DIR:-${ROOT}/.tmp/chrome-devtools-mcp/npm-cache}"
+MCP_RUN_LOG_DIR="${LOG_DIR}/chrome-devtools-mcp"
+MCP_VERSION="${CHROME_DEVTOOLS_MCP_VERSION:-0.20.0}"
+MCP_PACKAGE="chrome-devtools-mcp@${MCP_VERSION}"
+MODE="${CODEX_CHROME_MODE:-shared}"
 START_PORT="${CODEX_CHROME_PORT_RANGE_START:-9333}"
 END_PORT="${CODEX_CHROME_PORT_RANGE_END:-9399}"
 FORCED_PORT="${CODEX_CHROME_PORT:-}"
@@ -16,8 +22,9 @@ BROWSER_PORT=""
 RESERVATION_FILE=""
 STOP_ON_EXIT=0
 CLEANUP_DONE=0
+MCP_TEE_PID=""
 
-mkdir -p "$LOG_DIR"
+mkdir -p "$LOG_DIR" "$MCP_CACHE_DIR" "$MCP_RUN_LOG_DIR"
 
 log() {
   echo "[codex-chrome-mcp] $*" >&2
@@ -26,6 +33,68 @@ log() {
 fail() {
   log "ERROR: $*"
   exit 1
+}
+
+ensure_node_baseline_or_fail() {
+  local required_major
+  required_major="$(trr_node_required_major "$ROOT")"
+  if trr_ensure_node_baseline "$ROOT"; then
+    return 0
+  fi
+
+  log "ERROR: Node $(trr_node_version_string) does not satisfy required ${required_major}.x baseline."
+  log "ERROR: Remediation: source ~/.nvm/nvm.sh && nvm use ${required_major}"
+  exit 1
+}
+
+clear_mcp_exec_cache() {
+  rm -rf "$MCP_CACHE_DIR"
+  mkdir -p "$MCP_CACHE_DIR"
+}
+
+run_chrome_devtools_mcp() {
+  local attempt=1
+  local stderr_file="${MCP_RUN_LOG_DIR}/npm-exec-$$.stderr"
+  local status
+
+  while true; do
+    : >"$stderr_file"
+    if [[ "${CODEX_CHROME_MCP_TEST_FORCE_ENOTEMPTY_ONCE:-0}" == "1" && "$attempt" -eq 1 ]]; then
+      printf 'npm error code ENOTEMPTY\nnpm error ENOTEMPTY: simulated workspace cache corruption\n' | tee "$stderr_file" >&2 >/dev/null
+      status=190
+    else
+      # Use a named pipe instead of process substitution to avoid orphaned
+      # tee processes.  The tee runs as a tracked background job so cleanup()
+      # can kill it reliably.
+      local stderr_fifo="${stderr_file}.fifo"
+      rm -f "$stderr_fifo"
+      mkfifo "$stderr_fifo"
+      tee "$stderr_file" < "$stderr_fifo" >&2 &
+      MCP_TEE_PID=$!
+
+      if NPM_CONFIG_UPDATE_NOTIFIER=false NPM_CONFIG_FUND=false npm exec --yes --cache "$MCP_CACHE_DIR" --package "$MCP_PACKAGE" -- chrome-devtools-mcp "$@" \
+        2>"$stderr_fifo"; then
+        kill "$MCP_TEE_PID" 2>/dev/null; wait "$MCP_TEE_PID" 2>/dev/null || true
+        MCP_TEE_PID=""
+        rm -f "$stderr_file" "$stderr_fifo"
+        return 0
+      else
+        status=$?
+      fi
+      kill "$MCP_TEE_PID" 2>/dev/null; wait "$MCP_TEE_PID" 2>/dev/null || true
+      MCP_TEE_PID=""
+      rm -f "$stderr_fifo"
+    fi
+
+    if (( attempt >= 2 )) || ! grep -q 'ENOTEMPTY' "$stderr_file"; then
+      rm -f "$stderr_file"
+      return "$status"
+    fi
+
+    log "Detected corrupt workspace npm exec cache at ${MCP_CACHE_DIR}; clearing and retrying once."
+    clear_mcp_exec_cache
+    attempt=$((attempt + 1))
+  done
 }
 
 is_info_invocation() {
@@ -134,9 +203,9 @@ reserve_port_with_lock() {
         continue
       fi
 
-      sleep 0.05
+      sleep 0.2
       spin=$((spin + 1))
-      if (( spin > 200 )); then
+      if (( spin > 50 )); then
         fail "Timed out waiting for lock ${dir_lock}. Remove stale lock and retry."
       fi
     done
@@ -189,9 +258,24 @@ cleanup() {
   fi
   CLEANUP_DONE=1
 
+  # Kill all child processes spawned by this script (npm, node, tee, watchdog).
+  # Without this, children become orphans re-parented to PID 1 and accumulate
+  # across Claude Code sessions, eventually consuming all CPU.
+  if [[ -n "$MCP_TEE_PID" ]]; then
+    kill "$MCP_TEE_PID" 2>/dev/null || true
+  fi
+  # Kill entire process group rooted at this script.
+  local child
+  for child in $(pgrep -P $$ 2>/dev/null || true); do
+    kill "$child" 2>/dev/null || true
+  done
+
   if [[ -n "$RESERVATION_FILE" ]]; then
     rm -f "$RESERVATION_FILE"
   fi
+  # Clean up stderr fifo if it exists.
+  rm -f "${MCP_RUN_LOG_DIR}/npm-exec-$$.stderr.fifo"
+
   if [[ "$STOP_ON_EXIT" == "1" ]] && [[ -n "$BROWSER_PORT" ]]; then
     CHROME_AGENT_DEBUG_PORT="$BROWSER_PORT" bash "${ROOT}/scripts/stop-chrome-agent.sh" >/dev/null 2>&1 || true
   fi
@@ -202,8 +286,29 @@ trap 'cleanup; exit 130' INT
 trap 'cleanup; exit 129' HUP
 trap 'cleanup; exit 143' TERM
 
+ensure_node_baseline_or_fail
+
+# Orphan watchdog: if Claude Code exits/crashes without sending SIGTERM,
+# our parent PID will change to 1 (launchd).  This background loop detects
+# that and triggers cleanup so we don't leave processes running indefinitely.
+_ORIGINAL_PPID="$(ps -o ppid= -p $$ 2>/dev/null | tr -d ' ')"
+if [[ -n "$_ORIGINAL_PPID" && "$_ORIGINAL_PPID" != "1" ]]; then
+  (
+    while sleep 10; do
+      current_ppid="$(ps -o ppid= -p $$ 2>/dev/null | tr -d ' ')"
+      if [[ -z "$current_ppid" || "$current_ppid" == "1" ]]; then
+        # Parent is gone — we're orphaned.  Trigger cleanup.
+        kill -TERM $$ 2>/dev/null || true
+        break
+      fi
+    done
+  ) &
+  disown $! 2>/dev/null || true
+fi
+
 if [[ "$SKIP_BROWSER_BOOT" == "1" ]] || is_info_invocation "$@"; then
-  exec npx -y chrome-devtools-mcp "$@"
+  run_chrome_devtools_mcp "$@"
+  exit $?
 fi
 
 case "$MODE" in
@@ -241,4 +346,4 @@ esac
 log "Using Chrome DevTools endpoint http://127.0.0.1:${BROWSER_PORT} (mode=${MODE})"
 # Keep the MCP server in the foreground so Codex can complete the stdio handshake.
 # Backgrounding the process causes stdin to be detached in non-interactive shells.
-npx -y chrome-devtools-mcp --browserUrl "http://127.0.0.1:${BROWSER_PORT}" "$@"
+run_chrome_devtools_mcp --browserUrl "http://127.0.0.1:${BROWSER_PORT}" "$@"

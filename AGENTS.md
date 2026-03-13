@@ -16,8 +16,8 @@ Workspace runtime baseline:
 Run from `/Users/thomashulihan/Projects/TRR`:
 - `make bootstrap` (one-time dependency setup)
 - `make preflight` (required pre-check before `make dev*`; doctor + env contract + policy drift checks)
-- `make dev` (daily default: laptop-safe `local-lite` profile with remote-enforced long jobs)
-- `make dev-lite` (TRR-APP + TRR-Backend only; screenalytics disabled)
+- `make dev` (daily default: canonical remote-first startup for TRR-APP + TRR-Backend with Modal-backed background execution)
+- `make dev-lite` (deprecated compatibility alias for `make dev`)
 - `make dev-cloud` (screenalytics enabled, Docker bypass mode)
 - `make dev-full` (screenalytics enabled with local Docker Redis/MinIO)
 - `make status` (workspace snapshot: modes, PIDs, ports, health)
@@ -36,19 +36,19 @@ Run from `/Users/thomashulihan/Projects/TRR`:
 - `make mcp-aws-off` (disable AWS MCP profile after AWS tasks)
 
 Startup tuning:
-- `PROFILE=local-lite make dev` (load defaults from `profiles/local-lite.env`; explicit env vars still override)
+- `PROFILE=default make dev` (load defaults from `profiles/default.env`; explicit env vars still override)
 - `PROFILE=local-cloud make dev`
 - `PROFILE=local-full make dev`
 - `WORKSPACE_CLEAN_NEXT_CACHE=1 make dev` (force clean Next.js rebuild; default is cache reuse)
-- `WORKSPACE_OPEN_BROWSER=1 make dev` (opt in to browser tab refresh/open; `local-lite` keeps this off by default)
-- `WORKSPACE_BACKEND_AUTO_RESTART=1 make dev` (opt in to backend watchdog auto-restart; `local-lite` keeps this off by default)
+- `WORKSPACE_OPEN_BROWSER=0 make dev` (disable browser tab refresh/open)
+- `WORKSPACE_BACKEND_AUTO_RESTART=0 make dev` (disable backend watchdog auto-restart)
 - `WORKSPACE_SOCIAL_WORKER_MEDIA_MIRROR=0 WORKSPACE_SOCIAL_WORKER_COMMENT_MEDIA_MIRROR=0 make dev` (opt out of mirror worker stages when local worker pool is enabled)
 - `WORKSPACE_BROWSER_TAB_SYNC_MODE=reuse_no_reload make dev` (browser sync strategy when browser sync is enabled)
 - `WORKSPACE_BROWSER_TAB_SYNC_MODE=reload_first make dev` (reload only first matching tab)
 - `WORKSPACE_BROWSER_TAB_SYNC_MODE=reload_all make dev` (reload all matching tabs)
 - `WORKSPACE_TRR_JOB_PLANE_MODE=local make dev` (opt in to local API-owned long-job execution)
-- `WORKSPACE_TRR_JOB_PLANE_MODE=remote WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE=1 make dev` (remote worker-owned long jobs)
-- `WORKSPACE_TRR_REMOTE_WORKERS_ENABLED=1 make dev` (start admin/reddit/google-news remote worker loops locally)
+- `WORKSPACE_TRR_JOB_PLANE_MODE=remote WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE=1 make dev` (remote Modal-owned long jobs)
+- `WORKSPACE_TRR_REMOTE_WORKERS_ENABLED=0 make dev` (disable the remote execution contract entirely)
 - `WORKSPACE_OPEN_SCREENALYTICS_TABS=1 make dev` (opt in to opening screenalytics Streamlit/Web tabs)
 - `SCREENALYTICS_API_URL=https://... make dev` (override backend/app target screenalytics endpoint)
 - `WORKSPACE_HEALTH_TIMEOUT_APP=90 make dev` (tune startup wait windows; see other `WORKSPACE_HEALTH_TIMEOUT_*` vars)
@@ -64,9 +64,10 @@ Default URLs:
 ## Browser Access (Mandatory)
 `chrome-devtools` via managed Chrome is enabled and required for all chats in this workspace.
 - Use managed Chrome through `scripts/codex-chrome-devtools-mcp.sh`.
-- Default Codex chat mode is `isolated + headless`.
-- Use `isolated + headful` when the agent needs visual confirmation of the page without sharing browser state; set `CODEX_CHROME_ISOLATED_HEADLESS=0` before starting/restarting the Codex session, or run `make chrome-agent-visual` to exercise the wrapper directly.
-- Use `shared + headful` when persistent shared auth/session state is preferred; run `make chrome-agent-shared` and set `CODEX_CHROME_MODE=shared` before starting/restarting the Codex session.
+- Default Codex chat mode is `isolated + headful` — each session gets its own Chrome instance on a unique port (9333–9399), seeded from `~/.chrome-profiles/claude-agent`. No manual `make chrome-agent*` bootstrap is part of the normal workflow.
+- Isolated mode prevents concurrent-session CDP target contention. Do not revert to `shared` unless you have a single active session and need the shared browser state.
+- Use `isolated + headless` when you need a clean per-session browser without a visible window; set `CODEX_CHROME_ISOLATED_HEADLESS=1` before starting/restarting the Codex session.
+- Use `shared + headful` only for single-session workflows where you need to share login state with a manually-managed Chrome; set `CODEX_CHROME_MODE=shared` before starting/restarting the Codex session.
 - Use `CODEX_CHROME_SKIP_BROWSER_BOOT=1` only for wrapper smoke checks and diagnostics that must not spawn Chrome.
 - Restart the Codex session/thread after changing MCP command/config or managed-Chrome mode inputs.
 - Do not use ad-hoc browsers for chat-driven browsing or UI inspection.

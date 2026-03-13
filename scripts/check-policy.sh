@@ -2,6 +2,34 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "$ROOT/scripts/lib/preflight-diagnostics.sh"
+
+preflight_diag_init "check-policy.sh" "$ROOT" "check-policy"
+
+check_policy_on_signal() {
+  local signal_name="$1"
+  export WORKSPACE_PREFLIGHT_DIAGNOSTICS_SIGNAL_SEEN="$signal_name"
+  export WORKSPACE_PREFLIGHT_DIAGNOSTICS_EXIT_CODE="$(preflight_diag_signal_exit_code "$signal_name")"
+  preflight_diag_log_event signal_received signal "$signal_name"
+  preflight_diag_log_snapshot "signal_${signal_name}"
+  trap - "$signal_name"
+  kill -s "$signal_name" "$$"
+}
+
+check_policy_on_exit() {
+  local rc="$?"
+  local inferred_signal=""
+  if [[ -n "${WORKSPACE_PREFLIGHT_DIAGNOSTICS_EXIT_CODE:-}" ]]; then
+    rc="$WORKSPACE_PREFLIGHT_DIAGNOSTICS_EXIT_CODE"
+  fi
+  if [[ -z "${WORKSPACE_PREFLIGHT_DIAGNOSTICS_SIGNAL_SEEN:-}" ]]; then
+    inferred_signal="$(preflight_diag_exit_code_signal_name "$rc")"
+    if [[ -n "$inferred_signal" ]]; then
+      preflight_diag_log_event signal_received signal "$inferred_signal" inferred "true"
+    fi
+  fi
+  preflight_diag_log_event exit exit_code "$rc" failures "${failures:-0}"
+}
 
 AGENTS_FILES=(
   "$ROOT/AGENTS.md"
@@ -24,6 +52,18 @@ POLICY_SCAN_FILES=(
 )
 
 failures=0
+
+if preflight_diag_is_enabled; then
+  preflight_diag_set_phase "policy_scan"
+  preflight_diag_log_event session_start \
+    agents_count "${#AGENTS_FILES[@]}" \
+    claude_count "${#CLAUDE_FILES[@]}" \
+    policy_scan_count "${#POLICY_SCAN_FILES[@]}"
+  trap check_policy_on_exit EXIT
+  trap 'check_policy_on_signal INT' INT
+  trap 'check_policy_on_signal TERM' TERM
+  trap 'check_policy_on_signal HUP' HUP
+fi
 
 for file in "${AGENTS_FILES[@]}"; do
   if [[ ! -f "$file" ]]; then
