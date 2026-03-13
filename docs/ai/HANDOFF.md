@@ -1,6 +1,151 @@
 # Session Handoff (TRR Workspace)
 
 Purpose: persistent state for multi-turn AI agent sessions affecting workspace-level tooling (`make dev` / `make stop`).
+## Latest Update (2026-03-13 07:08 EDT) — `make dev` defaults are quiet again, so open tabs stop getting dogpiled by workspace automation
+
+- primary_skill: `orchestrate-plan-execution`
+- supporting_skills:
+  - `debugging-wizard`
+  - `senior-devops`
+  - `senior-qa`
+- mcp_tools_used:
+  - primary: `functions.exec_command`
+  - secondary: `functions.apply_patch`
+  - verification: `functions.mcp__chrome-devtools__new_page`, `functions.mcp__chrome-devtools__wait_for`, `functions.mcp__chrome-devtools__list_network_requests`
+- risk_class: `medium` (workspace startup defaults changed again; daily dev behavior is quieter and less automatic)
+- files_changed:
+  - `/Users/thomashulihan/Projects/TRR/Makefile`
+  - `/Users/thomashulihan/Projects/TRR/profiles/default.env`
+  - `/Users/thomashulihan/Projects/TRR/profiles/local-cloud.env`
+  - `/Users/thomashulihan/Projects/TRR/profiles/local-full.env`
+  - `/Users/thomashulihan/Projects/TRR/profiles/local-lite.env`
+  - `/Users/thomashulihan/Projects/TRR/scripts/dev-workspace.sh`
+  - `/Users/thomashulihan/Projects/TRR/docs/workspace/env-contract.md`
+  - `/Users/thomashulihan/Projects/TRR/docs/ai/HANDOFF.md`
+- behavior_summary:
+  - Restored laptop-safe defaults for the workspace startup path:
+    - `WORKSPACE_OPEN_BROWSER=0`
+    - `WORKSPACE_BACKEND_AUTO_RESTART=0`
+  - Applied the same quieter browser default to the shipped `local-cloud` and `local-full` profiles so alternate local startup modes do not reopen or reshuffle tabs unless explicitly requested.
+  - Kept browser tab sync available as an opt-in via `WORKSPACE_OPEN_BROWSER=1 make dev`.
+  - Restarted the workspace to prove the new defaults take effect in the live pidfile/status contract, not just in tracked files.
+- validation_evidence:
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/dev-workspace.sh /Users/thomashulihan/Projects/TRR/scripts/open-or-refresh-browser-tab.sh /Users/thomashulihan/Projects/TRR/scripts/open-workspace-dev-window.sh /Users/thomashulihan/Projects/TRR/scripts/workspace-env-contract.sh` (pass)
+  - `bash /Users/thomashulihan/Projects/TRR/scripts/workspace-env-contract.sh --generate` (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR stop` (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR dev` (pass; startup summary now reports `Browser sync: disabled`, `Backend watchdog: disabled`, and `Skipping browser sync (WORKSPACE_OPEN_BROWSER=0)`)
+  - `bash /Users/thomashulihan/Projects/TRR/scripts/status-workspace.sh` during the restarted run (pass; shows `WORKSPACE_OPEN_BROWSER: 0`, `WORKSPACE_BACKEND_AUTO_RESTART: 0`, `TRR-APP ... ok`, `TRR-Backend ... ok`)
+- blocked_checks:
+  - This change does not remove normal Next.js Fast Refresh behavior when source files actually change. The fix removes workspace-driven tab churn and backend self-restart churn; code-edit invalidations can still cause tab reloads, but they should now happen with far less recompilation pressure.
+## Latest Update (2026-03-12 23:24 EDT) — `make dev` is now the canonical remote-first startup and `make smoke` is resilient under Next.js warmup
+
+- primary_skill: `orchestrate-plan-execution`
+- supporting_skills:
+  - `senior-devops`
+  - `senior-backend`
+  - `senior-qa`
+- mcp_tools_used:
+  - primary: `functions.exec_command`
+  - secondary: `functions.apply_patch`
+  - verification: `functions.mcp__chrome-devtools__list_pages`, `functions.mcp__chrome-devtools__take_snapshot`
+- risk_class: `medium` (workspace startup defaults, status semantics, and smoke health checks changed)
+- files_changed:
+  - `/Users/thomashulihan/Projects/TRR/AGENTS.md`
+  - `/Users/thomashulihan/Projects/TRR/Makefile`
+  - `/Users/thomashulihan/Projects/TRR/profiles/default.env`
+  - `/Users/thomashulihan/Projects/TRR/profiles/local-lite.env`
+  - `/Users/thomashulihan/Projects/TRR/scripts/dev-workspace.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/doctor.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/smoke.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/status-workspace.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/workspace-env-contract.sh`
+  - `/Users/thomashulihan/Projects/TRR/docs/workspace/env-contract.md`
+  - `/Users/thomashulihan/Projects/TRR/docs/ai/HANDOFF.md`
+- behavior_summary:
+  - Added `profiles/default.env` and made `make dev` load it by default, replacing the old `PROFILE=local-lite` daily startup assumption.
+  - Made the effective `make dev` contract remote-first:
+    - `WORKSPACE_OPEN_BROWSER=1`
+    - `WORKSPACE_BACKEND_AUTO_RESTART=1`
+    - `TRR_BACKEND_RELOAD=0`
+    - `TRR_BACKEND_WORKERS=2`
+    - `TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER=0`
+    - `WORKSPACE_TRR_JOB_PLANE_MODE=remote`
+    - `WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE=1`
+    - `WORKSPACE_TRR_REMOTE_EXECUTOR=modal`
+    - `WORKSPACE_TRR_MODAL_ENABLED=1`
+    - `WORKSPACE_TRR_REMOTE_WORKERS_ENABLED=1`
+    - `WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS=1`
+    - `WORKSPACE_SOCIAL_WORKER_ENABLED=0`
+  - Turned `make dev-lite` into a deprecated compatibility alias that forwards to `make dev`.
+  - Updated workspace startup/status output so the intended local stack is explicit (`TRR-APP`, `TRR-Backend`) and Modal-backed background execution is first-class (`Modal dispatch active`, local claim loops skipped).
+  - Updated `doctor.sh` to report an active shell venv separately from the repo-managed runtime used by workspace services.
+  - Tightened `status-workspace.sh` to use a 1-second best-effort backend/app probe, surface remote execution metadata, and report `n/a` when the workspace is inactive.
+  - Hardened `smoke.sh` with retrying HTTP probes so `make smoke` no longer flakes on transient Next.js warmup while the app is otherwise healthy.
+- validation_evidence:
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/dev-workspace.sh /Users/thomashulihan/Projects/TRR/scripts/status-workspace.sh /Users/thomashulihan/Projects/TRR/scripts/doctor.sh /Users/thomashulihan/Projects/TRR/scripts/workspace-env-contract.sh /Users/thomashulihan/Projects/TRR/scripts/smoke.sh /Users/thomashulihan/Projects/TRR/TRR-Backend/scripts/start_remote_job_workers.sh` (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR env-contract` (pass; regenerated `docs/workspace/env-contract.md` to the `PROFILE=default` baseline)
+  - `make -C /Users/thomashulihan/Projects/TRR preflight` (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR dev` (pass; startup summary reported `Workspace profile: default`, browser sync enabled, backend watchdog enabled, backend mode `non-reload`, remote execution `Modal dispatch active`, local claim loops skipped)
+  - `make -C /Users/thomashulihan/Projects/TRR status` during the live run (pass; reported `TRR_REMOTE_WORKERS: not started locally (Modal dispatch active)` and `summary: modal_dispatch_active (local claim loops skipped)`)
+  - `make -C /Users/thomashulihan/Projects/TRR smoke` (initial app-probe failure under active compile load; fixed by adding retrying HTTP probes, rerun passed)
+  - `make -C /Users/thomashulihan/Projects/TRR stop` followed by `make -C /Users/thomashulihan/Projects/TRR status` (pass; workspace inactive, no listeners on `:3000` or `:8000`)
+  - Managed Chrome verification: `chrome-devtools` pages were open on `admin.localhost:3000` routes and the selected `http://admin.localhost:3000/social/instagram/bravotv/hashtags` snapshot showed a healthy admin UI with populated hashtag rows and `System health: Healthy`.
+- blocked_checks:
+  - Representative job execution for each remote lane (admin, Reddit, Google News, social ingest) was not triggered in this session; the validation here confirms the workspace now defaults to Modal-owned dispatch and avoids local claim-loop workers, but not end-to-end job claims for every lane.
+- downstream_repos_impacted:
+  - `TRR-Backend`: `yes` (remote worker bootstrap contract changed)
+  - `TRR-APP`: `no` (consumer behavior unchanged; only workspace startup/smoke interaction changed)
+  - `screenalytics`: `no`
+- default_skill_chain_applied: `true`
+- default_skill_chain_used:
+  - `orchestrate-plan-execution`
+  - `senior-devops`
+  - `senior-backend`
+  - `senior-qa`
+- default_skill_chain_exception_reason: `n/a`
+
+## Latest Update (2026-03-12 16:45 EDT) — local `make dev` no longer fails on env-contract drift, and strict preflight is explicit
+
+- primary_skill: `orchestrate-plan-execution`
+- supporting_skills:
+  - `senior-devops`
+  - `senior-qa`
+  - `code-reviewer`
+- mcp_tools_used:
+  - primary: `functions.exec_command`
+  - fallback: `functions.apply_patch`
+- risk_class: `medium` (workspace preflight gate behavior changed)
+- files_changed:
+  - `/Users/thomashulihan/Projects/TRR/Makefile`
+  - `/Users/thomashulihan/Projects/TRR/scripts/preflight.sh`
+  - `/Users/thomashulihan/Projects/TRR/docs/workspace/env-contract.md`
+  - `/Users/thomashulihan/Projects/TRR/docs/workspace/preflight-doctor.md`
+  - `/Users/thomashulihan/Projects/TRR/docs/ai/HANDOFF.md`
+- behavior_summary:
+  - Added an explicit `make preflight-strict` target that runs the same preflight script with `WORKSPACE_PREFLIGHT_STRICT=1`.
+  - Changed the default preflight flow so env-contract failures are warning-only when strict mode is off, while `doctor`, `check-policy`, and `chrome-devtools-mcp-status` remain hard failures.
+  - Kept the remediation path explicit in the warning output: `make env-contract`.
+  - Regenerated `docs/workspace/env-contract.md` so the tracked local-lite contract now reflects `WORKSPACE_TRR_MODAL_ADMIN_OPERATION_FUNCTION=run_admin_operation_v2`.
+  - Documented the split between default and strict preflight behavior in `docs/workspace/preflight-doctor.md`.
+- validation_evidence:
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/preflight.sh` (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR preflight` with stale `docs/workspace/env-contract.md` (pass with warning; continued through remaining phases)
+  - `make -C /Users/thomashulihan/Projects/TRR preflight-strict` with stale `docs/workspace/env-contract.md` (expected fail on env-contract drift)
+  - `make -C /Users/thomashulihan/Projects/TRR env-contract` (pass; regenerated tracked env contract)
+  - `make -C /Users/thomashulihan/Projects/TRR preflight-strict` after regeneration (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR dev` followed by `make -C /Users/thomashulihan/Projects/TRR stop` (pass for startup/stop flow; the live `make dev` shell exits after receiving the intentional stop signal)
+- downstream_repos_impacted:
+  - `TRR-Backend`: `no`
+  - `TRR-APP`: `no`
+  - `screenalytics`: `no`
+- default_skill_chain_applied: `true`
+- default_skill_chain_used:
+  - `orchestrate-plan-execution`
+  - `senior-devops`
+  - `senior-qa`
+  - `code-reviewer`
+- default_skill_chain_exception_reason: `n/a`
+
 ## Latest Update (2026-03-12 16:24 EDT) — `make dev` and all shipped local profiles now pin the canonical TRR Modal contract
 
 - primary_skill: `senior-devops`
