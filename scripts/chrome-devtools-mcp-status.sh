@@ -15,17 +15,32 @@ warn() {
   echo "[chrome-devtools-mcp] WARNING: $*" >&2
 }
 
+isolated_profile_state() {
+  local profile
+  shopt -s nullglob
+  for profile in "${HOME}"/.chrome-profiles/codex-chat-*; do
+    if [[ -d "$profile" ]]; then
+      shopt -u nullglob
+      echo "present"
+      return 0
+    fi
+  done
+  shopt -u nullglob
+  echo "missing"
+}
+
 endpoint_state() {
   local port="$1"
   if curl -sf "http://127.0.0.1:${port}/json/version" >/dev/null 2>&1; then
     echo "reachable"
   else
-    echo "unreachable"
+    echo "inactive (wrapper auto-starts on demand)"
   fi
 }
 
 report_stale_runtime() {
   local stale_count=0
+  local cleaned_count=0
   local reserve
   local pidfile
   local statefile
@@ -36,24 +51,31 @@ report_stale_runtime() {
   for reserve in "${LOG_DIR}"/codex-chrome-port-*.reserve; do
     owner_pid="$(cat "$reserve" 2>/dev/null || true)"
     if [[ -z "$owner_pid" ]] || ! kill -0 "$owner_pid" >/dev/null 2>&1; then
-      echo "[chrome-devtools-mcp] Stale reserve: $(basename "$reserve") owner=${owner_pid:-missing}"
+      rm -f "$reserve"
+      echo "[chrome-devtools-mcp] Cleaned stale reserve: $(basename "$reserve") owner=${owner_pid:-missing}"
       stale_count=$((stale_count + 1))
+      cleaned_count=$((cleaned_count + 1))
     fi
   done
 
   for pidfile in "${LOG_DIR}"/chrome-agent-*.pid; do
     browser_pid="$(cat "$pidfile" 2>/dev/null || true)"
     if [[ -z "$browser_pid" ]] || ! kill -0 "$browser_pid" >/dev/null 2>&1; then
-      echo "[chrome-devtools-mcp] Stale pidfile: $(basename "$pidfile") pid=${browser_pid:-missing}"
+      statefile="${pidfile%.pid}.env"
+      rm -f "$pidfile" "$statefile"
+      echo "[chrome-devtools-mcp] Cleaned stale pidfile: $(basename "$pidfile") pid=${browser_pid:-missing}"
       stale_count=$((stale_count + 1))
+      cleaned_count=$((cleaned_count + 1))
     fi
   done
 
   for statefile in "${LOG_DIR}"/chrome-agent-*.env; do
     pidfile="${statefile%.env}.pid"
     if [[ ! -f "$pidfile" ]]; then
-      echo "[chrome-devtools-mcp] Orphaned statefile: $(basename "$statefile")"
+      rm -f "$statefile"
+      echo "[chrome-devtools-mcp] Cleaned orphaned statefile: $(basename "$statefile")"
       stale_count=$((stale_count + 1))
+      cleaned_count=$((cleaned_count + 1))
     fi
   done
   shopt -u nullglob
@@ -61,7 +83,7 @@ report_stale_runtime() {
   if [[ "$stale_count" -eq 0 ]]; then
     echo "[chrome-devtools-mcp] Stale runtime artifacts: none"
   else
-    echo "[chrome-devtools-mcp] Stale runtime artifacts: ${stale_count}"
+    echo "[chrome-devtools-mcp] Stale runtime artifacts cleaned: ${cleaned_count}"
   fi
 }
 
@@ -98,10 +120,16 @@ if [[ "$configured_command" != "$EXPECTED_COMMAND" ]]; then
 fi
 
 seed_profile="${CODEX_CHROME_SEED_PROFILE_DIR:-${HOME}/.chrome-profiles/claude-agent}"
+wrapper_mode="${CODEX_CHROME_MODE:-isolated}"
 seed_profile_state="present"
 if [[ ! -d "$seed_profile" ]]; then
   seed_profile_state="missing"
   warn "Seed profile not found at ${seed_profile}; isolated chats may fail if no cloned profile already exists."
+fi
+
+existing_isolated_profiles="$(isolated_profile_state)"
+if [[ "$wrapper_mode" == "isolated" && "$seed_profile_state" == "missing" && "$existing_isolated_profiles" == "missing" ]]; then
+  fail "Seed profile missing at ${seed_profile} and no existing isolated Chrome profiles were found."
 fi
 
 echo "[chrome-devtools-mcp] Config OK: ${CONFIG_FILE}"
@@ -116,4 +144,4 @@ if ! CODEX_CHROME_SKIP_BROWSER_BOOT=1 "$EXPECTED_COMMAND" --help >/dev/null; the
 fi
 
 echo "[chrome-devtools-mcp] Smoke check passed."
-echo "[chrome-devtools-mcp] If the tool still does not appear in an already-open Codex chat, restart the Codex session/thread to reload MCP registrations."
+echo "[chrome-devtools-mcp] New Codex sessions will auto-start managed Chrome through the wrapper. Already-open chats still need a restart to reload MCP registrations."

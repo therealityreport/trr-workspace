@@ -1,20 +1,21 @@
 .PHONY: \
 	dev dev-lite dev-cloud dev-full \
-	preflight preflight-diagnostics env-contract check-policy smoke status stop logs logs-prune \
+	preflight preflight-strict preflight-diagnostics env-contract check-policy smoke status stop logs logs-prune \
 	bootstrap doctor test test-fast test-full test-changed test-env-sensitive \
 	down chrome-devtools-mcp-status \
 	mcp-aws-on mcp-aws-off mcp-aws-status \
 	workspace-pr-agent
 
-# Daily default: `make dev` now runs laptop-safe `local-lite` mode with remote-enforced long jobs.
-# This keeps heavy social ingestion off local machine by default.
-# To run heavier stacks intentionally, use `make dev-cloud` or `make dev-full`.
-# To override this default profile explicitly:
+# Daily default: `make dev` runs the canonical remote-first workspace profile.
+# It starts TRR-APP + TRR-Backend locally and uses Modal-backed execution for background work.
+# To run screenalytics stacks intentionally, use `make dev-cloud` or `make dev-full`.
+# To override the default profile explicitly:
+# PROFILE=default make dev
 # PROFILE=local-cloud make dev
 # PROFILE=local-full make dev
 # Startup tuning:
 # WORKSPACE_CLEAN_NEXT_CACHE=1 make dev  # force clean Next.js cache
-# WORKSPACE_OPEN_BROWSER=1 make dev      # opt in to browser tab refresh/open
+# WORKSPACE_OPEN_BROWSER=1 make dev      # opt in to browser tab reuse/open on startup
 # WORKSPACE_BACKEND_AUTO_RESTART=1 make dev  # opt in to backend watchdog auto-restart
 # WORKSPACE_BROWSER_TAB_SYNC_MODE=reuse_no_reload make dev  # browser sync strategy when enabled
 # WORKSPACE_BROWSER_TAB_SYNC_MODE=reload_first make dev     # reload only the first matching tab
@@ -22,20 +23,12 @@
 # WORKSPACE_OPEN_SCREENALYTICS_TABS=1 make dev  # opt in to screenalytics Streamlit/Web tabs
 # TRR_BACKEND_RELOAD=1 make dev          # opt in backend hot-reload (default workspace mode is non-reload)
 dev: preflight
-	@PROFILE="$${PROFILE:-local-lite}" \
-	WORKSPACE_TRR_JOB_PLANE_MODE=remote \
-	WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE=1 \
-	WORKSPACE_TRR_REMOTE_EXECUTOR=modal \
-	WORKSPACE_TRR_MODAL_ENABLED=1 \
-	WORKSPACE_TRR_MODAL_ADMIN_OPERATION_FUNCTION=run_admin_operation_v2 \
-	WORKSPACE_SOCIAL_WORKER_ENABLED=0 \
-	WORKSPACE_TRR_REMOTE_WORKERS_ENABLED=0 \
-	WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS=0 \
-	bash scripts/dev-workspace.sh
+	@PROFILE="$${PROFILE:-default}" bash scripts/dev-workspace.sh
 
-# Lightweight mode: TRR-APP + TRR-Backend only (no screenalytics).
-dev-lite: preflight
-	@WORKSPACE_SCREENALYTICS=0 bash scripts/dev-workspace.sh
+# Compatibility alias for the canonical default path.
+dev-lite:
+	@echo "[workspace] NOTE: 'make dev-lite' is deprecated; running 'make dev'."
+	@$(MAKE) --no-print-directory dev PROFILE="$${PROFILE:-default}"
 
 # Cloud-backed screenalytics mode (no local Docker infra).
 dev-cloud: preflight
@@ -47,6 +40,9 @@ dev-full: preflight
 
 preflight:
 	@bash scripts/preflight.sh
+
+preflight-strict:
+	@WORKSPACE_PREFLIGHT_STRICT=1 bash scripts/preflight.sh
 
 preflight-diagnostics:
 	@WORKSPACE_PREFLIGHT_DIAGNOSTICS=1 bash scripts/preflight.sh

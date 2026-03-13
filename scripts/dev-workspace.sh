@@ -5,7 +5,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
 # Optional profile defaults.
-# Usage: PROFILE=local-lite make dev
+# Usage: PROFILE=default make dev
 PROFILE="${PROFILE:-}"
 if [[ -n "$PROFILE" ]]; then
   PROFILE_FILE="$ROOT/profiles/${PROFILE}.env"
@@ -47,7 +47,7 @@ WORKSPACE_SCREENALYTICS_SKIP_DOCKER="${WORKSPACE_SCREENALYTICS_SKIP_DOCKER:-1}"
 WORKSPACE_STRICT="${WORKSPACE_STRICT:-0}"
 WORKSPACE_FORCE_KILL_PORT_CONFLICTS="${WORKSPACE_FORCE_KILL_PORT_CONFLICTS:-0}"
 WORKSPACE_CLEAN_NEXT_CACHE="${WORKSPACE_CLEAN_NEXT_CACHE:-0}"
-WORKSPACE_OPEN_BROWSER="${WORKSPACE_OPEN_BROWSER:-1}"
+WORKSPACE_OPEN_BROWSER="${WORKSPACE_OPEN_BROWSER:-0}"
 WORKSPACE_BROWSER_TAB_SYNC_MODE="${WORKSPACE_BROWSER_TAB_SYNC_MODE:-reuse_no_reload}"
 WORKSPACE_OPEN_SCREENALYTICS_TABS="${WORKSPACE_OPEN_SCREENALYTICS_TABS:-0}"
 WORKSPACE_HEALTH_CURL_MAX_TIME="${WORKSPACE_HEALTH_CURL_MAX_TIME:-2}"
@@ -56,10 +56,10 @@ WORKSPACE_HEALTH_TIMEOUT_APP="${WORKSPACE_HEALTH_TIMEOUT_APP:-60}"
 WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_API="${WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_API:-30}"
 WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_STREAMLIT="${WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_STREAMLIT:-90}"
 WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_WEB="${WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_WEB:-90}"
-WORKSPACE_BACKEND_AUTO_RESTART="${WORKSPACE_BACKEND_AUTO_RESTART:-1}"
+WORKSPACE_BACKEND_AUTO_RESTART="${WORKSPACE_BACKEND_AUTO_RESTART:-0}"
 WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS="${WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS:-5}"
 WORKSPACE_BACKEND_HEALTH_FAILURE_THRESHOLD="${WORKSPACE_BACKEND_HEALTH_FAILURE_THRESHOLD:-6}"
-WORKSPACE_BACKEND_HEALTH_CURL_MAX_TIME="${WORKSPACE_BACKEND_HEALTH_CURL_MAX_TIME:-30}"
+WORKSPACE_BACKEND_HEALTH_CURL_MAX_TIME="${WORKSPACE_BACKEND_HEALTH_CURL_MAX_TIME:-5}"
 WORKSPACE_BACKEND_HEALTH_GRACE_SECONDS="${WORKSPACE_BACKEND_HEALTH_GRACE_SECONDS:-90}"
 WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_IGNORE="${WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_IGNORE:-1}"
 WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_STREAK="${WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_STREAK:-6}"
@@ -619,15 +619,7 @@ process_or_group_alive() {
   if [[ -z "${pid}" ]]; then
     return 1
   fi
-  if kill -0 "$pid" >/dev/null 2>&1; then
-    return 0
-  fi
-  # Session leaders can exit while children in the same process group keep running.
-  # Treat the group as alive if any members remain.
-  if pgrep -g "$pid" >/dev/null 2>&1; then
-    return 0
-  fi
-  return 1
+  kill -0 "$pid" >/dev/null 2>&1
 }
 
 start_bg() {
@@ -788,6 +780,12 @@ start_trr_social_worker() {
 
 start_trr_remote_workers() {
   if [[ "$WORKSPACE_TRR_REMOTE_WORKERS_ENABLED" != "1" ]]; then
+    return 0
+  fi
+
+  if [[ "$WORKSPACE_TRR_REMOTE_EXECUTOR" == "modal" && "$WORKSPACE_TRR_MODAL_ENABLED" == "1" ]]; then
+    echo "[workspace] Remote job execution is Modal-owned; skipping local claim-loop workers."
+    echo "[workspace] Modal dispatch covers admin=${WORKSPACE_TRR_REMOTE_ADMIN_WORKERS}, reddit=${WORKSPACE_TRR_REMOTE_REDDIT_WORKERS}, google-news=${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS}, social=${WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS}."
     return 0
   fi
 
@@ -1001,6 +999,7 @@ echo "[workspace] URLs:"
 echo "  TRR-APP:               http://${TRR_APP_HOST}:${TRR_APP_PORT}"
 echo "  TRR-APP Admin:         ${ADMIN_APP_ORIGIN}"
 echo "  TRR-Backend:           ${TRR_API_URL}"
+echo "  Local services:        TRR-APP, TRR-Backend"
 if [[ -n "$PROFILE" ]]; then
   echo "  Workspace profile:     ${PROFILE}"
 fi
@@ -1018,13 +1017,19 @@ else
 fi
 if [[ "$WORKSPACE_SOCIAL_WORKER_ENABLED" == "1" ]]; then
   echo "  Social worker pool:    posts=${WORKSPACE_SOCIAL_WORKER_POSTS}, comments=${WORKSPACE_SOCIAL_WORKER_COMMENTS}, media_mirror=${WORKSPACE_SOCIAL_WORKER_MEDIA_MIRROR}, comment_media_mirror=${WORKSPACE_SOCIAL_WORKER_COMMENT_MEDIA_MIRROR}"
+elif [[ "$WORKSPACE_TRR_REMOTE_EXECUTOR" == "modal" && "$WORKSPACE_TRR_MODAL_ENABLED" == "1" ]]; then
+  echo "  Social worker pool:    disabled (Modal-owned background execution)"
 else
   echo "  Social worker pool:    disabled"
 fi
 if [[ "$WORKSPACE_TRR_REMOTE_WORKERS_ENABLED" == "1" ]]; then
-  echo "  Remote job workers:    enabled (admin=${WORKSPACE_TRR_REMOTE_ADMIN_WORKERS}, reddit=${WORKSPACE_TRR_REMOTE_REDDIT_WORKERS}, google-news=${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS}, social=${WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS}, poll=${WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS}s)"
+  if [[ "$WORKSPACE_TRR_REMOTE_EXECUTOR" == "modal" && "$WORKSPACE_TRR_MODAL_ENABLED" == "1" ]]; then
+    echo "  Remote execution:      Modal dispatch active (admin=${WORKSPACE_TRR_REMOTE_ADMIN_WORKERS}, reddit=${WORKSPACE_TRR_REMOTE_REDDIT_WORKERS}, google-news=${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS}, social=${WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS}; local claim loops skipped)"
+  else
+    echo "  Remote job workers:    enabled (admin=${WORKSPACE_TRR_REMOTE_ADMIN_WORKERS}, reddit=${WORKSPACE_TRR_REMOTE_REDDIT_WORKERS}, google-news=${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS}, social=${WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS}, poll=${WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS}s)"
+  fi
 else
-  echo "  Remote job workers:    disabled"
+  echo "  Remote execution:      disabled"
 fi
 if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
   echo "  screenalytics API target: ${SCREENALYTICS_API_URL}"
@@ -1250,5 +1255,5 @@ while true; do
       exit 1
     fi
   fi
-  sleep 1
+  sleep 5
 done
