@@ -4,6 +4,8 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LOG_DIR="$ROOT/.logs/workspace"
 PIDFILE="$LOG_DIR/pids.env"
+SMOKE_HTTP_MAX_TIME="${SMOKE_HTTP_MAX_TIME:-5}"
+SMOKE_HTTP_RETRIES="${SMOKE_HTTP_RETRIES:-3}"
 
 check_pid_running() {
   local name="$1"
@@ -37,11 +39,21 @@ check_http() {
   local name="$1"
   local url="$2"
   local required="$3"
+  local attempts=1
 
-  if curl -fsS --max-time 5 "$url" >/dev/null 2>&1; then
-    echo "[smoke] ${name}: ok (${url})"
-    return 0
+  if [[ "$required" == "1" && "$SMOKE_HTTP_RETRIES" =~ ^[1-9][0-9]*$ ]]; then
+    attempts="$SMOKE_HTTP_RETRIES"
   fi
+
+  for attempt in $(seq 1 "$attempts"); do
+    if curl -fsS --max-time "$SMOKE_HTTP_MAX_TIME" "$url" >/dev/null 2>&1; then
+      echo "[smoke] ${name}: ok (${url})"
+      return 0
+    fi
+    if (( attempt < attempts )); then
+      sleep 1
+    fi
+  done
 
   if [[ "$required" == "1" ]]; then
     echo "[smoke] ERROR: ${name} check failed (${url})." >&2
