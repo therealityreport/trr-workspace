@@ -70,18 +70,18 @@ python3.11 /Users/thomashulihan/Projects/TRR/TRR-APP/scripts/upload-fonts-to-s3.
 The upload script reads credentials from these env vars (already set in `TRR-Backend/.env`):
 
 ```
-AWS_ACCESS_KEY_ID     -> OBJECT_STORAGE_ACCESS_KEY_ID
-AWS_SECRET_ACCESS_KEY -> OBJECT_STORAGE_SECRET_ACCESS_KEY
-AWS_ENDPOINT_URL      -> OBJECT_STORAGE_ENDPOINT_URL
+OBJECT_STORAGE_ACCESS_KEY_ID
+OBJECT_STORAGE_SECRET_ACCESS_KEY
+OBJECT_STORAGE_ENDPOINT_URL
 ```
 
 **Important:** The upload script uses boto3 with S3-compatible API. Set these env vars before running:
 
 ```bash
-export AWS_ACCESS_KEY_ID="$(grep OBJECT_STORAGE_ACCESS_KEY_ID /Users/thomashulihan/Projects/TRR/TRR-Backend/.env | cut -d= -f2)"
-export AWS_SECRET_ACCESS_KEY="$(grep OBJECT_STORAGE_SECRET_ACCESS_KEY /Users/thomashulihan/Projects/TRR/TRR-Backend/.env | cut -d= -f2)"
-export AWS_ENDPOINT_URL="$(grep OBJECT_STORAGE_ENDPOINT_URL /Users/thomashulihan/Projects/TRR/TRR-Backend/.env | cut -d= -f2)"
-export AWS_REGION=auto
+export OBJECT_STORAGE_ACCESS_KEY_ID="$(grep OBJECT_STORAGE_ACCESS_KEY_ID /Users/thomashulihan/Projects/TRR/TRR-Backend/.env | cut -d= -f2)"
+export OBJECT_STORAGE_SECRET_ACCESS_KEY="$(grep OBJECT_STORAGE_SECRET_ACCESS_KEY /Users/thomashulihan/Projects/TRR/TRR-Backend/.env | cut -d= -f2)"
+export OBJECT_STORAGE_ENDPOINT_URL="$(grep OBJECT_STORAGE_ENDPOINT_URL /Users/thomashulihan/Projects/TRR/TRR-Backend/.env | cut -d= -f2)"
+export OBJECT_STORAGE_REGION=auto
 ```
 
 ### Content-Type mapping

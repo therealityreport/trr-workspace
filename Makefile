@@ -1,18 +1,20 @@
 .PHONY: \
-	dev dev-lite dev-cloud dev-full \
-	preflight preflight-strict preflight-diagnostics env-contract check-policy smoke status stop logs logs-prune \
+	dev dev-lite dev-cloud dev-local dev-full \
+	preflight preflight-local preflight-strict preflight-diagnostics env-contract check-policy handoff-check handoff-sync smoke status stop logs logs-prune cleanup-disk help \
 	bootstrap doctor test test-fast test-full test-changed test-env-sensitive \
-	down chrome-devtools-mcp-status \
-	mcp-aws-on mcp-aws-off mcp-aws-status \
+	cast-screentime-gap-check cast-screentime-live-check \
+	down chrome-devtools-mcp-status chrome-devtools-mcp-clean-stale chrome-devtools-mcp-stop-conflicts \
+	mcp-clean \
 	workspace-pr-agent
 
-# Daily default: `make dev` runs the canonical remote-first workspace profile.
-# It starts TRR-APP + TRR-Backend locally and uses Modal-backed execution for background work.
-# To run screenalytics stacks intentionally, use `make dev-cloud` or `make dev-full`.
+# Daily default: `make dev` runs the canonical cloud-backed workspace profile.
+# It starts TRR-APP + TRR-Backend locally, enables screenalytics, and bypasses local Docker infra.
+# Use `make dev-local` only when you intentionally want Docker-backed local Redis + MinIO.
 # To override the default profile explicitly:
 # PROFILE=default make dev
-# PROFILE=local-cloud make dev
-# PROFILE=local-full make dev
+# PROFILE=local-cloud make dev        # deprecated compatibility profile
+# PROFILE=local-docker make dev-local
+# PROFILE=local-full make dev-local   # deprecated compatibility profile
 # Startup tuning:
 # WORKSPACE_CLEAN_NEXT_CACHE=1 make dev  # force clean Next.js cache
 # WORKSPACE_OPEN_BROWSER=1 make dev      # opt in to browser tab reuse/open on startup
@@ -22,36 +24,54 @@
 # WORKSPACE_BROWSER_TAB_SYNC_MODE=reload_all make dev       # legacy behavior: reload every matching tab
 # WORKSPACE_OPEN_SCREENALYTICS_TABS=1 make dev  # opt in to screenalytics Streamlit/Web tabs
 # TRR_BACKEND_RELOAD=1 make dev          # opt in backend hot-reload (default workspace mode is non-reload)
-dev: preflight
-	@PROFILE="$${PROFILE:-default}" bash scripts/dev-workspace.sh
+dev:
+	@$(MAKE) --no-print-directory preflight
+	@PROFILE="$${PROFILE:-default}" WORKSPACE_DEV_MODE=cloud WORKSPACE_SCREENALYTICS=1 WORKSPACE_SCREENALYTICS_SKIP_DOCKER=1 bash scripts/dev-workspace.sh
 
 # Compatibility alias for the canonical default path.
 dev-lite:
 	@echo "[workspace] NOTE: 'make dev-lite' is deprecated; running 'make dev'."
 	@$(MAKE) --no-print-directory dev PROFILE="$${PROFILE:-default}"
 
-# Cloud-backed screenalytics mode (no local Docker infra).
-dev-cloud: preflight
-	@WORKSPACE_SCREENALYTICS=1 WORKSPACE_SCREENALYTICS_SKIP_DOCKER=1 bash scripts/dev-workspace.sh
+# Compatibility alias for the canonical default path.
+dev-cloud:
+	@echo "[workspace] NOTE: 'make dev-cloud' is deprecated; running 'make dev'."
+	@$(MAKE) --no-print-directory dev PROFILE="$${PROFILE:-default}"
 
-# Full local screenalytics mode (with Docker Redis/MinIO).
-dev-full: preflight
-	@WORKSPACE_SCREENALYTICS=1 WORKSPACE_SCREENALYTICS_SKIP_DOCKER=0 bash scripts/dev-workspace.sh
+# Docker-backed local screenalytics mode (local Redis + MinIO).
+dev-local:
+	@$(MAKE) --no-print-directory preflight-local
+	@PROFILE="$${PROFILE:-local-docker}" WORKSPACE_DEV_MODE=local_docker WORKSPACE_SCREENALYTICS=1 WORKSPACE_SCREENALYTICS_SKIP_DOCKER=0 bash scripts/dev-workspace.sh
+
+# Compatibility alias for the Docker-backed local path.
+dev-full:
+	@echo "[workspace] NOTE: 'make dev-full' is deprecated; running 'make dev-local'."
+	@$(MAKE) --no-print-directory dev-local PROFILE="$${PROFILE:-local-docker}"
 
 preflight:
-	@bash scripts/preflight.sh
+	@WORKSPACE_DEV_MODE=cloud bash scripts/preflight.sh
+
+preflight-local:
+	@WORKSPACE_DEV_MODE=local_docker bash scripts/preflight.sh
 
 preflight-strict:
-	@WORKSPACE_PREFLIGHT_STRICT=1 bash scripts/preflight.sh
+	@WORKSPACE_DEV_MODE=cloud WORKSPACE_PREFLIGHT_STRICT=1 bash scripts/preflight.sh
 
 preflight-diagnostics:
-	@WORKSPACE_PREFLIGHT_DIAGNOSTICS=1 bash scripts/preflight.sh
+	@WORKSPACE_DEV_MODE=cloud WORKSPACE_PREFLIGHT_DIAGNOSTICS=1 bash scripts/preflight.sh
 
 env-contract:
 	@bash scripts/workspace-env-contract.sh --generate
 
 check-policy:
 	@bash scripts/check-policy.sh
+
+handoff-check:
+	@python3 scripts/sync-handoffs.py --check
+
+handoff-sync:
+	@python3 scripts/sync-handoffs.py --write
+	@python3 scripts/sync-handoffs.py --check
 
 smoke:
 	@bash scripts/smoke.sh
@@ -69,6 +89,9 @@ logs:
 
 logs-prune:
 	@bash scripts/logs-prune.sh
+
+cleanup-disk:
+	@python3 scripts/cleanup-workspace-disk.py --dry-run
 
 bootstrap:
 	@bash scripts/bootstrap.sh
@@ -92,22 +115,39 @@ test-changed:
 test-env-sensitive:
 	@bash scripts/test-env-sensitive.sh
 
-# Tears down screenalytics docker compose infra (redis + minio).
+cast-screentime-gap-check:
+	@bash scripts/cast-screentime-gap-check.sh
+
+cast-screentime-live-check:
+	@bash scripts/cast-screentime-live-check.sh
+
+# Tears down the local Docker infra used by make dev-local (Redis + MinIO).
 # Use "make stop && make down" for a full cleanup.
 down:
 	@bash scripts/down-screenalytics-infra.sh
 
+help:
+	@echo "Workspace commands:"
+	@echo "  make dev          - recommended default; cloud-backed screenalytics, no local Docker infra"
+	@echo "  make dev-local    - local Docker mode; starts Redis + MinIO for screenalytics"
+	@echo "  make preflight    - validates the default no-Docker dev path"
+	@echo "  make preflight-local - validates the Docker-backed local path"
+	@echo "  make down         - tears down local Docker infra used by make dev-local"
+	@echo "Legacy aliases:"
+	@echo "  make dev-cloud    - deprecated alias for make dev"
+	@echo "  make dev-full     - deprecated alias for make dev-local"
+
 chrome-devtools-mcp-status:
 	@bash scripts/chrome-devtools-mcp-status.sh
 
-mcp-aws-on:
-	@bash scripts/mcp-profile.sh aws-on
+chrome-devtools-mcp-clean-stale:
+	@bash scripts/chrome-devtools-mcp-clean-stale.sh
 
-mcp-aws-off:
-	@bash scripts/mcp-profile.sh aws-off
+chrome-devtools-mcp-stop-conflicts:
+	@bash scripts/chrome-devtools-mcp-stop-conflicts.sh
 
-mcp-aws-status:
-	@bash scripts/mcp-profile.sh aws-status
+mcp-clean:
+	@bash scripts/mcp-clean.sh
 
 # Multi-repo commit/PR/review/merge automation agent.
 # Optional env overrides:

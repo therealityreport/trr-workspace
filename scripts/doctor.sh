@@ -20,6 +20,16 @@ need npm
 need pnpm
 need curl
 
+WORKSPACE_DEV_MODE="${WORKSPACE_DEV_MODE:-cloud}"
+case "$WORKSPACE_DEV_MODE" in
+  cloud|local_docker) ;;
+  *)
+    echo "[doctor] ERROR: invalid WORKSPACE_DEV_MODE='${WORKSPACE_DEV_MODE}' (expected cloud or local_docker)." >&2
+    exit 1
+    ;;
+esac
+WORKSPACE_PREFLIGHT_STRICT="${WORKSPACE_PREFLIGHT_STRICT:-0}"
+
 REQUIRED_PY_MAJOR=3
 REQUIRED_PY_MINOR=11
 REQUIRED_NODE_MAJOR="$(trr_node_required_major "$ROOT")"
@@ -121,18 +131,29 @@ echo "[doctor] Versions:"
 echo "  node: $(trr_node_version_string)"
 echo "  pnpm: $({ pnpm --version; } 2>/dev/null)"
 echo "  python: ${PYTHON_BIN} ($({ ${PYTHON_BIN} --version; } 2>/dev/null))"
+echo "  workspace_dev_mode: ${WORKSPACE_DEV_MODE}"
 if [[ -n "${VIRTUAL_ENV:-}" ]]; then
   echo "  shell_venv: ${VIRTUAL_ENV}"
-  echo "[doctor] NOTE: active shell venv affects doctor/preflight helpers only; workspace services launch with repo-local interpreters and env contracts." >&2
+  echo "[doctor] NOTE: your activated Python environment is only used for these checks. The workspace still starts each service with its own project setup." >&2
 fi
 
-if command -v docker >/dev/null 2>&1; then
-  echo "  docker: $({ docker --version; } 2>/dev/null)"
-  if ! docker info >/dev/null 2>&1; then
-    echo "[doctor] WARNING: docker daemon not running (needed for screenalytics full stack)." >&2
+if [[ "$WORKSPACE_DEV_MODE" == "local_docker" ]]; then
+  if command -v docker >/dev/null 2>&1; then
+    echo "  docker: $({ docker --version; } 2>/dev/null)"
+    if ! docker info >/dev/null 2>&1; then
+      if [[ "$WORKSPACE_PREFLIGHT_STRICT" == "1" ]]; then
+        echo "[doctor] ERROR: docker daemon not running (required for make dev-local / local screenalytics Redis+MinIO)." >&2
+        exit 1
+      fi
+      echo "[doctor] WARNING: docker daemon not running (needed only for make dev-local / local screenalytics Redis+MinIO)." >&2
+    fi
+  else
+    if [[ "$WORKSPACE_PREFLIGHT_STRICT" == "1" ]]; then
+      echo "[doctor] ERROR: docker not found (required for make dev-local / local screenalytics Redis+MinIO)." >&2
+      exit 1
+    fi
+    echo "[doctor] WARNING: docker not found (needed only for make dev-local / local screenalytics Redis+MinIO)." >&2
   fi
-else
-  echo "[doctor] WARNING: docker not found (needed for screenalytics full stack)." >&2
 fi
 
 echo ""
