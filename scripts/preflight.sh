@@ -128,9 +128,20 @@ if ! trr_ensure_node_baseline "$ROOT"; then
   exit 1
 fi
 
+WORKSPACE_DEV_MODE="${WORKSPACE_DEV_MODE:-cloud}"
+case "$WORKSPACE_DEV_MODE" in
+  cloud|local_docker) ;;
+  *)
+    echo "[preflight] ERROR: invalid WORKSPACE_DEV_MODE='${WORKSPACE_DEV_MODE}' (expected cloud or local_docker)." >&2
+    exit 1
+    ;;
+esac
+
 WORKSPACE_PREFLIGHT_STRICT="${WORKSPACE_PREFLIGHT_STRICT:-0}"
 
-run_preflight_phase "doctor" "[preflight] Running workspace doctor..." bash "$ROOT/scripts/doctor.sh"
+echo "[preflight] Mode: ${WORKSPACE_DEV_MODE}"
+
+run_preflight_phase "doctor" "[preflight] Running workspace doctor..." env WORKSPACE_DEV_MODE="$WORKSPACE_DEV_MODE" WORKSPACE_PREFLIGHT_STRICT="$WORKSPACE_PREFLIGHT_STRICT" bash "$ROOT/scripts/doctor.sh"
 
 env_contract_rc=0
 run_preflight_phase "env-contract" "[preflight] Validating generated env contract..." bash "$ROOT/scripts/workspace-env-contract.sh" --check || env_contract_rc="$?"
@@ -142,11 +153,13 @@ if [[ "$env_contract_rc" != "0" ]]; then
   echo "[preflight] WARNING: Run 'make env-contract' to regenerate docs/workspace/env-contract.md." >&2
 fi
 
+run_preflight_phase "handoff-sync" "[preflight] Syncing generated handoffs..." python3 "$ROOT/scripts/sync-handoffs.py" --write
+
 run_preflight_phase "check-policy" "[preflight] Checking policy drift rules..." bash "$ROOT/scripts/check-policy.sh"
 
-run_preflight_phase "chrome-devtools-mcp-status" "[preflight] Checking Chrome DevTools MCP readiness..." bash "$ROOT/scripts/chrome-devtools-mcp-status.sh"
+run_preflight_phase "chrome-devtools-mcp-status" "[preflight] Checking browser automation..." env CHROME_DEVTOOLS_MCP_STATUS_MODE=summary bash "$ROOT/scripts/chrome-devtools-mcp-status.sh"
 
-if [[ -d "$ROOT/.playwright-mcp" ]]; then
+if [[ -d "$ROOT/.playwright-mcp" && "${WORKSPACE_PREFLIGHT_DIAGNOSTICS:-0}" == "1" ]]; then
   echo "[preflight] NOTE: '$ROOT/.playwright-mcp' exists and is treated as legacy/local-only." >&2
   echo "[preflight] NOTE: Workspace policy is Chrome DevTools MCP only." >&2
 fi

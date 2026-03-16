@@ -1,0 +1,35 @@
+# Managed by the TRR workspace. Install with:
+#   bash scripts/codex-config-sync.sh install
+
+model = "gpt-5.4"
+model_reasoning_effort = "high"
+personality = "pragmatic"
+approval_policy = "never"
+sandbox_mode = "danger-full-access"
+
+[mcp_servers.figma]
+url = "https://mcp.figma.com/mcp"
+
+[mcp_servers.figma-desktop]
+url = "http://127.0.0.1:3845/mcp"
+enabled = false
+
+[mcp_servers.chrome-devtools]
+command = "__TRR_ROOT__/scripts/codex-chrome-devtools-mcp.sh"
+env = { CODEX_CHROME_MODE = "shared" }
+enabled = true
+startup_timeout_sec = 45
+tool_timeout_sec = 120
+
+[mcp_servers.playwright]
+command = "npx"
+args = ["-y", "@playwright/mcp", "--isolated"]
+enabled = false
+
+[mcp_servers.github]
+url = "https://api.githubcopilot.com/mcp"
+bearer_token_env_var = "GITHUB_PAT"
+
+[mcp_servers.supabase]
+url = "https://mcp.supabase.com/mcp?project_ref=vwxfvzutyufrkhfgoeaa&features=docs%2Caccount%2Cdatabase%2Cdebugging%2Cdevelopment%2Cfunctions%2Cbranching%2Cstorage"
+bearer_token_env_var = "SUPABASE_ACCESS_TOKEN"
