@@ -5,6 +5,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LOG_DIR="${ROOT}/.logs/workspace"
 PIDFILE="${LOG_DIR}/pids.env"
 BACKEND_WATCHDOG_STATE_FILE="${LOG_DIR}/backend-watchdog.env"
+source "${ROOT}/scripts/lib/mcp-runtime.sh"
 
 OUTPUT_FORMAT="text"
 if [[ "${1:-}" == "--json" ]]; then
@@ -42,10 +43,17 @@ WORKSPACE_TRR_REMOTE_ADMIN_WORKERS="${WORKSPACE_TRR_REMOTE_ADMIN_WORKERS:-1}"
 WORKSPACE_TRR_REMOTE_REDDIT_WORKERS="${WORKSPACE_TRR_REMOTE_REDDIT_WORKERS:-1}"
 WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS="${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS:-1}"
 WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS="${WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS:-0}"
+WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT="${WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT:-25}"
+WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT="${WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT:-64}"
+WORKSPACE_TRR_REMOTE_SOCIAL_POSTS="${WORKSPACE_TRR_REMOTE_SOCIAL_POSTS:-2}"
+WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS="${WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS:-2}"
+WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR="${WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR:-1}"
+WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR="${WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR:-1}"
 WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS="${WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS:-2}"
 WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_LEASE_SECONDS="${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_LEASE_SECONDS:-300}"
 TRR_BACKEND_RELOAD="${TRR_BACKEND_RELOAD:-0}"
 PROFILE="${PROFILE:-}"
+WORKSPACE_DEV_MODE="${WORKSPACE_DEV_MODE:-cloud}"
 WORKSPACE_BACKEND_RESTART_COUNT="${WORKSPACE_BACKEND_RESTART_COUNT:-0}"
 WORKSPACE_BACKEND_LAST_RESTART_REASON="${WORKSPACE_BACKEND_LAST_RESTART_REASON:-}"
 WORKSPACE_BACKEND_LAST_RESTART_AT="${WORKSPACE_BACKEND_LAST_RESTART_AT:-}"
@@ -91,6 +99,30 @@ runtime_value_or_na() {
   value_or_na "$value"
 }
 
+workspace_dev_mode_value() {
+  if [[ "$HAVE_PIDFILE" -eq 1 && -n "${WORKSPACE_DEV_MODE:-}" ]]; then
+    echo "${WORKSPACE_DEV_MODE}"
+    return 0
+  fi
+  if [[ "${WORKSPACE_SCREENALYTICS_SKIP_DOCKER:-}" == "1" ]]; then
+    echo "cloud"
+  else
+    echo "local_docker"
+  fi
+}
+
+screenalytics_mode_label() {
+  if ! screenalytics_enabled; then
+    echo "disabled"
+    return 0
+  fi
+  if [[ "$(workspace_dev_mode_value)" == "local_docker" ]]; then
+    echo "local Docker (Redis + MinIO)"
+    return 0
+  fi
+  echo "cloud-backed (no Docker)"
+}
+
 watchdog_value_or_na() {
   local value="${1:-}"
   if [[ "$HAVE_PIDFILE" -ne 1 && "$HAVE_WATCHDOG_STATE" -ne 1 ]]; then
@@ -125,11 +157,43 @@ remote_execution_summary() {
     echo "disabled"
     return 0
   fi
-  if [[ "${WORKSPACE_TRR_REMOTE_EXECUTOR:-}" == "modal" && "${WORKSPACE_TRR_MODAL_ENABLED:-}" == "1" ]]; then
-    echo "modal_dispatch_active (local claim loops skipped)"
+  if status_modal_remote_active; then
+    echo "modal_dispatch_active ($(modal_social_runtime_summary); local claim loops skipped)"
     return 0
   fi
   echo "local_claim_loops"
+}
+
+status_modal_remote_active() {
+  [[ "$HAVE_PIDFILE" -eq 1 && "${WORKSPACE_TRR_REMOTE_WORKERS_ENABLED:-0}" == "1" && "${WORKSPACE_TRR_REMOTE_EXECUTOR:-}" == "modal" && "${WORKSPACE_TRR_MODAL_ENABLED:-}" == "1" ]]
+}
+
+status_modal_social_lane_label() {
+  if [[ "$HAVE_PIDFILE" -ne 1 ]]; then
+    echo "n/a"
+    return 0
+  fi
+  if status_modal_remote_active && [[ "${WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS:-0}" == "1" ]]; then
+    echo "enabled"
+    return 0
+  fi
+  echo "disabled"
+}
+
+status_modal_social_stage_caps() {
+  if [[ "$HAVE_PIDFILE" -ne 1 ]]; then
+    echo "n/a"
+    return 0
+  fi
+  echo "posts=${WORKSPACE_TRR_REMOTE_SOCIAL_POSTS:-n/a}, comments=${WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS:-n/a}, media_mirror=${WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR:-n/a}, comment_media_mirror=${WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR:-n/a}"
+}
+
+modal_social_runtime_summary() {
+  if ! status_modal_remote_active; then
+    echo "n/a"
+    return 0
+  fi
+  echo "social_lane=$(status_modal_social_lane_label), dispatch_limit=${WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT:-n/a}, max_concurrency=${WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT:-n/a}, stage_caps=$(status_modal_social_stage_caps)"
 }
 
 remote_workers_process_state() {
@@ -313,6 +377,77 @@ json_escape() {
   printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g; s/\t/\\t/g; s/\r/\\r/g; s/\n/\\n/g'
 }
 
+codex_owner_label() {
+  local owner="$1"
+  case "$owner" in
+    desktop)
+      echo "Desktop Codex app-server"
+      ;;
+    vscode)
+      echo "VS Code Codex app-server"
+      ;;
+    *)
+      echo "Unknown Codex app-server"
+      ;;
+  esac
+}
+
+app_server_mcp_children() {
+  local pid="$1"
+  local has_chrome=0
+  local child
+  local command
+  local children=()
+
+  while IFS= read -r child; do
+    [[ -n "$child" ]] || continue
+    command="$(process_command "$child")"
+    case "$command" in
+      *"scripts/codex-chrome-devtools-mcp.sh"*|*"chrome-devtools-mcp --browserUrl http://127.0.0.1:9222"*)
+        has_chrome=1
+        ;;
+    esac
+  done < <(collect_descendants "$pid" | awk '!seen[$0]++')
+
+  if [[ "$has_chrome" == "1" ]]; then
+    children+=("chrome-mcp")
+  fi
+
+  if [[ "${#children[@]}" -eq 0 ]]; then
+    echo "none"
+    return 0
+  fi
+
+  printf '%s\n' "${children[@]}" | paste -sd, -
+}
+
+build_codex_runtime_json() {
+  local first=1
+  local owner
+  local pid
+  local ppid
+  local command
+  local children
+
+  printf '['
+  while IFS=$'\t' read -r owner pid ppid command; do
+    [[ -n "$pid" ]] || continue
+    children="$(app_server_mcp_children "$pid")"
+    if [[ "$first" -eq 0 ]]; then
+      printf ','
+    fi
+    first=0
+    printf '{"owner":"%s","label":"%s","pid":"%s","ppid":"%s","mcp_children":"%s","command":"%s"}' \
+      "$(json_escape "$owner")" \
+      "$(json_escape "$(codex_owner_label "$owner")")" \
+      "$(json_escape "$pid")" \
+      "$(json_escape "$ppid")" \
+      "$(json_escape "$children")" \
+      "$(json_escape "$command")"
+  done <<<"${CODEX_APP_SERVER_ROWS:-}"
+  printf ']'
+}
+
 BACKEND_HEALTH_URL="http://127.0.0.1:${TRR_BACKEND_PORT}/health"
 APP_HEALTH_URL="http://${TRR_APP_HOST}:${TRR_APP_PORT}/"
 SCREENALYTICS_HEALTH_URL="http://127.0.0.1:${SCREENALYTICS_API_PORT}/healthz"
@@ -331,6 +466,8 @@ SCREENALYTICS_STREAMLIT_LISTENERS="$(port_listeners "${SCREENALYTICS_STREAMLIT_P
 SCREENALYTICS_WEB_LISTENERS="$(port_listeners "${SCREENALYTICS_WEB_PORT}")"
 RUN_STATE="$([[ "$HAVE_PIDFILE" -eq 1 ]] && echo active || echo inactive)"
 BACKEND_WATCHDOG_STATE_LABEL="active"
+CODEX_APP_SERVER_ROWS="$(list_codex_app_servers)"
+CODEX_APP_SERVER_COUNT="$(printf '%s\n' "$CODEX_APP_SERVER_ROWS" | sed '/^$/d' | wc -l | tr -d ' ')"
 if [[ "$HAVE_PIDFILE" -ne 1 ]]; then
   if [[ "$HAVE_WATCHDOG_STATE" -eq 1 ]]; then
     BACKEND_WATCHDOG_STATE_LABEL="last_run_telemetry"
@@ -350,6 +487,8 @@ if [[ "$OUTPUT_FORMAT" == "json" ]]; then
     "active": $([[ "$HAVE_PIDFILE" -eq 1 ]] && echo true || echo false)
   },
   "modes": {
+    "workspace_dev_mode": "$(json_escape "$(workspace_dev_mode_value)")",
+    "screenalytics_mode": "$(json_escape "$(screenalytics_mode_label)")",
     "workspace_screenalytics": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_SCREENALYTICS:-}")")",
     "workspace_screenalytics_skip_docker": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_SCREENALYTICS_SKIP_DOCKER:-}")")",
     "workspace_open_browser": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_OPEN_BROWSER:-}")")",
@@ -376,6 +515,12 @@ if [[ "$OUTPUT_FORMAT" == "json" ]]; then
     "workspace_trr_remote_reddit_workers": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_REDDIT_WORKERS:-}")")",
     "workspace_trr_remote_google_news_workers": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS:-}")")",
     "workspace_trr_remote_social_workers": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS:-}")")",
+    "workspace_trr_remote_social_dispatch_limit": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT:-}")")",
+    "workspace_trr_modal_social_job_concurrency_limit": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT:-}")")",
+    "workspace_trr_remote_social_posts": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_SOCIAL_POSTS:-}")")",
+    "workspace_trr_remote_social_comments": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS:-}")")",
+    "workspace_trr_remote_social_media_mirror": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR:-}")")",
+    "workspace_trr_remote_social_comment_media_mirror": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR:-}")")",
     "workspace_trr_remote_worker_poll_seconds": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS:-}")")",
     "workspace_trr_remote_google_news_lease_seconds": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_LEASE_SECONDS:-}")")",
     "trr_backend_reload": "$(json_escape "$(runtime_value_or_na "${TRR_BACKEND_RELOAD:-}")")",
@@ -413,7 +558,14 @@ if [[ "$OUTPUT_FORMAT" == "json" ]]; then
   "remote_execution": {
     "summary": "$(json_escape "$(remote_execution_summary)")",
     "local_claim_loop_pid": "$(json_escape "${TRR_REMOTE_WORKERS_PID:-}")",
-    "local_claim_loops_running": $(pid_running_json "${TRR_REMOTE_WORKERS_PID:-}")
+    "local_claim_loops_running": $(pid_running_json "${TRR_REMOTE_WORKERS_PID:-}"),
+    "modal_social_lane": "$(json_escape "$(status_modal_social_lane_label)")",
+    "modal_social_dispatch_limit": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT:-}")")",
+    "modal_social_max_concurrency": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT:-}")")",
+    "modal_social_stage_caps": "$(json_escape "$(status_modal_social_stage_caps)")"
+  },
+  "codex_runtime": {
+    "app_servers": $(build_codex_runtime_json)
   },
   "timestamp_utc": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 }
@@ -433,6 +585,8 @@ fi
 echo ""
 
 echo "[status] Workspace modes:"
+echo "  WORKSPACE_DEV_MODE: $(workspace_dev_mode_value)"
+echo "  screenalytics mode: $(screenalytics_mode_label)"
 echo "  WORKSPACE_SCREENALYTICS: $(runtime_value_or_na "${WORKSPACE_SCREENALYTICS:-}")"
 echo "  WORKSPACE_SCREENALYTICS_SKIP_DOCKER: $(runtime_value_or_na "${WORKSPACE_SCREENALYTICS_SKIP_DOCKER:-}")"
 echo "  WORKSPACE_OPEN_BROWSER: $(runtime_value_or_na "${WORKSPACE_OPEN_BROWSER:-}")"
@@ -459,6 +613,12 @@ echo "  WORKSPACE_TRR_REMOTE_ADMIN_WORKERS: $(runtime_value_or_na "${WORKSPACE_T
 echo "  WORKSPACE_TRR_REMOTE_REDDIT_WORKERS: $(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_REDDIT_WORKERS:-}")"
 echo "  WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS: $(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS:-}")"
 echo "  WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS: $(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS:-}")"
+echo "  WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT: $(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT:-}")"
+echo "  WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT: $(runtime_value_or_na "${WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT:-}")"
+echo "  WORKSPACE_TRR_REMOTE_SOCIAL_POSTS: $(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_SOCIAL_POSTS:-}")"
+echo "  WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS: $(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS:-}")"
+echo "  WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR: $(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR:-}")"
+echo "  WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR: $(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR:-}")"
 echo "  WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS: $(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS:-}")"
 echo "  WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_LEASE_SECONDS: $(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_LEASE_SECONDS:-}")"
 echo "  TRR_BACKEND_RELOAD: $(runtime_value_or_na "${TRR_BACKEND_RELOAD:-}") ($(backend_reload_mode))"
@@ -504,6 +664,19 @@ echo "  last_restart_probe_rc: $(watchdog_value_or_na "${BACKEND_LAST_RESTART_PR
 echo ""
 echo "[status] Remote execution:"
 echo "  summary: $(remote_execution_summary)"
+if status_modal_remote_active; then
+  echo "  modal_social: $(modal_social_runtime_summary)"
+fi
+echo ""
+echo "[status] Codex shared-state runtime:"
+if [[ "$CODEX_APP_SERVER_COUNT" == "0" ]]; then
+  echo "  app_servers: none detected"
+else
+  while IFS=$'\t' read -r owner pid ppid command; do
+    [[ -n "$pid" ]] || continue
+    echo "  $(codex_owner_label "$owner"): pid=${pid} ppid=${ppid} mcp_children=$(app_server_mcp_children "$pid")"
+  done <<<"$CODEX_APP_SERVER_ROWS"
+fi
 
 if [[ "${BACKEND_HEALTH_STATUS}" == "hung/unresponsive" ]]; then
   echo ""
@@ -519,6 +692,10 @@ if [[ "${TRR_BACKEND_RELOAD:-0}" == "1" ]]; then
   if [[ "$backend_reload_events" =~ ^[0-9]+$ ]] && (( backend_reload_events > 3 )); then
     echo "[status] Warning: recent backend reload churn detected (${backend_reload_events} reload markers). Consider TRR_BACKEND_RELOAD=0 for stream stability."
   fi
+fi
+
+if [[ "$CODEX_APP_SERVER_COUNT" =~ ^[0-9]+$ ]] && (( CODEX_APP_SERVER_COUNT > 1 )); then
+  echo "[status] Warning: multiple Codex app-server owners are sharing the same runtime. Prefer one active Desktop/VS Code owner at a time."
 fi
 
 exit 0

@@ -43,4 +43,6 @@ echo "[workspace-pr-agent] report: $JSON_REPORT"
 echo "[workspace-pr-agent] revision-command: $REVISION_COMMAND"
 echo "[workspace-pr-agent] revision-use-github-mcp: ${WORKSPACE_PR_AGENT_REVISION_USE_GITHUB_MCP:-1}"
 echo "[workspace-pr-agent] revision-require-github-mcp: ${WORKSPACE_PR_AGENT_REVISION_REQUIRE_GITHUB_MCP:-0}"
+echo "[workspace-pr-agent] running handoff closeout sync before orchestration"
+bash "$ROOT/scripts/handoff-lifecycle.sh" closeout
 "${cmd[@]}"

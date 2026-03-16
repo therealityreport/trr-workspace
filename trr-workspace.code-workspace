@@ -1,6 +1,10 @@
 {
   "folders": [
     {
+      "path": ".",
+      "name": "TRR-Workspace"
+    },
+    {
       "path": "TRR-Backend",
       "name": "TRR-Backend"
     },

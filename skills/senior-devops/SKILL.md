@@ -7,17 +7,16 @@ Use this workspace-local skill for deployment, runtime hardening, release safety
 ## When to use
 1. CI/CD, release automation, infra wiring, runtime safety, or rollback behavior is changing.
 2. Delivery requires deploy gates, runbook updates, or observability coverage.
-3. AWS deployment choices need to be paired with TRR-specific operational guardrails.
+3. Deployment choices need to be paired with TRR-specific operational guardrails.
 
 ## When not to use
 1. Pure feature implementation with no operational impact.
-2. Non-AWS architecture comparison when the problem is only stack selection.
+2. Architecture comparison when the problem is only stack selection.
 3. Broad Kubernetes or GitOps redesign unless the task explicitly requires it.
 
 ## Ownership boundary
 1. This is the canonical TRR owner for release and operational readiness.
-2. Pair with `aws-solution-architect` for AWS service/IaC decisions.
-3. Pair with repo-local implementation owners when application code changes are required.
+2. Pair with repo-local implementation owners when application code changes are required.
 
 ## Preflight
 1. Identify the deployment surface and blast radius.
@@ -38,17 +37,16 @@ Use this workspace-local skill for deployment, runtime hardening, release safety
    - metrics
    - alarms
    - actionable dashboards or query paths
-5. Keep AWS-first behavior for TRR and do not drift into generic multi-cloud advice without a task-specific need.
-6. For deployable AWS/cloud-infra/backend implementation changes, require required checks to pass, then execute the production AWS deployment during implementation instead of stopping at code changes.
-7. Record deploy evidence and post-deploy verification in the handoff.
+5. Keep the release path concrete and do not drift into abstract platform comparison without a task-specific need.
+6. Record deploy evidence and post-deploy verification in the handoff.
 
 ## Imported strengths
 1. From `devops-engineer`: deploy gates, rollback/runbook expectations, and artifact/release discipline.
-2. From `cloud-architect`: HA/DR, cost, and security-by-design prompts when still useful in AWS-first wording.
+2. From `cloud-architect`: HA/DR, cost, and security-by-design prompts when still useful.
 3. From `monitoring-expert`: observability and alerting expectations for release readiness.
 
 ## Explicit rejections
-1. No multi-cloud defaulting.
+1. No generic platform-comparison defaulting.
 2. No broad Kubernetes or GitOps assumptions unless the task explicitly requires them.
 
 ## Completion contract

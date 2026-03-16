@@ -34,12 +34,13 @@ Visibility tiers:
 | `WORKSPACE_BACKEND_AUTO_RESTART` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_IGNORE` | `1` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_STREAK` | `6` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
-| `WORKSPACE_BACKEND_HEALTH_CURL_MAX_TIME` | `30` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
+| `WORKSPACE_BACKEND_HEALTH_CURL_MAX_TIME` | `5` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_BACKEND_HEALTH_FAILURE_THRESHOLD` | `6` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_BACKEND_HEALTH_GRACE_SECONDS` | `90` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS` | `5` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_BROWSER_TAB_SYNC_MODE` | `reuse_no_reload` | string | `scripts/dev-workspace.sh`, `Makefile` | `common` | Tab synchronization strategy (`reuse_no_reload`, `reload_first`, `reload_all`). |
 | `WORKSPACE_CLEAN_NEXT_CACHE` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
+| `WORKSPACE_DEV_MODE` | `` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_FORCE_KILL_PORT_CONFLICTS` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_HEALTH_CURL_MAX_TIME` | `2` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_HEALTH_TIMEOUT_APP` | `60` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
@@ -49,7 +50,7 @@ Visibility tiers:
 | `WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_WEB` | `90` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_OPEN_BROWSER` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable automatic browser tab sync/open after startup. |
 | `WORKSPACE_OPEN_SCREENALYTICS_TABS` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Include screenalytics tabs in browser sync flow. |
-| `WORKSPACE_SCREENALYTICS` | `0` | string | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable or disable screenalytics service startup in workspace dev mode. |
+| `WORKSPACE_SCREENALYTICS` | `1` | string | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable or disable screenalytics service startup in workspace dev mode. |
 | `WORKSPACE_SCREENALYTICS_SKIP_DOCKER` | `1` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Use screenalytics without local Docker infra (Redis/MinIO bypass mode). |
 | `WORKSPACE_SOCIAL_WORKER_COMMENTS` | `1` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_SOCIAL_WORKER_COMMENT_MEDIA_MIRROR` | `0` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
@@ -67,6 +68,7 @@ Visibility tiers:
 | `WORKSPACE_TRR_MODAL_GOOGLE_NEWS_FUNCTION` | `run_google_news_sync` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_TRR_MODAL_REDDIT_REFRESH_FUNCTION` | `run_reddit_refresh` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_TRR_MODAL_RUNTIME_SECRET_NAME` | `trr-backend-runtime` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
+| `WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT` | `64` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Maximum concurrent Modal containers allowed for `run_social_job`. |
 | `WORKSPACE_TRR_MODAL_SOCIAL_JOB_FUNCTION` | `run_social_job` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_TRR_MODAL_SOCIAL_RECOVERY_FUNCTION` | `sweep_social_dispatch_queue` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_TRR_MODAL_SOCIAL_SECRET_NAME` | `trr-social-auth` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
@@ -75,10 +77,11 @@ Visibility tiers:
 | `WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_LEASE_SECONDS` | `300` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS` | `1` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_TRR_REMOTE_REDDIT_WORKERS` | `1` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
-| `WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS` | `2` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
-| `WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR` | `1` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
-| `WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR` | `1` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
-| `WORKSPACE_TRR_REMOTE_SOCIAL_POSTS` | `2` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
-| `WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS` | `1` | integer | `scripts/dev-workspace.sh`, `Makefile` | `common` | Include social ingest/background lanes in the remote execution contract. |
+| `WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS` | `2` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Comments-stage cap used by Modal social dispatch and by legacy local social worker mode. |
+| `WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR` | `1` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Comment media mirror stage cap used by Modal social dispatch and by legacy local social worker mode. |
+| `WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT` | `25` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Maximum number of queued social jobs the backend will dispatch per Modal sweep. |
+| `WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR` | `1` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Post media mirror stage cap used by Modal social dispatch and by legacy local social worker mode. |
+| `WORKSPACE_TRR_REMOTE_SOCIAL_POSTS` | `2` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Posts-stage cap used by Modal social dispatch and by legacy local social worker mode. |
+| `WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS` | `1` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable or disable the Modal social lane in the remote execution contract; this is not a worker-count knob. |
 | `WORKSPACE_TRR_REMOTE_WORKERS_ENABLED` | `1` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable remote background execution. When executor is Modal, local claim loops are skipped and Modal-owned dispatch remains active. |
 | `WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS` | `2` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |

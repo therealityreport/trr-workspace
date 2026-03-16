@@ -3,10 +3,10 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LOG_DIR="${ROOT}/.logs/workspace"
+source "${ROOT}/scripts/lib/chrome-runtime.sh"
 
 endpoint_reachable() {
-  local port="$1"
-  curl -sf "http://127.0.0.1:${port}/json/version" >/dev/null 2>&1
+  chrome_endpoint_reachable "$1"
 }
 
 add_port() {
@@ -26,15 +26,25 @@ print_instance() {
   local port="$1"
   local pidfile="${LOG_DIR}/chrome-agent-${port}.pid"
   local statefile="${LOG_DIR}/chrome-agent-${port}.env"
+  local healed_state=""
+
+  local reachable="no"
+  if endpoint_reachable "$port"; then
+    reachable="yes"
+    if [[ "$port" == "9222" ]]; then
+      healed_state="$(heal_shared_chrome_runtime_state "$LOG_DIR" "$port" 2>/dev/null || true)"
+    fi
+  fi
 
   local pid
   if [[ "$port" == "9222" && ! -f "$pidfile" && -f "${LOG_DIR}/chrome-agent.pid" ]]; then
     pidfile="${LOG_DIR}/chrome-agent.pid"
   fi
   pid="$(cat "$pidfile" 2>/dev/null || true)"
-  local reachable="no"
-  if endpoint_reachable "$port"; then
-    reachable="yes"
+  if [[ -n "$healed_state" ]]; then
+    pid="${healed_state%%:*}"
+  elif [[ "$reachable" == "yes" ]]; then
+    pid="$(chrome_listener_pid "$port")"
   fi
 
   local profile="unknown"
@@ -42,20 +52,16 @@ print_instance() {
   if [[ -f "$statefile" ]]; then
     profile="$(sed -n 's/^PROFILE_DIR=//p' "$statefile" | head -n 1)"
     headless="$(sed -n 's/^HEADLESS=//p' "$statefile" | head -n 1)"
-  elif [[ "$port" == "9222" ]]; then
-    profile="${HOME}/.chrome-profiles/claude-agent"
+  else
+    profile="$(default_chrome_profile_for_port "$port")"
     headless="0"
   fi
 
   local status="stopped"
-  if [[ -n "$pid" ]] && kill -0 "$pid" >/dev/null 2>&1; then
-    if [[ "$reachable" == "yes" ]]; then
-      status="running"
-    else
-      status="degraded"
-    fi
-  elif [[ "$reachable" == "yes" ]]; then
-    status="listener-only"
+  if [[ "$reachable" == "yes" ]]; then
+    status="running"
+  elif [[ -n "$pid" ]] && kill -0 "$pid" >/dev/null 2>&1; then
+    status="degraded"
   fi
 
   printf "%-6s %-13s %-8s %-9s %-8s %s\n" "$port" "$status" "${pid:-?}" "$reachable" "${headless:-?}" "$profile"

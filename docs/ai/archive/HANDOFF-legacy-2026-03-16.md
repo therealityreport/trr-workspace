@@ -1,0 +1,1468 @@
+# Session Handoff (TRR Workspace)
+
+Purpose: persistent state for multi-turn AI agent sessions affecting workspace-level tooling (`make dev` / `make stop`).
+## Latest Update (2026-03-16 04:10 EDT) — conflict cleanup now preserves Claude browser-control clients by default
+
+- primary_skill: `orchestrate-plan-execution`
+- supporting_skills:
+  - `senior-devops`
+- mcp_tools_used:
+  - `functions.exec_command`
+  - `functions.apply_patch`
+- files_changed:
+  - `/Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-stop-conflicts.sh`
+  - `/Users/thomashulihan/Projects/TRR/docs/ai/HANDOFF.md`
+- behavior_summary:
+  - Changed `chrome-devtools-mcp-stop-conflicts.sh` so `--apply` now terminates only non-Claude browser-control conflicts by default.
+  - Claude browser-control clients and the associated native host are still listed in diagnostics, but they are preserved unless `--include-claude` is passed explicitly.
+  - Added usage/help text documenting the new policy and the explicit opt-in path for terminating Claude clients.
+- validation_evidence:
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-stop-conflicts.sh` (pass)
+  - `bash /Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-stop-conflicts.sh --help` (pass)
+  - `bash /Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-stop-conflicts.sh` (pass; current state had no remaining conflicts)
+- blocked_checks:
+  - This change does not provision a separate Chrome runtime for Claude; it only guarantees the workspace cleanup path will not terminate Claude clients unless explicitly told to do so.
+## Latest Update (2026-03-16 04:02 EDT) — Chrome DevTools MCP readiness now validates Codex registry state, not just browser wrapper health
+
+- primary_skill: `orchestrate-plan-execution`
+- supporting_skills:
+  - `senior-devops`
+  - `senior-fullstack`
+  - `senior-qa`
+- mcp_tools_used:
+  - `functions.exec_command`
+  - `functions.apply_patch`
+  - `functions.update_plan`
+- files_changed:
+  - `/Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-status.sh`
+  - `/Users/thomashulihan/Projects/TRR/docs/ai/HANDOFF.md`
+- behavior_summary:
+  - Extended `chrome-devtools-mcp-status.sh` so it now validates the repo-managed `~/.codex/config.toml` template state through `codex-config-sync.sh validate`, checks `codex mcp list` for an enabled `chrome-devtools` registration, and only then reports browser automation readiness.
+  - The readiness script now emits an explicit session-boundary note when the browser and registry are healthy but an already-open chat may still lack the tool surface because MCP registrations are fixed at chat start.
+  - This closes the misleading “wrapper/browser healthy but session still missing the tool” gap in workspace diagnostics without changing the managed Chrome wrapper itself.
+- validation_evidence:
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-status.sh /Users/thomashulihan/Projects/TRR/scripts/preflight.sh` (pass)
+  - `env CHROME_DEVTOOLS_MCP_STATUS_MODE=summary bash /Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-status.sh` (pass; now prints both readiness and the restart-boundary note)
+  - `bash /Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-status.sh` (pass; now prints `Repo template sync OK` and `Codex registry: chrome-devtools ... enabled`)
+  - `codex mcp list` (pass; shows `chrome-devtools` enabled)
+- blocked_checks:
+  - The current already-open Codex thread still cannot gain a missing MCP tool retroactively; a thread/session restart is still required after MCP registration changes or if the session started before the server table was loaded.
+  - External Claude/Playwright browser-control clients are still attached to shared Chrome on this machine; diagnostics now surface them clearly, but they were not terminated automatically in this change.
+## Latest Update (2026-03-16 04:05 EDT) — MCP config templates, cleanup, and shared-state status hardened
+
+- primary_skill: `orchestrate-plan-execution`
+- supporting_skills:
+  - `senior-devops`
+  - `senior-qa`
+  - `code-reviewer`
+- mcp_tools_used:
+  - primary: `functions.exec_command`
+  - fallback: `functions.apply_patch`
+- risk_class: `medium` (workspace MCP config generation, process cleanup, and status diagnostics)
+- files_changed:
+  - `/Users/thomashulihan/Projects/TRR/config/codex/shared-aws-off.toml.tmpl`
+  - `/Users/thomashulihan/Projects/TRR/config/codex/shared-aws-on.toml.tmpl`
+  - `/Users/thomashulihan/Projects/TRR/scripts/codex-config-sync.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/lib/mcp-runtime.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/lib/chrome-runtime.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/mcp-profile.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/mcp-clean.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/chrome-agent-status.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-status.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/status-workspace.sh`
+  - `/Users/thomashulihan/Projects/TRR/Makefile`
+  - `/Users/thomashulihan/Projects/TRR/AGENTS.md`
+  - `/Users/thomashulihan/Projects/TRR/docs/ai/HANDOFF.md`
+- behavior_summary:
+  - Added repo-managed Codex config templates for `shared + AWS off` and `shared + AWS on`, including the full expected AWS MCP section set (`awslabs-cloudwatch`, `awsknowledge`, `awsiac`) so the workspace no longer depends on missing-section behavior in `~/.codex/config.toml`.
+  - Added `scripts/codex-config-sync.sh` to back up, render, install, and validate `~/.codex/config.toml` atomically from those repo templates instead of patching TOML in place.
+  - Rewrote `scripts/mcp-profile.sh` so `aws-on` / `aws-off` now install the matching template and `aws-status` reports both config state and live process state. `aws-off` now also kills live local AWS MCP trees.
+  - Added `scripts/mcp-clean.sh` and `make mcp-clean` to remove disabled AWS MCP trees, stale shared Chrome MCP clients/wrappers, and stale managed-Chrome runtime files safely and idempotently.
+  - Added shared runtime helpers so `scripts/status-workspace.sh` now reports Desktop vs VS Code Codex app-server owners and warns when multiple owners share the runtime or when disabled AWS MCPs are still alive.
+  - Added shared Chrome runtime healing so `scripts/chrome-agent-status.sh` and `scripts/chrome-devtools-mcp-status.sh` trust the live `9222` listener first, rewrite stale pid/state files from that listener, and no longer downgrade to a stale pidfile-driven `listener-only` state.
+- validation_evidence:
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/codex-config-sync.sh /Users/thomashulihan/Projects/TRR/scripts/mcp-profile.sh /Users/thomashulihan/Projects/TRR/scripts/mcp-clean.sh /Users/thomashulihan/Projects/TRR/scripts/chrome-agent-status.sh /Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-status.sh /Users/thomashulihan/Projects/TRR/scripts/status-workspace.sh /Users/thomashulihan/Projects/TRR/scripts/lib/mcp-runtime.sh /Users/thomashulihan/Projects/TRR/scripts/lib/chrome-runtime.sh` (pass)
+  - `bash /Users/thomashulihan/Projects/TRR/scripts/mcp-profile.sh aws-off` on an already-off config (pass; installs canonical template and leaves `~/.codex/config.toml` byte-for-byte equal to the rendered `shared-aws-off.toml.tmpl`)
+  - `bash /Users/thomashulihan/Projects/TRR/scripts/mcp-profile.sh aws-on` followed by `bash /Users/thomashulihan/Projects/TRR/scripts/mcp-profile.sh aws-off` (pass; both templates installed and validated, both left `~/.codex/config.toml` byte-for-byte equal to the rendered repo template)
+  - `bash /Users/thomashulihan/Projects/TRR/scripts/mcp-clean.sh` with no stale processes (pass; reported zero removals)
+  - Simulated disabled AWS MCP and orphan shared Chrome client with `exec -a ... sleep` harnesses, then ran `bash /Users/thomashulihan/Projects/TRR/scripts/mcp-clean.sh` (pass; fake disabled AWS MCP tree and fake orphan shared Chrome client were removed without touching the live `9222` browser)
+  - Corrupted `.logs/workspace/chrome-agent-9222.pid`, `.logs/workspace/chrome-agent.pid`, and `.logs/workspace/chrome-agent-9222.env`, then ran `bash /Users/thomashulihan/Projects/TRR/scripts/chrome-agent-status.sh` (pass; rewritten to live listener PID `55254`, restored shared profile path, restored `HEADLESS=0`, reported `running`)
+  - Simulated a second VS Code-style app-server plus a disabled AWS MCP process, then ran `bash /Users/thomashulihan/Projects/TRR/scripts/status-workspace.sh` and `bash /Users/thomashulihan/Projects/TRR/scripts/mcp-profile.sh aws-status` (pass; surfaced Desktop + VS Code owners and warned about disabled AWS MCPs still running)
+  - `make -C /Users/thomashulihan/Projects/TRR chrome-devtools-mcp-status` (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR mcp-aws-status` (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR status` (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR preflight` (pass; still warns about one external Claude browser-control client)
+- downstream_repos_impacted:
+  - `TRR-Backend`: `no`
+  - `TRR-APP`: `no`
+  - `screenalytics`: `no`
+- blocked_checks:
+  - `awsknowledge` remains a URL-backed MCP entry, so there is no local process model to kill. Status now labels it as `remote-url` explicitly.
+  - `make chrome-devtools-mcp-status` and `make preflight` still surface the external Claude native-host/browser-control conflict on the shared Chrome browser. That visibility is intentional; no automatic disablement was added.
+- default_skill_chain_applied: `true`
+- default_skill_chain_used:
+  - `orchestrate-plan-execution`
+  - `senior-devops`
+  - `senior-qa`
+  - `code-reviewer`
+- default_skill_chain_exception_reason: `No exception. Workspace-only implementation followed the requested chain.`
+## Latest Update (2026-03-16 03:15 EDT) — Chrome DevTools MCP orphan leak and shared-port pileup fixed
+
+- primary_skill: `debugging-wizard`
+- supporting_skills:
+  - `orchestrate-plan-execution`
+  - `senior-devops`
+  - `senior-qa`
+  - `code-reviewer`
+- mcp_tools_used:
+  - primary: `functions.exec_command`
+  - fallback: `functions.apply_patch`
+- risk_class: `medium` (workspace MCP lifecycle and process cleanup behavior)
+- files_changed:
+  - `/Users/thomashulihan/Projects/TRR/scripts/codex-chrome-devtools-mcp.sh`
+  - `/Users/thomashulihan/Projects/TRR/docs/ai/HANDOFF.md`
+- root_cause:
+  - The regression started in the March 13 wrapper hardening that added an orphan watchdog to `codex-chrome-devtools-mcp.sh`.
+  - That watchdog used `$$` inside a background subshell, which in Bash still points at the parent shell PID instead of the subshell PID; it also inherited the MCP stdio pipes and was `disown`ed.
+  - Normal wrapper cleanup only killed direct children, while the real runtime tree is `bash -> npm exec -> node chrome-devtools-mcp -> telemetry watchdog`, so leaked grandchildren survived if the wrapper shell died or was force-killed.
+  - Shared mode intentionally points every Codex session at the same managed Chrome listener on `127.0.0.1:9222`. That is expected for the browser, but the leaked MCP client processes were not being reaped, so many stale `chrome-devtools-mcp --browserUrl http://127.0.0.1:9222` clients accumulated and fought over the same browser endpoint.
+- behavior_summary:
+  - Added explicit wrapper identity tracking (`SCRIPT_PID`, `SCRIPT_PGID`) and process-group helpers so the script can reason about its own lifecycle instead of relying on `$$` implicitly.
+  - Reworked cleanup to kill the full descendant tree, not just direct children, before removing reservations and transient stderr FIFOs.
+  - Changed the orphan watchdog to run with stdio redirected to `/dev/null`, track its PID explicitly, and kill the wrapper process group when the parent disappears instead of lingering as another orphaned `bash` process.
+  - Changed the MCP launch path to run `npm exec ... & wait` so the wrapper shell can actually receive `TERM`/`HUP` and execute its cleanup traps while the MCP child is active.
+  - Added shared-mode singleton registration and reaping so a fresh shared session on `9222` proactively terminates older leaked shared wrapper groups instead of stacking indefinitely.
+  - Cleaned the currently leaked local MCP/client processes from the workstation after the fix was in place.
+- validation_evidence:
+  - `git log -- scripts/codex-chrome-devtools-mcp.sh` showed the relevant regression landed in commit `0ac707d5` on `2026-03-13 17:20:36 -0400`.
+  - Live process inspection before the fix showed `15` separate shared wrapper groups with `chrome-devtools-mcp --browserUrl http://127.0.0.1:9222` descendants under the Codex app server, plus additional stale isolated wrappers on `9333` and `9335`.
+  - A controlled shared-mode launch of the patched wrapper reduced the live shared `9222` wrapper groups from `15` to `1`, confirming the new shared-session reaper was collapsing the pileup instead of allowing indefinite accumulation.
+  - `python3 -c 'import os,sys; os.setsid(); os.execvp("bash", ["bash", "scripts/codex-chrome-devtools-mcp.sh"])'` with a held-open stdin pipe no longer left behind MCP descendants after termination testing; the remaining failures during intermediate harness runs were from the harness process group itself, not from persistent wrapper leaks.
+  - `bash /Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-status.sh` after cleanup reported `Conflict risk count: 5`, and all five were external Claude browser-control components rather than leaked Codex `shared_cdp_client` processes.
+  - Final process check after cleanup showed no remaining `codex-chrome-devtools-mcp.sh` roots, no `chrome-devtools-mcp --browserUrl ...` leftovers, and no telemetry watchdog leftovers from the TRR wrapper.
+- downstream_repos_impacted:
+  - `TRR-Backend`: `no`
+  - `TRR-APP`: `no`
+  - `screenalytics`: `no`
+- blocked_checks:
+  - `chrome-devtools-mcp-status.sh` still flags unrelated external Claude browser-control processes (`chrome-control` extension + native host). Those are outside the TRR wrapper and were not changed here.
+- default_skill_chain_applied: `false`
+- default_skill_chain_used:
+  - `debugging-wizard`
+  - `orchestrate-plan-execution`
+  - `senior-devops`
+  - `senior-qa`
+  - `code-reviewer`
+- default_skill_chain_exception_reason: `Workspace-local debugging and script hardening only; no cross-repo contract change.`
+## Latest Update (2026-03-16 02:39 EDT) — `make dev` browser-check output is now shorter and plain-English by default
+
+- primary_skill: `senior-devops`
+- supporting_skills:
+  - `senior-qa`
+  - `debugging-wizard`
+- mcp_tools_used:
+  - primary: `functions.exec_command`
+  - fallback: `functions.apply_patch`
+- risk_class: `low` (workspace log/output shaping only)
+- files_changed:
+  - `/Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-status.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/preflight.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/doctor.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/dev-workspace.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/codex-chrome-devtools-mcp.sh`
+  - `/Users/thomashulihan/Projects/TRR/docs/ai/HANDOFF.md`
+- behavior_summary:
+  - `make dev` / `make preflight` now call the Chrome MCP status script in a new summary mode instead of printing the full standalone diagnostics dump.
+  - Default preflight output now says `Checking browser automation...` and, on success, prints one short readiness line plus a short warning summary when too many other browser-control processes are attached.
+  - The full internal details (config path, websocket URL, full PID list, suggested cleanup commands) are still available on demand through `make chrome-devtools-mcp-status`.
+  - Reworded the activated-virtualenv note in `doctor.sh` into plain English.
+  - Reworded the old pidfile message in `dev-workspace.sh` into plain English.
+  - Hid the legacy `.playwright-mcp` note from normal preflight output; it now only appears in diagnostics mode.
+  - Fixed a wrapper cleanup bug in `codex-chrome-devtools-mcp.sh` where successful `--version` / info-only calls could still exit non-zero if the helper `tee` process had already ended.
+- validation_evidence:
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-status.sh /Users/thomashulihan/Projects/TRR/scripts/preflight.sh /Users/thomashulihan/Projects/TRR/scripts/doctor.sh /Users/thomashulihan/Projects/TRR/scripts/dev-workspace.sh /Users/thomashulihan/Projects/TRR/scripts/codex-chrome-devtools-mcp.sh` (pass)
+  - `CODEX_CHROME_SKIP_BROWSER_BOOT=1 /Users/thomashulihan/Projects/TRR/scripts/codex-chrome-devtools-mcp.sh --version` (pass; now exits `0`)
+  - `env CHROME_DEVTOOLS_MCP_STATUS_MODE=summary bash /Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-status.sh` (pass; concise output only)
+  - `bash /Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-status.sh` (pass; full verbose output still available)
+- downstream_repos_impacted:
+  - `TRR-Backend`: `no`
+  - `TRR-APP`: `no`
+  - `screenalytics`: `no`
+- blocked_checks:
+  - `make preflight` inside the tool sandbox intermittently stalled after `check-policy` during validation, even though the standalone summary-mode browser status command passed and the status script itself remained functional. The user-facing behavior change is confined to output shaping, not service startup logic.
+- default_skill_chain_applied: `false`
+- default_skill_chain_used:
+  - `senior-devops`
+  - `senior-qa`
+  - `debugging-wizard`
+- default_skill_chain_exception_reason: `Workspace log simplification and debugging only; no cross-repo contract change.`
+## Latest Update (2026-03-16 02:01 EDT) — regenerated `env-contract.md` so default preflight no longer warns on contract drift
+
+- primary_skill: `senior-devops`
+- supporting_skills:
+  - `senior-qa`
+- mcp_tools_used:
+  - primary: `functions.exec_command`
+  - fallback: `functions.apply_patch`
+- risk_class: `low` (generated documentation refresh only)
+- files_changed:
+  - `/Users/thomashulihan/Projects/TRR/docs/workspace/env-contract.md`
+  - `/Users/thomashulihan/Projects/TRR/docs/ai/HANDOFF.md`
+- behavior_summary:
+  - Regenerated the workspace env matrix from the current checked-in startup/runtime scripts.
+  - The material tracked change was the documented default for `WORKSPACE_BACKEND_HEALTH_CURL_MAX_TIME`, which now matches the live generated value of `5` instead of the stale `30`.
+  - Restored a clean `make preflight` path without the previous env-contract drift warning.
+- validation_evidence:
+  - `make -C /Users/thomashulihan/Projects/TRR env-contract` (pass; rewrote `docs/workspace/env-contract.md`)
+  - `git -C /Users/thomashulihan/Projects/TRR diff -- docs/workspace/env-contract.md` (showed the expected default change for `WORKSPACE_BACKEND_HEALTH_CURL_MAX_TIME: 30 -> 5`)
+  - `make -C /Users/thomashulihan/Projects/TRR preflight` (pass; `env-contract` phase reported `OK` and preflight reached `[preflight] OK`)
+- downstream_repos_impacted:
+  - `TRR-Backend`: `no`
+  - `TRR-APP`: `no`
+  - `screenalytics`: `no`
+- blocked_checks:
+  - none
+- default_skill_chain_applied: `false`
+- default_skill_chain_used:
+  - `senior-devops`
+  - `senior-qa`
+- default_skill_chain_exception_reason: `Workspace-generated documentation refresh only.`
+## Latest Update (2026-03-16 01:59 EDT) — Chrome MCP smoke checks now exit promptly, so `make dev` no longer looks hung during preflight
+
+- primary_skill: `orchestrate-plan-execution`
+- supporting_skills:
+  - `debugging-wizard`
+  - `senior-devops`
+- mcp_tools_used:
+  - primary: `functions.exec_command`
+  - fallback: `functions.apply_patch`
+- risk_class: `low` (workspace-only script control flow; no repo contract changes)
+- files_changed:
+  - `/Users/thomashulihan/Projects/TRR/scripts/codex-chrome-devtools-mcp.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-status.sh`
+  - `/Users/thomashulihan/Projects/TRR/docs/ai/HANDOFF.md`
+- behavior_summary:
+  - Moved the wrapper's info-only path ahead of its cleanup traps, orphan-watchdog loop, and browser/session setup so smoke checks do not inherit long-lived MCP session behavior.
+  - Kept Node baseline validation in place for smoke checks by running the fast path only after `ensure_node_baseline_or_fail`.
+  - Left real MCP session behavior unchanged for normal `--browserUrl` usage against the shared Chrome endpoint.
+  - Switched the readiness smoke check in `chrome-devtools-mcp-status.sh` from `--help` to `--version` to make the check explicit and cheaper.
+  - Confirmed the original blocker was the slow wrapper smoke-check path, not the env-contract warning, which remains warning-only under default preflight.
+- validation_evidence:
+  - `CODEX_CHROME_SKIP_BROWSER_BOOT=1 bash /Users/thomashulihan/Projects/TRR/scripts/codex-chrome-devtools-mcp.sh --version` (pass; exit `0`, ~1.8s)
+  - `bash /Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-status.sh` (pass; smoke check passed and existing conflict warnings still printed)
+  - `make -C /Users/thomashulihan/Projects/TRR preflight` (pass; reached `[preflight] OK`)
+  - `make -C /Users/thomashulihan/Projects/TRR dev` (pass through workspace startup; reached service start + health checks, then interrupted intentionally for cleanup)
+  - `make -C /Users/thomashulihan/Projects/TRR stop` (pass; safe cleanup after controlled `make dev` run)
+  - Real MCP regression check:
+    - started `bash /Users/thomashulihan/Projects/TRR/scripts/codex-chrome-devtools-mcp.sh --browserUrl http://127.0.0.1:9222`
+    - confirmed temporary `npm exec` + `node ... chrome-devtools-mcp` child pair appeared
+    - interrupted the session and verified the extra pair disappeared, returning the matching process list to its pre-run baseline
+- downstream_repos_impacted:
+  - `TRR-Backend`: `no`
+  - `TRR-APP`: `no`
+  - `screenalytics`: `no`
+- blocked_checks:
+  - `docs/workspace/env-contract.md` is still out of date in the repo, but that drift is pre-existing and intentionally out of scope for this fix.
+- default_skill_chain_applied: `false`
+- default_skill_chain_used:
+  - `orchestrate-plan-execution`
+  - `debugging-wizard`
+  - `senior-devops`
+- default_skill_chain_exception_reason: `Workspace-only script debugging/fix; no cross-repo contract or product behavior change.`
+## Latest Update (2026-03-13 18:52 EDT) — Chrome DevTools MCP now hard-fails in shared mode instead of spawning stray browsers, with workspace diagnostics and cleanup helpers
+
+- primary_skill: `senior-devops`
+- supporting_skills:
+  - `senior-qa`
+- mcp_tools_used:
+  - primary: `functions.exec_command`
+  - fallback: `functions.apply_patch`
+- risk_class: `medium` (workspace browser/MCP bootstrap behavior changed; user-level Codex config also corrected)
+- files_changed:
+  - `/Users/thomashulihan/Projects/TRR/AGENTS.md`
+  - `/Users/thomashulihan/Projects/TRR/Makefile`
+  - `/Users/thomashulihan/Projects/TRR/scripts/chrome-agent.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-status.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/codex-chrome-devtools-mcp.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/ensure-managed-chrome.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-clean-stale.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-stop-conflicts.sh`
+  - `/Users/thomashulihan/Projects/TRR/docs/ai/HANDOFF.md`
+  - `/Users/thomashulihan/.codex/config.toml` (user-level config; outside repo)
+- behavior_summary:
+  - Restored the Codex managed-Chrome default to `shared + headful` at both the workspace policy level and the live Codex MCP config.
+  - Hardened the Chrome DevTools MCP wrapper so shared mode is pinned to `9222`, refuses alternate ports in shared mode, and fails loudly when the shared browser is unavailable instead of silently launching another browser/profile.
+  - Added a diagnostic-only mode to the wrapper so status/help-style checks do not open Chrome windows.
+  - Hardened `ensure-managed-chrome.sh` so shared mode no longer auto-launches Chrome; it now validates shared availability and exits with remediation guidance.
+  - Added flock-based startup locking in `chrome-agent.sh` so concurrent startup attempts cannot race and spawn duplicate Chrome instances on the same port.
+  - Added workspace diagnostics and remediation helpers:
+    - `make chrome-devtools-mcp-status`
+    - `make chrome-devtools-mcp-clean-stale`
+    - `make chrome-devtools-mcp-stop-conflicts`
+  - Expanded the status output to report:
+    - configured/default mode
+    - shared endpoint health
+    - shared browser PID/profile ownership
+    - websocket URL
+    - stale artifact state
+    - conflicting non-Codex browser-control clients
+    - recommended next action
+  - Added safe stale-artifact cleanup for dead pid/env/reserve files without killing live browsers.
+  - Added a targeted conflicting-client stopper for non-Codex browser-control processes (for example Claude native-host/control helpers or Playwright MCP helpers) without indiscriminately killing Chrome.
+  - Updated workspace guidance to explicitly say that if Chrome opens randomly while Codex is idle, the first response should be `make chrome-devtools-mcp-status`, not launching more browsers.
+- validation_evidence:
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/codex-chrome-devtools-mcp.sh /Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-status.sh /Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-clean-stale.sh /Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-stop-conflicts.sh /Users/thomashulihan/Projects/TRR/scripts/ensure-managed-chrome.sh /Users/thomashulihan/Projects/TRR/scripts/chrome-agent.sh /Users/thomashulihan/Projects/TRR/scripts/stop-chrome-agent.sh` (pass)
+  - `bash /Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-stop-conflicts.sh --apply` (pass; terminated visible conflicting non-Codex browser-control processes before final hardening)
+  - `bash /Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-clean-stale.sh` (pass)
+  - `CHROME_AGENT_DEBUG_PORT=9222 CHROME_AGENT_PROFILE_DIR="$HOME/.chrome-profiles/claude-agent" bash /Users/thomashulihan/Projects/TRR/scripts/chrome-agent.sh` (pass; explicit shared browser start on `9222`)
+  - `make -C /Users/thomashulihan/Projects/TRR chrome-devtools-mcp-status` (pass; reported `Effective wrapper mode: shared`, `Shared 9222 endpoint: reachable`, `Shared listener PID: 54464`, `Conflict risk count: 0`, `Smoke check passed`)
+- downstream_repos_impacted:
+  - `TRR-Backend`: `no`
+  - `TRR-APP`: `no`
+  - `screenalytics`: `no`
+- blocked_checks:
+  - The current Codex chat session still will not gain a missing `chrome-devtools` tool binding retroactively. After config/wrapper changes, a fresh Codex session/thread restart is still required for MCP registrations to be reloaded.
+- default_skill_chain_applied: `false`
+- default_skill_chain_used:
+  - `senior-devops`
+  - `senior-qa`
+- default_skill_chain_exception_reason: `Workspace-only browser/MCP tooling hardening and user-level Codex config correction; no repo feature contract changes.`
+## Latest Update (2026-03-13 18:00 EDT) — workspace file now models one workspace with exactly three repo folders
+
+- primary_skill: `senior-devops`
+- supporting_skills:
+  - `senior-qa`
+- mcp_tools_used:
+  - primary: `functions.exec_command`
+  - fallback: `functions.apply_patch`
+- risk_class: `low` (workspace editor configuration only)
+- files_changed:
+  - `/Users/thomashulihan/Projects/TRR/trr-workspace.code-workspace`
+  - `/Users/thomashulihan/Projects/TRR/docs/ai/HANDOFF.md`
+- behavior_summary:
+  - Removed the root `TRR` folder from the checked-in VS Code workspace file so the workspace now models exactly one workspace containing the three project repos: `TRR-Backend`, `TRR-App`, and `TRR-Screenalytics`.
+  - Removed the workspace-only terminal cwd override tied to the deleted root folder, leaving only `python.terminal.activateEnvironment` at the workspace level.
+- validation_evidence:
+  - Parsed `/Users/thomashulihan/Projects/TRR/trr-workspace.code-workspace` as valid JSON after conflict resolution.
+  - Verified the workspace folder list is exactly:
+    - `TRR-Backend`
+    - `TRR-App`
+    - `TRR-Screenalytics`
+- downstream_repos_impacted:
+  - `TRR-Backend`: `no`
+  - `TRR-APP`: `no`
+  - `screenalytics`: `no`
+- default_skill_chain_applied: `false`
+- default_skill_chain_used:
+  - `senior-devops`
+  - `senior-qa`
+- default_skill_chain_exception_reason: `Workspace-only follow-up fix to align the checked-in VS Code workspace with the intended three-repo structure.`
+## Latest Update (2026-03-13 07:08 EDT) — `make dev` defaults are quiet again, so open tabs stop getting dogpiled by workspace automation
+
+- primary_skill: `orchestrate-plan-execution`
+- supporting_skills:
+  - `debugging-wizard`
+  - `senior-devops`
+  - `senior-qa`
+- mcp_tools_used:
+  - primary: `functions.exec_command`
+  - secondary: `functions.apply_patch`
+  - verification: `functions.mcp__chrome-devtools__new_page`, `functions.mcp__chrome-devtools__wait_for`, `functions.mcp__chrome-devtools__list_network_requests`
+- risk_class: `medium` (workspace startup defaults changed again; daily dev behavior is quieter and less automatic)
+- files_changed:
+  - `/Users/thomashulihan/Projects/TRR/Makefile`
+  - `/Users/thomashulihan/Projects/TRR/profiles/default.env`
+  - `/Users/thomashulihan/Projects/TRR/profiles/local-cloud.env`
+  - `/Users/thomashulihan/Projects/TRR/profiles/local-full.env`
+  - `/Users/thomashulihan/Projects/TRR/profiles/local-lite.env`
+  - `/Users/thomashulihan/Projects/TRR/scripts/dev-workspace.sh`
+  - `/Users/thomashulihan/Projects/TRR/docs/workspace/env-contract.md`
+  - `/Users/thomashulihan/Projects/TRR/docs/ai/HANDOFF.md`
+- behavior_summary:
+  - Restored laptop-safe defaults for the workspace startup path:
+    - `WORKSPACE_OPEN_BROWSER=0`
+    - `WORKSPACE_BACKEND_AUTO_RESTART=0`
+  - Applied the same quieter browser default to the shipped `local-cloud` and `local-full` profiles so alternate local startup modes do not reopen or reshuffle tabs unless explicitly requested.
+  - Kept browser tab sync available as an opt-in via `WORKSPACE_OPEN_BROWSER=1 make dev`.
+  - Restarted the workspace to prove the new defaults take effect in the live pidfile/status contract, not just in tracked files.
+- validation_evidence:
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/dev-workspace.sh /Users/thomashulihan/Projects/TRR/scripts/open-or-refresh-browser-tab.sh /Users/thomashulihan/Projects/TRR/scripts/open-workspace-dev-window.sh /Users/thomashulihan/Projects/TRR/scripts/workspace-env-contract.sh` (pass)
+  - `bash /Users/thomashulihan/Projects/TRR/scripts/workspace-env-contract.sh --generate` (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR stop` (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR dev` (pass; startup summary now reports `Browser sync: disabled`, `Backend watchdog: disabled`, and `Skipping browser sync (WORKSPACE_OPEN_BROWSER=0)`)
+  - `bash /Users/thomashulihan/Projects/TRR/scripts/status-workspace.sh` during the restarted run (pass; shows `WORKSPACE_OPEN_BROWSER: 0`, `WORKSPACE_BACKEND_AUTO_RESTART: 0`, `TRR-APP ... ok`, `TRR-Backend ... ok`)
+- blocked_checks:
+  - This change does not remove normal Next.js Fast Refresh behavior when source files actually change. The fix removes workspace-driven tab churn and backend self-restart churn; code-edit invalidations can still cause tab reloads, but they should now happen with far less recompilation pressure.
+## Latest Update (2026-03-12 23:24 EDT) — `make dev` is now the canonical remote-first startup and `make smoke` is resilient under Next.js warmup
+
+- primary_skill: `orchestrate-plan-execution`
+- supporting_skills:
+  - `senior-devops`
+  - `senior-backend`
+  - `senior-qa`
+- mcp_tools_used:
+  - primary: `functions.exec_command`
+  - secondary: `functions.apply_patch`
+  - verification: `functions.mcp__chrome-devtools__list_pages`, `functions.mcp__chrome-devtools__take_snapshot`
+- risk_class: `medium` (workspace startup defaults, status semantics, and smoke health checks changed)
+- files_changed:
+  - `/Users/thomashulihan/Projects/TRR/AGENTS.md`
+  - `/Users/thomashulihan/Projects/TRR/Makefile`
+  - `/Users/thomashulihan/Projects/TRR/profiles/default.env`
+  - `/Users/thomashulihan/Projects/TRR/profiles/local-lite.env`
+  - `/Users/thomashulihan/Projects/TRR/scripts/dev-workspace.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/doctor.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/smoke.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/status-workspace.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/workspace-env-contract.sh`
+  - `/Users/thomashulihan/Projects/TRR/docs/workspace/env-contract.md`
+  - `/Users/thomashulihan/Projects/TRR/docs/ai/HANDOFF.md`
+- behavior_summary:
+  - Added `profiles/default.env` and made `make dev` load it by default, replacing the old `PROFILE=local-lite` daily startup assumption.
+  - Made the effective `make dev` contract remote-first:
+    - `WORKSPACE_OPEN_BROWSER=1`
+    - `WORKSPACE_BACKEND_AUTO_RESTART=1`
+    - `TRR_BACKEND_RELOAD=0`
+    - `TRR_BACKEND_WORKERS=2`
+    - `TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER=0`
+    - `WORKSPACE_TRR_JOB_PLANE_MODE=remote`
+    - `WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE=1`
+    - `WORKSPACE_TRR_REMOTE_EXECUTOR=modal`
+    - `WORKSPACE_TRR_MODAL_ENABLED=1`
+    - `WORKSPACE_TRR_REMOTE_WORKERS_ENABLED=1`
+    - `WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS=1`
+    - `WORKSPACE_SOCIAL_WORKER_ENABLED=0`
+  - Turned `make dev-lite` into a deprecated compatibility alias that forwards to `make dev`.
+  - Updated workspace startup/status output so the intended local stack is explicit (`TRR-APP`, `TRR-Backend`) and Modal-backed background execution is first-class (`Modal dispatch active`, local claim loops skipped).
+  - Updated `doctor.sh` to report an active shell venv separately from the repo-managed runtime used by workspace services.
+  - Tightened `status-workspace.sh` to use a 1-second best-effort backend/app probe, surface remote execution metadata, and report `n/a` when the workspace is inactive.
+  - Hardened `smoke.sh` with retrying HTTP probes so `make smoke` no longer flakes on transient Next.js warmup while the app is otherwise healthy.
+- validation_evidence:
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/dev-workspace.sh /Users/thomashulihan/Projects/TRR/scripts/status-workspace.sh /Users/thomashulihan/Projects/TRR/scripts/doctor.sh /Users/thomashulihan/Projects/TRR/scripts/workspace-env-contract.sh /Users/thomashulihan/Projects/TRR/scripts/smoke.sh /Users/thomashulihan/Projects/TRR/TRR-Backend/scripts/start_remote_job_workers.sh` (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR env-contract` (pass; regenerated `docs/workspace/env-contract.md` to the `PROFILE=default` baseline)
+  - `make -C /Users/thomashulihan/Projects/TRR preflight` (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR dev` (pass; startup summary reported `Workspace profile: default`, browser sync enabled, backend watchdog enabled, backend mode `non-reload`, remote execution `Modal dispatch active`, local claim loops skipped)
+  - `make -C /Users/thomashulihan/Projects/TRR status` during the live run (pass; reported `TRR_REMOTE_WORKERS: not started locally (Modal dispatch active)` and `summary: modal_dispatch_active (local claim loops skipped)`)
+  - `make -C /Users/thomashulihan/Projects/TRR smoke` (initial app-probe failure under active compile load; fixed by adding retrying HTTP probes, rerun passed)
+  - `make -C /Users/thomashulihan/Projects/TRR stop` followed by `make -C /Users/thomashulihan/Projects/TRR status` (pass; workspace inactive, no listeners on `:3000` or `:8000`)
+  - Managed Chrome verification: `chrome-devtools` pages were open on `admin.localhost:3000` routes and the selected `http://admin.localhost:3000/social/instagram/bravotv/hashtags` snapshot showed a healthy admin UI with populated hashtag rows and `System health: Healthy`.
+- blocked_checks:
+  - Representative job execution for each remote lane (admin, Reddit, Google News, social ingest) was not triggered in this session; the validation here confirms the workspace now defaults to Modal-owned dispatch and avoids local claim-loop workers, but not end-to-end job claims for every lane.
+- downstream_repos_impacted:
+  - `TRR-Backend`: `yes` (remote worker bootstrap contract changed)
+  - `TRR-APP`: `no` (consumer behavior unchanged; only workspace startup/smoke interaction changed)
+  - `screenalytics`: `no`
+- default_skill_chain_applied: `true`
+- default_skill_chain_used:
+  - `orchestrate-plan-execution`
+  - `senior-devops`
+  - `senior-backend`
+  - `senior-qa`
+- default_skill_chain_exception_reason: `n/a`
+
+## Latest Update (2026-03-12 16:45 EDT) — local `make dev` no longer fails on env-contract drift, and strict preflight is explicit
+
+- primary_skill: `orchestrate-plan-execution`
+- supporting_skills:
+  - `senior-devops`
+  - `senior-qa`
+  - `code-reviewer`
+- mcp_tools_used:
+  - primary: `functions.exec_command`
+  - fallback: `functions.apply_patch`
+- risk_class: `medium` (workspace preflight gate behavior changed)
+- files_changed:
+  - `/Users/thomashulihan/Projects/TRR/Makefile`
+  - `/Users/thomashulihan/Projects/TRR/scripts/preflight.sh`
+  - `/Users/thomashulihan/Projects/TRR/docs/workspace/env-contract.md`
+  - `/Users/thomashulihan/Projects/TRR/docs/workspace/preflight-doctor.md`
+  - `/Users/thomashulihan/Projects/TRR/docs/ai/HANDOFF.md`
+- behavior_summary:
+  - Added an explicit `make preflight-strict` target that runs the same preflight script with `WORKSPACE_PREFLIGHT_STRICT=1`.
+  - Changed the default preflight flow so env-contract failures are warning-only when strict mode is off, while `doctor`, `check-policy`, and `chrome-devtools-mcp-status` remain hard failures.
+  - Kept the remediation path explicit in the warning output: `make env-contract`.
+  - Regenerated `docs/workspace/env-contract.md` so the tracked local-lite contract now reflects `WORKSPACE_TRR_MODAL_ADMIN_OPERATION_FUNCTION=run_admin_operation_v2`.
+  - Documented the split between default and strict preflight behavior in `docs/workspace/preflight-doctor.md`.
+- validation_evidence:
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/preflight.sh` (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR preflight` with stale `docs/workspace/env-contract.md` (pass with warning; continued through remaining phases)
+  - `make -C /Users/thomashulihan/Projects/TRR preflight-strict` with stale `docs/workspace/env-contract.md` (expected fail on env-contract drift)
+  - `make -C /Users/thomashulihan/Projects/TRR env-contract` (pass; regenerated tracked env contract)
+  - `make -C /Users/thomashulihan/Projects/TRR preflight-strict` after regeneration (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR dev` followed by `make -C /Users/thomashulihan/Projects/TRR stop` (pass for startup/stop flow; the live `make dev` shell exits after receiving the intentional stop signal)
+- downstream_repos_impacted:
+  - `TRR-Backend`: `no`
+  - `TRR-APP`: `no`
+  - `screenalytics`: `no`
+- default_skill_chain_applied: `true`
+- default_skill_chain_used:
+  - `orchestrate-plan-execution`
+  - `senior-devops`
+  - `senior-qa`
+  - `code-reviewer`
+- default_skill_chain_exception_reason: `n/a`
+
+## Latest Update (2026-03-12 16:24 EDT) — `make dev` and all shipped local profiles now pin the canonical TRR Modal contract
+
+- primary_skill: `senior-devops`
+- supporting_skills:
+  - `senior-backend`
+- mcp_tools_used:
+  - primary: `functions.exec_command`
+  - fallback: `functions.apply_patch`
+- risk_class: `medium` (workspace startup contract for remote job execution changed)
+- files_changed:
+  - `/Users/thomashulihan/Projects/TRR/Makefile`
+  - `/Users/thomashulihan/Projects/TRR/profiles/local-lite.env`
+  - `/Users/thomashulihan/Projects/TRR/profiles/local-cloud.env`
+  - `/Users/thomashulihan/Projects/TRR/profiles/local-full.env`
+  - `/Users/thomashulihan/Projects/TRR/docs/ai/HANDOFF.md`
+- behavior_summary:
+  - Made the workspace `make dev` entrypoint explicitly Modal-first by pinning:
+    - `WORKSPACE_TRR_REMOTE_EXECUTOR=modal`
+    - `WORKSPACE_TRR_MODAL_ENABLED=1`
+    - `WORKSPACE_TRR_MODAL_ADMIN_OPERATION_FUNCTION=run_admin_operation_v2`
+  - Expanded all shipped local profiles (`local-lite`, `local-cloud`, `local-full`) so they now declare the same canonical Modal app/function/secret contract instead of relying on partial defaults.
+  - Corrected `local-lite` from the older admin function name `run_admin_operation` to `run_admin_operation_v2`, so dev and production now target the same admin-operation function name.
+- validation_evidence:
+  - `rg -n "WORKSPACE_TRR_MODAL|WORKSPACE_TRR_REMOTE_EXECUTOR|WORKSPACE_TRR_JOB_PLANE_MODE" /Users/thomashulihan/Projects/TRR/Makefile /Users/thomashulihan/Projects/TRR/profiles/local-*.env`
+- downstream_repos_impacted:
+  - `TRR-Backend`: `yes` (workspace startup now matches the live backend Modal contract)
+  - `TRR-APP`: `no`
+  - `screenalytics`: `no`
+- default_skill_chain_applied: `false`
+- default_skill_chain_used:
+  - `senior-devops`
+  - `senior-backend`
+- default_skill_chain_exception_reason: `Workspace-level startup contract alignment only; no cross-repo feature implementation required.`
+
+## Latest Update (2026-03-12 15:40 EST) — `make preflight` now has opt-in interrupt diagnostics with per-phase signal tracing
+
+- primary_skill: `senior-devops`
+- supporting_skills:
+  - `senior-qa`
+- mcp_tools_used:
+  - primary: `functions.exec_command`
+  - fallback: `functions.apply_patch`
+- risk_class: `medium` (workspace preflight execution and policy-check diagnostics changed)
+- files_changed:
+  - `/Users/thomashulihan/Projects/TRR/scripts/lib/preflight-diagnostics.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/preflight.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/check-policy.sh`
+  - `/Users/thomashulihan/Projects/TRR/Makefile`
+  - `/Users/thomashulihan/Projects/TRR/docs/workspace/preflight-doctor.md`
+  - `/Users/thomashulihan/Projects/TRR/docs/ai/HANDOFF.md`
+- behavior_summary:
+  - Added opt-in preflight diagnostics under `WORKSPACE_PREFLIGHT_DIAGNOSTICS=1`, writing append-only logs to `.logs/workspace/preflight-diagnostics/<timestamp>-preflight-<pid>.log`.
+  - Added a shared diagnostics helper that records `session_start`, `phase_start`, `phase_end`, `signal_received`, `process_snapshot`, and `exit` with process metadata including pid, ppid, pgid, sid, tty, cwd, and parent command.
+  - Wrapped all `preflight.sh` phases (`doctor`, `env-contract`, `check-policy`, `chrome-devtools-mcp-status`) so the active child pid, command, and elapsed time are captured in diagnostics mode.
+  - Added `INT`, `TERM`, `HUP`, and `EXIT` traps in `preflight.sh`, plus `INT`, `TERM`, `HUP`, and `EXIT` traps in `check-policy.sh`, so both the top-level preflight shell and the suspected hot-spot phase leave diagnostic evidence when interrupted.
+  - Added `make preflight-diagnostics` as the operator entrypoint and documented the workflow, log location, intentional interrupt reproduction, and snapshot interpretation in `docs/workspace/preflight-doctor.md`.
+  - Fixed a Bash background-job signal edge case in `preflight.sh` by launching phase children through a tiny Perl `exec` shim that restores default `INT`/`TERM`/`HUP` handling before the script starts. Without that reset, `check-policy.sh` could inherit ignored interrupt handling and fail to log its own `signal_received` event during group-delivered `SIGINT`.
+  - Kept diagnostics default-off and low-noise: normal `make preflight` output and behavior are unchanged, and no diagnostic log is created unless explicitly enabled.
+- validation_evidence:
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/lib/preflight-diagnostics.sh /Users/thomashulihan/Projects/TRR/scripts/preflight.sh /Users/thomashulihan/Projects/TRR/scripts/check-policy.sh` (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR check-policy` (pass)
+  - `count_before=$(find .logs/workspace/preflight-diagnostics -type f 2>/dev/null | wc -l | tr -d ' '); make -C /Users/thomashulihan/Projects/TRR preflight; count_after=...` (pass; `DIAG_LOG_COUNT_BEFORE=16`, `DIAG_LOG_COUNT_AFTER=16`, confirming default-off mode does not create a diagnostics log)
+  - `make -C /Users/thomashulihan/Projects/TRR preflight-diagnostics` (pass; created `.logs/workspace/preflight-diagnostics/20260312T193945Z-preflight-9215.log` with all four phases recorded)
+  - Deterministic interrupt test while `env-contract` was active using a Python harness that launched `make preflight` in a separate process group and sent `SIGINT` to that group (pass; log `20260312T193747Z-preflight-1450.log` captured `signal_received`, `process_snapshot`, and `exit_code=130` for `preflight.sh`, terminal surfaced `make: *** [preflight] Interrupt: 2`)
+  - Deterministic interrupt test while `check-policy.sh` had already emitted `session_start` using the same separate-process-group harness (pass; log `20260312T193927Z-preflight-7756.log` captured `signal_received` for both `preflight.sh` and `check-policy.sh`, plus `check-policy.sh` `exit_code=130`, and terminal surfaced `make: *** [preflight] Interrupt: 2`)
+- downstream_repos_impacted:
+  - `TRR-Backend`: `no`
+  - `TRR-APP`: `no`
+  - `screenalytics`: `no`
+- default_skill_chain_applied: `false`
+- default_skill_chain_used:
+  - `senior-devops`
+  - `senior-qa`
+- default_skill_chain_exception_reason: `Workspace-only shell instrumentation and validation task with no product-surface code changes.`
+
+## Latest Update (2026-03-12 15:36 EST) — Chrome DevTools MCP now defaults to wrapper-managed shared Chrome, with no public `make chrome-agent-*` workflow
+
+- primary_skill: `orchestrate-plan-execution`
+- supporting_skills:
+  - `senior-devops`
+- mcp_tools_used:
+  - primary: `functions.exec_command`
+  - fallback: `functions.apply_patch`
+- risk_class: `medium` (workspace browser tooling defaults and local Codex MCP config changed)
+- files_changed:
+  - `/Users/thomashulihan/Projects/TRR/scripts/codex-chrome-devtools-mcp.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-status.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/preflight.sh`
+  - `/Users/thomashulihan/Projects/TRR/Makefile`
+  - `/Users/thomashulihan/Projects/TRR/AGENTS.md`
+  - `/Users/thomashulihan/.codex/config.toml`
+  - `/Users/thomashulihan/Projects/TRR/docs/ai/HANDOFF.md`
+- behavior_summary:
+  - Changed the Chrome DevTools MCP wrapper default from `isolated` to `shared`, so new Codex sessions automatically target the persistent managed Chrome profile on port `9222`.
+  - Added `env = { CODEX_CHROME_MODE = "shared" }` to the local Codex MCP server config so the default is explicit at the registration layer, not only inside the wrapper script.
+  - Removed the public `make chrome-agent*` launch targets from the workspace Makefile so manual browser bootstrap is no longer part of the normal operator workflow.
+  - Simplified `preflight.sh` to validate Chrome DevTools MCP readiness directly instead of surfacing the old `chrome-agent-status` check as part of the expected path.
+  - Updated the MCP status script wording so an inactive shared endpoint is reported as on-demand auto-start behavior instead of a misleading `unreachable` state.
+  - Updated workspace policy in `AGENTS.md` so the documented default is now `shared + headful`, auto-started by the wrapper, with isolated modes reserved for explicit overrides only.
+- validation_evidence:
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/codex-chrome-devtools-mcp.sh /Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-status.sh /Users/thomashulihan/Projects/TRR/scripts/preflight.sh /Users/thomashulihan/Projects/TRR/scripts/chrome-agent.sh /Users/thomashulihan/Projects/TRR/scripts/stop-chrome-agent.sh` (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR chrome-devtools-mcp-status` (pass; now reports `Shared 9222 endpoint: inactive (wrapper auto-starts on demand)`)
+  - `CODEX_CHROME_SKIP_BROWSER_BOOT=1 codex mcp list` (pass; `chrome-devtools` shows `CODEX_CHROME_MODE=*****` in the MCP env)
+  - `codex exec --json -C /Users/thomashulihan/Projects/TRR "Use chrome-devtools to open https://example.com and reply with the page title only."` (pass; fresh Codex subprocess auto-used `chrome-devtools` and returned `Example Domain` without any manual `make chrome-agent-*` prep)
+- downstream_repos_impacted:
+  - `TRR-Backend`: `no`
+  - `TRR-APP`: `no`
+  - `screenalytics`: `no`
+- default_skill_chain_applied: `false`
+- default_skill_chain_used:
+  - `orchestrate-plan-execution`
+  - `senior-devops`
+- default_skill_chain_exception_reason: `Workspace tooling and local Codex config cleanup rather than product-surface implementation.`
+
+## Latest Update (2026-03-12 15:08 EST) — Chrome MCP preflight now survives Node 22 shells and npm exec cache corruption
+
+- primary_skill: `senior-devops`
+- supporting_skills:
+  - `senior-qa`
+- mcp_tools_used:
+  - primary: `functions.exec_command`
+  - fallback: `functions.apply_patch`
+- risk_class: `medium` (workspace preflight/browser-tooling bootstrap path changed)
+- files_changed:
+  - `/Users/thomashulihan/Projects/TRR/scripts/lib/node-baseline.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/doctor.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/preflight.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/codex-chrome-devtools-mcp.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-status.sh`
+  - `/Users/thomashulihan/Projects/TRR/docs/ai/HANDOFF.md`
+- behavior_summary:
+  - Extracted shared Node-baseline activation into `scripts/lib/node-baseline.sh` and sourced it from both `preflight.sh` and `doctor.sh`, so a Node 24 `nvm use` now happens in the parent preflight shell instead of only inside `doctor.sh`.
+  - Kept `doctor.sh` as the version reporter, but removed its duplicated Node activation helpers so the reported Node version and the runtime Node used by later commands stay aligned.
+  - Hardened the Chrome DevTools MCP wrapper to:
+    - enforce the same Node baseline when invoked directly,
+    - use a workspace-scoped npm exec cache at `/Users/thomashulihan/Projects/TRR/.tmp/chrome-devtools-mcp/npm-cache`,
+    - pin `chrome-devtools-mcp@0.20.0`,
+    - clear only the wrapper cache and retry once on `ENOTEMPTY` cache-corruption failures.
+  - Added a test-only env hook `CODEX_CHROME_MCP_TEST_FORCE_ENOTEMPTY_ONCE=1` so the one-shot cache-recovery path can be validated deterministically without depending on real npm cache corruption.
+  - Updated MCP readiness to clean dead port reservations and stale managed-Chrome runtime files during the status check instead of only reporting them.
+  - Tightened readiness semantics for isolated mode: missing seed profile is now a hard failure when no existing isolated Chrome profiles are available.
+- validation_evidence:
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/lib/node-baseline.sh /Users/thomashulihan/Projects/TRR/scripts/doctor.sh /Users/thomashulihan/Projects/TRR/scripts/preflight.sh /Users/thomashulihan/Projects/TRR/scripts/codex-chrome-devtools-mcp.sh /Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-status.sh` (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR check-policy` (pass)
+  - `source ~/.nvm/nvm.sh && nvm use 22 >/dev/null && make -C /Users/thomashulihan/Projects/TRR chrome-devtools-mcp-status` (pass; cleaned stale reserve `codex-chrome-port-9337.reserve`, smoke check passed)
+  - `source ~/.nvm/nvm.sh && nvm use 22 >/dev/null && make -C /Users/thomashulihan/Projects/TRR preflight` (pass; `doctor.sh` reported `node: v24.14.0`, Chrome MCP readiness passed)
+  - `.tmp/chrome-devtools-mcp/npm-cache/_logs/2026-03-12T19_03_49_773Z-debug-0.log` shows the wrapper invoked `npm exec` with `/Users/thomashulihan/.nvm/versions/node/v24.14.0/bin/node` and the pinned workspace cache path
+  - `CODEX_CHROME_MCP_TEST_FORCE_ENOTEMPTY_ONCE=1 make -C /Users/thomashulihan/Projects/TRR chrome-devtools-mcp-status` (pass; logged `Detected corrupt workspace npm exec cache ... clearing and retrying once`, then smoke check passed)
+  - `tmp_config="$(mktemp)"` with `enabled = false`, then `CODEX_CONFIG_FILE="$tmp_config" bash /Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-status.sh` (expected fail; actionable `chrome-devtools MCP is not enabled` error)
+  - `source ~/.nvm/nvm.sh && nvm use 22 >/dev/null && make -C /Users/thomashulihan/Projects/TRR dev` followed by external `make -C /Users/thomashulihan/Projects/TRR stop` (pass for default local-lite startup; preflight succeeded under Node 22 shell, TRR-Backend and TRR-APP reached health, Docker remained warning-only)
+- downstream_repos_impacted:
+  - `TRR-Backend`: `no`
+  - `TRR-APP`: `no`
+  - `screenalytics`: `no`
+- default_skill_chain_applied: `false`
+- default_skill_chain_used:
+  - `senior-devops`
+  - `senior-qa`
+- default_skill_chain_exception_reason: `Workspace tooling hardening task with no product-surface code changes.`
+
+## Latest Update (2026-03-07 14:05 EST) — manager-first `make stop` and inactive `make status` reporting fixed
+
+- primary_skill: `orchestrate-plan-execution`
+- supporting_skills:
+  - `senior-devops`
+  - `senior-qa`
+- mcp_tools_used:
+  - primary: `functions.exec_command`
+  - fallback: `functions.apply_patch`
+- risk_class: `medium` (workspace process-lifecycle and status semantics changed)
+- files_changed:
+  - `/Users/thomashulihan/Projects/TRR/scripts/dev-workspace.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/stop-workspace.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/status-workspace.sh`
+  - `/Users/thomashulihan/Projects/TRR/docs/ai/HANDOFF.md`
+- behavior_summary:
+  - Added `WORKSPACE_MANAGER_PID` to the workspace pidfile so `make stop` can terminate the manager process first instead of racing child shutdown against the backend watchdog.
+  - Updated `scripts/stop-workspace.sh` to use a manager-first stop path and fall back to per-service shutdown only if the manager is missing or fails to exit cleanly.
+  - Hardened `scripts/dev-workspace.sh` shutdown handling so backend auto-restart remains active for real backend exits during a live run but does not interfere with intentional workspace shutdown.
+  - Updated `scripts/status-workspace.sh` so a missing pidfile now reports an inactive workspace run with `n/a` mode values instead of misleading fallback defaults.
+  - Labeled persisted watchdog values as `last_run_telemetry` when no workspace run is active and exposed the inactive state in both text and `--json` output.
+- validation_evidence:
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/dev-workspace.sh /Users/thomashulihan/Projects/TRR/scripts/stop-workspace.sh /Users/thomashulihan/Projects/TRR/scripts/status-workspace.sh` (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR check-policy` (pass)
+  - `WORKSPACE_OPEN_BROWSER=0 WORKSPACE_BACKEND_AUTO_RESTART=1 make -C /Users/thomashulihan/Projects/TRR dev` plus external `make -C /Users/thomashulihan/Projects/TRR stop` (pass; manager-first stop completed without the old backend auto-restart during shutdown)
+  - `WORKSPACE_OPEN_BROWSER=0 WORKSPACE_BACKEND_AUTO_RESTART=1 make -C /Users/thomashulihan/Projects/TRR dev` plus `kill -TERM "$TRR_BACKEND_PID"` from the pidfile (pass; backend watchdog still restarted `TRR_BACKEND` during an active run)
+  - `make -C /Users/thomashulihan/Projects/TRR status` after full stop (pass; showed `Workspace run: inactive` and `n/a` mode values)
+  - `bash /Users/thomashulihan/Projects/TRR/scripts/status-workspace.sh --json` after full stop (pass; emitted `run_state: "inactive"` and `backend_watchdog.state: "last_run_telemetry"`)
+  - `make -C /Users/thomashulihan/Projects/TRR dev` on the default local-lite path (pass; startup/health still succeeded with browser sync and backend watchdog disabled by default)
+- downstream_repos_impacted:
+  - `TRR-Backend`: `no`
+  - `TRR-APP`: `no`
+  - `screenalytics`: `no`
+- default_skill_chain_applied: `true`
+- default_skill_chain_used:
+  - `orchestrate-plan-execution`
+  - `senior-devops`
+  - `senior-qa`
+- default_skill_chain_exception_reason: `n/a`
+## Latest Update (2026-03-07 13:03 EST) — `make dev` local-lite defaults now favor cooler laptop operation
+
+- primary_skill: `orchestrate-plan-execution`
+- supporting_skills:
+  - `senior-devops`
+  - `senior-qa`
+- mcp_tools_used:
+  - primary: `functions.exec_command`
+  - fallback: `functions.apply_patch`
+- risk_class: `low` (workspace startup defaults and docs only)
+- files_changed:
+  - `/Users/thomashulihan/Projects/TRR/profiles/local-lite.env`
+  - `/Users/thomashulihan/Projects/TRR/Makefile`
+  - `/Users/thomashulihan/Projects/TRR/AGENTS.md`
+  - `/Users/thomashulihan/Projects/TRR/scripts/dev-workspace.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/workspace-env-contract.sh`
+  - `/Users/thomashulihan/Projects/TRR/docs/workspace/env-contract.md`
+  - `/Users/thomashulihan/Projects/TRR/docs/ai/HANDOFF.md`
+- behavior_summary:
+  - Changed the `local-lite` profile so default `make dev` runs with `WORKSPACE_OPEN_BROWSER=0` and `WORKSPACE_BACKEND_AUTO_RESTART=0`.
+  - Updated workspace startup guidance in `Makefile` and `AGENTS.md` so browser sync and backend watchdog are documented as opt-in behaviors for the laptop-safe default path.
+  - Added explicit startup status lines in `scripts/dev-workspace.sh` for `Browser sync` and `Backend watchdog`, so operators can see the active mode immediately during startup.
+  - Updated the env-contract generator so documented defaults reflect the effective `make dev` baseline (`PROFILE=local-lite`) rather than only the raw `scripts/dev-workspace.sh` fallback values.
+- validation_evidence:
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/dev-workspace.sh /Users/thomashulihan/Projects/TRR/scripts/workspace-env-contract.sh` (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR env-contract` (pass; regenerated `/Users/thomashulihan/Projects/TRR/docs/workspace/env-contract.md`)
+  - `make -C /Users/thomashulihan/Projects/TRR check-policy` (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR dev` (pass for default profile startup/health; output showed `Browser sync: disabled`, `Backend watchdog: disabled`, and `Skipping browser sync (WORKSPACE_OPEN_BROWSER=0)`)
+  - `make -C /Users/thomashulihan/Projects/TRR status` during the default run (pass; showed `WORKSPACE_OPEN_BROWSER: 0` and `WORKSPACE_BACKEND_AUTO_RESTART: 0`)
+  - `WORKSPACE_OPEN_BROWSER=1 WORKSPACE_BACKEND_AUTO_RESTART=1 make -C /Users/thomashulihan/Projects/TRR dev` (pass for override startup/health; output showed browser sync and backend watchdog enabled, then browser tab sync completed)
+  - `make -C /Users/thomashulihan/Projects/TRR stop` after the override run (pass, but exposed a pre-existing interaction where the enabled backend watchdog can briefly restart the backend during external stop before final teardown)
+- downstream_repos_impacted:
+  - `TRR-Backend`: `no`
+  - `TRR-APP`: `no`
+  - `screenalytics`: `no`
+- default_skill_chain_applied: `true`
+- default_skill_chain_used:
+  - `orchestrate-plan-execution`
+  - `senior-devops`
+  - `senior-qa`
+- default_skill_chain_exception_reason: `n/a`
+## Latest Update (2026-03-07 03:05 EST) — Managed Chrome MCP transport hardened; visual browser modes added
+
+- primary_skill: `orchestrate-plan-execution`
+- supporting_skills:
+  - `debugging-wizard`
+  - `senior-devops`
+  - `senior-qa`
+- mcp_tools_used:
+  - primary: `functions.exec_command`
+  - fallback: `functions.apply_patch`
+- risk_class: `medium` (workspace browser/MCP lifecycle behavior changed)
+- files_changed:
+  - `/Users/thomashulihan/Projects/TRR/scripts/codex-chrome-devtools-mcp.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-status.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/chrome-agent-status.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/chrome-agent.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/stop-chrome-agent.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/check-policy.sh`
+  - `/Users/thomashulihan/Projects/TRR/Makefile`
+  - `/Users/thomashulihan/Projects/TRR/AGENTS.md`
+  - `/Users/thomashulihan/Projects/TRR/docs/ai/HANDOFF.md`
+- behavior_summary:
+  - Kept `chrome-devtools-mcp` in the foreground and added explicit `EXIT`/signal cleanup so isolated wrapper sessions do not leave behind browser ports or reservation files.
+  - Added `CODEX_CHROME_SKIP_BROWSER_BOOT=1` so wrapper smoke checks can validate MCP startup without allocating ports, seeding profiles, or launching Chrome.
+  - Expanded status reporting to show shared-endpoint reachability, stale runtime artifacts, and Chrome endpoint health so “running” now means “usable.”
+  - Hardened `chrome-agent.sh` for persistent headful launches:
+    - use `nohup` for non-interactive launches,
+    - use macOS `open -na ... --args` for visible Chrome sessions,
+    - rewrite pidfiles to the actual DevTools listener PID after startup.
+  - Added explicit visual browser entry points:
+    - `make chrome-agent-shared` for visible shared Chrome on `9222`
+    - `make chrome-agent-visual` for visible isolated wrapper-driven sessions
+  - Documented the three operator modes:
+    - `isolated + headless` for routine Codex browsing
+    - `isolated + headful` when the agent needs to actually see the page
+    - `shared + headful` when persistent shared auth/session state is preferred
+  - Restored `scripts/check-policy.sh` compatibility with the workspace’s macOS bash by replacing `mapfile` with a portable read loop.
+- validation_evidence:
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/codex-chrome-devtools-mcp.sh /Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-status.sh /Users/thomashulihan/Projects/TRR/scripts/chrome-agent-status.sh /Users/thomashulihan/Projects/TRR/scripts/chrome-agent.sh /Users/thomashulihan/Projects/TRR/scripts/stop-chrome-agent.sh /Users/thomashulihan/Projects/TRR/scripts/check-policy.sh /Users/thomashulihan/Projects/TRR/scripts/preflight.sh` (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR chrome-devtools-mcp-status` (pass; no new browser runtime artifacts created, stale runtime artifacts now `none`)
+  - `make -C /Users/thomashulihan/Projects/TRR chrome-agent-shared` plus `curl http://127.0.0.1:9222/json/version` (pass; stopped afterward)
+  - isolated visual wrapper launch on a dynamic port with `CODEX_CHROME_ISOLATED_HEADLESS=0` plus endpoint reachability and cleanup verification (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR preflight` (pass)
+  - `codex exec --json -C /Users/thomashulihan/Projects/TRR "Use chrome-devtools to open https://example.com and reply with the page title only."` (pass in a fresh Codex session; existing already-open threads may still require restart)
+- downstream_repos_impacted:
+  - `TRR-Backend`: `no`
+  - `TRR-APP`: `no`
+  - `screenalytics`: `no`
+- default_skill_chain_applied: `false`
+- default_skill_chain_used:
+  - `orchestrate-plan-execution`
+  - `debugging-wizard`
+  - `senior-devops`
+  - `senior-qa`
+- default_skill_chain_exception_reason: `Workspace browser/MCP hardening rather than product feature delivery.`
+## Latest Update (2026-03-07 01:55 EST) — Workspace browser tab sync no longer treats the app root URL as a prefix match for every admin tab
+
+- primary_skill: `orchestrate-plan-execution`
+- supporting_skills:
+  - `senior-fullstack`
+  - `senior-qa`
+- mcp_tools_used:
+  - primary: `functions.exec_command`
+  - fallback: `functions.apply_patch`
+- risk_class: `low` (workspace browser-tab reuse logic only)
+- files_changed:
+  - `/Users/thomashulihan/Projects/TRR/scripts/open-or-refresh-browser-tab.sh`
+  - `/Users/thomashulihan/Projects/TRR/docs/ai/HANDOFF.md`
+- behavior_summary:
+  - Fixed the workspace browser-tab matcher so a bare root URL like `http://127.0.0.1:3000` no longer matches every `localhost:3000/...` or `127.0.0.1:3000/...` tab by prefix.
+  - Exact-match reuse still applies to root URLs, while prefix reuse remains available for non-root subpaths where it is intentional.
+  - This removes the workspace-side cause of multiple admin tabs being reloaded or focused together when the dev scripts synchronize the main app tab.
+- validation_evidence:
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/open-or-refresh-browser-tab.sh /Users/thomashulihan/Projects/TRR/scripts/open-workspace-dev-window.sh /Users/thomashulihan/Projects/TRR/scripts/preflight.sh /Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-status.sh`
+  - `make -C /Users/thomashulihan/Projects/TRR chrome-devtools-mcp-status` (pass)
+- downstream_repos_impacted:
+  - `TRR-Backend`: `no`
+  - `TRR-APP`: `yes`
+  - `screenalytics`: `no`
+- default_skill_chain_applied: `false`
+- default_skill_chain_used:
+  - `orchestrate-plan-execution`
+  - `senior-fullstack`
+  - `senior-qa`
+- default_skill_chain_exception_reason: `Workspace/browser-tooling repair rather than product feature delivery.`
+## Latest Update (2026-03-07 01:39 EST) — Chrome DevTools MCP now has an explicit workspace readiness/smoke gate
+
+- primary_skill: `orchestrate-plan-execution`
+- supporting_skills:
+  - `senior-fullstack`
+  - `debugging-wizard`
+- mcp_tools_used:
+  - primary: `functions.exec_command`
+  - fallback: `functions.apply_patch`
+- risk_class: `low` (workspace tooling/preflight only)
+- files_changed:
+  - `/Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-status.sh`
+  - `/Users/thomashulihan/Projects/TRR/scripts/preflight.sh`
+  - `/Users/thomashulihan/Projects/TRR/Makefile`
+  - `/Users/thomashulihan/Projects/TRR/docs/ai/HANDOFF.md`
+- behavior_summary:
+  - Added a dedicated `chrome-devtools` MCP readiness script that validates `~/.codex/config.toml`, verifies the workspace wrapper path, and runs a real wrapper smoke check through `scripts/codex-chrome-devtools-mcp.sh --help`.
+  - Added a new `make chrome-devtools-mcp-status` target so MCP readiness can be checked directly outside a chat session.
+  - Promoted Chrome DevTools MCP validation into workspace `preflight`, so broken browser-MCP wiring now fails early instead of surfacing later as a missing tool in the middle of implementation work.
+  - Verified that the local configuration and wrapper are healthy; the remaining reason `chrome-devtools` was unavailable in the current conversation is that MCP server registration is fixed at chat start, so an already-open Codex thread must be restarted to pick up the enabled server table.
+- validation_evidence:
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/chrome-devtools-mcp-status.sh /Users/thomashulihan/Projects/TRR/scripts/preflight.sh /Users/thomashulihan/Projects/TRR/scripts/codex-chrome-devtools-mcp.sh /Users/thomashulihan/Projects/TRR/scripts/chrome-agent.sh`
+  - `make -C /Users/thomashulihan/Projects/TRR chrome-devtools-mcp-status` (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR preflight` (pass)
+- downstream_repos_impacted:
+  - `TRR-Backend`: `no`
+  - `TRR-APP`: `no`
+  - `screenalytics`: `no`
+- default_skill_chain_applied: `false`
+- default_skill_chain_used:
+  - `orchestrate-plan-execution`
+  - `senior-fullstack`
+  - `debugging-wizard`
+- default_skill_chain_exception_reason: `Workspace tooling repair rather than product feature delivery.`
+
+## Latest Update (2026-03-06) — auto-deploy rule added for deployable AWS/cloud/backend implementation
+
+- primary_skill: `orchestrate-plan-execution`
+- supporting_skills:
+  - `skillcreator`
+  - `senior-devops`
+  - `aws-solution-architect`
+- mcp_tools_used:
+  - primary: `functions.exec_command`
+  - fallback: `functions.apply_patch`
+- risk_class: `low` (policy/governance/docs-only changes)
+- files_changed:
+  - `/Users/thomashulihan/Projects/TRR/AGENTS.md`
+  - `/Users/thomashulihan/Projects/TRR/skills/senior-devops/SKILL.md`
+  - `/Users/thomashulihan/.codex/skills/aws-solution-architect/SKILL.md`
+  - `/Users/thomashulihan/Projects/TRR/scripts/check-policy.sh`
+  - `/Users/thomashulihan/Projects/TRR/docs/agent-governance/codex_skills.md`
+  - `/Users/thomashulihan/Projects/TRR/docs/ai/HANDOFF.md`
+- behavior_summary:
+  - Added an `AWS Deploy Rule` to workspace and repo policy so deployable AWS/cloud-infra/backend implementation work is not complete until the AWS deployment succeeds.
+  - Defaulted the rollout target to the primary production AWS environment when rollout is required and required checks have passed.
+  - Tightened the policy check script to validate the exact planning subsection markers and the new deploy-rule markers.
+- validation_evidence:
+  - `cd /Users/thomashulihan/Projects/TRR && make check-policy` (pass)
+- downstream_repos_impacted:
+  - `TRR-Backend`: `yes`
+  - `TRR-APP`: `yes`
+  - `screenalytics`: `yes`
+- default_skill_chain_applied: `false`
+- default_skill_chain_used:
+  - `orchestrate-plan-execution`
+  - `skillcreator`
+  - `senior-devops`
+  - `aws-solution-architect`
+- default_skill_chain_exception_reason: `Policy/governance session rather than product feature delivery.`
+
+## Latest Update (2026-03-06) — planning-skill selection rule added; CLAUDE pointer-shim model retained
+
+- primary_skill: `orchestrate-plan-execution`
+- supporting_skills:
+  - `skillcreator`
+- mcp_tools_used:
+  - primary: `functions.exec_command`
+  - fallback: `functions.apply_patch`
+- risk_class: `low` (policy/governance/docs-only changes)
+- files_changed:
+  - `/Users/thomashulihan/Projects/TRR/AGENTS.md`
+  - `/Users/thomashulihan/Projects/TRR/docs/agent-governance/codex_skills.md`
+  - `/Users/thomashulihan/Projects/TRR/scripts/check-policy.sh`
+  - `/Users/thomashulihan/Projects/TRR/docs/ai/HANDOFF.md`
+- behavior_summary:
+  - Kept all `CLAUDE.md` files as short pointer shims; no filesystem symlink migration was introduced.
+  - Added a mandatory `Before Each Plan` rule to workspace and repo policy requiring skill review, minimum-skill selection, explicit plan-writing and implementation skill selection, and canonical-owner fallback order.
+  - Added policy enforcement so `check-policy` now verifies the planning-skill subsection exists in every canonical `AGENTS.md`.
+- validation_evidence:
+  - `cd /Users/thomashulihan/Projects/TRR && make check-policy` (pass)
+  - `find /Users/thomashulihan/Projects/TRR -type f -name 'CLAUDE.md' | sort` (used for pointer-shim spot-checking)
+- downstream_repos_impacted:
+  - `TRR-Backend`: `yes`
+  - `TRR-APP`: `yes`
+  - `screenalytics`: `yes`
+- default_skill_chain_applied: `false`
+- default_skill_chain_used:
+  - `orchestrate-plan-execution`
+  - `skillcreator`
+- default_skill_chain_exception_reason: `Policy/governance session rather than product feature delivery.`
+
+## Latest Update (2026-03-06) — TRR skill localization, overlap absorption, and shim routing cleanup
+
+- primary_skill: `orchestrate-plan-execution`
+- supporting_skills:
+  - `skillcreator`
+- mcp_tools_used:
+  - primary: `functions.exec_command`
+  - fallback: `functions.apply_patch`
+- risk_class: `low` (skills/governance/policy-only changes; no runtime code behavior changed)
+- files_changed:
+  - `/Users/thomashulihan/Projects/TRR/skills/senior-fullstack/SKILL.md`
+  - `/Users/thomashulihan/Projects/TRR/skills/senior-architect/SKILL.md`
+  - `/Users/thomashulihan/Projects/TRR/skills/senior-devops/SKILL.md`
+  - `/Users/thomashulihan/Projects/TRR/skills/senior-qa/SKILL.md`
+  - `/Users/thomashulihan/Projects/TRR/skills/code-reviewer/SKILL.md`
+  - `/Users/thomashulihan/Projects/TRR/skills/skillcreator/SKILL.md`
+  - `/Users/thomashulihan/Projects/TRR/skills/social-ingestion-reliability/SKILL.md`
+  - `/Users/thomashulihan/Projects/TRR/AGENTS.md`
+  - `/Users/thomashulihan/Projects/TRR/docs/agent-governance/codex_skills.md`
+  - `/Users/thomashulihan/Projects/TRR/docs/agent-governance/claude_skill_overlap.md`
+  - `/Users/thomashulihan/Projects/TRR/docs/ai/HANDOFF.md`
+- behavior_summary:
+  - Moved TRR-wide canonical ownership for architecture, fullstack, devops, QA, review, skill-authoring, and social-ingestion reliability into workspace-local skills under `/Users/thomashulihan/Projects/TRR/skills/`.
+  - Rewrote the governance registry into a matrix that distinguishes canonical local owners, globally canonical skills, compatibility shims, and demoted overlap specialists.
+  - Replaced the old overlap report with an explicit absorption map showing which generic skills were mined for strengths, what was rejected, and which local owner now holds canonical responsibility.
+  - Updated workspace policy to route TRR work through local canonical skills first and use global `~/.codex/skills` only when the matrix marks them canonical or alias-only.
+- validation_evidence:
+  - `cd /Users/thomashulihan/Projects/TRR && make check-policy` (pass)
+  - `find /Users/thomashulihan/Projects/TRR/skills /Users/thomashulihan/Projects/TRR/TRR-Backend/skills /Users/thomashulihan/Projects/TRR/TRR-APP/skills -type f | sort` (pass; canonical local skill trees present)
+  - `rg -n "Deprecated global compatibility alias|Deprecated compatibility alias|TRR routing note|workspace-local canonical owner|repo-local canonical owner" /Users/thomashulihan/.codex/skills /Users/thomashulihan/Projects/TRR/skills /Users/thomashulihan/Projects/TRR/TRR-Backend/skills /Users/thomashulihan/Projects/TRR/TRR-APP/skills` (pass; shims/specialist notes present)
+- downstream_repos_impacted:
+  - `TRR-Backend`: `yes`
+  - `TRR-APP`: `yes`
+  - `screenalytics`: `yes`
+- default_skill_chain_applied: `false`
+- default_skill_chain_used:
+  - `orchestrate-plan-execution`
+  - `skillcreator`
+- default_skill_chain_exception_reason: `This was a governance/skill-authoring session rather than a product feature delivery flow.`
+
+## 2026-03-05 (Codex) — BRAVOTV NBCUMV hi-res download path verified
+- Updated `/Users/thomashulihan/Projects/TRR/BRAVOTV/sources/nbcumv.md`:
+  - documented the confirmed full-resolution download method via the NBCUMV batch ZIP API,
+  - recorded that `lbx_id` is the required identifier and GraphQL UUID `id` fails,
+  - captured interactive API guest-state findings and GraphQL introspection results,
+  - noted that the direct ZIP endpoint worked with batch key, AppSync key, or no key in tested cases.
+- Added `/Users/thomashulihan/Projects/TRR/BRAVOTV/scripts/download_fullres.py`:
+  - fetches `lbx_id` metadata from AppSync,
+  - requests ZIP downloads from the NBCUMV batch API,
+  - extracts hi-res or preview images locally in NUP-grouped folders.
+- Updated `/Users/thomashulihan/Projects/TRR/BRAVOTV/README.md`:
+  - promoted NBCUMV from metadata-only success to confirmed hi-res original download success,
+  - added the new helper script and the direct batch API workflow summary.
+- Validation executed:
+  - browser/CDP inspection of `https://www.nbcumv.com/.../photos` in managed Chrome (guest Mediafly state confirmed)
+  - AppSync schema introspection against `https://bfg5dqxssngazhtsf6uo7bzdvm.appsync-api.us-west-2.amazonaws.com/graphql` (pass)
+  - direct batch API POST for `NUP_209993_00932.JPG` with `lbx_id=70761487` and `resolution=hiRes` (pass)
+  - extracted sample hi-res asset verified at `3000x2000`
+  - `python3 /Users/thomashulihan/Projects/TRR/BRAVOTV/scripts/download_fullres.py /tmp/nbcu_fullres_test2 2026-03-04 2026-03-04 --max-images 1 --batch-size 1` (pass; extracted `/tmp/nbcu_fullres_test2/NUP_209993/NUP_209993_01872.JPG`, verified `2000x3000`)
+- default_skill_chain_applied: false
+- default_skill_chain_used:
+  - `chromedevtools-expert`
+- default_skill_chain_exception_reason: user explicitly requested the Chrome DevTools skill for research
+
+## 2026-03-05 (Codex) — doctor Node 24 nvm auto-switch hardening
+- Updated `/Users/thomashulihan/Projects/TRR/scripts/doctor.sh`:
+  - retained strict Node baseline (`REQUIRED_NODE_MAJOR=24`),
+  - added in-process `nvm` auto-switch path when current Node is below baseline,
+  - reads workspace `/.nvmrc` target first, then runs `nvm use --silent <target>`,
+  - preserves hard failure if Node is still below 24 and now prints explicit remediation commands.
+- Added `/Users/thomashulihan/Projects/TRR/.nvmrc`:
+  - pins workspace baseline to `24`.
+- Added `/Users/thomashulihan/Projects/TRR/docs/workspace/preflight-doctor.md`:
+  - operator note documenting preflight doctor behavior and manual fallback commands.
+- Validation executed:
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/doctor.sh /Users/thomashulihan/Projects/TRR/scripts/preflight.sh` (pass)
+  - `cd /Users/thomashulihan/Projects/TRR && node -v && bash scripts/doctor.sh` (pass; starts on `v22.18.0`, auto-switches to `v24.14.0`)
+  - `cd /Users/thomashulihan/Projects/TRR && make preflight` (pass after `make env-contract`)
+  - `cd /Users/thomashulihan/Projects/TRR && WORKSPACE_TRR_JOB_PLANE_MODE=remote WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE=1 WORKSPACE_TRR_REMOTE_WORKERS_ENABLED=1 make dev` (startup/health pass; terminated manually with Ctrl+C)
+  - `cd /Users/thomashulihan/Projects/TRR/TRR-Backend && pytest -q tests/api/routers/test_admin_operations.py tests/repositories/test_admin_operations.py tests/api/routers/test_socials_reddit_refresh_routes.py tests/api/routers/test_admin_show_news.py` (pass; `54 passed`)
+  - `cd /Users/thomashulihan/Projects/TRR/TRR-APP && pnpm -C apps/web exec vitest --run tests/async-handles.test.ts tests/run-session.test.ts tests/admin-fetch.test.ts tests/networks-streaming-sync-proxy-route.test.ts tests/show-google-news-sync-proxy-route.test.ts tests/show-google-news-sync-status-proxy-route.test.ts tests/reddit-window-posts-page.test.tsx tests/reddit-post-details-page.test.tsx` (pass; `29 passed`)
+- default_skill_chain_applied: true
+- default_skill_chain_used:
+  - `orchestrate-plan-execution`
+  - `senior-devops`
+  - `senior-qa`
+  - `code-reviewer`
+- default_skill_chain_exception_reason: ``
+
+## 2026-03-03 (Codex) — workspace PR automation agent (commit/PR/check/revise/merge/sync)
+- Updated `/Users/thomashulihan/Projects/TRR/skills/multi-repo-pr-merge-sync/scripts/orchestrate_multi_repo_pr_merge_sync.py`:
+  - added bot feedback ingestion from PR reviews + issue comments + review comments,
+  - added actionable bot-feedback gating and revision loop handling,
+  - added `--revision-command` auto-fix hook with `WORKSPACE_AGENT_*` env context + JSON payload file,
+  - added base-branch reconciliation flow (`BEHIND`/`DIRTY` merge-state handling + merge retry path),
+  - added conflict-resolution hook via `--revision-command` for merge conflicts,
+  - added `--max-revision-cycles` safety bound,
+  - added final local branch cleanup enforcement via `--delete-non-main-local-branches`,
+  - expanded blocking status taxonomy: `needs_bot_revision`, `conflict_needs_fix`, `revision_cycle_limit`.
+- Added `/Users/thomashulihan/Projects/TRR/scripts/workspace-pr-agent.sh`:
+  - workspace wrapper for the orchestrator with defaults aligned to TRR repos:
+    - `TRR-Backend,screenalytics,TRR-APP`
+  - now wires a concrete default revision command:
+    - `python3 /Users/thomashulihan/Projects/TRR/scripts/workspace-pr-agent-revision.py`
+  - supports env-based overrides for poll/timeout/revision command/dry-run/report path.
+- Added `/Users/thomashulihan/Projects/TRR/scripts/workspace-pr-agent-revision.py`:
+  - consumes `WORKSPACE_AGENT_*` context from orchestrator callbacks,
+  - runs scoped deterministic fixes only on currently touched/conflict files (no repo-wide rewrites),
+  - invokes `codex exec --full-auto` for `failing_checks`, `bot_feedback`, and `merge_conflict` events,
+  - supports `WORKSPACE_PR_AGENT_REVISION_USE_CODEX=0` to disable Codex assist,
+  - supports GitHub MCP-first prompting via:
+    - `WORKSPACE_PR_AGENT_REVISION_USE_GITHUB_MCP=1`
+    - `WORKSPACE_PR_AGENT_REVISION_REQUIRE_GITHUB_MCP=1` (fail fast when MCP auth is missing).
+- Added `/Users/thomashulihan/Projects/TRR/skills/workspace-pr-agent-github-mcp/SKILL.md` (+ `agents/openai.yaml`):
+  - companion MCP-first skill for this automation flow.
+- Updated `/Users/thomashulihan/Projects/TRR/Makefile`:
+  - added `workspace-pr-agent` target.
+- Updated `/Users/thomashulihan/Projects/TRR/skills/multi-repo-pr-merge-sync/SKILL.md` and `/Users/thomashulihan/Projects/TRR/skills/multi-repo-pr-merge-sync/agents/openai.yaml`:
+  - documented bot-review/conflict revision loop and strict final-branch requirements.
+- Validation executed:
+  - `python3 -m py_compile /Users/thomashulihan/Projects/TRR/skills/multi-repo-pr-merge-sync/scripts/orchestrate_multi_repo_pr_merge_sync.py` (pass)
+  - `python3 -m py_compile /Users/thomashulihan/Projects/TRR/scripts/workspace-pr-agent-revision.py` (pass)
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/workspace-pr-agent.sh` (pass)
+  - `WORKSPACE_AGENT_REPO_NAME=TRR-Backend WORKSPACE_AGENT_REPO_PATH=/Users/thomashulihan/Projects/TRR/TRR-Backend WORKSPACE_AGENT_REASON=bot_feedback WORKSPACE_AGENT_CONTEXT_FILE=/tmp/trr_revision_context.json WORKSPACE_PR_AGENT_REVISION_USE_CODEX=0 python3 /Users/thomashulihan/Projects/TRR/scripts/workspace-pr-agent-revision.py` (pass)
+  - `WORKSPACE_PR_AGENT_DRY_RUN=1 WORKSPACE_PR_AGENT_REPOS=TRR-Backend bash /Users/thomashulihan/Projects/TRR/scripts/workspace-pr-agent.sh` (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR workspace-pr-agent WORKSPACE_PR_AGENT_DRY_RUN=1` (pass; dry-run over TRR-Backend/screenalytics/TRR-APP)
+  - `WORKSPACE_PR_AGENT_DRY_RUN=1 WORKSPACE_PR_AGENT_REVISION_REQUIRE_GITHUB_MCP=1 make -C /Users/thomashulihan/Projects/TRR workspace-pr-agent` (pass; dry-run path, MCP requirement flag accepted)
+- default_skill_chain_applied: true
+- default_skill_chain_used:
+  - `orchestrate-plan-execution`
+  - `senior-fullstack`
+  - `senior-backend`
+  - `senior-qa`
+  - `code-reviewer`
+- default_skill_chain_exception_reason: ``
+
+## 2026-03-03 (Codex) — `make dev` now starts and manages social ingest workers
+- Updated `/Users/thomashulihan/Projects/TRR/scripts/dev-workspace.sh`:
+  - added managed `TRR_SOCIAL_WORKER` service startup in workspace dev mode,
+  - default pool now starts via `scripts/socials/start_worker_pool.sh` with:
+    - `WORKSPACE_SOCIAL_WORKER_POSTS=1`
+    - `WORKSPACE_SOCIAL_WORKER_COMMENTS=1`
+    - `WORKSPACE_SOCIAL_WORKER_MEDIA_MIRROR=0`
+    - `WORKSPACE_SOCIAL_WORKER_COMMENT_MEDIA_MIRROR=0`
+  - added env toggles/validation:
+    - `WORKSPACE_SOCIAL_WORKER_ENABLED` (`0|1`)
+    - `WORKSPACE_SOCIAL_WORKER_*` counts and interval
+  - added worker log rotation/reset (`.logs/workspace/social-worker.log`),
+  - persisted worker settings in pidfile metadata.
+- Updated `/Users/thomashulihan/Projects/TRR/scripts/stop-workspace.sh`:
+  - now stops `TRR_SOCIAL_WORKER` from pidfile state.
+- Updated `/Users/thomashulihan/Projects/TRR/scripts/status-workspace.sh`:
+  - now reports social worker mode vars and `TRR_SOCIAL_WORKER` process state.
+- Updated `/Users/thomashulihan/Projects/TRR/scripts/logs-workspace.sh`:
+  - now tails `.logs/workspace/social-worker.log`.
+- Updated `/Users/thomashulihan/Projects/TRR/Makefile`:
+  - dev docs now state that social worker pool is part of default `make dev`,
+  - added worker tuning examples in target comments.
+- Validation executed:
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/dev-workspace.sh /Users/thomashulihan/Projects/TRR/scripts/stop-workspace.sh /Users/thomashulihan/Projects/TRR/scripts/status-workspace.sh /Users/thomashulihan/Projects/TRR/scripts/logs-workspace.sh` (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR stop` (pass)
+  - `WORKSPACE_OPEN_BROWSER=0 make -C /Users/thomashulihan/Projects/TRR dev-lite` (pass; observed `TRR_SOCIAL_WORKER started`)
+  - `make -C /Users/thomashulihan/Projects/TRR status` (pass; reported `TRR_SOCIAL_WORKER: running`)
+  - `tail -n 120 /Users/thomashulihan/Projects/TRR/.logs/workspace/social-worker.log` (pass; observed worker startup + active processing logs)
+- Residual risk / note:
+  - In environments where `social.scrape_workers` heartbeat schema is missing, worker heartbeats cannot be recorded and queue-mode ingest can still fail until migration `0130` is applied.
+- default_skill_chain_applied: true
+- default_skill_chain_used:
+  - `orchestrate-plan-execution`
+  - `senior-fullstack`
+  - `senior-backend`
+  - `senior-qa`
+  - `code-reviewer`
+- default_skill_chain_exception_reason: ``
+
+## 2026-03-01 (Codex) — Refresh Details connect-timeout stabilization via non-reload default + mode/preflight diagnostics
+- Updated `/Users/thomashulihan/Projects/TRR/scripts/dev-workspace.sh`:
+  - workspace now defaults `TRR_BACKEND_RELOAD=0` (non-reload) unless explicitly overridden,
+  - validates `TRR_BACKEND_RELOAD` (`0|1`) and persists value in pidfile metadata,
+  - passes `TRR_BACKEND_RELOAD` through backend launch env,
+  - startup URL summary now prints backend mode (`reload` vs `non-reload`).
+- Updated `/Users/thomashulihan/Projects/TRR/scripts/status-workspace.sh`:
+  - prints `TRR_BACKEND_RELOAD` in status snapshot,
+  - adds lightweight reload-churn heuristic warning when reload markers are frequent in recent backend logs.
+- Updated `/Users/thomashulihan/Projects/TRR/Makefile`:
+  - `dev` comments now document reload opt-in (`TRR_BACKEND_RELOAD=1 make dev`).
+- Updated `/Users/thomashulihan/Projects/TRR/TRR-Backend/start-api.sh`:
+  - startup now logs backend mode (reload/non-reload) for operator clarity.
+- Validation executed:
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/dev-workspace.sh` (pass)
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/status-workspace.sh` (pass)
+  - `bash -n /Users/thomashulihan/Projects/TRR/TRR-Backend/start-api.sh` (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR status` (pass; reported `TRR_BACKEND_RELOAD: 0 (non-reload)` and healthy backend/app/screenalytics)
+- default_skill_chain_applied: true
+- default_skill_chain_used:
+  - `orchestrate-plan-execution`
+  - `senior-fullstack`
+  - `senior-backend`
+  - `senior-qa`
+  - `code-reviewer`
+- default_skill_chain_exception_reason: ``
+
+## 2026-02-28 (Codex) — `make dev` default suppresses screenalytics tabs (API startup unchanged)
+- Updated `/Users/thomashulihan/Projects/TRR/Makefile`:
+  - `dev` now injects `WORKSPACE_OPEN_SCREENALYTICS_TABS="${WORKSPACE_OPEN_SCREENALYTICS_TABS:-0}"` so default `make dev` opens only TRR-APP tab.
+  - `dev-lite`, `dev-cloud`, and `dev-full` remain unchanged.
+  - usage comments now document `WORKSPACE_OPEN_SCREENALYTICS_TABS=1 make dev` opt-in.
+- Updated `/Users/thomashulihan/Projects/TRR/scripts/dev-workspace.sh`:
+  - added `WORKSPACE_OPEN_SCREENALYTICS_TABS` runtime toggle (script default `1`),
+  - persisted `WORKSPACE_OPEN_SCREENALYTICS_TABS` in pidfile metadata,
+  - browser sync now clears Streamlit/Web tab targets when `WORKSPACE_OPEN_SCREENALYTICS_TABS!=1`,
+  - startup paths, `DEV_AUTO_OPEN_BROWSER=0`, and health checks (including `/healthz`) are unchanged.
+- Updated `/Users/thomashulihan/Projects/TRR/scripts/status-workspace.sh`:
+  - now prints `WORKSPACE_OPEN_SCREENALYTICS_TABS` under workspace modes.
+- Updated `/Users/thomashulihan/Projects/TRR/AGENTS.md` and `/Users/thomashulihan/Projects/TRR/CLAUDE.md`:
+  - startup tuning docs now include the new opt-in env var for `make dev`.
+- Validation executed:
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/dev-workspace.sh` (pass)
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/status-workspace.sh` (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR -n dev` (pass; recipe includes defaulted `WORKSPACE_OPEN_SCREENALYTICS_TABS`)
+  - `WORKSPACE_OPEN_SCREENALYTICS_TABS=1 make -C /Users/thomashulihan/Projects/TRR -n dev` (pass; opt-in path preserved)
+  - `make -C /Users/thomashulihan/Projects/TRR -n dev-cloud` (pass; unchanged)
+  - `make -C /Users/thomashulihan/Projects/TRR -n dev-full` (pass; unchanged)
+  - `make -C /Users/thomashulihan/Projects/TRR dev` (pass for behavior verification; terminated with Ctrl+C/exit 130 by design)
+    - observed: `screenalytics API is up: http://127.0.0.1:8001/healthz`
+    - observed: `Screenalytics tab sync disabled (WORKSPACE_OPEN_SCREENALYTICS_TABS=0).`
+    - observed browser sync opened only `TRR APP/Admin`
+  - `WORKSPACE_OPEN_SCREENALYTICS_TABS=1 make -C /Users/thomashulihan/Projects/TRR dev` (pass for behavior verification; terminated with Ctrl+C/exit 130 by design)
+    - observed: `screenalytics API is up: http://127.0.0.1:8001/healthz`
+    - observed browser sync opened `TRR APP/Admin`, `screenalytics Streamlit`, and `screenalytics Web`
+  - `WORKSPACE_OPEN_BROWSER=0 make -C /Users/thomashulihan/Projects/TRR dev` + `make -C /Users/thomashulihan/Projects/TRR status` (pass)
+    - status output includes `WORKSPACE_OPEN_SCREENALYTICS_TABS: 0` from loaded pidfile.
+- default_skill_chain_applied: true
+- default_skill_chain_used:
+  - `orchestrate-plan-execution`
+  - `senior-fullstack`
+  - `senior-backend`
+  - `senior-qa`
+  - `code-reviewer`
+- default_skill_chain_exception_reason: n/a
+
+## 2026-02-24 (Codex) — admin-host local defaults + tab-refresh collision hardening
+- Updated `/Users/thomashulihan/Projects/TRR/scripts/dev-workspace.sh`:
+  - now injects TRR-APP admin host defaults into the launched `next dev` process when unset:
+    - `ADMIN_APP_ORIGIN=http://admin.localhost:3000`
+    - `ADMIN_APP_HOSTS=admin.localhost,localhost,127.0.0.1,[::1]`
+    - `ADMIN_ENFORCE_HOST=true`
+    - `ADMIN_STRICT_HOST_ROUTING=false`
+  - persists the above values in pidfile metadata.
+  - startup URL output now includes canonical admin URL line:
+    - `TRR-APP Admin: http://admin.localhost:3000`
+- Updated `/Users/thomashulihan/Projects/TRR/scripts/open-or-refresh-browser-tab.sh`:
+  - removed broad localhost-family wildcard matching on port `3000`.
+  - refresh matching is now limited to:
+    - exact target URL/prefix, plus
+    - explicit localhost/127 alias pair only.
+  - prevents unrelated admin/public localhost tabs from being force-refreshed together.
+- Validation executed:
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/dev-workspace.sh` (pass)
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/open-or-refresh-browser-tab.sh` (pass)
+
+## 2026-02-24 (Codex) — runtime hardening pass (endpoint override, health tuning, log archive, compose/runtime polish)
+- Updated `/Users/thomashulihan/Projects/TRR/scripts/dev-workspace.sh`:
+  - `SCREENALYTICS_API_URL` now honors env override (default remains local `http://127.0.0.1:${SCREENALYTICS_API_PORT}`),
+  - local screenalytics process uses local API base while backend/app receive resolved target URL,
+  - health checks now use configurable env vars:
+    - `WORKSPACE_HEALTH_CURL_MAX_TIME`
+    - `WORKSPACE_HEALTH_TIMEOUT_BACKEND`
+    - `WORKSPACE_HEALTH_TIMEOUT_APP`
+    - `WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_API`
+    - `WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_STREAMLIT`
+    - `WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_WEB`,
+  - local screenalytics API health checks use local URL explicitly (`SCREENALYTICS_LOCAL_HEALTH_URL`),
+  - workspace logs are now archived per run under `.logs/workspace/archive/<timestamp>/` before fresh log files are created.
+- Updated `/Users/thomashulihan/Projects/TRR/scripts/open-workspace-dev-window.sh`:
+  - if tab-refresh helper fails, script now falls back to default browser open for the target URL.
+- Updated `/Users/thomashulihan/Projects/TRR/scripts/status-workspace.sh`:
+  - reports screenalytics as `disabled` when `WORKSPACE_SCREENALYTICS=0`,
+  - health output now reports `starting/unhealthy` when PID is alive but endpoint is not healthy yet.
+- Updated `/Users/thomashulihan/Projects/TRR/scripts/bootstrap.sh`:
+  - Python resolution now supports `PYTHON_BIN`, then `python3.11`, `python3`, `python`,
+  - enforces Python `>=3.11` on resolved interpreter.
+- Updated `/Users/thomashulihan/Projects/TRR/scripts/down-screenalytics-infra.sh`:
+  - compose down now includes `--remove-orphans`.
+- Updated `/Users/thomashulihan/Projects/TRR/screenalytics/scripts/dev_auto.sh`:
+  - default API port changed to `8001` (aligned with workspace),
+  - new `SCREENALYTICS_DOCKER_FORCE_RECREATE` flag gates `--force-recreate` on compose up.
+- Updated `/Users/thomashulihan/Projects/TRR/AGENTS.md` and `/Users/thomashulihan/Projects/TRR/CLAUDE.md`:
+  - documented endpoint override, health-tuning vars, log archive behavior, and `SCREENALYTICS_DOCKER_FORCE_RECREATE`.
+- Validation executed:
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/dev-workspace.sh` (pass)
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/open-workspace-dev-window.sh` (pass)
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/status-workspace.sh` (pass)
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/bootstrap.sh` (pass)
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/down-screenalytics-infra.sh` (pass)
+  - `bash -n /Users/thomashulihan/Projects/TRR/screenalytics/scripts/dev_auto.sh` (pass)
+  - `SCREENALYTICS_API_URL=https://example.invalid WORKSPACE_SCREENALYTICS=0 make -C /Users/thomashulihan/Projects/TRR -n dev` (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR status` (pass; app showed `starting/unhealthy` while startup warmed)
+  - `WORKSPACE_SCREENALYTICS=0 bash /Users/thomashulihan/Projects/TRR/scripts/status-workspace.sh` with pidfile temporarily moved aside (pass; screenalytics showed `disabled`)
+  - `PYTHON_BIN=/bin/echo bash /Users/thomashulihan/Projects/TRR/scripts/bootstrap.sh` (expected fail; exit `1` with Python version error)
+  - `PATH=/usr/bin:/bin bash /Users/thomashulihan/Projects/TRR/scripts/down-screenalytics-infra.sh` (pass; graceful no-op)
+
+## 2026-02-24 (Codex) — workspace reliability additions (`make status`, doctor fallback, graceful `make down`)
+- Added `/Users/thomashulihan/Projects/TRR/scripts/status-workspace.sh`:
+  - reports workspace mode flags from pidfile when available,
+  - reports process states for `TRR_APP`, `TRR_BACKEND`, and `SCREENALYTICS`,
+  - reports listeners for `3000/8000/8001/8501/8080` (or pidfile overrides),
+  - performs best-effort health checks for backend/app/screenalytics API,
+  - always exits `0` (informational status command).
+- Updated `/Users/thomashulihan/Projects/TRR/Makefile`:
+  - added `status` target and `.PHONY` entry (`make status`).
+- Updated `/Users/thomashulihan/Projects/TRR/scripts/doctor.sh`:
+  - Python interpreter resolution now supports `PYTHON_BIN`, then `python3.11`, `python3`, `python`,
+  - enforces Python version `>=3.11` on the resolved interpreter,
+  - prints selected Python binary path and version.
+- Updated `/Users/thomashulihan/Projects/TRR/scripts/down-screenalytics-infra.sh`:
+  - no-op exit when Docker CLI is missing,
+  - no-op exit when Docker daemon is not running.
+- Updated `/Users/thomashulihan/Projects/TRR/AGENTS.md` and `/Users/thomashulihan/Projects/TRR/CLAUDE.md`:
+  - documented `make status`, graceful `make down`, and doctor Python fallback behavior.
+- Validation executed:
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/status-workspace.sh` (pass)
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/doctor.sh` (pass)
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/down-screenalytics-infra.sh` (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR -n status` (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR status` (pass)
+  - `PYTHON_BIN=/no/such/python make -C /Users/thomashulihan/Projects/TRR doctor` (warned + fell back, pass)
+
+## 2026-02-24 (Codex) — workspace run UX hardening (cache default, dev modes, browser toggle)
+- Updated `/Users/thomashulihan/Projects/TRR/scripts/dev-workspace.sh`:
+  - changed `WORKSPACE_CLEAN_NEXT_CACHE` default from `1` to `0` (cache reuse by default),
+  - added `WORKSPACE_OPEN_BROWSER` toggle (default `1`) to gate tab sync/open behavior,
+  - persisted `WORKSPACE_OPEN_BROWSER` in workspace pidfile metadata,
+  - guarded tab sync call so `WORKSPACE_OPEN_BROWSER=0` skips browser automation.
+- Updated `/Users/thomashulihan/Projects/TRR/Makefile`:
+  - added `dev-lite`, `dev-cloud`, and `dev-full` targets,
+  - expanded usage comments with startup tuning examples (`WORKSPACE_CLEAN_NEXT_CACHE`, `WORKSPACE_OPEN_BROWSER`).
+- Updated `/Users/thomashulihan/Projects/TRR/AGENTS.md` and `/Users/thomashulihan/Projects/TRR/CLAUDE.md`:
+  - documented new run-mode targets and startup tuning toggles.
+- Validation executed:
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/dev-workspace.sh` (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR -n dev-lite` (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR -n dev-cloud` (pass)
+  - `make -C /Users/thomashulihan/Projects/TRR -n dev-full` (pass)
+
+## 2026-02-19 (Codex) — fresh `make dev` browser window orchestration
+- Added `scripts/open-workspace-dev-window.sh` to enforce workspace browser behavior:
+  - closes existing tabs only for configured TRR-APP and screenalytics Web origins (exact host+port match, path-agnostic),
+  - opens a brand-new browser window with fresh tabs for TRR-APP and optional screenalytics Web.
+- Updated `scripts/dev-workspace.sh`:
+  - disables nested screenalytics browser opens via `DEV_AUTO_OPEN_BROWSER=0` when launched from workspace,
+  - replaces single-tab TRR-APP open call with `open-workspace-dev-window.sh`,
+  - opens TRR-APP + screenalytics Web (`:8080`) in one fresh window when screenalytics is enabled.
+
+## Changes In This Session (2026-02-09)
+
+- `scripts/dev-workspace.sh`
+  - Safe-stale port preflight/cleanup to prevent orphaned processes from blocking ports.
+  - macOS-friendly process-group isolation (python `setsid()` fallback when `setsid` is unavailable) so stop can kill full trees.
+  - `WORKSPACE_SCREENALYTICS` / `WORKSPACE_STRICT` toggles so `make dev` can keep TRR-Backend + TRR-APP running even if screenalytics fails.
+  - Startup health checks so printed URLs reflect actual service readiness.
+  - Starts screenalytics via `bash ./scripts/dev_auto.sh` and passes `DEV_AUTO_ALLOW_DB_ERROR=1` by default when `WORKSPACE_STRICT=0` so screenalytics doesn't exit if the DB is unreachable.
+
+- `scripts/stop-workspace.sh`
+  - Stops by process group when possible, with recursive descendant-kill fallback.
+  - Safe-stale cleanup by port when no pidfile exists.
+
+## How To Run
+
+From `/Users/thomashulihan/Projects/TRR`:
+
+```bash
+make stop
+make dev
+```
+
+## Useful Env Vars
+
+- `WORKSPACE_SCREENALYTICS=0` to skip screenalytics entirely.
+- `WORKSPACE_STRICT=1` to fail fast if screenalytics can’t start / docker isn’t available.
+- `WORKSPACE_FORCE_KILL_PORT_CONFLICTS=1` to forcibly clear port conflicts (kills all listeners on those ports).
+
+---
+
+Last updated: 2026-02-24
+Updated by: Codex (GPT-5)
+
+## 2026-02-17 (Codex) — `make dev` one-tab browser behavior
+- Added `/Users/thomashulihan/Projects/TRR/scripts/open-or-refresh-browser-tab.sh` to reuse existing browser tabs for service URLs.
+- Wired `scripts/dev-workspace.sh` to open/refresh `TRR-APP` at `http://127.0.0.1:${TRR_APP_PORT}` on each `make dev`.
+- Replaced hardcoded `open` calls in `screenalytics/scripts/dev_auto.sh` so Streamlit/Web tabs are reused when present.
+- Behavior now prefers Chrome → Safari tab reuse and falls back to opening a new tab if those automation paths are unavailable.
+
+
+## 2026-02-12 (Codex) — New planning docs added
+- Added image optimization implementation plan:
+  - `/Users/thomashulihan/Projects/TRR/docs/plans/2026-02-12-image-storage-optimization-plan.md`
+- Added admin UX/product suggestions document (10 concrete proposals):
+  - `/Users/thomashulihan/Projects/TRR/docs/plans/2026-02-12-admin-page-suggestions.md`
+
+## 2026-02-12 (Codex) — Plan docs finalized
+- Finalized both plan docs with implementation status sections and closed checklist items:
+  - `/Users/thomashulihan/Projects/TRR/docs/plans/2026-02-12-image-storage-optimization-plan.md`
+  - `/Users/thomashulihan/Projects/TRR/docs/plans/2026-02-12-admin-page-suggestions.md`
+
+## 2026-02-12 (Codex) — `make dev` stability fix
+- File: `/Users/thomashulihan/Projects/TRR/scripts/dev-workspace.sh`
+- Fixed shutdown crash:
+  - handled sparse `PIDS/NAMES` arrays safely in `cleanup()` to prevent `NAMES[$i]: unbound variable`.
+  - hardened process-monitor loop against unset/sparse indices.
+  - added idempotent cleanup guard to avoid double shutdown output.
+- Reduced intermittent Next route-cache startup failures:
+  - added `WORKSPACE_CLEAN_NEXT_CACHE` (default `1`) and clear `TRR-APP/apps/web/.next` before starting `next dev`.
+  - mitigates stale app-router cache mismatches (e.g. dynamic slug-name conflict after route renames).
+
+## 2026-03-03 (Codex) — managed Chrome isolation for Codex MCP + shared fallback
+- Scope: workspace browser orchestration hardening so Codex chats do not contend for one Chrome DevTools endpoint.
+- `default_skill_chain_applied`: `true`
+- `default_skill_chain_used`: `orchestrate-plan-execution -> senior-fullstack -> senior-backend -> senior-qa -> code-reviewer`
+- `default_skill_chain_exception_reason`: `n/a`
+- Updated `/Users/thomashulihan/Projects/TRR/scripts/chrome-agent.sh`:
+  - switched to port-scoped runtime files:
+    - `chrome-agent-${DEBUG_PORT}.pid`
+    - `chrome-agent-${DEBUG_PORT}.log`
+    - `chrome-agent-${DEBUG_PORT}.env`
+  - retained legacy `chrome-agent.pid` write for `9222` compatibility.
+- Updated managed Chrome lifecycle handling:
+  - added targeted managed-instance cleanup semantics,
+  - retained legacy `9222` pidfile compatibility handling.
+- Added `/Users/thomashulihan/Projects/TRR/scripts/codex-chrome-devtools-mcp.sh`:
+  - default `CODEX_CHROME_MODE=isolated`,
+  - default `CODEX_CHROME_ISOLATED_HEADLESS=1` to avoid visible browser flap during MCP session churn,
+  - per-session port allocation from `CODEX_CHROME_PORT_RANGE_START..CODEX_CHROME_PORT_RANGE_END` (defaults `9333..9399`),
+  - optional `CODEX_CHROME_PORT` pin,
+  - first-run profile seed copy from `CODEX_CHROME_SEED_PROFILE_DIR` (default `~/.chrome-profiles/claude-agent`),
+  - shared fallback mode (`CODEX_CHROME_MODE=shared`) targeting `9222`,
+  - automatic teardown of isolated Chrome instance on wrapper exit.
+- Added `/Users/thomashulihan/Projects/TRR/scripts/chrome-agent-status.sh`.
+- Added `/Users/thomashulihan/Projects/TRR/scripts/chrome-agent-seed-sync.sh`.
+- Added `/Users/thomashulihan/Projects/TRR/scripts/ensure-managed-chrome.sh` for Claude PreToolUse compatibility bootstrap.
+- Updated `/Users/thomashulihan/Projects/TRR/Makefile`:
+  - new targets: `chrome-agent-status`, `chrome-agent-seed-sync`.
+- Updated `/Users/thomashulihan/Projects/TRR/AGENTS.md` and `/Users/thomashulihan/Projects/TRR/CLAUDE.md`:
+  - replaced hard single-port mandate with managed-browser policy,
+  - documented isolated-per-chat default + shared fallback + troubleshooting commands.
+- Updated `/Users/thomashulihan/Projects/TRR/.claude/settings.local.json`:
+  - PreToolUse bootstrap now calls `scripts/ensure-managed-chrome.sh` instead of unconditional `make chrome-agent`.
+- Updated user-level Codex MCP wiring `/Users/thomashulihan/.codex/config.toml`:
+  - `mcp_servers.chrome-devtools.command` now points to `/Users/thomashulihan/Projects/TRR/scripts/codex-chrome-devtools-mcp.sh`.
+- Validation executed:
+  - `bash -n` on all touched shell scripts (pass).
+  - `python -m json.tool /Users/thomashulihan/Projects/TRR/.claude/settings.local.json` (pass).
+  - `make -C /Users/thomashulihan/Projects/TRR chrome-agent-status` (pass).
+  - Shared fallback check via wrapper: `SHARED_FALLBACK_OK=1` (pass).
+  - Direct two-port isolation check (`9500`/`9501`):
+    - `9500` saw `chat=one` only,
+    - `9501` saw `chat=two` only (pass).
+  - Lifecycle stop-one check:
+    - stopping `9500` left `9501` running (pass).
+  - Wrapper port-exhaustion check (`9600..9601` occupied):
+    - non-zero exit + `No free Chrome debug ports` message (pass).
+  - Wrapper stale reservation recovery check:
+    - stale reservation file did not block allocation; failure reached `Seed profile not found` path as expected (pass).
+  - Stop-all check:
+    - `CHROME_AGENT_STOP_ALL=1` terminated all managed test instances (pass).
+
+## 2026-03-03 (Codex) — workspace full runtime/tools/models/pip modernization (balanced wave)
+- Scope: coordinated runtime/tooling/dependency/model-governance alignment across `TRR-Backend`, `screenalytics`, `TRR-APP`, and workspace scripts/docs.
+- `default_skill_chain_applied`: `true`
+- `default_skill_chain_used`: `orchestrate-plan-execution -> senior-fullstack -> senior-backend -> senior-qa -> code-reviewer`
+- `default_skill_chain_exception_reason`: `n/a`
+- Workspace-level updates:
+  - added `/Users/thomashulihan/Projects/TRR/docs/ai/MODEL_GOVERNANCE.md`.
+  - updated `/Users/thomashulihan/Projects/TRR/scripts/doctor.sh` with Node `24.x` minimum check.
+  - updated `/Users/thomashulihan/Projects/TRR/AGENTS.md` and `/Users/thomashulihan/Projects/TRR/CLAUDE.md` runtime baseline sections to Node 24 primary and Python 3.11.9 primary (+ 3.12 canary).
+- Cross-repo execution summary:
+  - `TRR-Backend`: CI/tooling and container baseline updates, lock freshness verification, model governance doc + handoff update.
+  - `screenalytics`: Node 24 tooling baseline for web/dev scripts, CI lock checks + Python canary posture, lock refreshes, model governance doc + handoff update.
+  - `TRR-APP`: Node 24 runtime alignment, Python lock-driven flow migration (`requirements.in` + `requirements.lock.txt`), CI/doc alignment, model governance doc + handoff update.
+- Validation snapshot:
+  - lock freshness checks passed in all three repos.
+  - mixed pre-existing test/lint/type failures remain in backend and app suites; tracked as residual baseline issues and not newly introduced by this wave.
+  - local machine still on Node `v22.18.0`; Node 24 local baseline checks will remain red until local runtime is switched.
+- Deployment note:
+  - Vercel Node runtime setting changes require a fresh deployment to take effect.
+
+## Latest Update (2026-03-05) — Workspace remote-social worker controls
+
+- files_changed:
+  - `/Users/thomashulihan/Projects/TRR/scripts/dev-workspace.sh`
+- behavior_summary:
+  - Added workspace env controls to pass optional remote social ingest worker counts/stages into backend remote worker launcher.
+  - Kept local default disabled to protect local CPU; remote social worker groups are opt-in.
+- validation_evidence:
+  - `bash -n /Users/thomashulihan/Projects/TRR/scripts/dev-workspace.sh` (pass)
+
+## Latest Update (2026-03-05) — `make dev` one-command remote-enforced local-lite default
+
+- files_changed:
+  - `/Users/thomashulihan/Projects/TRR/Makefile`
+  - `/Users/thomashulihan/Projects/TRR/AGENTS.md`
+  - `/Users/thomashulihan/Projects/TRR/docs/ai/HANDOFF.md`
+- behavior_summary:
+  - `make dev` now always runs with `PROFILE=local-lite` unless user explicitly sets `PROFILE`.
+  - `make dev` now hard-pins remote long-job enforcement and disables local social/remote worker loops by default:
+    - `WORKSPACE_TRR_JOB_PLANE_MODE=remote`
+    - `WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE=1`
+    - `WORKSPACE_SOCIAL_WORKER_ENABLED=0`
+    - `WORKSPACE_TRR_REMOTE_WORKERS_ENABLED=0`
+    - `WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS=0`
+  - Updated AGENTS wording to match this new daily-default behavior.
+- validation_evidence:
+  - `make -n dev` shows enforced env + `PROFILE=${PROFILE:-local-lite}` (pass)
+  - `bash -n scripts/dev-workspace.sh scripts/preflight.sh` (pass)
+  - `make -n dev-lite` and `make -n dev-cloud` remain unchanged (pass)
+
+## Latest Update (2026-03-07) — Chrome DevTools MCP registration fix
+
+- files_changed:
+  - `/Users/thomashulihan/Projects/TRR/scripts/codex-chrome-devtools-mcp.sh`
+  - `/Users/thomashulihan/.codex/config.toml`
+- root_cause:
+  - The workspace Chrome DevTools wrapper launched `chrome-devtools-mcp` as a background job.
+  - In a non-interactive shell that detached stdio from the MCP process, so Codex could not complete the MCP handshake and fresh sessions did not expose the `chrome-devtools` tool surface.
+- behavior_summary:
+  - Kept the Chrome DevTools MCP server in the foreground so stdio remains attached for MCP initialization.
+  - Increased user-level `chrome-devtools` MCP timeouts to tolerate cold starts and profile seeding:
+    - `startup_timeout_sec = 30`
+    - `tool_timeout_sec = 120`
+- validation_evidence:
+  - `codex mcp list` shows `chrome-devtools` enabled (pass)
+  - `codex exec --json -C /Users/thomashulihan/Projects/TRR "Use chrome-devtools to open https://example.com and reply with the page title only."` (pass)
+  - Fresh Codex session emitted `chrome-devtools` MCP calls:
+    - `new_page`
+    - `evaluate_script`
+  - Validation result from the fresh session:
+    - `Example Domain`
