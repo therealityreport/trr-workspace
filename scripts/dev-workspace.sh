@@ -34,6 +34,14 @@ if [[ -n "$PROFILE" ]]; then
   done < "$PROFILE_FILE"
 
   echo "[workspace] Loaded profile defaults from ${PROFILE_FILE} (explicit env vars preserved)."
+  case "$PROFILE" in
+    local-cloud)
+      echo "[workspace] NOTE: PROFILE=local-cloud is deprecated; use make dev (or PROFILE=default make dev)." >&2
+      ;;
+    local-full)
+      echo "[workspace] NOTE: PROFILE=local-full is deprecated; use make dev-local (or PROFILE=local-docker make dev-local)." >&2
+      ;;
+  esac
 fi
 
 LOG_DIR="${ROOT}/.logs/workspace"
@@ -44,6 +52,7 @@ mkdir -p "$LOG_DIR"
 # Workspace toggles
 WORKSPACE_SCREENALYTICS="${WORKSPACE_SCREENALYTICS:-1}"
 WORKSPACE_SCREENALYTICS_SKIP_DOCKER="${WORKSPACE_SCREENALYTICS_SKIP_DOCKER:-1}"
+WORKSPACE_DEV_MODE="${WORKSPACE_DEV_MODE:-}"
 WORKSPACE_STRICT="${WORKSPACE_STRICT:-0}"
 WORKSPACE_FORCE_KILL_PORT_CONFLICTS="${WORKSPACE_FORCE_KILL_PORT_CONFLICTS:-0}"
 WORKSPACE_CLEAN_NEXT_CACHE="${WORKSPACE_CLEAN_NEXT_CACHE:-0}"
@@ -87,6 +96,8 @@ WORKSPACE_TRR_REMOTE_ADMIN_WORKERS="${WORKSPACE_TRR_REMOTE_ADMIN_WORKERS:-1}"
 WORKSPACE_TRR_REMOTE_REDDIT_WORKERS="${WORKSPACE_TRR_REMOTE_REDDIT_WORKERS:-1}"
 WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS="${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS:-1}"
 WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS="${WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS:-0}"
+WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT="${WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT:-25}"
+WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT="${WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT:-64}"
 WORKSPACE_TRR_REMOTE_SOCIAL_POSTS="${WORKSPACE_TRR_REMOTE_SOCIAL_POSTS:-2}"
 WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS="${WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS:-2}"
 WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR="${WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR:-1}"
@@ -100,6 +111,37 @@ TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS="${TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS:-25000}"
 TRR_SOCIAL_PROXY_DEFAULT_TIMEOUT_MS="${TRR_SOCIAL_PROXY_DEFAULT_TIMEOUT_MS:-45000}"
 TRR_REDDIT_CACHE_LOOKUP_TIMEOUT_MS="${TRR_REDDIT_CACHE_LOOKUP_TIMEOUT_MS:-20000}"
 TRR_REDDIT_CACHE_LOOKUP_RETRIES="${TRR_REDDIT_CACHE_LOOKUP_RETRIES:-1}"
+
+if [[ -z "$WORKSPACE_DEV_MODE" ]]; then
+  if [[ "$WORKSPACE_SCREENALYTICS_SKIP_DOCKER" == "1" ]]; then
+    WORKSPACE_DEV_MODE="cloud"
+  else
+    WORKSPACE_DEV_MODE="local_docker"
+  fi
+fi
+
+if [[ "$WORKSPACE_DEV_MODE" != "cloud" && "$WORKSPACE_DEV_MODE" != "local_docker" ]]; then
+  echo "[workspace] ERROR: invalid WORKSPACE_DEV_MODE='${WORKSPACE_DEV_MODE}' (expected cloud or local_docker)." >&2
+  exit 1
+fi
+
+if [[ "$WORKSPACE_DEV_MODE" == "cloud" ]]; then
+  WORKSPACE_SCREENALYTICS_SKIP_DOCKER="1"
+elif [[ "$WORKSPACE_DEV_MODE" == "local_docker" ]]; then
+  WORKSPACE_SCREENALYTICS_SKIP_DOCKER="0"
+fi
+
+workspace_screenalytics_mode_label() {
+  if [[ "$WORKSPACE_SCREENALYTICS" != "1" ]]; then
+    echo "disabled"
+    return 0
+  fi
+  if [[ "$WORKSPACE_DEV_MODE" == "local_docker" ]]; then
+    echo "local Docker (Redis + MinIO)"
+    return 0
+  fi
+  echo "cloud-backed (no Docker)"
+}
 
 if ! [[ "$WORKSPACE_BACKEND_AUTO_RESTART" =~ ^[01]$ ]]; then
   echo "[workspace] WARNING: invalid WORKSPACE_BACKEND_AUTO_RESTART='${WORKSPACE_BACKEND_AUTO_RESTART}', using 1." >&2
@@ -176,6 +218,14 @@ fi
 if ! [[ "$WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS" =~ ^[01]$ ]]; then
   echo "[workspace] WARNING: invalid WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS='${WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS}', using 0." >&2
   WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS="0"
+fi
+if ! [[ "$WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT" =~ ^[1-9][0-9]*$ ]]; then
+  echo "[workspace] WARNING: invalid WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT='${WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT}', using 25." >&2
+  WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT="25"
+fi
+if ! [[ "$WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT" =~ ^[1-9][0-9]*$ ]]; then
+  echo "[workspace] WARNING: invalid WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT='${WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT}', using 64." >&2
+  WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT="64"
 fi
 if [[ "$WORKSPACE_TRR_JOB_PLANE_MODE" == "remote" && "$WORKSPACE_SOCIAL_WORKER_ENABLED" == "1" && "$WORKSPACE_SOCIAL_WORKER_FORCE_LOCAL" != "1" ]]; then
   echo "[workspace] Remote job plane selected; disabling local social worker pool. Set WORKSPACE_SOCIAL_WORKER_FORCE_LOCAL=1 to override." >&2
@@ -264,7 +314,7 @@ BASH_BIN="/bin/bash"
 
 # If an old pidfile exists, stop those services first (safe: only kills recorded PIDs).
 if [[ -f "$PIDFILE" ]]; then
-  echo "[workspace] Existing pidfile found. Stopping previous workspace services..."
+  echo "[workspace] Previous workspace session found. Stopping it first..."
   bash "${ROOT}/scripts/stop-workspace.sh" || true
 fi
 
@@ -487,13 +537,13 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# Optional screenalytics gating (docker is required only when screenalytics is enabled and skip mode is off)
+# Optional screenalytics gating (Docker is only required in local_docker mode)
 # ---------------------------------------------------------------------------
 if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
   if [[ "$WORKSPACE_SCREENALYTICS_SKIP_DOCKER" != "1" ]]; then
     if ! command -v docker >/dev/null 2>&1; then
       if [[ "$WORKSPACE_STRICT" == "1" ]]; then
-        echo "[workspace] ERROR: docker not found (required for screenalytics)." >&2
+        echo "[workspace] ERROR: docker not found (required for make dev-local / local Redis + MinIO)." >&2
         exit 1
       fi
       echo "[workspace] WARNING: docker not found; disabling screenalytics for this session." >&2
@@ -519,7 +569,7 @@ if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
 
       if ! docker info >/dev/null 2>&1; then
         if [[ "$WORKSPACE_STRICT" == "1" ]]; then
-          echo "[workspace] ERROR: Docker daemon is not running (required for screenalytics)." >&2
+          echo "[workspace] ERROR: Docker daemon is not running (required for make dev-local / local Redis + MinIO)." >&2
           exit 1
         fi
         echo "[workspace] WARNING: Docker daemon not available; disabling screenalytics for this session." >&2
@@ -531,7 +581,7 @@ if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
       echo "[workspace] Docker daemon is running."
     fi
   else
-    echo "[workspace] WORKSPACE_SCREENALYTICS_SKIP_DOCKER=1; skipping Docker preflight and compose infra startup."
+    echo "[workspace] screenalytics mode is cloud-backed; skipping local Docker preflight and compose startup."
   fi
 
   if [[ "$WORKSPACE_SCREENALYTICS" == "1" && "$HAVE_LSOF" -eq 1 ]]; then
@@ -576,8 +626,8 @@ if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
   fi
 
   if [[ "$WORKSPACE_SCREENALYTICS" == "1" && "$WORKSPACE_SCREENALYTICS_SKIP_DOCKER" != "1" ]]; then
-    # Start screenalytics infrastructure (Redis + MinIO) before services.
-    echo "[workspace] Starting Docker infrastructure (Redis + MinIO)..."
+    # Start local screenalytics infrastructure (Redis + MinIO) before services.
+    echo "[workspace] Starting local Docker infrastructure (Redis + MinIO)..."
     docker compose -f "${ROOT}/screenalytics/infra/docker/compose.yaml" up -d
   fi
 fi
@@ -590,10 +640,16 @@ BACKEND_HEALTH_FAILURES=0
 BACKEND_HEALTH_BUSY_TIMEOUT_STREAK_COUNT=0
 BACKEND_LAST_HEALTH_CHECK_AT=0
 TRR_BACKEND_PID=""
+TRR_APP_PID=""
 BACKEND_RESTART_COUNT=0
 BACKEND_LAST_RESTART_REASON=""
 BACKEND_LAST_RESTART_AT=""
 BACKEND_LAST_RESTART_PROBE_RC=""
+TRR_APP_DIR="${ROOT}/TRR-APP/apps/web"
+TRR_APP_NEXT_DIR="${TRR_APP_DIR}/.next"
+TRR_APP_NEXT_DEV_DIR="${TRR_APP_NEXT_DIR}/dev"
+TRR_APP_NEXT_DEV_LOG="${TRR_APP_NEXT_DEV_DIR}/logs/next-development.log"
+TRR_APP_CACHE_RECOVERY_ATTEMPTED=0
 
 kill_tree() {
   local pid="$1"
@@ -719,7 +775,41 @@ find_service_index() {
   return 1
 }
 
+workspace_modal_remote_active() {
+  [[ "$WORKSPACE_TRR_REMOTE_WORKERS_ENABLED" == "1" && "$WORKSPACE_TRR_REMOTE_EXECUTOR" == "modal" && "$WORKSPACE_TRR_MODAL_ENABLED" == "1" ]]
+}
+
+workspace_modal_social_lane_label() {
+  if workspace_modal_remote_active && [[ "$WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS" == "1" ]]; then
+    echo "enabled"
+    return 0
+  fi
+  echo "disabled"
+}
+
+workspace_modal_social_stage_caps() {
+  echo "posts=${WORKSPACE_TRR_REMOTE_SOCIAL_POSTS}, comments=${WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS}, media_mirror=${WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR}, comment_media_mirror=${WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR}"
+}
+
+workspace_modal_social_tuning_summary() {
+  echo "lane=$(workspace_modal_social_lane_label), dispatch_limit=${WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT}, max_concurrency=${WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT}, stage_caps=$(workspace_modal_social_stage_caps)"
+}
+
 start_trr_backend() {
+  local social_dispatch_limit="$WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT"
+  local social_job_concurrency_limit="$WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT"
+  local social_stage_posts="$WORKSPACE_SOCIAL_WORKER_POSTS"
+  local social_stage_comments="$WORKSPACE_SOCIAL_WORKER_COMMENTS"
+  local social_stage_media_mirror="$WORKSPACE_SOCIAL_WORKER_MEDIA_MIRROR"
+  local social_stage_comment_media_mirror="$WORKSPACE_SOCIAL_WORKER_COMMENT_MEDIA_MIRROR"
+
+  if [[ "$WORKSPACE_TRR_REMOTE_EXECUTOR" == "modal" && "$WORKSPACE_TRR_MODAL_ENABLED" == "1" ]]; then
+    social_stage_posts="$WORKSPACE_TRR_REMOTE_SOCIAL_POSTS"
+    social_stage_comments="$WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS"
+    social_stage_media_mirror="$WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR"
+    social_stage_comment_media_mirror="$WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR"
+  fi
+
   start_bg "TRR_BACKEND" "$TRR_BACKEND_LOG" "$BASH_BIN" -lc "cd \"$ROOT/TRR-Backend\" && \
     PYTHONUNBUFFERED=1 \
     TRR_BACKEND_PORT=\"$TRR_BACKEND_PORT\" \
@@ -738,7 +828,13 @@ start_trr_backend() {
     TRR_MODAL_SOCIAL_RECOVERY_FUNCTION=\"$WORKSPACE_TRR_MODAL_SOCIAL_RECOVERY_FUNCTION\" \
     TRR_MODAL_RUNTIME_SECRET_NAME=\"$WORKSPACE_TRR_MODAL_RUNTIME_SECRET_NAME\" \
     TRR_MODAL_SOCIAL_SECRET_NAME=\"$WORKSPACE_TRR_MODAL_SOCIAL_SECRET_NAME\" \
+    TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT=\"$social_job_concurrency_limit\" \
     SOCIAL_QUEUE_ENABLED=true \
+    SOCIAL_MODAL_DISPATCH_LIMIT=\"$social_dispatch_limit\" \
+    SOCIAL_WORKER_POOL_POSTS=\"$social_stage_posts\" \
+    SOCIAL_WORKER_POOL_COMMENTS=\"$social_stage_comments\" \
+    SOCIAL_WORKER_POOL_MEDIA_MIRROR=\"$social_stage_media_mirror\" \
+    SOCIAL_WORKER_POOL_COMMENT_MEDIA_MIRROR=\"$social_stage_comment_media_mirror\" \
     TRR_API_URL=\"$TRR_API_URL\" \
     SCREENALYTICS_API_URL=\"$SCREENALYTICS_API_URL\" \
     CORS_ALLOW_ORIGINS=\"http://127.0.0.1:${TRR_APP_PORT},http://localhost:${TRR_APP_PORT}\" \
@@ -749,6 +845,77 @@ start_trr_backend() {
   BACKEND_HEALTH_BUSY_TIMEOUT_STREAK_COUNT=0
   BACKEND_LAST_HEALTH_CHECK_AT=0
   write_pidfile_runtime_value "TRR_BACKEND_PID" "$TRR_BACKEND_PID"
+}
+
+trr_app_next_cache_has_recoverable_errors() {
+  if [[ ! -f "$TRR_APP_NEXT_DEV_LOG" ]]; then
+    return 1
+  fi
+
+  rg -q \
+    -e "Cannot find module './vendor-chunks/" \
+    -e "ENOENT: no such file or directory, open '.*/\\.next/dev/routes-manifest\\.json'" \
+    -e "ENOENT: no such file or directory, open '.*/\\.next/dev/server/app-paths-manifest\\.json'" \
+    "$TRR_APP_NEXT_DEV_LOG"
+}
+
+trr_app_next_cache_looks_corrupt() {
+  if [[ ! -d "$TRR_APP_NEXT_DEV_DIR" ]]; then
+    return 1
+  fi
+
+  if [[ ! -f "$TRR_APP_NEXT_DEV_DIR/routes-manifest.json" ]]; then
+    return 0
+  fi
+  if [[ ! -f "$TRR_APP_NEXT_DEV_DIR/server/app-paths-manifest.json" ]]; then
+    return 0
+  fi
+
+  trr_app_next_cache_has_recoverable_errors
+}
+
+clean_trr_app_next_cache() {
+  local reason="$1"
+  echo "[workspace] ${reason}; clearing ${TRR_APP_NEXT_DIR}."
+  rm -rf "$TRR_APP_NEXT_DIR"
+}
+
+prepare_trr_app_next_cache() {
+  if [[ "$WORKSPACE_CLEAN_NEXT_CACHE" == "1" ]]; then
+    clean_trr_app_next_cache "WORKSPACE_CLEAN_NEXT_CACHE=1"
+    return 0
+  fi
+
+  if trr_app_next_cache_looks_corrupt; then
+    clean_trr_app_next_cache "Detected stale Next.js dev cache"
+  fi
+}
+
+start_trr_app() {
+  prepare_trr_app_next_cache
+
+  # Keep TRR_APP attached to its parent shell process; with setsid wrappers,
+  # Next.js can re-parent and make PID tracking flaky.
+  start_bg_no_setsid "TRR_APP" "$TRR_APP_LOG" "$BASH_BIN" -c "cd \"$ROOT/TRR-APP\" && \
+    if [[ -s \"${HOME}/.nvm/nvm.sh\" ]]; then \
+      source \"${HOME}/.nvm/nvm.sh\"; \
+      nvm use --silent >/dev/null 2>&1 || echo \"[workspace] WARNING: nvm use failed; continuing with current node.\" >&2; \
+    fi && \
+    cd \"$TRR_APP_DIR\" && \
+    TRR_API_URL=\"$TRR_API_URL\" \
+    SCREENALYTICS_API_URL=\"$SCREENALYTICS_API_URL\" \
+    TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS=\"$TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS\" \
+    TRR_SOCIAL_PROXY_DEFAULT_TIMEOUT_MS=\"$TRR_SOCIAL_PROXY_DEFAULT_TIMEOUT_MS\" \
+    TRR_REDDIT_CACHE_LOOKUP_TIMEOUT_MS=\"$TRR_REDDIT_CACHE_LOOKUP_TIMEOUT_MS\" \
+    TRR_REDDIT_CACHE_LOOKUP_RETRIES=\"$TRR_REDDIT_CACHE_LOOKUP_RETRIES\" \
+    ADMIN_APP_ORIGIN=\"$ADMIN_APP_ORIGIN\" \
+    ADMIN_APP_HOSTS=\"$ADMIN_APP_HOSTS\" \
+    ADMIN_ENFORCE_HOST=\"$ADMIN_ENFORCE_HOST\" \
+    ADMIN_STRICT_HOST_ROUTING=\"$ADMIN_STRICT_HOST_ROUTING\" \
+    exec ./node_modules/.bin/next dev --webpack -p \"$TRR_APP_PORT\" --hostname \"$TRR_APP_HOST\""
+
+  TRR_APP_PID="$LAST_STARTED_PID"
+  write_pidfile_runtime_value "TRR_APP_PID" "$TRR_APP_PID"
 }
 
 start_trr_social_worker() {
@@ -785,7 +952,8 @@ start_trr_remote_workers() {
 
   if [[ "$WORKSPACE_TRR_REMOTE_EXECUTOR" == "modal" && "$WORKSPACE_TRR_MODAL_ENABLED" == "1" ]]; then
     echo "[workspace] Remote job execution is Modal-owned; skipping local claim-loop workers."
-    echo "[workspace] Modal dispatch covers admin=${WORKSPACE_TRR_REMOTE_ADMIN_WORKERS}, reddit=${WORKSPACE_TRR_REMOTE_REDDIT_WORKERS}, google-news=${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS}, social=${WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS}."
+    echo "[workspace] Modal dispatch covers admin=${WORKSPACE_TRR_REMOTE_ADMIN_WORKERS}, reddit=${WORKSPACE_TRR_REMOTE_REDDIT_WORKERS}, google-news=${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS}, social_lane=$(workspace_modal_social_lane_label)."
+    echo "[workspace] Modal social tuning: $(workspace_modal_social_tuning_summary)."
     return 0
   fi
 
@@ -887,6 +1055,7 @@ write_backend_watchdog_state
   echo "TRR_API_URL=\"${TRR_API_URL}\""
   echo "SCREENALYTICS_API_URL=\"${SCREENALYTICS_API_URL}\""
   echo "SCREENALYTICS_LOCAL_API_URL=\"${SCREENALYTICS_LOCAL_API_URL}\""
+  echo "WORKSPACE_DEV_MODE=${WORKSPACE_DEV_MODE}"
   echo "WORKSPACE_SCREENALYTICS=${WORKSPACE_SCREENALYTICS}"
   echo "WORKSPACE_SCREENALYTICS_SKIP_DOCKER=${WORKSPACE_SCREENALYTICS_SKIP_DOCKER}"
   echo "WORKSPACE_STRICT=${WORKSPACE_STRICT}"
@@ -929,6 +1098,8 @@ write_backend_watchdog_state
   echo "WORKSPACE_TRR_REMOTE_REDDIT_WORKERS=${WORKSPACE_TRR_REMOTE_REDDIT_WORKERS}"
   echo "WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS=${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS}"
   echo "WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS=${WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS}"
+  echo "WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT=${WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT}"
+  echo "WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT=${WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT}"
   echo "WORKSPACE_TRR_REMOTE_SOCIAL_POSTS=${WORKSPACE_TRR_REMOTE_SOCIAL_POSTS}"
   echo "WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS=${WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS}"
   echo "WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR=${WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR}"
@@ -955,6 +1126,7 @@ if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
   start_bg "SCREENALYTICS" "$SCREENALYTICS_LOG" "$BASH_BIN" -lc "cd \"$ROOT/screenalytics\" && \
     PYTHONUNBUFFERED=1 \
     SCREENALYTICS_ENV=dev \
+    TRR_API_URL=\"$TRR_API_URL\" \
     SCREENALYTICS_API_URL=\"$SCREENALYTICS_LOCAL_API_URL\" \
     API_BASE_URL=\"$SCREENALYTICS_LOCAL_API_URL\" \
     API_PORT=\"$SCREENALYTICS_API_PORT\" \
@@ -972,27 +1144,7 @@ fi
 start_trr_backend
 start_trr_social_worker
 start_trr_remote_workers
-
-# Keep TRR_APP attached to its parent shell process; with setsid wrappers,
-# Next.js can re-parent and make PID tracking flaky.
-start_bg_no_setsid "TRR_APP" "$TRR_APP_LOG" "$BASH_BIN" -c "cd \"$ROOT/TRR-APP\" && \
-  if [[ -s \"${HOME}/.nvm/nvm.sh\" ]]; then \
-    source \"${HOME}/.nvm/nvm.sh\"; \
-    nvm use --silent >/dev/null 2>&1 || echo \"[workspace] WARNING: nvm use failed; continuing with current node.\" >&2; \
-  fi && \
-  cd \"$ROOT/TRR-APP/apps/web\" && \
-  if [[ \"$WORKSPACE_CLEAN_NEXT_CACHE\" == \"1\" ]]; then rm -rf .next; fi && \
-  TRR_API_URL=\"$TRR_API_URL\" \
-  SCREENALYTICS_API_URL=\"$SCREENALYTICS_API_URL\" \
-  TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS=\"$TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS\" \
-  TRR_SOCIAL_PROXY_DEFAULT_TIMEOUT_MS=\"$TRR_SOCIAL_PROXY_DEFAULT_TIMEOUT_MS\" \
-  TRR_REDDIT_CACHE_LOOKUP_TIMEOUT_MS=\"$TRR_REDDIT_CACHE_LOOKUP_TIMEOUT_MS\" \
-  TRR_REDDIT_CACHE_LOOKUP_RETRIES=\"$TRR_REDDIT_CACHE_LOOKUP_RETRIES\" \
-  ADMIN_APP_ORIGIN=\"$ADMIN_APP_ORIGIN\" \
-  ADMIN_APP_HOSTS=\"$ADMIN_APP_HOSTS\" \
-  ADMIN_ENFORCE_HOST=\"$ADMIN_ENFORCE_HOST\" \
-  ADMIN_STRICT_HOST_ROUTING=\"$ADMIN_STRICT_HOST_ROUTING\" \
-  exec ./node_modules/.bin/next dev --webpack -p \"$TRR_APP_PORT\" --hostname \"$TRR_APP_HOST\""
+start_trr_app
 
 echo ""
 echo "[workspace] URLs:"
@@ -1005,6 +1157,7 @@ if [[ -n "$PROFILE" ]]; then
 fi
 echo "  TRR-Backend mode:      $([[ \"$TRR_BACKEND_RELOAD\" == \"1\" ]] && echo \"reload\" || echo \"non-reload\")"
 echo "  Job plane mode:        ${WORKSPACE_TRR_JOB_PLANE_MODE} (enforce_remote=${WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE}, executor=${WORKSPACE_TRR_REMOTE_EXECUTOR}, modal_enabled=${WORKSPACE_TRR_MODAL_ENABLED})"
+echo "  Workspace dev mode:    ${WORKSPACE_DEV_MODE}"
 if [[ "$WORKSPACE_OPEN_BROWSER" == "1" ]]; then
   echo "  Browser sync:          enabled (mode=${WORKSPACE_BROWSER_TAB_SYNC_MODE})"
 else
@@ -1024,7 +1177,8 @@ else
 fi
 if [[ "$WORKSPACE_TRR_REMOTE_WORKERS_ENABLED" == "1" ]]; then
   if [[ "$WORKSPACE_TRR_REMOTE_EXECUTOR" == "modal" && "$WORKSPACE_TRR_MODAL_ENABLED" == "1" ]]; then
-    echo "  Remote execution:      Modal dispatch active (admin=${WORKSPACE_TRR_REMOTE_ADMIN_WORKERS}, reddit=${WORKSPACE_TRR_REMOTE_REDDIT_WORKERS}, google-news=${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS}, social=${WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS}; local claim loops skipped)"
+    echo "  Remote execution:      Modal dispatch active (admin=${WORKSPACE_TRR_REMOTE_ADMIN_WORKERS}, reddit=${WORKSPACE_TRR_REMOTE_REDDIT_WORKERS}, google-news=${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS}; local claim loops skipped)"
+    echo "  Modal social tuning:  $(workspace_modal_social_tuning_summary)"
   else
     echo "  Remote job workers:    enabled (admin=${WORKSPACE_TRR_REMOTE_ADMIN_WORKERS}, reddit=${WORKSPACE_TRR_REMOTE_REDDIT_WORKERS}, google-news=${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS}, social=${WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS}, poll=${WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS}s)"
   fi
@@ -1032,6 +1186,7 @@ else
   echo "  Remote execution:      disabled"
 fi
 if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
+  echo "  screenalytics mode:    $(workspace_screenalytics_mode_label)"
   echo "  screenalytics API target: ${SCREENALYTICS_API_URL}"
   if [[ "$SCREENALYTICS_API_URL" != "$SCREENALYTICS_LOCAL_API_URL" ]]; then
     echo "  screenalytics API local:  ${SCREENALYTICS_LOCAL_API_URL}"
@@ -1039,7 +1194,9 @@ if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
   echo "  screenalytics Streamlit: http://127.0.0.1:${SCREENALYTICS_STREAMLIT_PORT}"
   echo "  screenalytics Web:     http://127.0.0.1:${SCREENALYTICS_WEB_PORT}"
   if [[ "$WORKSPACE_SCREENALYTICS_SKIP_DOCKER" == "1" ]]; then
-    echo "  screenalytics infra:   Docker bypass enabled (WORKSPACE_SCREENALYTICS_SKIP_DOCKER=1)"
+    echo "  screenalytics infra:   local Docker bypass enabled"
+  else
+    echo "  screenalytics infra:   local Redis + MinIO via Docker"
   fi
 else
   echo "  screenalytics:         (disabled)"
@@ -1081,9 +1238,39 @@ if ! wait_http_ok "TRR-Backend" "$BACKEND_HEALTH_URL" "$WORKSPACE_HEALTH_TIMEOUT
 fi
 
 if ! wait_http_ok "TRR-APP" "http://${TRR_APP_HOST}:${TRR_APP_PORT}/" "$WORKSPACE_HEALTH_TIMEOUT_APP"; then
+  if [[ "$TRR_APP_CACHE_RECOVERY_ATTEMPTED" != "1" ]] && trr_app_next_cache_looks_corrupt; then
+    echo "[workspace] WARNING: TRR-APP failed its first health check with a corrupted Next.js cache. Retrying once with a clean .next directory."
+    TRR_APP_CACHE_RECOVERY_ATTEMPTED=1
+
+    app_idx="$(find_service_index "TRR_APP" || true)"
+    app_pid="${TRR_APP_PID:-}"
+    if [[ -n "$app_idx" ]]; then
+      app_pid="${PIDS[$app_idx]-$app_pid}"
+    fi
+
+    stop_bg "TRR_APP" "$app_pid"
+    if [[ -n "$app_idx" ]]; then
+      unset "PIDS[$app_idx]"
+      unset "NAMES[$app_idx]"
+    fi
+
+    clean_trr_app_next_cache "TRR-APP health check detected cache corruption"
+    start_trr_app
+
+    if wait_http_ok "TRR-APP" "http://${TRR_APP_HOST}:${TRR_APP_PORT}/" "$WORKSPACE_HEALTH_TIMEOUT_APP"; then
+      :
+    else
+      echo "[workspace] ERROR: TRR-APP remained unhealthy after automatic Next.js cache recovery." >&2
+      tail -n 120 "$TRR_APP_LOG" >&2 || true
+      tail -n 120 "$TRR_APP_NEXT_DEV_LOG" >&2 || true
+      exit 1
+    fi
+  else
   echo "[workspace] ERROR: TRR-APP did not become reachable within ${WORKSPACE_HEALTH_TIMEOUT_APP}s." >&2
   tail -n 120 "$TRR_APP_LOG" >&2 || true
+  tail -n 120 "$TRR_APP_NEXT_DEV_LOG" >&2 || true
   exit 1
+  fi
 fi
 
 if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then

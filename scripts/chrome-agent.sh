@@ -12,6 +12,7 @@ PIDFILE="${LOG_DIR}/chrome-agent-${DEBUG_PORT}.pid"
 LOGFILE="${LOG_DIR}/chrome-agent-${DEBUG_PORT}.log"
 STATEFILE="${LOG_DIR}/chrome-agent-${DEBUG_PORT}.env"
 LEGACY_PIDFILE="${LOG_DIR}/chrome-agent.pid"
+LOCKFILE="${LOG_DIR}/chrome-agent-${DEBUG_PORT}.lock"
 
 mkdir -p "$LOG_DIR"
 
@@ -38,6 +39,22 @@ CHROME_BIN="$(find_chrome || true)"
 if [[ -z "$CHROME_BIN" ]]; then
   echo "[chrome-agent] ERROR: Could not find Google Chrome. Install it or set PATH."
   exit 1
+fi
+
+LOCK_FD_OPEN=0
+release_lock() {
+  if [[ "$LOCK_FD_OPEN" == "1" ]]; then
+    flock -u 9 2>/dev/null || true
+    exec 9>&- 2>/dev/null || true
+    LOCK_FD_OPEN=0
+  fi
+}
+
+if command -v flock >/dev/null 2>&1; then
+  exec 9>"$LOCKFILE"
+  flock -x 9
+  LOCK_FD_OPEN=1
+  trap 'release_lock' EXIT
 fi
 
 launch_chrome() {

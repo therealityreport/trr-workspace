@@ -16,29 +16,31 @@ Workspace runtime baseline:
 Run from `/Users/thomashulihan/Projects/TRR`:
 - `make bootstrap` (one-time dependency setup)
 - `make preflight` (required pre-check before `make dev*`; doctor + env contract + policy drift checks)
-- `make dev` (daily default: canonical remote-first startup for TRR-APP + TRR-Backend with Modal-backed background execution)
+- `make preflight-local` (pre-check for `make dev-local`; includes Docker requirements for local Redis/MinIO)
+- `make dev` (daily default: starts TRR-APP + TRR-Backend locally, enables screenalytics, and uses the cloud-backed no-Docker path)
 - `make dev-lite` (deprecated compatibility alias for `make dev`)
-- `make dev-cloud` (screenalytics enabled, Docker bypass mode)
-- `make dev-full` (screenalytics enabled with local Docker Redis/MinIO)
+- `make dev-cloud` (deprecated compatibility alias for `make dev`)
+- `make dev-local` (screenalytics enabled with local Docker Redis/MinIO)
+- `make dev-full` (deprecated compatibility alias for `make dev-local`)
 - `make status` (workspace snapshot: modes, PIDs, ports, health)
 - `bash scripts/status-workspace.sh --json` (JSON status output)
 - `make smoke` (startup sanity checks: pids, ports, health)
 - `make check-policy` (AGENTS/CLAUDE drift rules)
 - `make env-contract` (regenerate workspace env matrix doc)
 - `make stop` (stop only services started by `make dev`)
-- `make down` (tear down screenalytics docker compose infra; safe no-op if Docker is unavailable/stopped)
+- `make down` (tear down the local Docker infra used by `make dev-local`; safe no-op if Docker is unavailable/stopped)
 - `make stop && make down` (full cleanup)
 - `make logs` (tail workspace logs)
 - `make logs-prune` (archive retention pruning by age/size)
 - `make test-fast`, `make test-full`, `make test-changed`
-- `make mcp-aws-status` (show AWS MCP profile state)
-- `make mcp-aws-on` (enable AWS MCP profile for AWS tasks)
-- `make mcp-aws-off` (disable AWS MCP profile after AWS tasks)
+- `make help` (short command reference for the recommended workspace entrypoints)
+- `make mcp-clean` (kill stale/disabled MCP process trees and stale Chrome runtime artifacts)
 
 Startup tuning:
 - `PROFILE=default make dev` (load defaults from `profiles/default.env`; explicit env vars still override)
-- `PROFILE=local-cloud make dev`
-- `PROFILE=local-full make dev`
+- `PROFILE=local-cloud make dev` (deprecated compatibility profile; same mode as the default cloud path)
+- `PROFILE=local-docker make dev-local`
+- `PROFILE=local-full make dev-local` (deprecated compatibility profile; same mode as `local-docker`)
 - `WORKSPACE_CLEAN_NEXT_CACHE=1 make dev` (force clean Next.js rebuild; default is cache reuse)
 - `WORKSPACE_OPEN_BROWSER=0 make dev` (disable browser tab refresh/open)
 - `WORKSPACE_BACKEND_AUTO_RESTART=0 make dev` (disable backend watchdog auto-restart)
@@ -64,10 +66,11 @@ Default URLs:
 ## Browser Access (Mandatory)
 `chrome-devtools` via managed Chrome is enabled and required for all chats in this workspace.
 - Use managed Chrome through `scripts/codex-chrome-devtools-mcp.sh`.
-- Default Codex chat mode is `isolated + headful` — each session gets its own Chrome instance on a unique port (9333–9399), seeded from `~/.chrome-profiles/claude-agent`. No manual `make chrome-agent*` bootstrap is part of the normal workflow.
-- Isolated mode prevents concurrent-session CDP target contention. Do not revert to `shared` unless you have a single active session and need the shared browser state.
-- Use `isolated + headless` when you need a clean per-session browser without a visible window; set `CODEX_CHROME_ISOLATED_HEADLESS=1` before starting/restarting the Codex session.
-- Use `shared + headful` only for single-session workflows where you need to share login state with a manually-managed Chrome; set `CODEX_CHROME_MODE=shared` before starting/restarting the Codex session.
+- Default Codex chat mode is `shared + headful`, using the managed shared Chrome profile on `9222`.
+- Use `isolated + headless` only when you explicitly need a clean per-session browser state; set `CODEX_CHROME_MODE=isolated` before starting/restarting the Codex session.
+- Use `isolated + headful` only when you need visual confirmation without shared session state; set `CODEX_CHROME_MODE=isolated` and `CODEX_CHROME_ISOLATED_HEADLESS=0` before starting/restarting the Codex session.
+- Use `shared + headful` for the normal workflow; if shared Chrome is not already available on `9222`, start it explicitly with `CHROME_AGENT_DEBUG_PORT=9222 CHROME_AGENT_PROFILE_DIR=$HOME/.chrome-profiles/claude-agent bash scripts/chrome-agent.sh`.
+- If Chrome opens randomly while Codex is idle, run `make chrome-devtools-mcp-status` first and check for competing non-Codex browser-control clients before restarting anything.
 - Use `CODEX_CHROME_SKIP_BROWSER_BOOT=1` only for wrapper smoke checks and diagnostics that must not spawn Chrome.
 - Restart the Codex session/thread after changing MCP command/config or managed-Chrome mode inputs.
 - Do not use ad-hoc browsers for chat-driven browsing or UI inspection.
@@ -104,12 +107,43 @@ Shared secrets:
 ## Validation and Handoff (Required)
 After changes:
 1. Run fast checks in each touched repo.
-2. Update `docs/ai/HANDOFF.md` in each touched repo.
-3. If cross-repo task folder exists, keep these aligned when present:
+2. Before any formal `<proposed_plan>` or documented multi-phase implementation plan, run `scripts/handoff-lifecycle.sh pre-plan`. This is not required for ad-hoc Q&A or one-off comments with no formal plan artifact.
+3. If a cross-repo task folder exists, update `STATUS.md` immediately after each completed implementation phase or materially completed plan step.
+4. After each completed implementation phase when current state, blockers, or next action changed, update the canonical status source and then run `scripts/handoff-lifecycle.sh post-phase`.
+5. Before ending the session or declaring PR-ready state, run `scripts/handoff-lifecycle.sh closeout`.
+6. If `ACCEPTANCE_REPORT.md` exists, keep detailed validation evidence there instead of duplicating it into handoff.
+7. If cross-repo task folder exists, keep these aligned when present:
 - `PLAN.md`
 - `OTHER_PROJECTS.md`
 - `STATUS.md`
-4. Use `scripts/new-cross-collab-task.sh` to scaffold new task docs consistently.
+8. Use `scripts/new-cross-collab-task.sh` to scaffold new task docs consistently.
+
+`docs/ai/HANDOFF.md` is generated by `scripts/sync-handoffs.py`. Do not edit it by hand. Update canonical sources instead:
+- `docs/cross-collab/TASK*/STATUS.md`
+- `docs/ai/local-status/*.md`
+
+Canonical sources that should surface in handoff must include a machine-parseable `## Handoff Snapshot` section:
+
+````md
+## Handoff Snapshot
+```yaml
+handoff:
+  include: true
+  state: active | blocked | recent | archived
+  last_updated: YYYY-MM-DD
+  current_phase: "<short phrase>"
+  next_action: "<short phrase>"
+  detail: self | "<relative/path.md>"
+```
+````
+
+Generated `docs/ai/HANDOFF.md` output must stay short and use these sections:
+- `Current Active Work`
+- `Blocked / Waiting`
+- `Recent Completions`
+- `Archives / Canonical Links`
+
+Detailed chronology belongs in `STATUS.md`. Detailed validation evidence belongs in `ACCEPTANCE_REPORT.md` when that file exists.
 
 ## Skill Routing
 Use the canonical local TRR skills first for TRR-coupled work.
@@ -136,7 +170,6 @@ Primary mappings:
 - `senior-devops`: CI/deploy operations
 - `senior-architect`: architecture/ADR decisions
 - `tdd-guide`: test-first delivery
-- `aws-solution-architect`: AWS-only architecture/cost/IaC tasks
 - `figma-frontend-design-engineer`: Figma URL/node-driven frontend work
 
 Ownership mapping:
@@ -165,17 +198,6 @@ Before producing any plan:
 4. Invoke and follow the selected skills during plan creation and implementation routing.
 5. If no repo-local skill fits, fall back to workspace-local, then globally canonical.
 
-### AWS Deploy Rule
-For deployable AWS/cloud-infra/backend implementation work:
-1. Trigger this rule only when the implementation changes running AWS-backed services, workers, infra config, or backend behavior that requires AWS rollout.
-2. Do not trigger this rule for docs-only, tests-only, local-only, or non-deployed changes.
-3. The selected implementation skills must include:
-   - `senior-devops`
-   - `aws-solution-architect`
-4. Required checks must pass before deploy.
-5. Implementation is not complete until the AWS deployment is executed successfully to the primary production target when rollout is required.
-6. Handoff must record deploy evidence and post-deploy verification.
-
 ## MCP Invocation Matrix
 Use these MCPs and invoke them as follows:
 
@@ -186,19 +208,6 @@ Use these MCPs and invoke them as follows:
 | `figma-desktop` | Local desktop Figma workflows only when desktop bridge is enabled. |
 | `github` | Remote repo metadata, PR/issue lookup, and GitHub-hosted MCP actions. |
 | `supabase` | Supabase DB/schema operations, migrations, functions, storage, and logs. |
-| `awslabs-core` | First step for AWS prompt understanding and intent decomposition. |
-| `awslabs-aws-api` | Concrete AWS CLI execution through validated API wrapper. |
-| `awslabs-aws-docs` | AWS documentation search/read when behavior is uncertain or source confirmation is needed. |
-| `awslabs-pricing` | AWS pricing lookups and cost analysis flows. |
-| `awslabs-cloudwatch` | CloudWatch alarms/logs/metrics analysis and incident diagnostics. |
-| `awsknowledge` | AWS architecture tie-breakers and service-selection guidance. |
-| `awsiac` | IaC best-practice validation and generation hardening checks. |
-
-### AWS MCP Profile Workflow
-- For AWS tasks, proactively invoke AWS MCPs in this order: `awslabs-core` -> service MCPs (`awslabs-aws-api`, `awslabs-aws-docs`, `awslabs-cloudwatch`, `awslabs-pricing`, `awsknowledge`, `awsiac`) as needed by the task.
-- Before starting AWS-heavy sessions, run `make mcp-aws-on` and restart the Codex session.
-- After AWS work is complete, run `make mcp-aws-off` and restart the Codex session.
-- If an AWS MCP required by the task is disabled/unavailable, pause and request MCP profile enablement instead of guessing.
 
 ## External Plugin Ecosystems
 Treat `~/.claude/plugins` as external plugin metadata and cache inventory only.
@@ -208,6 +217,7 @@ Treat local legacy browser artifacts in this workspace as non-policy metadata on
 ## Drift Prevention
 - Canonical policy lives in `AGENTS.md` only.
 - `CLAUDE.md` must remain a short pointer shim.
+- `CLAUDE.md` may only point to `AGENTS.md` and remind readers that `AGENTS.md` owns handoff cadence, including continuous updates after each implemented plan or phase.
 - Detailed module guidance belongs in normal docs, not in `CLAUDE.md`.
 - `scripts/check-policy.sh` must enforce the pointer-only rule for nested `CLAUDE.md` files too.
 - If conflict exists between files, `AGENTS.md` wins.

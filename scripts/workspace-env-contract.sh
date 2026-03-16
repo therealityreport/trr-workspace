@@ -39,6 +39,12 @@ visibility_tier() {
 accepted_values() {
   local key="$1"
   case "$key" in
+    WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS)
+      echo '`0` or `1`'
+      ;;
+    WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT|WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT|WORKSPACE_TRR_REMOTE_SOCIAL_POSTS|WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS|WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR|WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR)
+      echo "integer"
+      ;;
     *MODE)
       if [[ "$key" == "WORKSPACE_TRR_JOB_PLANE_MODE" ]]; then
         echo '`local` or `remote`'
@@ -92,7 +98,25 @@ description_for() {
       echo "Enable remote background execution. When executor is Modal, local claim loops are skipped and Modal-owned dispatch remains active."
       ;;
     WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS)
-      echo "Include social ingest/background lanes in the remote execution contract."
+      echo "Enable or disable the Modal social lane in the remote execution contract; this is not a worker-count knob."
+      ;;
+    WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT)
+      echo "Maximum number of queued social jobs the backend will dispatch per Modal sweep."
+      ;;
+    WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT)
+      echo 'Maximum concurrent Modal containers allowed for `run_social_job`.'
+      ;;
+    WORKSPACE_TRR_REMOTE_SOCIAL_POSTS)
+      echo "Posts-stage cap used by Modal social dispatch and by legacy local social worker mode."
+      ;;
+    WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS)
+      echo "Comments-stage cap used by Modal social dispatch and by legacy local social worker mode."
+      ;;
+    WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR)
+      echo "Post media mirror stage cap used by Modal social dispatch and by legacy local social worker mode."
+      ;;
+    WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR)
+      echo "Comment media mirror stage cap used by Modal social dispatch and by legacy local social worker mode."
       ;;
     TRR_BACKEND_RELOAD)
       echo "Enable backend reload mode (1) instead of non-reload server mode (0)."

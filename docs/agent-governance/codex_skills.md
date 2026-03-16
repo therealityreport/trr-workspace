@@ -17,14 +17,6 @@ Before producing any plan in this workspace:
    - alias or specialist only when no canonical owner fits cleanly
 5. Follow the selected skills during plan creation and implementation routing.
 
-## Deployment Workflow
-
-For deployable AWS/cloud-infra/backend implementation work:
-1. Pair `senior-devops` with `aws-solution-architect`.
-2. Run required checks before deploy.
-3. Treat implementation as incomplete until the AWS deployment succeeds to the primary production target when rollout is required.
-4. Record deploy evidence and post-deploy verification in handoff.
-
 ## Canonical Workspace-Local Skills
 
 | name | canonical_path | scope | status | shim_path | derived_from | notes |
@@ -59,20 +51,9 @@ For deployable AWS/cloud-infra/backend implementation work:
 | `write-plan-codex` | `/Users/thomashulihan/.codex/skills/write-plan-codex/SKILL.md` | global | canonical | `` | existing global skill | Planning-only owner. Explicitly defers file mutation to `orchestrate-plan-execution`. |
 | `tdd-guide` | `/Users/thomashulihan/.codex/skills/tdd-guide/SKILL.md` | global | canonical | `` | existing global skill | Test-first implementation flow remains global. |
 | `tech-stack-evaluator` | `/Users/thomashulihan/.codex/skills/tech-stack-evaluator/SKILL.md` | global | canonical | `` | existing global skill | Stack/tool comparison remains global. |
-| `aws-solution-architect` | `/Users/thomashulihan/.codex/skills/aws-solution-architect/SKILL.md` | global | canonical | `` | existing global skill | AWS service/IaC/cost architecture owner. |
 | `chatgpt-apps` | `/Users/thomashulihan/.codex/skills/chatgpt-apps/SKILL.md` | global | canonical | `` | existing global skill | ChatGPT Apps SDK specialist remains global. |
 | `figma` | `/Users/thomashulihan/.codex/skills/figma/SKILL.md` | global | canonical | `` | existing global skill | Figma MCP/context/tool workflow owner. |
 | `git-feature-implementer` | `/Users/thomashulihan/.codex/skills/git-feature-implementer/SKILL.md` | global | canonical | `/Users/thomashulihan/.codex/skills/git-feature-installer/SKILL.md` | existing global skill | Canonical GitHub-repo feature implementation owner. |
-| `api-gateway` | `/Users/thomashulihan/.codex/skills/api-gateway/SKILL.md` | global | canonical | `` | existing global skill | AWS service specialist retained. |
-| `cloudwatch` | `/Users/thomashulihan/.codex/skills/cloudwatch/SKILL.md` | global | canonical | `` | existing global skill | AWS service specialist retained. |
-| `ec2` | `/Users/thomashulihan/.codex/skills/ec2/SKILL.md` | global | canonical | `` | existing global skill | AWS service specialist retained. |
-| `eventbridge` | `/Users/thomashulihan/.codex/skills/eventbridge/SKILL.md` | global | canonical | `` | existing global skill | AWS service specialist retained. |
-| `iam` | `/Users/thomashulihan/.codex/skills/iam/SKILL.md` | global | canonical | `` | existing global skill | AWS service specialist retained. |
-| `lambda` | `/Users/thomashulihan/.codex/skills/lambda/SKILL.md` | global | canonical | `` | existing global skill | AWS service specialist retained. |
-| `s3` | `/Users/thomashulihan/.codex/skills/s3/SKILL.md` | global | canonical | `` | existing global skill | AWS service specialist retained. |
-| `secrets-manager` | `/Users/thomashulihan/.codex/skills/secrets-manager/SKILL.md` | global | canonical | `` | existing global skill | AWS service specialist retained. |
-| `sqs` | `/Users/thomashulihan/.codex/skills/sqs/SKILL.md` | global | canonical | `` | existing global skill | AWS service specialist retained. |
-| `step-functions` | `/Users/thomashulihan/.codex/skills/step-functions/SKILL.md` | global | canonical | `` | existing global skill | AWS service specialist retained. |
 | `.system/skill-creator` | `/Users/thomashulihan/.codex/skills/.system/skill-creator/SKILL.md` | global | canonical | `` | existing system skill | Generic non-TRR skill-authoring owner. |
 | `.system/skill-installer` | `/Users/thomashulihan/.codex/skills/.system/skill-installer/SKILL.md` | global | canonical | `` | existing system skill | Generic skill installation owner. |
 
@@ -82,7 +63,6 @@ For deployable AWS/cloud-infra/backend implementation work:
 |---|---|---|---|---|---|---|
 | `git-feature-installer` | `/Users/thomashulihan/.codex/skills/git-feature-implementer/SKILL.md` | global | alias | `/Users/thomashulihan/.codex/skills/git-feature-installer/SKILL.md` | existing alias | Legacy naming compatibility only. |
 | `figma-implement-design` | `/Users/thomashulihan/.codex/skills/figma/SKILL.md` + `/Users/thomashulihan/Projects/TRR/TRR-APP/skills/figma-frontend-design-engineer/SKILL.md` | hybrid | alias | `/Users/thomashulihan/.codex/skills/figma-implement-design/SKILL.md` | existing global skill | Legacy Figma implementation prompt routes to global MCP workflow plus repo-local design owner. |
-| `deploy` | `/Users/thomashulihan/.codex/skills/aws-solution-architect/SKILL.md` + `/Users/thomashulihan/Projects/TRR/skills/senior-devops/SKILL.md` | hybrid | alias | `/Users/thomashulihan/.codex/skills/deploy/SKILL.md` | existing global skill | Legacy deployment prompt routes to AWS architecture plus TRR release hardening. |
 
 ## Overlap Specialists Demoted From TRR Ownership
 
@@ -90,7 +70,7 @@ For deployable AWS/cloud-infra/backend implementation work:
 |---|---|---|---|---|---|---|
 | vendored `code-reviewer` | `/Users/thomashulihan/.codex/skills/fullstack-dev-skills/fullstack-dev-skills/0.4.9/skills/code-reviewer/SKILL.md` | global | specialist | `` | vendor | No longer canonical for TRR; supporting reference only. |
 | `architecture-designer` | `/Users/thomashulihan/.codex/skills/fullstack-dev-skills/fullstack-dev-skills/0.4.9/skills/architecture-designer/SKILL.md` | global | specialist | `` | vendor | Strengths absorbed into workspace-local `senior-architect`. |
-| `cloud-architect` | `/Users/thomashulihan/.codex/skills/fullstack-dev-skills/fullstack-dev-skills/0.4.9/skills/cloud-architect/SKILL.md` | global | specialist | `` | vendor | Strengths absorbed into `aws-solution-architect` and workspace-local `senior-devops`. |
+| `cloud-architect` | `/Users/thomashulihan/.codex/skills/fullstack-dev-skills/fullstack-dev-skills/0.4.9/skills/cloud-architect/SKILL.md` | global | specialist | `` | vendor | Strengths absorbed into workspace-local `senior-devops`. |
 | `devops-engineer` | `/Users/thomashulihan/.codex/skills/fullstack-dev-skills/fullstack-dev-skills/0.4.9/skills/devops-engineer/SKILL.md` | global | specialist | `` | vendor | Strengths absorbed into workspace-local `senior-devops`. |
 | `fullstack-guardian` | `/Users/thomashulihan/.codex/skills/fullstack-dev-skills/fullstack-dev-skills/0.4.9/skills/fullstack-guardian/SKILL.md` | global | specialist | `` | vendor | Strengths absorbed into workspace-local `senior-fullstack`. |
 | `monitoring-expert` | `/Users/thomashulihan/.codex/skills/fullstack-dev-skills/fullstack-dev-skills/0.4.9/skills/monitoring-expert/SKILL.md` | global | specialist | `` | vendor | Strengths absorbed into `senior-devops`, `senior-qa`, and `social-ingestion-reliability`. |
