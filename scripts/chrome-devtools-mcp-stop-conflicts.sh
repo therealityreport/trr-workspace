@@ -45,6 +45,8 @@ list_conflicts() {
     BEGIN { IGNORECASE = 1 }
     $1 == self || $1 == parent { next }
     /chrome-devtools-mcp-stop-conflicts\.sh|chrome-devtools-mcp-status\.sh/ { next }
+    # Playwright with --isolated uses its own Chromium, not the shared port
+    /@playwright\/mcp.*--isolated|playwright-mcp.*--isolated/ { next }
     /chrome-control\/server\/index\.js/ { print "external_claude_control\t" $0; next }
     /chrome-native-host/ { print "external_native_host\t" $0; next }
     /@playwright\/mcp|playwright-mcp/ { print "external_playwright\t" $0; next }
