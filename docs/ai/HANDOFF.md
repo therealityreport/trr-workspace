@@ -11,10 +11,11 @@ Purpose: active-work index for multi-turn AI agent sessions affecting workspace-
 - None.
 
 ## Recent Completions
+- `Shared account catalog backfill and profile UI` | last updated `2026-03-17` | current phase `complete` | next action `Use the clean Supabase preview branch for schema-doc validation until staging drift is reconciled` | details `local-status/shared-account-catalog-backfill-and-profile-ui.md`
+- `Bravo social account linking and handle tabs` | last updated `2026-03-17` | current phase `complete` | next action `Monitor the Bravo social admin pages and only backfill persisted season target rows if downstream tooling needs the stored accounts to match the read-time enforced defaults` | details `local-status/bravo-social-account-linking-and-handle-tabs.md`
 - `Workspace startup hardening` | last updated `2026-03-16` | current phase `complete` | next action `Monitor only; make dev now prunes broken Next cache automatically and policy preflight no longer deep-scans dependency trees` | details `local-status/workspace-startup-hardening.md`
 - `Workspace Modal social throughput controls` | last updated `2026-03-16` | current phase `complete` | next action `Use the new workspace Modal social knobs when tuning backlog fanout and verify queue behavior under load` | details `local-status/workspace-modal-social-throughput-controls.md`
 - `TRR-APP social-week and typography runtime hardening` | last updated `2026-03-16` | current phase `complete` | next action `Monitor only unless a fresh-session managed Chrome pass reproduces the old dev crash or repeated typography fallback warnings` | details `local-status/trr-app-social-week-and-typography-runtime-hardening.md`
-- `Handoff automation v2 rollout` | last updated `2026-03-16` | current phase `complete` | next action `Use lifecycle commands plus generated handoffs; edit canonical snapshot sources instead of hand-editing HANDOFF.md` | details `local-status/handoff-automation-v2-rollout.md`
 
 ## Archives / Canonical Links
 - History archive: `archive/HANDOFF-legacy-2026-03-16.md`

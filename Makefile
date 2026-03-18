@@ -17,6 +17,7 @@
 # PROFILE=local-full make dev-local   # deprecated compatibility profile
 # Startup tuning:
 # WORKSPACE_CLEAN_NEXT_CACHE=1 make dev  # force clean Next.js cache
+# WORKSPACE_TRR_APP_DEV_BUNDLER=webpack make dev  # force the webpack fallback if Turbopack regresses
 # WORKSPACE_OPEN_BROWSER=1 make dev      # opt in to browser tab reuse/open on startup
 # WORKSPACE_BACKEND_AUTO_RESTART=1 make dev  # opt in to backend watchdog auto-restart
 # WORKSPACE_BROWSER_TAB_SYNC_MODE=reuse_no_reload make dev  # browser sync strategy when enabled

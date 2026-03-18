@@ -16,7 +16,7 @@ enabled = false
 
 [mcp_servers.chrome-devtools]
 command = "__TRR_ROOT__/scripts/codex-chrome-devtools-mcp.sh"
-env = { CODEX_CHROME_MODE = "shared" }
+env = { CODEX_CHROME_MODE = "isolated", CODEX_CHROME_ISOLATED_HEADLESS = "1" }
 enabled = true
 startup_timeout_sec = 45
 tool_timeout_sec = 120

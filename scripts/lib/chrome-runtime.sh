@@ -5,6 +5,59 @@ chrome_endpoint_reachable() {
   curl -sf "http://127.0.0.1:${port}/json/version" >/dev/null 2>&1
 }
 
+chrome_page_targets_tsv() {
+  local port="$1"
+  local payload
+
+  payload="$(curl -sf "http://127.0.0.1:${port}/json/list" 2>/dev/null || true)"
+  if [[ -z "$payload" ]]; then
+    return 1
+  fi
+
+  python3 - <<'PY' "$payload"
+import json
+import sys
+
+payload = sys.argv[1]
+try:
+    targets = json.loads(payload)
+except json.JSONDecodeError:
+    raise SystemExit(1)
+
+for target in targets:
+    if str(target.get("type") or "") != "page":
+        continue
+    print(
+        "\t".join(
+            [
+                str(target.get("id") or "").strip(),
+                str(target.get("url") or "").strip(),
+                str(target.get("title") or "").replace("\t", " ").strip(),
+            ]
+        )
+    )
+PY
+}
+
+chrome_page_count() {
+  local port="$1"
+  local output
+
+  output="$(chrome_page_targets_tsv "$port" 2>/dev/null || true)"
+  if [[ -z "$output" ]]; then
+    echo "0"
+    return 0
+  fi
+
+  printf '%s\n' "$output" | sed '/^$/d' | wc -l | tr -d ' '
+}
+
+chrome_close_target() {
+  local port="$1"
+  local target_id="$2"
+  curl -sf "http://127.0.0.1:${port}/json/close/${target_id}" >/dev/null 2>&1
+}
+
 chrome_listener_pid() {
   local port="$1"
   if command -v lsof >/dev/null 2>&1; then

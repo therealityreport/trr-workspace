@@ -6,6 +6,26 @@ CODEX_HOME_DIR="${CODEX_HOME:-$HOME/.codex}"
 CONFIG_FILE="${CODEX_CONFIG_FILE:-${CODEX_HOME_DIR}/config.toml}"
 TEMPLATE_PATH="${ROOT}/config/codex/shared.toml.tmpl"
 
+pick_tomllib_python() {
+  local candidate
+  for candidate in "${PYTHON_BIN:-}" python3.12 python3.11 python3; do
+    [[ -n "$candidate" ]] || continue
+    if ! command -v "$candidate" >/dev/null 2>&1; then
+      continue
+    fi
+    if "$candidate" - <<'PY' >/dev/null 2>&1
+import tomllib
+PY
+    then
+      printf '%s\n' "$candidate"
+      return 0
+    fi
+  done
+
+  echo "[codex-config-sync] ERROR: unable to find a Python interpreter with tomllib support (need Python 3.11+)." >&2
+  exit 1
+}
+
 usage() {
   cat <<'USAGE'
 Usage:
@@ -37,8 +57,11 @@ render_template_to() {
 
 validate_config() {
   local expected_wrapper="${ROOT}/scripts/codex-chrome-devtools-mcp.sh"
+  local tomllib_python
 
-  python3 - "$CONFIG_FILE" "$expected_wrapper" <<'PY'
+  tomllib_python="$(pick_tomllib_python)"
+
+  "$tomllib_python" - "$CONFIG_FILE" "$expected_wrapper" <<'PY'
 import pathlib
 import sys
 import tomllib
@@ -60,7 +83,7 @@ required_servers = {
         "enabled": True,
         "startup_timeout_sec": 45,
         "tool_timeout_sec": 120,
-        "env": {"CODEX_CHROME_MODE": "shared"},
+        "env": {"CODEX_CHROME_MODE": "isolated", "CODEX_CHROME_ISOLATED_HEADLESS": "1"},
     },
     "playwright": {"command": "npx", "enabled": False},
     "github": {"url": "https://api.githubcopilot.com/mcp", "bearer_token_env_var": "GITHUB_PAT"},

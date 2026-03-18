@@ -61,6 +61,9 @@ done < <(
 POLICY_SCAN_FILES=(
   "${AGENTS_FILES[@]}"
   "${CLAUDE_FILES[@]}"
+  "$ROOT/docs/workspace/dev-commands.md"
+  "$ROOT/docs/workspace/chrome-devtools.md"
+  "$ROOT/docs/ai/HANDOFF_WORKFLOW.md"
   "$ROOT/docs/agent-governance/codex_skills.md"
   "$ROOT/docs/agent-governance/claude_skill_overlap.md"
   "$ROOT/docs/agent-governance/mcp_inventory.md"
@@ -80,11 +83,44 @@ if preflight_diag_is_enabled; then
   trap 'check_policy_on_signal HUP' HUP
 fi
 
-for file in "${AGENTS_FILES[@]}"; do
+check_root_agents() {
+  local file="$ROOT/AGENTS.md"
+  local word_count
+
   if [[ ! -f "$file" ]]; then
     echo "[check-policy] ERROR: missing file $file" >&2
     failures=$((failures + 1))
-    continue
+    return
+  fi
+
+  if ! rg -q '^## Cross-Repo Implementation Order' "$file"; then
+    echo "[check-policy] ERROR: missing cross-repo order section in $file" >&2
+    failures=$((failures + 1))
+  fi
+
+  if ! rg -q '^## Shared Contracts' "$file"; then
+    echo "[check-policy] ERROR: missing shared contracts section in $file" >&2
+    failures=$((failures + 1))
+  fi
+
+  if ! rg -q 'docs/workspace/dev-commands\.md' "$file"; then
+    echo "[check-policy] ERROR: missing dev-commands reference in $file" >&2
+    failures=$((failures + 1))
+  fi
+
+  if ! rg -q 'docs/workspace/chrome-devtools\.md' "$file"; then
+    echo "[check-policy] ERROR: missing chrome-devtools reference in $file" >&2
+    failures=$((failures + 1))
+  fi
+
+  if ! rg -q 'docs/ai/HANDOFF_WORKFLOW\.md' "$file"; then
+    echo "[check-policy] ERROR: missing handoff workflow reference in $file" >&2
+    failures=$((failures + 1))
+  fi
+
+  if ! rg -q 'docs/agent-governance/codex_skills\.md' "$file"; then
+    echo "[check-policy] ERROR: missing skill-routing reference in $file" >&2
+    failures=$((failures + 1))
   fi
 
   if ! rg -q '^## MCP Invocation Matrix' "$file"; then
@@ -92,81 +128,61 @@ for file in "${AGENTS_FILES[@]}"; do
     failures=$((failures + 1))
   fi
 
-  if ! rg -q '^### Before Each Plan' "$file"; then
-    echo "[check-policy] ERROR: missing planning-skill subsection in $file" >&2
+  for server in chrome-devtools github supabase figma; do
+    if ! rg -q "\`$server\`" "$file"; then
+      echo "[check-policy] ERROR: missing MCP server $server in $file" >&2
+      failures=$((failures + 1))
+    fi
+  done
+
+  word_count="$(wc -w < "$file" | tr -d ' ')"
+  if [[ "$word_count" -gt 600 ]]; then
+    echo "[check-policy] ERROR: $file exceeds 600 words ($word_count)." >&2
+    failures=$((failures + 1))
+  fi
+}
+
+check_repo_agents() {
+  local file="$1"
+  local word_count
+
+  if [[ ! -f "$file" ]]; then
+    echo "[check-policy] ERROR: missing file $file" >&2
+    failures=$((failures + 1))
+    return
+  fi
+
+  if ! rg -q '^## Scope' "$file"; then
+    echo "[check-policy] ERROR: missing scope section in $file" >&2
     failures=$((failures + 1))
   fi
 
-  if ! rg -q 'Review the skills available' "$file"; then
-    echo "[check-policy] ERROR: missing skill-review rule in $file" >&2
+  if ! rg -q '^## Non-Negotiable Rules' "$file"; then
+    echo "[check-policy] ERROR: missing non-negotiable rules section in $file" >&2
     failures=$((failures + 1))
   fi
 
-  if ! rg -q 'Choose the minimum skill set' "$file"; then
-    echo "[check-policy] ERROR: missing minimum-skill rule in $file" >&2
+  if ! rg -q '^## Validation' "$file"; then
+    echo "[check-policy] ERROR: missing validation section in $file" >&2
     failures=$((failures + 1))
   fi
 
-  if ! rg -q 'plan writing' "$file"; then
-    echo "[check-policy] ERROR: missing plan-writing skill rule in $file" >&2
+  if ! rg -q '\.\./AGENTS\.md' "$file"; then
+    echo "[check-policy] ERROR: missing workspace-policy escalation rule in $file" >&2
     failures=$((failures + 1))
   fi
 
-  if ! rg -q 'implementation' "$file"; then
-    echo "[check-policy] ERROR: missing implementation-skill rule in $file" >&2
+  word_count="$(wc -w < "$file" | tr -d ' ')"
+  if [[ "$word_count" -gt 300 ]]; then
+    echo "[check-policy] ERROR: $file exceeds 300 words ($word_count)." >&2
     failures=$((failures + 1))
   fi
+}
 
-  if ! rg -q 'fall back to workspace-local, then globally canonical' "$file"; then
-    echo "[check-policy] ERROR: missing canonical fallback order in $file" >&2
-    failures=$((failures + 1))
-  fi
-
-  if ! rg -q 'update .*STATUS\.md.*immediately after each completed implementation phase or materially completed plan step' "$file"; then
-    echo "[check-policy] ERROR: missing continuous STATUS update rule in $file" >&2
-    failures=$((failures + 1))
-  fi
-
-  if ! rg -q 'scripts/handoff-lifecycle\.sh pre-plan' "$file"; then
-    echo "[check-policy] ERROR: missing formal pre-plan lifecycle rule in $file" >&2
-    failures=$((failures + 1))
-  fi
-
-  if ! rg -q 'scripts/handoff-lifecycle\.sh post-phase' "$file"; then
-    echo "[check-policy] ERROR: missing post-phase lifecycle rule in $file" >&2
-    failures=$((failures + 1))
-  fi
-
-  if ! rg -q 'scripts/handoff-lifecycle\.sh closeout' "$file"; then
-    echo "[check-policy] ERROR: missing closeout lifecycle rule in $file" >&2
-    failures=$((failures + 1))
-  fi
-
-  if ! rg -q 'formal `<proposed_plan>`' "$file"; then
-    echo "[check-policy] ERROR: missing formal-plan threshold rule in $file" >&2
-    failures=$((failures + 1))
-  fi
-
-  if ! rg -q '`docs/ai/HANDOFF\.md` is generated by `scripts/sync-handoffs\.py`' "$file"; then
-    echo "[check-policy] ERROR: missing generated HANDOFF rule in $file" >&2
-    failures=$((failures + 1))
-  fi
-
-  if ! rg -q 'docs/ai/local-status/\*\.md' "$file"; then
-    echo "[check-policy] ERROR: missing local-status canonical source rule in $file" >&2
-    failures=$((failures + 1))
-  fi
-
-  if ! rg -q '## Handoff Snapshot' "$file"; then
-    echo "[check-policy] ERROR: missing Handoff Snapshot contract in $file" >&2
-    failures=$((failures + 1))
-  fi
-
-  if ! rg -q '`Current Active Work`' "$file" || ! rg -q '`Blocked / Waiting`' "$file" || ! rg -q '`Recent Completions`' "$file" || ! rg -q '`Archives / Canonical Links`' "$file"; then
-    echo "[check-policy] ERROR: missing HANDOFF section contract in $file" >&2
-    failures=$((failures + 1))
-  fi
-done
+check_root_agents
+check_repo_agents "$ROOT/TRR-Backend/AGENTS.md"
+check_repo_agents "$ROOT/TRR-APP/AGENTS.md"
+check_repo_agents "$ROOT/screenalytics/AGENTS.md"
 
 expected_claude_content() {
   local file="$1"
