@@ -60,6 +60,7 @@ Visibility tiers:
 | `WORKSPACE_SOCIAL_WORKER_MEDIA_MIRROR` | `0` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_SOCIAL_WORKER_POSTS` | `1` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_STRICT` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
+| `WORKSPACE_TRR_APP_DEV_BUNDLER` | `turbopack` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_TRR_JOB_PLANE_MODE` | `remote` | `local` or `remote` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Long-job ownership mode (`local` API-owned or `remote` worker-owned). |
 | `WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE` | `1` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_TRR_MODAL_ADMIN_OPERATION_FUNCTION` | `run_admin_operation_v2` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |

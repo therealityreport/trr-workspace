@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-MODE="${CODEX_CHROME_MODE:-shared}"
+MODE="${CODEX_CHROME_MODE:-isolated}"
 SHARED_PORT="${CODEX_CHROME_PORT:-9222}"
 
 shared_ready() {
@@ -45,6 +45,7 @@ case "$MODE" in
 
     CHROME_AGENT_DEBUG_PORT="${CODEX_CHROME_PORT}" \
     CHROME_AGENT_PROFILE_DIR="${CHROME_AGENT_PROFILE_DIR:-${HOME}/.chrome-profiles/codex-chat-${CODEX_CHROME_PORT}}" \
+    CHROME_AGENT_HEADLESS="${CODEX_CHROME_ISOLATED_HEADLESS:-1}" \
     bash "${ROOT}/scripts/chrome-agent.sh"
     ;;
   *)
