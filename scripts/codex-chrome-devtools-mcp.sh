@@ -236,6 +236,8 @@ run_chrome_devtools_mcp() {
   local attempt=1
   local stderr_file="${MCP_RUN_LOG_DIR}/npm-exec-${SCRIPT_PID}.stderr"
   local status
+  local mcp_pid=""
+  local stdin_fd=9
 
   while true; do
     : >"$stderr_file"
@@ -252,17 +254,31 @@ run_chrome_devtools_mcp() {
       tee "$stderr_file" < "$stderr_fifo" >&2 &
       MCP_TEE_PID=$!
 
-      # Keep the MCP process in the foreground so the wrapper shell cannot exit
-      # first and orphan npm/node children.
-      if NPM_CONFIG_UPDATE_NOTIFIER=false NPM_CONFIG_FUND=false npm exec --yes --cache "$MCP_CACHE_DIR" --package "$MCP_PACKAGE" -- chrome-devtools-mcp "$@" \
-        <&0 2>"$stderr_fifo"; then
-        status=0
+      # Background jobs in a non-interactive shell are otherwise given stdin
+      # from /dev/null, which breaks the MCP stdio handshake. Duplicate the
+      # wrapper stdin first so the child keeps the live transport. Use a fixed
+      # FD for Bash 3.2 compatibility on macOS.
+      exec 9<&0
+      # Keep the wrapper shell alive while the MCP child runs so TERM/HUP traps
+      # can forward signals and clean up the full npm/node subtree.
+      NPM_CONFIG_UPDATE_NOTIFIER=false NPM_CONFIG_FUND=false npm exec --yes --cache "$MCP_CACHE_DIR" --package "$MCP_PACKAGE" -- chrome-devtools-mcp "$@" \
+        <&9 2>"$stderr_fifo" &
+      mcp_pid=$!
+
+      if wait "$mcp_pid"; then
+        kill "$MCP_TEE_PID" 2>/dev/null || true
+        wait "$MCP_TEE_PID" 2>/dev/null || true
+        MCP_TEE_PID=""
+        exec 9<&-
+        rm -f "$stderr_file" "$stderr_fifo"
+        return 0
       else
         status=$?
       fi
       kill "$MCP_TEE_PID" 2>/dev/null || true
       wait "$MCP_TEE_PID" 2>/dev/null || true
       MCP_TEE_PID=""
+      exec 9<&-
       rm -f "$stderr_fifo"
       if [[ "$status" == "0" ]]; then
         rm -f "$stderr_file"
