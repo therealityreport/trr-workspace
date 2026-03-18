@@ -49,6 +49,11 @@ PIDFILE="${LOG_DIR}/pids.env"
 WORKSPACE_MANAGER_PID="$$"
 mkdir -p "$LOG_DIR"
 
+# Clean stale Chrome/MCP processes from prior sessions.
+if [[ -x "$ROOT/scripts/codex-mcp-session-reaper.sh" ]]; then
+  bash "$ROOT/scripts/codex-mcp-session-reaper.sh" reap 2>/dev/null || true
+fi
+
 # Workspace toggles
 WORKSPACE_SCREENALYTICS="${WORKSPACE_SCREENALYTICS:-1}"
 WORKSPACE_SCREENALYTICS_SKIP_DOCKER="${WORKSPACE_SCREENALYTICS_SKIP_DOCKER:-1}"
@@ -56,6 +61,7 @@ WORKSPACE_DEV_MODE="${WORKSPACE_DEV_MODE:-}"
 WORKSPACE_STRICT="${WORKSPACE_STRICT:-0}"
 WORKSPACE_FORCE_KILL_PORT_CONFLICTS="${WORKSPACE_FORCE_KILL_PORT_CONFLICTS:-0}"
 WORKSPACE_CLEAN_NEXT_CACHE="${WORKSPACE_CLEAN_NEXT_CACHE:-0}"
+WORKSPACE_TRR_APP_DEV_BUNDLER="${WORKSPACE_TRR_APP_DEV_BUNDLER:-turbopack}"
 WORKSPACE_OPEN_BROWSER="${WORKSPACE_OPEN_BROWSER:-0}"
 WORKSPACE_BROWSER_TAB_SYNC_MODE="${WORKSPACE_BROWSER_TAB_SYNC_MODE:-reuse_no_reload}"
 WORKSPACE_OPEN_SCREENALYTICS_TABS="${WORKSPACE_OPEN_SCREENALYTICS_TABS:-0}"
@@ -194,6 +200,10 @@ fi
 if ! [[ "$WORKSPACE_SOCIAL_WORKER_INTERVAL_SEC" =~ ^[0-9]+([.][0-9]+)?$ ]]; then
   echo "[workspace] WARNING: invalid WORKSPACE_SOCIAL_WORKER_INTERVAL_SEC='${WORKSPACE_SOCIAL_WORKER_INTERVAL_SEC}', using 3." >&2
   WORKSPACE_SOCIAL_WORKER_INTERVAL_SEC="3"
+fi
+if [[ "$WORKSPACE_TRR_APP_DEV_BUNDLER" != "turbopack" && "$WORKSPACE_TRR_APP_DEV_BUNDLER" != "webpack" ]]; then
+  echo "[workspace] WARNING: invalid WORKSPACE_TRR_APP_DEV_BUNDLER='${WORKSPACE_TRR_APP_DEV_BUNDLER}', using turbopack." >&2
+  WORKSPACE_TRR_APP_DEV_BUNDLER="turbopack"
 fi
 if [[ "$WORKSPACE_TRR_JOB_PLANE_MODE" != "local" && "$WORKSPACE_TRR_JOB_PLANE_MODE" != "remote" ]]; then
   echo "[workspace] WARNING: invalid WORKSPACE_TRR_JOB_PLANE_MODE='${WORKSPACE_TRR_JOB_PLANE_MODE}', using remote." >&2
@@ -894,6 +904,14 @@ prepare_trr_app_next_cache() {
 start_trr_app() {
   prepare_trr_app_next_cache
 
+  local trr_app_dev_flag="--turbopack"
+  local trr_app_fallback_command="pnpm -C TRR-APP/apps/web run dev:stable"
+  if [[ "$WORKSPACE_TRR_APP_DEV_BUNDLER" == "webpack" ]]; then
+    trr_app_dev_flag="--webpack"
+  fi
+
+  echo "[workspace] TRR-APP dev bundler: ${WORKSPACE_TRR_APP_DEV_BUNDLER}. If you hit Turbopack issues: ${trr_app_fallback_command}"
+
   # Keep TRR_APP attached to its parent shell process; with setsid wrappers,
   # Next.js can re-parent and make PID tracking flaky.
   start_bg_no_setsid "TRR_APP" "$TRR_APP_LOG" "$BASH_BIN" -c "cd \"$ROOT/TRR-APP\" && \
@@ -912,7 +930,7 @@ start_trr_app() {
     ADMIN_APP_HOSTS=\"$ADMIN_APP_HOSTS\" \
     ADMIN_ENFORCE_HOST=\"$ADMIN_ENFORCE_HOST\" \
     ADMIN_STRICT_HOST_ROUTING=\"$ADMIN_STRICT_HOST_ROUTING\" \
-    exec ./node_modules/.bin/next dev --webpack -p \"$TRR_APP_PORT\" --hostname \"$TRR_APP_HOST\""
+    exec ./node_modules/.bin/next dev ${trr_app_dev_flag} -p \"$TRR_APP_PORT\" --hostname \"$TRR_APP_HOST\""
 
   TRR_APP_PID="$LAST_STARTED_PID"
   write_pidfile_runtime_value "TRR_APP_PID" "$TRR_APP_PID"
@@ -1059,6 +1077,7 @@ write_backend_watchdog_state
   echo "WORKSPACE_SCREENALYTICS=${WORKSPACE_SCREENALYTICS}"
   echo "WORKSPACE_SCREENALYTICS_SKIP_DOCKER=${WORKSPACE_SCREENALYTICS_SKIP_DOCKER}"
   echo "WORKSPACE_STRICT=${WORKSPACE_STRICT}"
+  echo "WORKSPACE_TRR_APP_DEV_BUNDLER=${WORKSPACE_TRR_APP_DEV_BUNDLER}"
   echo "WORKSPACE_OPEN_BROWSER=${WORKSPACE_OPEN_BROWSER}"
   echo "WORKSPACE_BROWSER_TAB_SYNC_MODE=${WORKSPACE_BROWSER_TAB_SYNC_MODE}"
   echo "WORKSPACE_OPEN_SCREENALYTICS_TABS=${WORKSPACE_OPEN_SCREENALYTICS_TABS}"
@@ -1158,6 +1177,7 @@ fi
 echo "  TRR-Backend mode:      $([[ \"$TRR_BACKEND_RELOAD\" == \"1\" ]] && echo \"reload\" || echo \"non-reload\")"
 echo "  Job plane mode:        ${WORKSPACE_TRR_JOB_PLANE_MODE} (enforce_remote=${WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE}, executor=${WORKSPACE_TRR_REMOTE_EXECUTOR}, modal_enabled=${WORKSPACE_TRR_MODAL_ENABLED})"
 echo "  Workspace dev mode:    ${WORKSPACE_DEV_MODE}"
+echo "  TRR-APP dev bundler:   ${WORKSPACE_TRR_APP_DEV_BUNDLER} (fallback: pnpm -C TRR-APP/apps/web run dev:stable)"
 if [[ "$WORKSPACE_OPEN_BROWSER" == "1" ]]; then
   echo "  Browser sync:          enabled (mode=${WORKSPACE_BROWSER_TAB_SYNC_MODE})"
 else
