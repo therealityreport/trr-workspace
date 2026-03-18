@@ -6,23 +6,31 @@ CODEX_HOME_DIR="${CODEX_HOME:-$HOME/.codex}"
 CONFIG_FILE="${CODEX_CONFIG_FILE:-${CODEX_HOME_DIR}/config.toml}"
 TEMPLATE_PATH="${ROOT}/config/codex/shared.toml.tmpl"
 
-pick_tomllib_python() {
-  local candidate
-  for candidate in "${PYTHON_BIN:-}" python3.12 python3.11 python3; do
+resolve_python_311_bin() {
+  local configured="${PYTHON_BIN:-}"
+  local candidate path
+
+  for candidate in "$configured" python3.11 python3 python; do
     [[ -n "$candidate" ]] || continue
-    if ! command -v "$candidate" >/dev/null 2>&1; then
+    if [[ -x "$candidate" ]]; then
+      path="$candidate"
+    elif command -v "$candidate" >/dev/null 2>&1; then
+      path="$(command -v "$candidate")"
+    else
       continue
     fi
-    if "$candidate" - <<'PY' >/dev/null 2>&1
-import tomllib
+
+    if "$path" - <<'PY' >/dev/null 2>&1
+import sys
+raise SystemExit(0 if sys.version_info >= (3, 11) else 1)
 PY
     then
-      printf '%s\n' "$candidate"
+      echo "$path"
       return 0
     fi
   done
 
-  echo "[codex-config-sync] ERROR: unable to find a Python interpreter with tomllib support (need Python 3.11+)." >&2
+  echo "[codex-config-sync] ERROR: Python 3.11+ is required (tried: PYTHON_BIN, python3.11, python3, python)." >&2
   exit 1
 }
 
@@ -57,11 +65,10 @@ render_template_to() {
 
 validate_config() {
   local expected_wrapper="${ROOT}/scripts/codex-chrome-devtools-mcp.sh"
-  local tomllib_python
+  local python_bin
+  python_bin="$(resolve_python_311_bin)"
 
-  tomllib_python="$(pick_tomllib_python)"
-
-  "$tomllib_python" - "$CONFIG_FILE" "$expected_wrapper" <<'PY'
+  "$python_bin" - "$CONFIG_FILE" "$expected_wrapper" <<'PY'
 import pathlib
 import sys
 import tomllib

@@ -4,9 +4,39 @@ ROOT="${ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
 CODEX_HOME_DIR="${CODEX_HOME:-$HOME/.codex}"
 CODEX_CONFIG_FILE="${CODEX_CONFIG_FILE:-${CODEX_HOME_DIR}/config.toml}"
 
+resolve_mcp_runtime_python() {
+  local configured="${PYTHON_BIN:-}"
+  local candidate path
+
+  for candidate in "$configured" python3.11 python3 python; do
+    [[ -n "$candidate" ]] || continue
+    if [[ -x "$candidate" ]]; then
+      path="$candidate"
+    elif command -v "$candidate" >/dev/null 2>&1; then
+      path="$(command -v "$candidate")"
+    else
+      continue
+    fi
+
+    if "$path" - <<'PY' >/dev/null 2>&1
+import sys
+raise SystemExit(0 if sys.version_info >= (3, 11) else 1)
+PY
+    then
+      echo "$path"
+      return 0
+    fi
+  done
+
+  echo "[mcp-runtime] ERROR: Python 3.11+ is required (tried: PYTHON_BIN, python3.11, python3, python)." >&2
+  return 1
+}
+
+MCP_RUNTIME_PYTHON_BIN="$(resolve_mcp_runtime_python)"
+
 config_server_enabled() {
   local server="$1"
-  python3 - "$CODEX_CONFIG_FILE" "$server" <<'PY'
+  "$MCP_RUNTIME_PYTHON_BIN" - "$CODEX_CONFIG_FILE" "$server" <<'PY'
 import pathlib
 import sys
 import tomllib
