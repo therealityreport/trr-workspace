@@ -1,0 +1,50 @@
+# Guardrails for TRR's full-auto Codex sessions.
+
+prefix_rule(
+    pattern = ["git", "reset", "--hard"],
+    decision = "forbidden",
+    justification = "Hard resets discard tracked work. Inspect with `git status` or `git diff`, then make targeted edits instead.",
+    match = [["git", "reset", "--hard"]],
+)
+
+prefix_rule(
+    pattern = ["git", "checkout", "--"],
+    decision = "forbidden",
+    justification = "Discarding tracked edits is not allowed here. Use `apply_patch` or a targeted manual edit instead.",
+    match = [["git", "checkout", "--", "AGENTS.md"]],
+)
+
+prefix_rule(
+    pattern = ["rm", "-rf"],
+    decision = "prompt",
+    justification = "Recursive deletion can destroy workspace state. Prefer targeted cleanup under known temp directories unless a broader purge is explicitly required.",
+    match = [["rm", "-rf", ".tmp/example"]],
+)
+
+prefix_rule(
+    pattern = ["git", "clean", "-fdx"],
+    decision = "prompt",
+    justification = "This removes untracked files recursively. Prefer targeted cleanup of `.tmp/`, `.artifacts/`, or `.logs/` when possible.",
+    match = [["git", "clean", "-fdx"]],
+)
+
+prefix_rule(
+    pattern = ["bash", "scripts/codex-config-sync.sh", "bootstrap"],
+    decision = "prompt",
+    justification = "Bootstrapping mutates user-level Codex files under `~/.codex`. Review the backup path and intended migration before proceeding.",
+    match = [["bash", "scripts/codex-config-sync.sh", "bootstrap"]],
+)
+
+prefix_rule(
+    pattern = ["codex", "mcp", ["add", "remove"]],
+    decision = "prompt",
+    justification = "Changing global Codex MCP registrations affects every workspace. Prefer tracked project config or review the blast radius first.",
+    match = [["codex", "mcp", "add", "example", "--url", "https://example.com/mcp"]],
+)
+
+prefix_rule(
+    pattern = ["codex", "logout"],
+    decision = "prompt",
+    justification = "Logging out removes the active Codex authentication session for all projects.",
+    match = [["codex", "logout"]],
+)

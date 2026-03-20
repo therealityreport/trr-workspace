@@ -21,28 +21,41 @@ END_PORT="${CODEX_CHROME_PORT_RANGE_END:-9399}"
 FORCED_PORT="${CODEX_CHROME_PORT:-}"
 SEED_PROFILE_DIR="${CODEX_CHROME_SEED_PROFILE_DIR:-${HOME}/.chrome-profiles/claude-agent}"
 ISOLATED_HEADLESS="${CODEX_CHROME_ISOLATED_HEADLESS:-1}"
+SHARED_HEADLESS="${CODEX_CHROME_SHARED_HEADLESS:-0}"
 SKIP_BROWSER_BOOT="${CODEX_CHROME_SKIP_BROWSER_BOOT:-0}"
 DIAGNOSTIC_ONLY="${CODEX_CHROME_DIAGNOSTIC_ONLY:-0}"
 TAB_CAP="${CODEX_CHROME_TAB_CAP:-3}"
 TAB_TARGET="${CODEX_CHROME_TAB_TARGET:-1}"
 TAB_WATCH_INTERVAL="${CODEX_CHROME_TAB_WATCH_INTERVAL_SEC:-2}"
+ENABLE_TAB_WATCH="${CODEX_CHROME_ENABLE_TAB_WATCH:-1}"
 BROWSER_READY_TIMEOUT_SEC="${CODEX_CHROME_BROWSER_READY_TIMEOUT_SEC:-20}"
 BROWSER_WATCH_INTERVAL_SEC="${CODEX_CHROME_BROWSER_WATCH_INTERVAL_SEC:-5}"
 BROWSER_WATCH_MISS_THRESHOLD="${CODEX_CHROME_BROWSER_WATCH_MISS_THRESHOLD:-2}"
+MAX_ISOLATED_SESSIONS="${CODEX_CHROME_MAX_SESSIONS:-1}"
+MEMORY_GUARD_MB="${CODEX_CHROME_MEMORY_GUARD_MB:-2048}"
+MANAGED_CHROME_ROOT_LIMIT="${CODEX_CHROME_MANAGED_ROOT_LIMIT:-3}"
+HEADFUL_CONFLICT_ALLOWED="${CODEX_CHROME_ALLOW_HEADFUL_CONFLICT:-0}"
 
 BROWSER_PORT=""
 RESERVATION_FILE=""
 STOP_ON_EXIT=0
 CLEANUP_DONE=0
+MCP_PID=""
+MCP_PGID=""
 MCP_TEE_PID=""
 WATCHDOG_PID=""
 TAB_WATCH_PID=""
 BROWSER_WATCH_PID=""
+STDIN_WATCH_PID=""
 SCRIPT_PID="${BASHPID:-$$}"
 SCRIPT_PGID=""
+ORIGINAL_PPID=""
 SHARED_WRAPPER_PIDFILE=""
 SESSION_FILE=""
 PAGE_ORDER_FILE=""
+VISIBLE_BROWSER_OWNER_FILE="${LOG_DIR}/chrome-devtools-visible-browser-owner.env"
+SIGNAL_LOG_FILE=""
+SETSID_BIN=""
 
 mkdir -p "$LOG_DIR" "$MCP_CACHE_DIR" "$MCP_RUN_LOG_DIR"
 
@@ -54,6 +67,245 @@ chrome_mcp_log() {
 fail() {
   chrome_mcp_log "ERROR: $*"
   exit 1
+}
+
+SETSID_BIN="$(command -v setsid 2>/dev/null || true)"
+
+ensure_private_session_for_shared_mode() {
+  local current_pid="${BASHPID:-$$}"
+  local current_pgid=""
+
+  if [[ "$MODE" != "shared" || "${CODEX_CHROME_PRIVATE_SESSION:-0}" == "1" ]]; then
+    return 0
+  fi
+
+  current_pgid="$(ps -o pgid= -p "$current_pid" 2>/dev/null | tr -d ' ' || true)"
+  if [[ -n "$current_pgid" && "$current_pgid" == "$current_pid" ]]; then
+    export CODEX_CHROME_PRIVATE_SESSION=1
+    return 0
+  fi
+
+  if [[ -z "$SETSID_BIN" ]]; then
+    echo "[codex-chrome-mcp] ERROR: shared mode requires setsid so the wrapper owns a private session before any kill logic runs." >&2
+    exit 1
+  fi
+
+  export CODEX_CHROME_PRIVATE_SESSION=1
+  exec "$SETSID_BIN" "$BASH" "$0" "$@"
+}
+
+ensure_private_session_for_shared_mode "$@"
+SCRIPT_PID="${BASHPID:-$$}"
+SIGNAL_LOG_FILE="${MCP_RUN_LOG_DIR}/signal-path-${SCRIPT_PID}.log"
+
+log_signal_path() {
+  local event="$1"
+  shift || true
+  local metadata="$*"
+  local timestamp
+  timestamp="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  printf '%s event=%s mode=%s wrapper_pid=%s wrapper_pgid=%s mcp_pid=%s mcp_pgid=%s %s\n' \
+    "$timestamp" \
+    "$event" \
+    "$MODE" \
+    "$SCRIPT_PID" \
+    "${SCRIPT_PGID:-unknown}" \
+    "${MCP_PID:-none}" \
+    "${MCP_PGID:-none}" \
+    "$metadata" >>"$SIGNAL_LOG_FILE"
+  chrome_mcp_log "signal-path event=${event} mode=${MODE} wrapper_pid=${SCRIPT_PID} wrapper_pgid=${SCRIPT_PGID:-unknown} mcp_pid=${MCP_PID:-none} mcp_pgid=${MCP_PGID:-none} ${metadata}"
+}
+
+headful_mode_enabled() {
+  if [[ "$MODE" == "shared" ]]; then
+    [[ "$SHARED_HEADLESS" != "1" ]]
+    return 0
+  fi
+  [[ "$ISOLATED_HEADLESS" != "1" ]]
+}
+
+visible_owner_field() {
+  local key="$1"
+  if [[ ! -f "$VISIBLE_BROWSER_OWNER_FILE" ]]; then
+    return 0
+  fi
+  sed -n "s/^${key}=//p" "$VISIBLE_BROWSER_OWNER_FILE" | head -n 1
+}
+
+port_listener_pid() {
+  local port="$1"
+  lsof -nP -iTCP:"${port}" -sTCP:LISTEN -t 2>/dev/null | head -n 1 || true
+}
+
+pid_alive() {
+  local pid="$1"
+  [[ -n "$pid" && "$pid" =~ ^[0-9]+$ ]] && kill -0 "$pid" >/dev/null 2>&1
+}
+
+process_parent_pid() {
+  local pid="$1"
+  ps -o ppid= -p "$pid" 2>/dev/null | tr -d ' ' || true
+}
+
+process_command() {
+  local pid="$1"
+  ps -o command= -p "$pid" 2>/dev/null || true
+}
+
+process_has_live_ancestor_matching() {
+  local pid="$1"
+  local regex="$2"
+  local current="$pid"
+  local depth=0
+  local cmd=""
+
+  while [[ -n "$current" && "$current" =~ ^[0-9]+$ && "$current" != "0" && "$depth" -lt 24 ]]; do
+    cmd="$(process_command "$current")"
+    if [[ -n "$cmd" && "$cmd" =~ $regex ]] && pid_alive "$current"; then
+      return 0
+    fi
+    current="$(process_parent_pid "$current")"
+    depth=$((depth + 1))
+  done
+
+  return 1
+}
+
+visible_owner_browser_pid() {
+  local pid
+  pid="$(visible_owner_field BROWSER_PID)"
+  if [[ -n "$pid" ]]; then
+    printf '%s\n' "$pid"
+    return 0
+  fi
+  visible_owner_field OWNER_PID
+}
+
+visible_owner_wrapper_pid() {
+  visible_owner_field WRAPPER_PID
+}
+
+clear_stale_visible_browser_owner() {
+  [[ -f "$VISIBLE_BROWSER_OWNER_FILE" ]] || return 0
+
+  local owner_browser_pid
+  local owner_port
+  local listener_pid
+
+  owner_browser_pid="$(visible_owner_browser_pid)"
+  owner_port="$(visible_owner_field PORT)"
+  listener_pid=""
+  if [[ -n "$owner_port" ]]; then
+    listener_pid="$(port_listener_pid "$owner_port")"
+  fi
+
+  if [[ -n "$owner_browser_pid" ]] && pid_alive "$owner_browser_pid"; then
+    return 0
+  fi
+  if [[ -n "$listener_pid" ]] && is_browser_endpoint_ready "$owner_port"; then
+    return 0
+  fi
+
+  rm -f "$VISIBLE_BROWSER_OWNER_FILE"
+}
+
+write_visible_browser_owner_file() {
+  local browser_pid="$1"
+  local identity_metadata=""
+
+  if declare -F codex_session_metadata >/dev/null 2>&1; then
+    identity_metadata="$(codex_session_metadata "${BROWSER_PORT:-0}" | sed '/^WRAPPER_PID=/d')"
+  fi
+
+  {
+    cat <<EOF
+OWNER_PID=${browser_pid}
+WRAPPER_PID=${SCRIPT_PID}
+BROWSER_PID=${browser_pid}
+MODE=${MODE}
+PORT=${BROWSER_PORT:-unknown}
+HEADLESS=0
+CLAIMED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+USER=${USER:-unknown}
+EOF
+    if [[ -n "$identity_metadata" ]]; then
+      printf '%s\n' "$identity_metadata"
+    fi
+  } >"$VISIBLE_BROWSER_OWNER_FILE"
+}
+
+claim_visible_browser_owner() {
+  local browser_pid="$1"
+  local existing_browser_pid=""
+  local existing_wrapper_pid=""
+  local existing_mode=""
+  local existing_port=""
+  local existing_claimed_at=""
+  local existing_browser_alive=0
+  local existing_wrapper_alive=0
+  local existing_listener_pid=""
+
+  headful_mode_enabled || return 0
+  [[ -n "$browser_pid" ]] || fail "Cannot claim visible browser ownership without a live browser PID."
+
+  clear_stale_visible_browser_owner
+
+  existing_browser_pid="$(visible_owner_browser_pid)"
+  existing_wrapper_pid="$(visible_owner_wrapper_pid)"
+  existing_mode="$(visible_owner_field MODE)"
+  existing_port="$(visible_owner_field PORT)"
+  existing_claimed_at="$(visible_owner_field CLAIMED_AT)"
+
+  if [[ -n "$existing_port" ]]; then
+    existing_listener_pid="$(port_listener_pid "$existing_port")"
+  fi
+  if [[ -n "$existing_browser_pid" ]] && pid_alive "$existing_browser_pid"; then
+    existing_browser_alive=1
+  elif [[ -n "$existing_listener_pid" ]] && is_browser_endpoint_ready "$existing_port"; then
+    existing_browser_pid="$existing_listener_pid"
+    existing_browser_alive=1
+  fi
+  if [[ -n "$existing_wrapper_pid" ]] && pid_alive "$existing_wrapper_pid"; then
+    existing_wrapper_alive=1
+  fi
+
+  if (( existing_browser_alive == 1 )) && [[ "$existing_port" == "$BROWSER_PORT" ]] && [[ "$existing_mode" == "$MODE" ]] && (( existing_wrapper_alive == 0 )); then
+    chrome_mcp_log "Refreshing visible browser owner metadata for persistent browser pid=${existing_browser_pid} on port ${existing_port} after wrapper pid=${existing_wrapper_pid:-missing} exited."
+    write_visible_browser_owner_file "$browser_pid"
+    return 0
+  fi
+
+  if (( existing_browser_alive == 1 )) && [[ "$existing_browser_pid" != "$browser_pid" || "$existing_port" != "$BROWSER_PORT" ]]; then
+    if [[ "$HEADFUL_CONFLICT_ALLOWED" != "1" ]]; then
+      fail "Visible browser already owned by browser pid=${existing_browser_pid} wrapper pid=${existing_wrapper_pid:-missing} mode=${existing_mode:-unknown} port=${existing_port:-unknown} since ${existing_claimed_at:-unknown}. Close that session first or set CODEX_CHROME_ALLOW_HEADFUL_CONFLICT=1 to override."
+    fi
+    chrome_mcp_log "Overriding visible browser owner browser_pid=${existing_browser_pid} wrapper_pid=${existing_wrapper_pid:-missing} because CODEX_CHROME_ALLOW_HEADFUL_CONFLICT=1."
+  fi
+
+  if (( existing_browser_alive == 1 )) && (( existing_wrapper_alive == 1 )) && [[ "$existing_wrapper_pid" != "$SCRIPT_PID" ]] && [[ "$existing_port" == "$BROWSER_PORT" ]] && [[ "$HEADFUL_CONFLICT_ALLOWED" != "1" ]]; then
+    fail "Visible browser already has a live owner wrapper pid=${existing_wrapper_pid} for browser pid=${existing_browser_pid} on port ${existing_port}. Close that session first or set CODEX_CHROME_ALLOW_HEADFUL_CONFLICT=1 to override."
+  fi
+
+  write_visible_browser_owner_file "$browser_pid"
+}
+
+release_visible_browser_owner() {
+  local owner_wrapper_pid=""
+  local owner_browser_pid=""
+  local owner_port=""
+  [[ -f "$VISIBLE_BROWSER_OWNER_FILE" ]] || return 0
+  owner_wrapper_pid="$(visible_owner_wrapper_pid)"
+  owner_browser_pid="$(visible_owner_browser_pid)"
+  owner_port="$(visible_owner_field PORT)"
+  if [[ "$owner_wrapper_pid" != "$SCRIPT_PID" ]]; then
+    return 0
+  fi
+  if [[ "$MODE" == "shared" ]] && headful_mode_enabled && pid_alive "$owner_browser_pid" && is_browser_endpoint_ready "${owner_port:-${BROWSER_PORT:-9222}}"; then
+    return 0
+  fi
+  if [[ "$owner_wrapper_pid" == "$SCRIPT_PID" ]]; then
+    rm -f "$VISIBLE_BROWSER_OWNER_FILE"
+  fi
 }
 
 # Purge stderr logs older than 1 hour to prevent accumulation
@@ -100,7 +352,7 @@ _sweep_stale_mcp_sessions() {
   local wd_pid wd_parent
   while IFS= read -r wd_pid; do
     [[ -n "$wd_pid" ]] || continue
-    wd_parent="$(ps -o command= -p "$wd_pid" 2>/dev/null | sed -n 's/.*--parent-pid=\([0-9][0-9]*\).*/\1/p')"
+    wd_parent="$(ps -o command= -p "$wd_pid" 2>/dev/null | sed -n 's/.*--parent-pid=\([0-9][0-9]*\).*/\1/p' || true)"
     if [[ -n "$wd_parent" ]] && ! kill -0 "$wd_parent" 2>/dev/null; then
       kill "$wd_pid" 2>/dev/null || true
     fi
@@ -169,7 +421,7 @@ fi
 
 pgid_for_pid() {
   local pid="$1"
-  ps -o pgid= -p "$pid" 2>/dev/null | tr -d ' '
+  ps -o pgid= -p "$pid" 2>/dev/null | tr -d ' ' || true
 }
 
 kill_process_group() {
@@ -203,11 +455,97 @@ terminate_descendants() {
   done < <(collect_descendants "$pid" | awk '!seen[$0]++')
 }
 
+refresh_mcp_identity() {
+  local pid="${1:-${MCP_PID:-}}"
+  if [[ -z "$pid" || ! "$pid" =~ ^[0-9]+$ ]]; then
+    return 0
+  fi
+
+  MCP_PID="$pid"
+  MCP_PGID="$(pgid_for_pid "$pid")"
+  if [[ -z "$MCP_PGID" ]]; then
+    MCP_PGID="$pid"
+  fi
+}
+
+kill_mcp_watchdogs_for_parent() {
+  local parent_pid="$1"
+  local signal="${2:-TERM}"
+  local watchdog_pid=""
+  local watchdog_parent=""
+
+  [[ -n "$parent_pid" && "$parent_pid" =~ ^[0-9]+$ ]] || return 0
+
+  while IFS= read -r watchdog_pid; do
+    [[ -n "$watchdog_pid" ]] || continue
+    watchdog_parent="$(ps -o command= -p "$watchdog_pid" 2>/dev/null | sed -n 's/.*--parent-pid=\([0-9][0-9]*\).*/\1/p' || true)"
+    if [[ "$watchdog_parent" == "$parent_pid" ]]; then
+      kill "-${signal}" "$watchdog_pid" 2>/dev/null || true
+    fi
+  done < <(pgrep -f "chrome-devtools-mcp.*telemetry/watchdog" 2>/dev/null || true)
+}
+
+terminate_mcp_runtime() {
+  local reason="${1:-cleanup}"
+
+  if [[ -n "$MCP_PID" ]]; then
+    refresh_mcp_identity "$MCP_PID"
+  fi
+
+  if [[ -n "$MCP_PGID" ]]; then
+    log_signal_path "kill-mcp-group-term" "reason=${reason}"
+    kill_process_group "$MCP_PGID" TERM
+    sleep 0.2
+    if pid_alive "$MCP_PID"; then
+      log_signal_path "kill-mcp-group-kill" "reason=${reason}"
+      kill_process_group "$MCP_PGID" KILL
+    fi
+  elif [[ -n "$MCP_PID" ]]; then
+    log_signal_path "kill-mcp-pid-term" "reason=${reason}"
+    kill -TERM "$MCP_PID" 2>/dev/null || true
+    sleep 0.2
+    if pid_alive "$MCP_PID"; then
+      log_signal_path "kill-mcp-pid-kill" "reason=${reason}"
+      kill -KILL "$MCP_PID" 2>/dev/null || true
+    fi
+  fi
+
+  if [[ -n "$MCP_PID" ]]; then
+    kill_mcp_watchdogs_for_parent "$MCP_PID" TERM
+    sleep 0.1
+    kill_mcp_watchdogs_for_parent "$MCP_PID" KILL
+  fi
+}
+
+cleanup_runtime_files() {
+  if [[ -n "$RESERVATION_FILE" ]]; then
+    rm -f "$RESERVATION_FILE"
+  fi
+  if [[ -n "$SHARED_WRAPPER_PIDFILE" && -f "$SHARED_WRAPPER_PIDFILE" ]]; then
+    local recorded_pid=""
+    recorded_pid="$(cat "$SHARED_WRAPPER_PIDFILE" 2>/dev/null || true)"
+    if [[ "$recorded_pid" == "$SCRIPT_PID" ]]; then
+      rm -f "$SHARED_WRAPPER_PIDFILE"
+    fi
+  fi
+  if [[ -n "$SESSION_FILE" ]]; then
+    rm -f "$SESSION_FILE"
+  fi
+  if [[ -n "$PAGE_ORDER_FILE" ]]; then
+    rm -f "$PAGE_ORDER_FILE"
+  fi
+  release_visible_browser_owner
+  local _cleanup_fifo="${MCP_RUN_LOG_DIR}/npm-exec-${SCRIPT_PID}.stderr.fifo"
+  _unblock_fifo "$_cleanup_fifo"
+  rm -f "${MCP_RUN_LOG_DIR}/npm-exec-${SCRIPT_PID}.stderr"
+  rm -f "$_cleanup_fifo"
+}
+
 shared_browser_remediation() {
   local port="$1"
   cat >&2 <<EOF
 [codex-chrome-mcp] Shared managed Chrome is not available on http://127.0.0.1:${port}.
-[codex-chrome-mcp] Shared mode will not auto-launch Chrome anymore.
+[codex-chrome-mcp] Shared mode attempted to auto-launch Chrome, but the DevTools endpoint never became ready.
 [codex-chrome-mcp] Remediation:
 [codex-chrome-mcp]   CHROME_AGENT_DEBUG_PORT=${port} CHROME_AGENT_PROFILE_DIR=\${HOME}/.chrome-profiles/claude-agent bash "${ROOT}/scripts/chrome-agent.sh"
 [codex-chrome-mcp] Then run: make chrome-devtools-mcp-status
@@ -230,6 +568,53 @@ ensure_node_baseline_or_fail() {
 clear_mcp_exec_cache() {
   rm -rf "$MCP_CACHE_DIR"
   mkdir -p "$MCP_CACHE_DIR"
+}
+
+start_parent_watchdog() {
+  [[ -n "$ORIGINAL_PPID" && -n "$MCP_PID" ]] || return 0
+  if [[ -n "$WATCHDOG_PID" ]] && pid_alive "$WATCHDOG_PID"; then
+    return 0
+  fi
+
+  (
+    exec </dev/null >/dev/null 2>&1
+    _sweep_counter=0
+    while sleep 5; do
+      if ! kill -0 "$SCRIPT_PID" 2>/dev/null; then
+        exit 0
+      fi
+
+      current_ppid="$(ps -o ppid= -p "$SCRIPT_PID" 2>/dev/null | tr -d ' ' || true)"
+      _parent_alive=1
+      if [[ -z "$current_ppid" ]]; then
+        _parent_alive=0
+      elif [[ "$ORIGINAL_PPID" != "1" && "$current_ppid" != "$ORIGINAL_PPID" ]]; then
+        _parent_alive=0
+      elif [[ "$ORIGINAL_PPID" != "1" ]] && ! kill -0 "$ORIGINAL_PPID" 2>/dev/null; then
+        _parent_alive=0
+      fi
+
+      _sweep_counter=$((_sweep_counter + 1))
+      if (( _sweep_counter >= 60 )); then
+        _sweep_counter=0
+        _sweep_stale_mcp_sessions 2>/dev/null || true
+      fi
+
+      if [[ "$_parent_alive" == "0" ]]; then
+        log_signal_path "orphan-watchdog-parent-dead" "original_ppid=${ORIGINAL_PPID} current_ppid=${current_ppid:-missing}"
+        kill -TERM "$SCRIPT_PID" 2>/dev/null || true
+        sleep 1
+        if kill -0 "$SCRIPT_PID" 2>/dev/null; then
+          terminate_mcp_runtime "orphan_watchdog"
+          log_signal_path "orphan-watchdog-kill-wrapper" "wrapper_still_alive=1"
+          kill -KILL "$SCRIPT_PID" 2>/dev/null || true
+          cleanup_runtime_files
+        fi
+        exit 0
+      fi
+    done
+  ) &
+  WATCHDOG_PID=$!
 }
 
 run_chrome_devtools_mcp() {
@@ -261,14 +646,28 @@ run_chrome_devtools_mcp() {
       exec 9<&0
       # Keep the wrapper shell alive while the MCP child runs so TERM/HUP traps
       # can forward signals and clean up the full npm/node subtree.
-      NPM_CONFIG_UPDATE_NOTIFIER=false NPM_CONFIG_FUND=false npm exec --yes --cache "$MCP_CACHE_DIR" --package "$MCP_PACKAGE" -- chrome-devtools-mcp "$@" \
-        <&9 2>"$stderr_fifo" &
-      mcp_pid=$!
+      if [[ -n "$SETSID_BIN" ]]; then
+        NPM_CONFIG_UPDATE_NOTIFIER=false NPM_CONFIG_FUND=false "$SETSID_BIN" npm exec --yes --cache "$MCP_CACHE_DIR" --package "$MCP_PACKAGE" -- chrome-devtools-mcp "$@" \
+          <&9 2>"$stderr_fifo" &
+        mcp_pid=$!
+      else
+        NPM_CONFIG_UPDATE_NOTIFIER=false NPM_CONFIG_FUND=false npm exec --yes --cache "$MCP_CACHE_DIR" --package "$MCP_PACKAGE" -- chrome-devtools-mcp "$@" \
+          <&9 2>"$stderr_fifo" &
+        mcp_pid=$!
+      fi
+      refresh_mcp_identity "$mcp_pid"
+      log_signal_path "spawn-mcp" "stderr_fifo=${stderr_fifo}"
+      start_parent_watchdog
 
       if wait "$mcp_pid"; then
         kill "$MCP_TEE_PID" 2>/dev/null || true
         wait "$MCP_TEE_PID" 2>/dev/null || true
         MCP_TEE_PID=""
+        if [[ -n "$WATCHDOG_PID" ]]; then
+          kill "$WATCHDOG_PID" 2>/dev/null || true
+          wait "$WATCHDOG_PID" 2>/dev/null || true
+          WATCHDOG_PID=""
+        fi
         exec 9<&-
         rm -f "$stderr_file" "$stderr_fifo"
         return 0
@@ -278,6 +677,11 @@ run_chrome_devtools_mcp() {
       kill "$MCP_TEE_PID" 2>/dev/null || true
       wait "$MCP_TEE_PID" 2>/dev/null || true
       MCP_TEE_PID=""
+      if [[ -n "$WATCHDOG_PID" ]]; then
+        kill "$WATCHDOG_PID" 2>/dev/null || true
+        wait "$WATCHDOG_PID" 2>/dev/null || true
+        WATCHDOG_PID=""
+      fi
       exec 9<&-
       rm -f "$stderr_fifo"
       if [[ "$status" == "0" ]]; then
@@ -333,6 +737,77 @@ is_browser_endpoint_ready() {
   curl -sf "http://127.0.0.1:${port}/json/version" >/dev/null 2>&1
 }
 
+available_memory_mb() {
+  local page_size
+  local pages_free
+  local pages_inactive
+
+  page_size="$(vm_stat | awk '/page size of/ {gsub(/[^0-9]/, "", $8); print $8; exit}')"
+  [[ -n "$page_size" ]] || page_size=4096
+  pages_free="$(vm_stat | awk '/Pages free/ {gsub("\\.", "", $3); print $3; exit}')"
+  pages_inactive="$(vm_stat | awk '/Pages inactive/ {gsub("\\.", "", $3); print $3; exit}')"
+  [[ -n "$pages_free" ]] || pages_free=0
+  [[ -n "$pages_inactive" ]] || pages_inactive=0
+  echo $((((pages_free + pages_inactive) * page_size) / 1024 / 1024))
+}
+
+managed_chrome_root_count() {
+  local port
+  local sessionfile
+  {
+    port_listener_pid "9222"
+    port_listener_pid "9422"
+    shopt -s nullglob
+    for sessionfile in "${LOG_DIR}"/codex-chrome-session-*.env; do
+      port="$(sed -n 's/^PORT=//p' "$sessionfile" | head -n 1)"
+      [[ -n "$port" ]] || continue
+      port_listener_pid "$port"
+    done
+    shopt -u nullglob
+  } | sed '/^$/d' | awk '!seen[$0]++' | wc -l | tr -d ' '
+}
+
+count_orphaned_figma_console_processes() {
+  local pid=""
+  local count=0
+
+  while IFS= read -r pid; do
+    [[ -n "$pid" ]] || continue
+    if process_has_live_ancestor_matching "$pid" "codex-figma-console-mcp\\.sh"; then
+      continue
+    fi
+    count=$((count + 1))
+  done < <(pgrep -f "figma-console-mcp" 2>/dev/null || true)
+
+  printf '%s\n' "$count"
+}
+
+enforce_browser_pressure_guard() {
+  local launch_kind="$1"
+  local free_mb
+  local managed_roots
+  local orphaned_figma
+
+  orphaned_figma="$(count_orphaned_figma_console_processes)"
+  if [[ "$orphaned_figma" =~ ^[0-9]+$ ]] && (( orphaned_figma > 0 )); then
+    fail "Detected ${orphaned_figma} orphaned figma-console process(es); refusing to launch ${launch_kind} browser work under pressure. Run: make mcp-clean"
+  fi
+
+  managed_roots="$(managed_chrome_root_count)"
+  if [[ "$managed_roots" =~ ^[0-9]+$ ]] && (( managed_roots >= MANAGED_CHROME_ROOT_LIMIT )) && [[ "$launch_kind" == "isolated" ]]; then
+    fail "Managed Chrome root count is ${managed_roots}, at or above the safe limit ${MANAGED_CHROME_ROOT_LIMIT}. Refusing another isolated browser launch. Run: make mcp-clean or switch to shared mode."
+  fi
+
+  free_mb="$(available_memory_mb)"
+  if [[ "$free_mb" =~ ^[0-9]+$ ]] && (( free_mb < MEMORY_GUARD_MB )); then
+    fail "Only ${free_mb}MB free memory remains; refusing to launch ${launch_kind} browser work below ${MEMORY_GUARD_MB}MB. Use shared mode or run make mcp-clean."
+  fi
+}
+
+enforce_memory_budget_for_isolated() {
+  enforce_browser_pressure_guard "isolated"
+}
+
 wait_for_browser_endpoint() {
   local port="$1"
   local timeout_sec="${2:-20}"
@@ -383,12 +858,16 @@ cleanup_stale_state_for_port() {
   local pidfile="${LOG_DIR}/chrome-agent-${port}.pid"
   local statefile="${LOG_DIR}/chrome-agent-${port}.env"
   local reservefile="${LOG_DIR}/codex-chrome-port-${port}.reserve"
+  local listener_pid=""
 
   if [[ -f "$pidfile" ]]; then
     local pid
     pid="$(cat "$pidfile" 2>/dev/null || true)"
-    if [[ -z "$pid" ]] || ! kill -0 "$pid" >/dev/null 2>&1; then
+    listener_pid="$(lsof -nP -iTCP:"${port}" -sTCP:LISTEN -t 2>/dev/null | head -n 1 || true)"
+    if [[ -z "$listener_pid" ]] && ! is_browser_endpoint_ready "$port"; then
       rm -f "$pidfile" "$statefile"
+    elif [[ -n "$listener_pid" && "$listener_pid" != "$pid" ]]; then
+      printf '%s\n' "$listener_pid" >"$pidfile"
     fi
   fi
 
@@ -398,6 +877,31 @@ cleanup_stale_state_for_port() {
     if [[ -z "$owner_pid" ]] || ! kill -0 "$owner_pid" >/dev/null 2>&1; then
       rm -f "$reservefile"
     fi
+  fi
+}
+
+count_live_isolated_sessions() {
+  local sessionfile
+  local port
+  local count=0
+
+  shopt -s nullglob
+  for sessionfile in "${LOG_DIR}"/codex-chrome-session-*.env; do
+    port="$(sed -n 's/^PORT=//p' "$sessionfile" | head -n 1)"
+    [[ -n "$port" ]] || continue
+    if is_browser_endpoint_ready "$port"; then
+      count=$((count + 1))
+    fi
+  done
+  shopt -u nullglob
+  echo "$count"
+}
+
+enforce_isolated_session_cap() {
+  local live_sessions
+  live_sessions="$(count_live_isolated_sessions)"
+  if [[ "$live_sessions" =~ ^[0-9]+$ ]] && (( live_sessions >= MAX_ISOLATED_SESSIONS )); then
+    fail "Refusing to launch isolated Chrome session ${live_sessions}/${MAX_ISOLATED_SESSIONS}. Close or reap an older session, or use shared mode."
   fi
 }
 
@@ -426,15 +930,15 @@ reserve_port_with_lock() {
   local selected=""
 
   if command -v flock >/dev/null 2>&1; then
-    exec 9>"$PORT_LOCKFILE"
-    flock -x 9
+    exec 8>"$PORT_LOCKFILE"
+    flock -x 8
     selected="$(pick_available_port "$START_PORT" "$END_PORT" || true)"
     if [[ -n "$selected" ]]; then
       RESERVATION_FILE="${LOG_DIR}/codex-chrome-port-${selected}.reserve"
       echo "$$" >"$RESERVATION_FILE"
     fi
-    flock -u 9
-    exec 9>&-
+    flock -u 8
+    exec 8>&-
   else
     local spin=0
     local dir_lock="${PORT_LOCKFILE}.d"
@@ -520,36 +1024,20 @@ cleanup() {
   if [[ -n "$BROWSER_WATCH_PID" ]]; then
     kill "$BROWSER_WATCH_PID" 2>/dev/null || true
   fi
+  if [[ -n "$STDIN_WATCH_PID" ]]; then
+    kill "$STDIN_WATCH_PID" 2>/dev/null || true
+  fi
   if [[ -n "$MCP_TEE_PID" ]]; then
     kill "$MCP_TEE_PID" 2>/dev/null || true
   fi
-  # Kill the full descendant tree, not just direct children.
-  terminate_descendants "$SCRIPT_PID" TERM
-  sleep 0.2
-  terminate_descendants "$SCRIPT_PID" KILL
-
-  if [[ -n "$RESERVATION_FILE" ]]; then
-    rm -f "$RESERVATION_FILE"
+  terminate_mcp_runtime "cleanup"
+  if [[ "$MODE" != "shared" ]]; then
+    # Isolated mode still owns auxiliary children such as tab/browser watchers.
+    terminate_descendants "$SCRIPT_PID" TERM
+    sleep 0.2
+    terminate_descendants "$SCRIPT_PID" KILL
   fi
-  if [[ -n "$SHARED_WRAPPER_PIDFILE" && -f "$SHARED_WRAPPER_PIDFILE" ]]; then
-    local recorded_pid=""
-    recorded_pid="$(cat "$SHARED_WRAPPER_PIDFILE" 2>/dev/null || true)"
-    if [[ "$recorded_pid" == "$SCRIPT_PID" ]]; then
-      rm -f "$SHARED_WRAPPER_PIDFILE"
-    fi
-  fi
-  if [[ -n "$SESSION_FILE" ]]; then
-    rm -f "$SESSION_FILE"
-  fi
-  if [[ -n "$PAGE_ORDER_FILE" ]]; then
-    rm -f "$PAGE_ORDER_FILE"
-  fi
-  # Unblock any external reader (e.g. Codex's tail) stuck on the fifo by
-  # opening the write end non-blocking, then remove the fifo and stderr file.
-  local _cleanup_fifo="${MCP_RUN_LOG_DIR}/npm-exec-${SCRIPT_PID}.stderr.fifo"
-  _unblock_fifo "$_cleanup_fifo"
-  rm -f "${MCP_RUN_LOG_DIR}/npm-exec-${SCRIPT_PID}.stderr"
-  rm -f "$_cleanup_fifo"
+  cleanup_runtime_files
 
   if [[ "$STOP_ON_EXIT" == "1" ]] && [[ -n "$BROWSER_PORT" ]]; then
     CHROME_AGENT_DEBUG_PORT="$BROWSER_PORT" bash "${ROOT}/scripts/stop-chrome-agent.sh" >/dev/null 2>&1 || true
@@ -633,7 +1121,7 @@ reap_orphaned_mcp_for_port() {
 
   while IFS= read -r watchdog_pid; do
     [[ -n "$watchdog_pid" ]] || continue
-    watchdog_parent="$(ps -o command= -p "$watchdog_pid" 2>/dev/null | sed -n 's/.*--parent-pid=\([0-9][0-9]*\).*/\1/p')"
+    watchdog_parent="$(ps -o command= -p "$watchdog_pid" 2>/dev/null | sed -n 's/.*--parent-pid=\([0-9][0-9]*\).*/\1/p' || true)"
     if [[ -n "$watchdog_parent" ]] && ! kill -0 "$watchdog_parent" >/dev/null 2>&1; then
       stale_watchdogs+=("$watchdog_pid")
     fi
@@ -672,8 +1160,8 @@ register_shared_wrapper() {
   local existing_pgid=""
 
   if command -v flock >/dev/null 2>&1; then
-    exec 9>"$PORT_LOCKFILE"
-    flock -x 9
+    exec 8>"$PORT_LOCKFILE"
+    flock -x 8
     if [[ -f "$pidfile" ]]; then
       existing_pid="$(cat "$pidfile" 2>/dev/null || true)"
       if [[ -n "$existing_pid" && "$existing_pid" != "$SCRIPT_PID" ]] && kill -0 "$existing_pid" >/dev/null 2>&1; then
@@ -687,8 +1175,8 @@ register_shared_wrapper() {
       fi
     fi
     echo "$SCRIPT_PID" >"$pidfile"
-    flock -u 9
-    exec 9>&-
+    flock -u 8
+    exec 8>&-
   else
     echo "$SCRIPT_PID" >"$pidfile"
   fi
@@ -730,6 +1218,9 @@ EOF
 }
 
 start_isolated_tab_watch() {
+  if [[ "$ENABLE_TAB_WATCH" != "1" ]]; then
+    return 0
+  fi
   if [[ "$MODE" != "isolated" || -z "$BROWSER_PORT" || -z "$SESSION_FILE" ]]; then
     return 0
   fi
@@ -780,6 +1271,7 @@ start_isolated_browser_watchdog() {
 
 ensure_node_baseline_or_fail
 SCRIPT_PGID="$(pgid_for_pid "$SCRIPT_PID")"
+ORIGINAL_PPID="$(ps -o ppid= -p "$SCRIPT_PID" 2>/dev/null | tr -d ' ' || true)"
 
 if [[ "$SKIP_BROWSER_BOOT" == "1" ]] || is_info_invocation "$@"; then
   run_chrome_devtools_mcp "$@"
@@ -807,92 +1299,6 @@ trap 'cleanup; exit 130' INT
 trap 'cleanup; exit 129' HUP
 trap 'cleanup; exit 143' TERM
 
-# Orphan watchdog: if Claude Code exits/crashes without sending SIGTERM,
-# our parent PID will change to 1 (launchd).  This background loop detects
-# that and triggers cleanup so we don't leave processes running indefinitely.
-#
-# IMPORTANT: The watchdog traps TERM/HUP/INT so it survives its own
-# kill-process-group call.  Without this, the SIGTERM it sends to the PGID
-# kills the watchdog itself before it can follow up with SIGKILL, leaving
-# children that survived SIGTERM (e.g. npm's graceful shutdown) permanently
-# orphaned.  For the SIGKILL phase it enumerates PGID members individually
-# and skips its own PID, since SIGKILL cannot be trapped.
-_ORIGINAL_PPID="$(ps -o ppid= -p "$SCRIPT_PID" 2>/dev/null | tr -d ' ')"
-if [[ -n "$_ORIGINAL_PPID" ]]; then
-  (
-    # Survive our own group-wide SIGTERM so we can follow up with SIGKILL.
-    trap '' TERM HUP INT
-    _wd_self="$BASHPID"
-    exec </dev/null >/dev/null 2>&1
-    _sweep_counter=0
-    while sleep 5; do
-      # Detect parent death: either wrapper is gone entirely, PPID changed
-      # (reparented), or original parent PID is no longer alive.
-      current_ppid="$(ps -o ppid= -p "$SCRIPT_PID" 2>/dev/null | tr -d ' ')"
-      _parent_alive=1
-      if [[ -z "$current_ppid" ]]; then
-        _parent_alive=0
-      elif [[ "$_ORIGINAL_PPID" != "1" && "$current_ppid" != "$_ORIGINAL_PPID" ]]; then
-        _parent_alive=0
-      elif [[ "$_ORIGINAL_PPID" != "1" ]] && ! kill -0 "$_ORIGINAL_PPID" 2>/dev/null; then
-        _parent_alive=0
-      fi
-      # Periodically sweep stale sessions from all wrappers (every ~5 min)
-      _sweep_counter=$((_sweep_counter + 1))
-      if (( _sweep_counter >= 60 )); then
-        _sweep_counter=0
-        _sweep_stale_mcp_sessions 2>/dev/null || true
-      fi
-      if [[ "$_parent_alive" == "0" ]]; then
-        # Phase 1: SIGTERM to the whole process group. We survive via trap.
-        kill -TERM -- "-${SCRIPT_PGID}" 2>/dev/null || true
-        sleep 1
-        # Phase 2: SIGKILL remaining group members individually (skip self,
-        # because SIGKILL cannot be trapped and we still need to clean up).
-        # Note: no `local` here — we are in a subshell, not a function.
-        _wd_target=""
-        while IFS= read -r _wd_target; do
-          _wd_target="$(printf '%s' "$_wd_target" | tr -d ' ')"
-          [[ -n "$_wd_target" && "$_wd_target" != "$_wd_self" ]] || continue
-          kill -KILL "$_wd_target" 2>/dev/null || true
-        done < <(ps -axo pid=,pgid= | awk -v g="$SCRIPT_PGID" '$2 == g { print $1 }')
-        # Phase 3: Kill any telemetry watchdog that escaped to its own PGID.
-        _wd_tw=""
-        _wd_tw_parent=""
-        while IFS= read -r _wd_tw; do
-          [[ -n "$_wd_tw" ]] || continue
-          _wd_tw_parent="$(ps -o command= -p "$_wd_tw" 2>/dev/null | sed -n 's/.*--parent-pid=\([0-9][0-9]*\).*/\1/p')"
-          if [[ -n "$_wd_tw_parent" ]] && ! kill -0 "$_wd_tw_parent" 2>/dev/null; then
-            kill -KILL "$_wd_tw" 2>/dev/null || true
-          fi
-        done < <(pgrep -f "chrome-devtools-mcp.*telemetry/watchdog" 2>/dev/null || true)
-        # Phase 4: Clean up files so they don't accumulate.
-        _wd_fifo="${MCP_RUN_LOG_DIR}/npm-exec-${SCRIPT_PID}.stderr.fifo"
-        if [[ -p "$_wd_fifo" ]]; then
-          # Unblock external reader (Codex tail) via non-blocking write-end open.
-          perl -e '
-            use Fcntl;
-            sysopen(my $fh, $ARGV[0], O_WRONLY | O_NONBLOCK) or exit 0;
-            print $fh "\n";
-            close $fh;
-          ' "$_wd_fifo" 2>/dev/null || true
-          rm -f "$_wd_fifo"
-        fi
-        rm -f "${MCP_RUN_LOG_DIR}/npm-exec-${SCRIPT_PID}.stderr"
-        [[ -z "${RESERVATION_FILE:-}" ]] || rm -f "$RESERVATION_FILE"
-        [[ -z "${SESSION_FILE:-}" ]] || rm -f "$SESSION_FILE"
-        [[ -z "${PAGE_ORDER_FILE:-}" ]] || rm -f "$PAGE_ORDER_FILE"
-        if [[ -n "${SHARED_WRAPPER_PIDFILE:-}" && -f "${SHARED_WRAPPER_PIDFILE:-}" ]]; then
-          _wd_rec="$(cat "$SHARED_WRAPPER_PIDFILE" 2>/dev/null || true)"
-          [[ "$_wd_rec" != "$SCRIPT_PID" ]] || rm -f "$SHARED_WRAPPER_PIDFILE"
-        fi
-        break
-      fi
-    done
-  ) &
-  WATCHDOG_PID=$!
-fi
-
 case "$MODE" in
   shared)
     BROWSER_PORT="${FORCED_PORT:-9222}"
@@ -901,20 +1307,22 @@ case "$MODE" in
     fi
     cleanup_stale_state_for_port "$BROWSER_PORT"
     if ! is_port_listening "$BROWSER_PORT"; then
+      if headful_mode_enabled; then
+        enforce_browser_pressure_guard "shared"
+      fi
       chrome_mcp_log "Shared Chrome not running on ${BROWSER_PORT}; auto-launching..."
       CHROME_AGENT_DEBUG_PORT="$BROWSER_PORT" \
         CHROME_AGENT_PROFILE_DIR="${SEED_PROFILE_DIR}" \
-        CHROME_AGENT_HEADLESS=0 \
+        CHROME_AGENT_HEADLESS="${SHARED_HEADLESS}" \
         bash "${ROOT}/scripts/chrome-agent.sh" >/dev/null
-      if ! is_port_listening "$BROWSER_PORT"; then
-        shared_browser_remediation "$BROWSER_PORT"
-        exit 1
-      fi
       chrome_mcp_log "Shared Chrome auto-launched on ${BROWSER_PORT}."
     fi
     if ! wait_for_browser_endpoint "$BROWSER_PORT" "$BROWSER_READY_TIMEOUT_SEC"; then
       shared_browser_remediation "$BROWSER_PORT"
       fail "Shared Chrome endpoint did not become ready on ${BROWSER_PORT}."
+    fi
+    if headful_mode_enabled; then
+      claim_visible_browser_owner "$(port_listener_pid "$BROWSER_PORT")"
     fi
     # Shared Chrome must support concurrent MCP clients from multiple Codex
     # threads. Singleton preemption is opt-in only for manual experiments.
@@ -928,6 +1336,9 @@ case "$MODE" in
     fi
     ;;
   isolated)
+    BROWSER_PORT="${FORCED_PORT:-}"
+    enforce_isolated_session_cap
+    enforce_memory_budget_for_isolated
     if [[ -n "$FORCED_PORT" ]]; then
       if [[ "$FORCED_PORT" =~ ^[0-9]+$ ]]; then
         BROWSER_PORT="$FORCED_PORT"
@@ -949,6 +1360,9 @@ case "$MODE" in
     CHROME_AGENT_PROFILE_DIR="$profile_dir" CHROME_AGENT_DEBUG_PORT="$BROWSER_PORT" CHROME_AGENT_HEADLESS="$ISOLATED_HEADLESS" bash "${ROOT}/scripts/chrome-agent.sh" >/dev/null
     STOP_ON_EXIT=1
     ensure_isolated_browser_ready_or_fail "$BROWSER_PORT" "$profile_dir"
+    if headful_mode_enabled; then
+      claim_visible_browser_owner "$(port_listener_pid "$BROWSER_PORT")"
+    fi
     SESSION_FILE="${LOG_DIR}/codex-chrome-session-${BROWSER_PORT}.env"
     write_isolated_session_file "$profile_dir" "0" ""
     start_isolated_tab_watch
@@ -980,7 +1394,7 @@ chrome_mcp_log "Using Chrome DevTools endpoint http://127.0.0.1:${BROWSER_PORT} 
     sleep 5
   done
 ) &
-_STDIN_WATCH_PID=$!
+STDIN_WATCH_PID=$!
 
 # Keep the MCP server in the foreground so Codex can complete the stdio handshake.
 # Backgrounding the process causes stdin to be detached in non-interactive shells.
@@ -988,6 +1402,6 @@ run_chrome_devtools_mcp --browserUrl "http://127.0.0.1:${BROWSER_PORT}" "$@"
 _MCP_EXIT=$?
 
 # Clean up stdin watchdog
-kill "$_STDIN_WATCH_PID" 2>/dev/null || true
+kill "$STDIN_WATCH_PID" 2>/dev/null || true
 
 exit "$_MCP_EXIT"

@@ -1,0 +1,33 @@
+# Personal Codex defaults live here.
+# Keep TRR-specific settings in the trusted project-local `.codex/config.toml`.
+
+[projects."__TRR_ROOT__"]
+trust_level = "trusted"
+
+[mcp_servers.chrome-devtools]
+command = "__HOME__/.codex/bin/codex-chrome-devtools-mcp-global.sh"
+env = { CODEX_CHROME_MODE = "shared", CODEX_CHROME_HEADLESS = "1" }
+enabled = true
+startup_timeout_sec = 45
+tool_timeout_sec = 120
+
+[mcp_servers.figma]
+url = "https://mcp.figma.com/mcp"
+enabled = true
+
+[mcp_servers.figma-desktop]
+url = "http://127.0.0.1:3845/mcp"
+enabled = false
+
+[mcp_servers.figma-console]
+command = "__HOME__/.codex/bin/codex-figma-console-mcp.sh"
+enabled = false
+
+[mcp_servers.playwright]
+command = "npx"
+args = ["-y", "@playwright/mcp", "--isolated"]
+enabled = false
+
+[mcp_servers.github]
+url = "https://api.githubcopilot.com/mcp"
+bearer_token_env_var = "GITHUB_PAT"

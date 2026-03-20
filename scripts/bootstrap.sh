@@ -13,21 +13,31 @@ resolve_python_bin() {
 
   if [[ -n "$configured" ]]; then
     if [[ -x "$configured" ]]; then
-      echo "$configured"
-      return 0
+      path="$configured"
+    elif command -v "$configured" >/dev/null 2>&1; then
+      path="$(command -v "$configured")"
+    else
+      echo "[bootstrap] WARNING: PYTHON_BIN is set but not executable/found: ${configured}" >&2
+      path=""
     fi
-    if command -v "$configured" >/dev/null 2>&1; then
-      command -v "$configured"
-      return 0
+
+    if [[ -n "$path" ]]; then
+      if python_version_ok "$path"; then
+        echo "$path"
+        return 0
+      fi
+      echo "[bootstrap] WARNING: skipping ${path} ($(python_version_str "$path")); need >=${REQUIRED_PY_MAJOR}.${REQUIRED_PY_MINOR}." >&2
     fi
-    echo "[bootstrap] WARNING: PYTHON_BIN is set but not executable/found: ${configured}" >&2
   fi
 
   for candidate in python3.11 python3 python; do
     if command -v "$candidate" >/dev/null 2>&1; then
       path="$(command -v "$candidate")"
-      echo "$path"
-      return 0
+      if python_version_ok "$path"; then
+        echo "$path"
+        return 0
+      fi
+      echo "[bootstrap] WARNING: skipping ${path} ($(python_version_str "$path")); need >=${REQUIRED_PY_MAJOR}.${REQUIRED_PY_MINOR}." >&2
     fi
   done
 

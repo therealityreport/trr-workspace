@@ -9,6 +9,7 @@ Use these commands from `/Users/thomashulihan/Projects/TRR`.
 - `make test-fast`
 - `make test-full`
 - `make test-changed`
+- `make codex-check`
 - `make mcp-clean`
 - `make help`
 
@@ -16,6 +17,7 @@ Use these commands from `/Users/thomashulihan/Projects/TRR`.
 - `make dev-local` — local Docker-backed screenalytics mode
 - `make down` — tear down local Docker infra used by `make dev-local`
 - `make bootstrap` — one-time dependency setup
+- `bash scripts/codex-config-sync.sh bootstrap` — bootstrap minimal user-level `~/.codex` files without reapplying TRR project config there
 
 ## Quick URLs
 - TRR-APP: `http://127.0.0.1:3000`
