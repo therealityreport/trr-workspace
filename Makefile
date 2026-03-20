@@ -1,6 +1,6 @@
 .PHONY: \
 	dev dev-lite dev-cloud dev-local dev-full \
-	preflight preflight-local preflight-strict preflight-diagnostics env-contract check-policy handoff-check handoff-sync smoke status stop logs logs-prune cleanup-disk help \
+	preflight preflight-local preflight-strict preflight-diagnostics env-contract check-policy codex-check handoff-check handoff-sync smoke status stop logs logs-prune cleanup-disk help \
 	bootstrap doctor test test-fast test-full test-changed test-env-sensitive \
 	cast-screentime-gap-check cast-screentime-live-check \
 	down chrome-devtools-mcp-status chrome-devtools-mcp-clean-stale chrome-devtools-mcp-stop-conflicts \
@@ -66,6 +66,9 @@ env-contract:
 
 check-policy:
 	@bash scripts/check-policy.sh
+
+codex-check:
+	@bash scripts/check-codex.sh
 
 handoff-check:
 	@python3 scripts/sync-handoffs.py --check
@@ -133,6 +136,7 @@ help:
 	@echo "  make dev-local    - local Docker mode; starts Redis + MinIO for screenalytics"
 	@echo "  make preflight    - validates the default no-Docker dev path"
 	@echo "  make preflight-local - validates the Docker-backed local path"
+	@echo "  make codex-check  - validates tracked Codex config, rules, and user bootstrap state"
 	@echo "  make down         - tears down local Docker infra used by make dev-local"
 	@echo "Legacy aliases:"
 	@echo "  make dev-cloud    - deprecated alias for make dev"

@@ -1,4 +1,5 @@
 {
-  "python.defaultInterpreterPath": "/opt/homebrew/bin/python3.11",
-  "python.terminal.activateEnvironment": true
+  "task.allowAutomaticTasks": "off",
+  "terminal.integrated.enablePersistentSessions": false,
+  "chatgpt.openOnStartup": false
 }

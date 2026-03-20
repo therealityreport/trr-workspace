@@ -4,6 +4,21 @@
 - Operator: Codex
 - Status: complete
 
+## 2026-03-18 Workflow V2 Addendum
+
+The current planning workflow is now:
+
+1. `write-plan-codex` - draft an execution-ready plan
+2. `plan-enhancer` - default refinement step for an existing plan before execution, skippable if the user explicitly wants to
+3. `orchestrate-plan-execution` - execute the approved plan phase by phase
+
+Current boundary summary:
+- `write-plan-codex` owns first-draft planning and hidden-scope detection.
+- `plan-enhancer` owns critique, clarification questions, and plan upgrade.
+- `orchestrate-plan-execution` owns plan-aligned mutation sessions after approval.
+
+Historical notes below reflect the original v1 rollout that introduced `orchestrate-plan-execution`. They remain useful as history, but the workflow above supersedes any older wording that describes `orchestrate-plan-execution` as the default combined planning-and-execution entrypoint.
+
 ## Baseline Routing Snapshot (Before)
 
 ### /Users/thomashulihan/Projects/TRR/AGENTS.md

@@ -1,8 +1,57 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+LOG_DIR="${ROOT}/.logs/workspace"
+VISIBLE_BROWSER_OWNER_FILE="${LOG_DIR}/chrome-devtools-visible-browser-owner.env"
 APPLY=0
 INCLUDE_CLAUDE=0
+
+owner_field() {
+  local key="$1"
+  [[ -f "$VISIBLE_BROWSER_OWNER_FILE" ]] || return 0
+  sed -n "s/^${key}=//p" "$VISIBLE_BROWSER_OWNER_FILE" | head -n 1
+}
+
+print_owner_summary() {
+  local owner_pid
+  local wrapper_pid
+  local owner_mode
+  local owner_port
+  local owner_headless
+  local listener_pid
+  local owner_state="none"
+
+  if [[ ! -f "$VISIBLE_BROWSER_OWNER_FILE" ]]; then
+    echo "[chrome-devtools-mcp] Visible browser owner: none"
+    return 0
+  fi
+
+  owner_pid="$(owner_field BROWSER_PID)"
+  if [[ -z "$owner_pid" ]]; then
+    owner_pid="$(owner_field OWNER_PID)"
+  fi
+  wrapper_pid="$(owner_field WRAPPER_PID)"
+  owner_mode="$(owner_field MODE)"
+  owner_port="$(owner_field PORT)"
+  owner_headless="$(owner_field HEADLESS)"
+  if [[ -n "$owner_port" ]]; then
+    listener_pid="$(lsof -nP -iTCP:"${owner_port}" -sTCP:LISTEN -t 2>/dev/null | head -n 1 || true)"
+  fi
+
+  if [[ -n "$owner_pid" ]] && kill -0 "$owner_pid" >/dev/null 2>&1; then
+    if [[ -n "$wrapper_pid" ]] && kill -0 "$wrapper_pid" >/dev/null 2>&1; then
+      owner_state="live"
+    else
+      owner_state="stale-wrapper"
+    fi
+  elif [[ -n "$listener_pid" ]]; then
+    owner_state="stale-wrapper"
+  else
+    owner_state="stale-browser"
+  fi
+  echo "[chrome-devtools-mcp] Visible browser owner: state=${owner_state} browser_pid=${owner_pid:-missing} wrapper_pid=${wrapper_pid:-missing} mode=${owner_mode:-unknown} port=${owner_port:-unknown} headless=${owner_headless:-unknown}"
+}
 
 usage() {
   cat <<'EOF'
@@ -69,10 +118,12 @@ terminable_conflicts="$(printf '%s\n' "$conflicts" | sed '/^$/d' | filter_termin
 terminable_count="$(printf '%s\n' "$terminable_conflicts" | sed '/^$/d' | wc -l | tr -d ' ')"
 
 if [[ "$count" == "0" ]]; then
+  print_owner_summary
   echo "[chrome-devtools-mcp] No conflicting non-Codex browser-control clients detected."
   exit 0
 fi
 
+print_owner_summary
 echo "[chrome-devtools-mcp] Conflicting non-Codex browser-control clients:"
 printf '%s\n' "$conflicts" | sed '/^$/d' | while IFS=$'\t' read -r kind line; do
   echo "  - ${kind}: ${line}"
@@ -84,6 +135,7 @@ if [[ "$APPLY" != "1" ]]; then
   else
     echo "[chrome-devtools-mcp] Dry run only. Re-run with --apply to terminate non-Claude conflicts."
   fi
+  echo "[chrome-devtools-mcp] If a visible browser is already owned by another wrapper, close that session before retrying headful shared mode."
   echo "[chrome-devtools-mcp] Claude browser-control clients are preserved by default."
   echo "[chrome-devtools-mcp] Re-run with --apply --include-claude only if you explicitly want to terminate Claude browser-control clients too."
   exit 0

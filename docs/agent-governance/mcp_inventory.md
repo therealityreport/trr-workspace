@@ -1,11 +1,12 @@
 # MCP Inventory (Codex Config)
 
-Remote MCP servers are bridged via `scripts/codex-mcp-http-bridge.sh` (stdio→HTTP via `mcp-remote`) because Codex CLI 0.98.x has a broken Streamable HTTP transport. Remove the bridge when Codex ships a fix. Track: https://github.com/openai/codex/issues/11284
+Reusable MCP registrations live in `~/.codex/config.toml`. TRR-local MCPs live in `.codex/config.toml` and activate only when `/Users/thomashulihan/Projects/TRR` is trusted in the global config. If shared MCPs disappear in TRR, check the trusted-project entry first; this is a config activation issue, not a skill-routing issue.
 
-| MCP Server | Config Type | Invocation Guidance |
+| MCP Server | Config Owner | Invocation Guidance |
 |---|---|---|
-| `chrome-devtools` | `command` (stdio) | Browser navigation/inspection and authenticated web automation in managed Chrome. Enabled for all chats in this workspace and documented as a mandatory always-on capability. |
-| `figma` | `command` (bridged) | Figma cloud design context, screenshots, variables, code connect. Bridged from `https://mcp.figma.com/mcp`. |
-| `figma-desktop` | `command` (bridged) | Local desktop Figma workflows when enabled. Bridged from `http://127.0.0.1:3845/mcp`. |
-| `github` | `command` (bridged) | GitHub metadata and MCP-hosted remote operations. Bridged from `https://api.githubcopilot.com/mcp` with `GITHUB_PAT`. |
-| `supabase` | `command` (bridged) | Supabase DB/schema/functions/storage/log operations. Bridged from `https://mcp.supabase.com/mcp` with `SUPABASE_ACCESS_TOKEN`. |
+| `chrome-devtools` | trusted project-local `.codex/config.toml` | Browser navigation, inspection, and authenticated web automation in managed Chrome via the TRR wrapper. |
+| `figma` | user-global `~/.codex/config.toml` | Official Figma cloud design context, screenshots, variables, and code connect. |
+| `figma-console` | user-global `~/.codex/config.toml` | Figma Console MCP for write actions, Desktop Bridge workflows, plugin debugging, and live monitoring. |
+| `figma-desktop` | user-global `~/.codex/config.toml` | Local desktop Figma workflows when enabled. |
+| `github` | user-global `~/.codex/config.toml` | GitHub metadata and MCP-hosted remote operations with `GITHUB_PAT`. |
+| `supabase` | trusted project-local `.codex/config.toml` | Supabase DB, schema, function, storage, and project operations for the TRR project only. |

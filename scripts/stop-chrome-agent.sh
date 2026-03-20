@@ -3,9 +3,21 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LOG_DIR="${ROOT}/.logs/workspace"
+CODEX_HOME_DIR="${CODEX_HOME:-$HOME/.codex}"
+HEADFUL_OWNER_FILE="${CODEX_CHROME_OWNER_DIR:-${CODEX_HOME_DIR}/tmp/browser-control}/headful-chrome-owner.env"
 DEBUG_PORT="${CHROME_AGENT_DEBUG_PORT:-9222}"
 LEGACY_PIDFILE="${LOG_DIR}/chrome-agent.pid"
 STOP_ALL="${CHROME_AGENT_STOP_ALL:-0}"
+
+clear_headful_owner_if_matches() {
+  local chrome_pid="$1"
+  [[ -f "$HEADFUL_OWNER_FILE" ]] || return 0
+  local owner_pid=""
+  owner_pid="$(sed -n 's/^PID=//p' "$HEADFUL_OWNER_FILE" | head -n 1)"
+  if [[ -z "$owner_pid" || "$owner_pid" == "$chrome_pid" ]]; then
+    rm -f "$HEADFUL_OWNER_FILE"
+  fi
+}
 
 stop_by_port() {
   local port="$1"
@@ -44,6 +56,7 @@ stop_by_port() {
   CHROME_PID="$(cat "$pidfile")"
   rm -f "$pidfile"
   rm -f "$statefile"
+  clear_headful_owner_if_matches "$CHROME_PID"
   if [[ "$port" == "9222" ]]; then
     rm -f "$legacy_pidfile"
   fi

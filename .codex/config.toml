@@ -1,0 +1,16 @@
+# Canonical shared Codex configuration for the TRR workspace.
+# Reusable MCPs live in ~/.codex/config.toml; trusted TRR-local settings live here.
+
+model = "gpt-5.4"
+model_reasoning_effort = "high"
+personality = "pragmatic"
+approval_policy = "never"
+sandbox_mode = "danger-full-access"
+web_search = "cached"
+
+# Chrome DevTools is inherited from ~/.codex/config.toml so TRR uses the
+# shared 9422 browser keeper by default.
+
+[mcp_servers.supabase]
+url = "https://mcp.supabase.com/mcp?project_ref=vwxfvzutyufrkhfgoeaa&features=docs%2Caccount%2Cdatabase%2Cdebugging%2Cdevelopment%2Cfunctions%2Cbranching%2Cstorage"
+bearer_token_env_var = "SUPABASE_ACCESS_TOKEN"

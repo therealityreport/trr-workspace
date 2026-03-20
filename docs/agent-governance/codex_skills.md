@@ -25,14 +25,17 @@ Use TRR-local canonical skills first. This file is the routing summary, not a fu
 - `skills/skillcreator/SKILL.md` — TRR-local skill authoring and maintenance
 
 ## Canonical Global Skills
-- `orchestrate-plan-execution` — non-trivial mutation sessions
-- `write-plan-codex` — planning-only sessions
+- `write-plan-codex` — first-draft, execution-ready planning sessions
+- `plan-enhancer` — critique and refinement of an existing plan before execution
+- `orchestrate-plan-execution` — plan-aligned execution for non-trivial mutation sessions
 - `tdd-guide` — test-first delivery when the task calls for it
 - `tech-stack-evaluator` — stack/tool comparison
-- `figma` — Figma MCP workflow
+- `figma` — dual-MCP Figma workflow owner for official Figma MCP plus `figma-console`
 - `chatgpt-apps`, `git-feature-implementer`, `.system/skill-creator`, `.system/skill-installer` — keep global ownership
 
 ## Defaults
-- For cross-repo implementation, start with `orchestrate-plan-execution`, then add the smallest set of local owners needed for the touched surfaces.
+- If no plan exists yet, start with `write-plan-codex`.
+- If a plan exists but needs stronger scope, sequencing, or optional-feature discovery, use `plan-enhancer` as the default middle refinement step. Users may explicitly skip it.
+- For cross-repo implementation, start execution with `orchestrate-plan-execution` after plan approval, then add the smallest set of local owners needed for the touched surfaces.
 - Prefer one canonical owner per surface instead of stacking overlapping generic skills.
 - Treat global vendored specialists as references, not TRR owners, unless this file explicitly promotes them.

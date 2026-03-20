@@ -61,6 +61,8 @@ done < <(
 POLICY_SCAN_FILES=(
   "${AGENTS_FILES[@]}"
   "${CLAUDE_FILES[@]}"
+  "$ROOT/.codex/config.toml"
+  "$ROOT/.codex/rules/default.rules"
   "$ROOT/docs/workspace/dev-commands.md"
   "$ROOT/docs/workspace/chrome-devtools.md"
   "$ROOT/docs/ai/HANDOFF_WORKFLOW.md"
@@ -125,6 +127,16 @@ check_root_agents() {
 
   if ! rg -q '^## MCP Invocation Matrix' "$file"; then
     echo "[check-policy] ERROR: missing MCP matrix section in $file" >&2
+    failures=$((failures + 1))
+  fi
+
+  if ! rg -q '^## Trust Boundaries' "$file"; then
+    echo "[check-policy] ERROR: missing trust boundaries section in $file" >&2
+    failures=$((failures + 1))
+  fi
+
+  if ! rg -q 'untrusted input' "$file"; then
+    echo "[check-policy] ERROR: missing explicit untrusted-input language in $file" >&2
     failures=$((failures + 1))
   fi
 
@@ -235,6 +247,11 @@ rm -f /tmp/trr-policy-playwright-hits.txt
 
 if ! make -C "$ROOT" --no-print-directory handoff-check; then
   echo "[check-policy] ERROR: generated handoffs are out of sync or canonical sources are invalid." >&2
+  failures=$((failures + 1))
+fi
+
+if ! bash "$ROOT/scripts/check-codex.sh"; then
+  echo "[check-policy] ERROR: Codex config or rules validation failed." >&2
   failures=$((failures + 1))
 fi
 
