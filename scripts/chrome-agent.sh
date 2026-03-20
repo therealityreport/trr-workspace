@@ -3,10 +3,14 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LOG_DIR="${ROOT}/.logs/workspace"
+CODEX_HOME_DIR="${CODEX_HOME:-$HOME/.codex}"
+HEADFUL_OWNER_DIR="${CODEX_CHROME_OWNER_DIR:-${CODEX_HOME_DIR}/tmp/browser-control}"
+HEADFUL_OWNER_FILE="${HEADFUL_OWNER_DIR}/headful-chrome-owner.env"
 
 PROFILE_DIR="${CHROME_AGENT_PROFILE_DIR:-${HOME}/.chrome-profiles/claude-agent}"
 DEBUG_PORT="${CHROME_AGENT_DEBUG_PORT:-9222}"
 HEADLESS="${CHROME_AGENT_HEADLESS:-0}"
+DISABLE_GPU="${CHROME_AGENT_DISABLE_GPU:-0}"
 
 PIDFILE="${LOG_DIR}/chrome-agent-${DEBUG_PORT}.pid"
 LOGFILE="${LOG_DIR}/chrome-agent-${DEBUG_PORT}.log"
@@ -15,6 +19,92 @@ LEGACY_PIDFILE="${LOG_DIR}/chrome-agent.pid"
 LOCKFILE="${LOG_DIR}/chrome-agent-${DEBUG_PORT}.lock"
 
 mkdir -p "$LOG_DIR"
+
+clear_stale_headful_owner() {
+  [[ -f "$HEADFUL_OWNER_FILE" ]] || return 0
+  local owner_pid=""
+  owner_pid="$(sed -n 's/^PID=//p' "$HEADFUL_OWNER_FILE" | head -n 1)"
+  if [[ -n "$owner_pid" ]] && kill -0 "$owner_pid" >/dev/null 2>&1; then
+    return 0
+  fi
+  rm -f "$HEADFUL_OWNER_FILE"
+}
+
+claim_headful_owner() {
+  local browser_pid="$1"
+  mkdir -p "$HEADFUL_OWNER_DIR"
+  clear_stale_headful_owner
+  if [[ -f "$HEADFUL_OWNER_FILE" ]]; then
+    local owner_pid=""
+    local owner_port=""
+    local owner_profile=""
+    owner_pid="$(sed -n 's/^PID=//p' "$HEADFUL_OWNER_FILE" | head -n 1)"
+    owner_port="$(sed -n 's/^PORT=//p' "$HEADFUL_OWNER_FILE" | head -n 1)"
+    owner_profile="$(sed -n 's/^PROFILE_DIR=//p' "$HEADFUL_OWNER_FILE" | head -n 1)"
+    if [[ -n "$owner_pid" ]] && kill -0 "$owner_pid" >/dev/null 2>&1; then
+      echo "[chrome-agent] ERROR: headful Chrome ownership is already held by pid=${owner_pid} port=${owner_port:-unknown} profile=${owner_profile:-unknown}." >&2
+      echo "[chrome-agent] ERROR: Stop the existing headful browser before launching another visible managed Chrome." >&2
+      exit 1
+    fi
+    rm -f "$HEADFUL_OWNER_FILE"
+  fi
+  cat >"$HEADFUL_OWNER_FILE" <<EOF
+PID=${browser_pid}
+PORT=${DEBUG_PORT}
+PROFILE_DIR=${PROFILE_DIR}
+HEADLESS=${HEADLESS}
+EOF
+}
+
+port_pid() {
+  local target_port="${1:-$DEBUG_PORT}"
+  if command -v lsof >/dev/null 2>&1; then
+    lsof -nP -iTCP:"${target_port}" -sTCP:LISTEN -t 2>/dev/null | head -n 1 || true
+  fi
+}
+
+endpoint_ready() {
+  local target_port="${1:-$DEBUG_PORT}"
+  curl -sf "http://localhost:${target_port}/json/version" >/dev/null 2>&1
+}
+
+health_check() {
+  local target_port="${1:-$DEBUG_PORT}"
+  local lsof_pid=""
+  local pidfile_path="${LOG_DIR}/chrome-agent-${target_port}.pid"
+  local statefile_path="${LOG_DIR}/chrome-agent-${target_port}.env"
+  local file_pid=""
+  local endpoint_state="missing"
+  local pid_match="unknown"
+
+  lsof_pid="$(port_pid "$target_port")"
+  file_pid="$(cat "$pidfile_path" 2>/dev/null || true)"
+  if endpoint_ready "$target_port"; then
+    endpoint_state="ready"
+  fi
+  if [[ -n "$lsof_pid" && -n "$file_pid" && "$lsof_pid" == "$file_pid" ]]; then
+    pid_match="match"
+  elif [[ -n "$lsof_pid" && -n "$file_pid" ]]; then
+    pid_match="mismatch"
+  fi
+
+  cat <<EOF
+port=${target_port}
+listener_pid=${lsof_pid:-missing}
+pidfile=${pidfile_path}
+pidfile_pid=${file_pid:-missing}
+statefile=${statefile_path}
+endpoint=${endpoint_state}
+pid_match=${pid_match}
+health=$([[ -n "$lsof_pid" && "$endpoint_state" == "ready" ]] && echo healthy || echo unhealthy)
+EOF
+}
+
+if [[ "${1:-}" == "health" ]]; then
+  shift
+  health_check "${1:-$DEBUG_PORT}"
+  exit 0
+fi
 
 # --- Resolve Chrome binary (macOS / Linux) ---
 find_chrome() {
@@ -68,16 +158,13 @@ launch_chrome() {
 }
 
 # --- Check if already running on the debugging port ---
-port_pid() {
-  if command -v lsof >/dev/null 2>&1; then
-    lsof -nP -iTCP:"${DEBUG_PORT}" -sTCP:LISTEN -t 2>/dev/null | head -n 1 || true
-  fi
-}
-
 existing_pid="$(port_pid)"
 if [[ -n "$existing_pid" ]]; then
   echo "[chrome-agent] Chrome agent already running on port ${DEBUG_PORT} (pid=${existing_pid})."
   echo "[chrome-agent] DevTools endpoint: http://localhost:${DEBUG_PORT}"
+  if [[ "$HEADLESS" != "1" ]]; then
+    claim_headful_owner "$existing_pid"
+  fi
   exit 0
 fi
 
@@ -95,6 +182,10 @@ CHROME_FLAGS=(
   "--remote-debugging-port=${DEBUG_PORT}"
   "--no-first-run"
   "--no-default-browser-check"
+  "--disable-background-networking"
+  "--disable-sync"
+  "--disable-extensions"
+  "--disable-crash-reporter"
   "--disable-background-timer-throttling"
   "--disable-backgrounding-occluded-windows"
   "--disable-renderer-backgrounding"
@@ -102,6 +193,10 @@ CHROME_FLAGS=(
 
 if [[ "$HEADLESS" == "1" ]]; then
   CHROME_FLAGS+=("--headless=new")
+fi
+
+if [[ "$DISABLE_GPU" == "1" ]]; then
+  CHROME_FLAGS+=("--disable-gpu")
 fi
 
 # --- Launch ---
@@ -114,14 +209,14 @@ launch_chrome
 
 # Wait briefly for Chrome to start listening
 for _ in 1 2 3 4 5 6 7 8 9 10; do
-  if curl -sf "http://localhost:${DEBUG_PORT}/json/version" >/dev/null 2>&1; then
+  if endpoint_ready "${DEBUG_PORT}"; then
     break
   fi
   sleep 0.5
 done
 
 # Verify it's actually listening
-if ! curl -sf "http://localhost:${DEBUG_PORT}/json/version" >/dev/null 2>&1; then
+if ! endpoint_ready "${DEBUG_PORT}"; then
   echo "[chrome-agent] WARNING: Chrome started (pid=${CHROME_PID}) but port ${DEBUG_PORT} not responding yet."
   echo "[chrome-agent] Check ${LOGFILE} for errors."
 else
@@ -130,6 +225,11 @@ else
     CHROME_PID="$listening_pid"
   fi
   echo "[chrome-agent] Chrome agent ready."
+fi
+
+if [[ "$HEADLESS" != "1" ]]; then
+  # PPID=1 is expected after nohup detaches Chrome; ownership tracks the browser PID.
+  claim_headful_owner "$CHROME_PID"
 fi
 
 # Write pidfile

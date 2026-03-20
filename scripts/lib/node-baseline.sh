@@ -64,7 +64,7 @@ trr_ensure_node_baseline() {
     return 2
   fi
 
-  if (( current_major >= required_major )); then
+  if (( current_major == required_major )); then
     return 0
   fi
 
@@ -77,7 +77,7 @@ trr_ensure_node_baseline() {
     return 2
   fi
 
-  if (( current_major >= required_major )); then
+  if (( current_major == required_major )); then
     return 0
   fi
 

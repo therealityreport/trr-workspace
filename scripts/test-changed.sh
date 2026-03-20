@@ -38,6 +38,13 @@ if rg -q '^(AGENTS\.md|CLAUDE\.md|Makefile|scripts/|docs/)' "$changed_tmp"; then
 fi
 
 if [[ "$run_baseline" == "1" ]]; then
+  if [[ "$run_backend" == "0" && "$run_app" == "0" && "$run_screen" == "0" ]]; then
+    echo "[test-changed] Workspace-only changes detected; running workspace policy checks."
+    bash "$ROOT/scripts/check-policy.sh"
+    env CHROME_DEVTOOLS_MCP_STATUS_MODE=summary bash "$ROOT/scripts/chrome-devtools-mcp-status.sh"
+    echo "[test-changed] Done."
+    exit 0
+  fi
   echo "[test-changed] Root/scripts/docs/policy changes detected; running test-fast baseline."
   exec bash "$ROOT/scripts/test-fast.sh"
 fi

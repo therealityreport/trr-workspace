@@ -16,7 +16,7 @@ Use this workspace-local skill when the task is primarily architectural and the 
 
 ## Ownership boundary
 1. This is the canonical TRR owner for architecture decisions.
-2. Keep planning-only flows in `write-plan-codex`.
+2. Keep first-draft planning in `write-plan-codex` and plan refinement in `plan-enhancer`.
 3. Hand implementation to the relevant local owner after the architecture is decided.
 
 ## Preflight

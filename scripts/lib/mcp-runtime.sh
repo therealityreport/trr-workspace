@@ -140,6 +140,25 @@ pid_is_descendant_of() {
   return 1
 }
 
+process_has_live_ancestor_matching() {
+  local pid="$1"
+  local regex="$2"
+  local current="$pid"
+  local depth=0
+  local cmd
+
+  while [[ -n "$current" && "$current" =~ ^[0-9]+$ && "$current" != "0" && "$depth" -lt 32 ]]; do
+    cmd="$(process_command "$current")"
+    if [[ -n "$cmd" && "$cmd" =~ $regex ]] && kill -0 "$current" >/dev/null 2>&1; then
+      return 0
+    fi
+    current="$(process_parent_pid "$current")"
+    depth=$((depth + 1))
+  done
+
+  return 1
+}
+
 classify_codex_app_server_pid() {
   local pid="$1"
   local current="$pid"

@@ -6,9 +6,33 @@ source "${ROOT}/scripts/lib/mcp-runtime.sh"
 
 LOG_DIR="${ROOT}/.logs/workspace"
 SHARED_WRAPPER_PIDFILE="${LOG_DIR}/codex-chrome-shared-wrapper-9222.pid"
+SOAK_MODE=0
+SOAK_ITERATIONS="${MCP_CLEAN_SOAK_ITERATIONS:-3}"
+SOAK_SLEEP_SEC="${MCP_CLEAN_SOAK_SLEEP_SEC:-1}"
 
 shared_wrapper_killed=0
 shared_client_killed=0
+reaper_output=""
+chrome_clean_output=""
+
+usage() {
+  cat <<'EOF'
+Usage:
+  mcp-clean.sh
+  mcp-clean.sh --soak
+
+Options:
+  --soak   Run repeated cleanup cycles with pre/post validation snapshots.
+EOF
+}
+
+run_status_summary() {
+  CHROME_DEVTOOLS_MCP_STATUS_MODE=summary bash "${ROOT}/scripts/chrome-devtools-mcp-status.sh" 2>&1 || true
+}
+
+run_reaper_diagnose() {
+  bash "${ROOT}/scripts/codex-mcp-session-reaper.sh" diagnose 2>&1 || true
+}
 
 choose_keeper_wrapper() {
   local keep=""
@@ -32,7 +56,7 @@ choose_keeper_wrapper() {
   fi
 }
 
-kill_stale_shared_chrome_processes() {
+run_cleanup_once() {
   local keeper_wrapper
   local wrapper_pid
   local client_pid
@@ -82,9 +106,71 @@ kill_stale_shared_chrome_processes() {
   done < <(shared_chrome_client_pids | awk '!seen[$0]++')
 }
 
-kill_stale_shared_chrome_processes
-chrome_clean_output="$(bash "${ROOT}/scripts/chrome-devtools-mcp-clean-stale.sh")"
+emit_cleanup_results() {
+  echo "[mcp-clean] Stale shared wrapper trees killed: ${shared_wrapper_killed}"
+  echo "[mcp-clean] Orphan shared clients killed: ${shared_client_killed}"
+  echo "${reaper_output}"
+  echo "${chrome_clean_output}"
+}
 
-echo "[mcp-clean] Stale shared wrapper trees killed: ${shared_wrapper_killed}"
-echo "[mcp-clean] Orphan shared clients killed: ${shared_client_killed}"
-echo "${chrome_clean_output}"
+run_cleanup_cycle() {
+  run_cleanup_once
+  reaper_output="$(bash "${ROOT}/scripts/codex-mcp-session-reaper.sh" reap)"
+  chrome_clean_output="$(bash "${ROOT}/scripts/chrome-devtools-mcp-clean-stale.sh")"
+  emit_cleanup_results
+}
+
+run_soak_validation() {
+  local iteration
+
+  if ! [[ "$SOAK_ITERATIONS" =~ ^[0-9]+$ ]] || (( SOAK_ITERATIONS < 1 )); then
+    SOAK_ITERATIONS=3
+  fi
+  if ! [[ "$SOAK_SLEEP_SEC" =~ ^[0-9]+([.][0-9]+)?$ ]]; then
+    SOAK_SLEEP_SEC=1
+  fi
+
+  echo "[mcp-clean] Soak validation: iterations=${SOAK_ITERATIONS} sleep=${SOAK_SLEEP_SEC}s"
+  echo "[mcp-clean] Pre-clean pressure snapshot:"
+  run_status_summary
+  echo "[mcp-clean] Pre-clean orphan snapshot:"
+  run_reaper_diagnose
+
+  for ((iteration = 1; iteration <= SOAK_ITERATIONS; iteration++)); do
+    echo "[mcp-clean] Cleanup cycle ${iteration}/${SOAK_ITERATIONS}"
+    run_cleanup_cycle
+    if (( iteration < SOAK_ITERATIONS )); then
+      sleep "$SOAK_SLEEP_SEC"
+    fi
+  done
+
+  echo "[mcp-clean] Post-clean pressure snapshot:"
+  run_status_summary
+  echo "[mcp-clean] Post-clean orphan snapshot:"
+  run_reaper_diagnose
+}
+
+while [[ "$#" -gt 0 ]]; do
+  case "$1" in
+    --soak)
+      SOAK_MODE=1
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "[mcp-clean] ERROR: unknown argument: $1" >&2
+      usage >&2
+      exit 1
+      ;;
+  esac
+  shift
+done
+
+if [[ "$SOAK_MODE" == "1" ]]; then
+  run_soak_validation
+  exit 0
+fi
+
+run_cleanup_cycle
