@@ -26,14 +26,14 @@ Visibility tiers:
 | `TRR_BACKEND_PORT` | `8000` | integer port | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `TRR_BACKEND_RELOAD` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable backend reload mode (1) instead of non-reload server mode (0). |
 | `TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
-| `TRR_BACKEND_WORKERS` | `2` | integer | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
+| `TRR_BACKEND_WORKERS` | `1` | integer | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `TRR_REDDIT_CACHE_LOOKUP_RETRIES` | `1` | integer | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `TRR_REDDIT_CACHE_LOOKUP_TIMEOUT_MS` | `20000` | integer | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `TRR_SOCIAL_PROXY_DEFAULT_TIMEOUT_MS` | `45000` | integer | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS` | `25000` | integer | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
-| `WORKSPACE_BACKEND_AUTO_RESTART` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
-| `WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_IGNORE` | `1` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
-| `WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_STREAK` | `6` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
+| `WORKSPACE_BACKEND_AUTO_RESTART` | `1` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable the backend watchdog that restarts TRR-Backend after repeated failed health probes or unexpected process exits. |
+| `WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_IGNORE` | `1` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | When set to 1, active-traffic curl timeouts log warnings but do not trigger backend auto-restarts. |
+| `WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_STREAK` | `6` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Advisory busy-timeout streak denominator used in watchdog logs while active-traffic timeout ignore mode is enabled. |
 | `WORKSPACE_BACKEND_HEALTH_CURL_MAX_TIME` | `5` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_BACKEND_HEALTH_FAILURE_THRESHOLD` | `6` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_BACKEND_HEALTH_GRACE_SECONDS` | `90` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |

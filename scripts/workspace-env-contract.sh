@@ -118,6 +118,15 @@ description_for() {
     WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR)
       echo "Comment media mirror stage cap used by Modal social dispatch and by legacy local social worker mode."
       ;;
+    WORKSPACE_BACKEND_AUTO_RESTART)
+      echo "Enable the backend watchdog that restarts TRR-Backend after repeated failed health probes or unexpected process exits."
+      ;;
+    WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_IGNORE)
+      echo "When set to 1, active-traffic curl timeouts log warnings but do not trigger backend auto-restarts."
+      ;;
+    WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_STREAK)
+      echo "Advisory busy-timeout streak denominator used in watchdog logs while active-traffic timeout ignore mode is enabled."
+      ;;
     TRR_BACKEND_RELOAD)
       echo "Enable backend reload mode (1) instead of non-reload server mode (0)."
       ;;

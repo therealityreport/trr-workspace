@@ -90,7 +90,7 @@ WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE="${WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE:-
 WORKSPACE_TRR_REMOTE_EXECUTOR="${WORKSPACE_TRR_REMOTE_EXECUTOR:-modal}"
 WORKSPACE_TRR_MODAL_ENABLED="${WORKSPACE_TRR_MODAL_ENABLED:-1}"
 WORKSPACE_TRR_MODAL_APP_NAME="${WORKSPACE_TRR_MODAL_APP_NAME:-trr-backend-jobs}"
-WORKSPACE_TRR_MODAL_ADMIN_OPERATION_FUNCTION="${WORKSPACE_TRR_MODAL_ADMIN_OPERATION_FUNCTION:-run_admin_operation}"
+WORKSPACE_TRR_MODAL_ADMIN_OPERATION_FUNCTION="${WORKSPACE_TRR_MODAL_ADMIN_OPERATION_FUNCTION:-run_admin_operation_v2}"
 WORKSPACE_TRR_MODAL_GOOGLE_NEWS_FUNCTION="${WORKSPACE_TRR_MODAL_GOOGLE_NEWS_FUNCTION:-run_google_news_sync}"
 WORKSPACE_TRR_MODAL_REDDIT_REFRESH_FUNCTION="${WORKSPACE_TRR_MODAL_REDDIT_REFRESH_FUNCTION:-run_reddit_refresh}"
 WORKSPACE_TRR_MODAL_SOCIAL_JOB_FUNCTION="${WORKSPACE_TRR_MODAL_SOCIAL_JOB_FUNCTION:-run_social_job}"
@@ -110,7 +110,7 @@ WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR="${WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MI
 WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR="${WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR:-1}"
 WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS="${WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS:-2}"
 WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_LEASE_SECONDS="${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_LEASE_SECONDS:-300}"
-TRR_BACKEND_RELOAD="${TRR_BACKEND_RELOAD:-0}"
+TRR_BACKEND_RELOAD="${TRR_BACKEND_RELOAD:-1}"
 TRR_BACKEND_WORKERS="${TRR_BACKEND_WORKERS:-1}"
 TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER="${TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER:-0}"
 TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS="${TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS:-25000}"
@@ -290,8 +290,8 @@ if ! [[ "$TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER" =~ ^[01]$ ]]; then
   TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER="0"
 fi
 if ! [[ "$TRR_BACKEND_RELOAD" =~ ^[01]$ ]]; then
-  echo "[workspace] WARNING: invalid TRR_BACKEND_RELOAD='${TRR_BACKEND_RELOAD}', using 0." >&2
-  TRR_BACKEND_RELOAD="0"
+  echo "[workspace] WARNING: invalid TRR_BACKEND_RELOAD='${TRR_BACKEND_RELOAD}', using 1." >&2
+  TRR_BACKEND_RELOAD="1"
 fi
 if ! [[ "$TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS" =~ ^[1-9][0-9]*$ ]]; then
   echo "[workspace] WARNING: invalid TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS='${TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS}', using 25000." >&2
@@ -341,8 +341,8 @@ SCREENALYTICS_API_PORT="${SCREENALYTICS_API_PORT:-8001}"
 SCREENALYTICS_STREAMLIT_PORT="${SCREENALYTICS_STREAMLIT_PORT:-8501}"
 SCREENALYTICS_WEB_PORT="${SCREENALYTICS_WEB_PORT:-8080}"
 
-TRR_API_URL="http://127.0.0.1:${TRR_BACKEND_PORT}"
-BACKEND_HEALTH_URL="${TRR_API_URL}/health"
+TRR_API_URL="${TRR_API_URL:-http://127.0.0.1:${TRR_BACKEND_PORT}}"
+BACKEND_HEALTH_URL="${BACKEND_HEALTH_URL:-${TRR_API_URL}/health}"
 SCREENALYTICS_LOCAL_API_URL="http://127.0.0.1:${SCREENALYTICS_API_PORT}"
 SCREENALYTICS_API_URL="${SCREENALYTICS_API_URL:-$SCREENALYTICS_LOCAL_API_URL}"
 SCREENALYTICS_LOCAL_HEALTH_URL="${SCREENALYTICS_LOCAL_API_URL}/healthz"
@@ -416,6 +416,20 @@ backend_has_active_connections() {
     return 1
   fi
   lsof -nP -iTCP:"$TRR_BACKEND_PORT" -sTCP:ESTABLISHED -t 2>/dev/null | grep -q .
+}
+
+backend_health_probe() {
+  local timeout="$1"
+  curl -fsS --max-time "$timeout" "$BACKEND_HEALTH_URL" >/dev/null 2>&1
+}
+
+backend_busy_confirm_timeout() {
+  local base_timeout="${WORKSPACE_BACKEND_HEALTH_CURL_MAX_TIME:-5}"
+  local derived_timeout=$(( base_timeout * 3 ))
+  if (( derived_timeout < 15 )); then
+    derived_timeout=15
+  fi
+  echo "$derived_timeout"
 }
 
 pid_ppid() {
@@ -1357,7 +1371,7 @@ while true; do
     if (( now_ts - BACKEND_LAST_HEALTH_CHECK_AT >= WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS )); then
       BACKEND_LAST_HEALTH_CHECK_AT="$now_ts"
 
-      if curl -fsS --max-time "$WORKSPACE_BACKEND_HEALTH_CURL_MAX_TIME" "$BACKEND_HEALTH_URL" >/dev/null 2>&1; then
+      if backend_health_probe "$WORKSPACE_BACKEND_HEALTH_CURL_MAX_TIME"; then
         if (( BACKEND_HEALTH_FAILURES > 0 )); then
           echo "[workspace] TRR-Backend health recovered after ${BACKEND_HEALTH_FAILURES} failed probe(s)."
         fi
@@ -1369,15 +1383,21 @@ while true; do
         is_busy_timeout=0
         if [[ "$probe_rc" -eq 28 ]] && backend_has_active_connections; then
           is_busy_timeout=1
+          busy_confirm_timeout="$(backend_busy_confirm_timeout)"
+          if backend_health_probe "$busy_confirm_timeout"; then
+            if (( BACKEND_HEALTH_FAILURES > 0 || BACKEND_HEALTH_BUSY_TIMEOUT_STREAK_COUNT > 0 )); then
+              echo "[workspace] TRR-Backend health recovered on a slower follow-up probe during active traffic."
+            fi
+            BACKEND_HEALTH_FAILURES=0
+            BACKEND_HEALTH_BUSY_TIMEOUT_STREAK_COUNT=0
+            continue
+          fi
         fi
         should_restart=0
         if [[ "$is_busy_timeout" -eq 1 && "$WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_IGNORE" == "1" ]]; then
           BACKEND_HEALTH_BUSY_TIMEOUT_STREAK_COUNT=$((BACKEND_HEALTH_BUSY_TIMEOUT_STREAK_COUNT + 1))
           BACKEND_HEALTH_FAILURES=0
-          echo "[workspace] WARNING: TRR-Backend health probe timed out with active connections (busy streak ${BACKEND_HEALTH_BUSY_TIMEOUT_STREAK_COUNT}/${WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_STREAK}, rc=${probe_rc})."
-          if (( BACKEND_HEALTH_BUSY_TIMEOUT_STREAK_COUNT >= WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_STREAK )); then
-            should_restart=1
-          fi
+          echo "[workspace] WARNING: TRR-Backend health probe timed out with active connections (busy streak ${BACKEND_HEALTH_BUSY_TIMEOUT_STREAK_COUNT}/${WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_STREAK}, rc=${probe_rc}); suppressing auto-restart because WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_IGNORE=1."
         else
           BACKEND_HEALTH_BUSY_TIMEOUT_STREAK_COUNT=0
           BACKEND_HEALTH_FAILURES=$((BACKEND_HEALTH_FAILURES + 1))

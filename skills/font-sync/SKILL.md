@@ -54,7 +54,7 @@ Use the existing upload script with `python3.11` (which has boto3 installed):
 python3.11 /Users/thomashulihan/Projects/TRR/TRR-APP/scripts/upload-fonts-to-s3.py \
   --source "$HOME/Desktop/FONTS/<Family Name>" \
   --bucket trr-media-prod \
-  --prefix "fonts/monotype/<Family Name>"
+  --prefix "fonts/trr/<Family Name>"
 ```
 
 ### R2 connection details
@@ -63,8 +63,8 @@ python3.11 /Users/thomashulihan/Projects/TRR/TRR-APP/scripts/upload-fonts-to-s3.
 |---|---|
 | Endpoint | `https://73204b3e632bd7137a1bd2c867dc8ae8.r2.cloudflarestorage.com` |
 | Bucket | `trr-media-prod` |
-| Key prefix | `fonts/monotype/<Family Name>/` |
-| Public URL | `https://pub-a3c452f3df0d40319f7c585253a4776c.r2.dev/fonts/monotype/<Family Name>/` |
+| Key prefix | `fonts/trr/<Family Name>/` |
+| Public URL | `https://pub-a3c452f3df0d40319f7c585253a4776c.r2.dev/fonts/trr/<Family Name>/` |
 | Access Key ID | `5db1e6591cf4c68c880c16b8d809f351` |
 
 The upload script reads credentials from these env vars (already set in `TRR-Backend/.env`):
@@ -110,7 +110,7 @@ Add a section for the new family, following the existing pattern:
 
 @font-face {
   font-family: "<Family Name>";
-  src: url("https://pub-a3c452f3df0d40319f7c585253a4776c.r2.dev/fonts/monotype/<Family Name>/<filename>.otf") format("opentype");
+  src: url("https://pub-a3c452f3df0d40319f7c585253a4776c.r2.dev/fonts/trr/<Family Name>/<filename>.otf") format("opentype");
   font-weight: <weight>;
   font-style: normal;
   font-display: swap;
@@ -181,7 +181,7 @@ For every `@font-face` `src` URL you added, confirm the file is actually accessi
 
 ```bash
 # Curl each font URL — must return HTTP 200 and correct content-type
-curl -sI "https://pub-a3c452f3df0d40319f7c585253a4776c.r2.dev/fonts/monotype/<Family%20Name>/<filename>.otf" | head -5
+curl -sI "https://pub-a3c452f3df0d40319f7c585253a4776c.r2.dev/fonts/trr/<Family%20Name>/<filename>.otf" | head -5
 ```
 
 Expected output:
@@ -291,12 +291,12 @@ find "$MONOTYPE_CACHE" -iname "stafford*" -type f \( -name "*.otf" -o -name "*.t
 python3.11 /Users/thomashulihan/Projects/TRR/TRR-APP/scripts/upload-fonts-to-s3.py \
   --source "$HOME/Desktop/FONTS/$FAMILY" \
   --bucket trr-media-prod \
-  --prefix "fonts/monotype/$FAMILY"
+  --prefix "fonts/trr/$FAMILY"
 
 # 3. Verify upload — curl each file URL
 for f in "$HOME/Desktop/FONTS/$FAMILY"/*; do
   FNAME=$(basename "$f" | sed 's/ /%20/g')
-  STATUS=$(curl -sI "https://pub-a3c452f3df0d40319f7c585253a4776c.r2.dev/fonts/monotype/$(echo "$FAMILY" | sed 's/ /%20/g')/$FNAME" | head -1)
+  STATUS=$(curl -sI "https://pub-a3c452f3df0d40319f7c585253a4776c.r2.dev/fonts/trr/$(echo "$FAMILY" | sed 's/ /%20/g')/$FNAME" | head -1)
   echo "$FNAME: $STATUS"
 done
 

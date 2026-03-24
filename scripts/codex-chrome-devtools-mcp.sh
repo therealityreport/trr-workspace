@@ -19,7 +19,10 @@ SHARED_SINGLETON="${CODEX_CHROME_SHARED_SINGLETON:-0}"
 START_PORT="${CODEX_CHROME_PORT_RANGE_START:-9333}"
 END_PORT="${CODEX_CHROME_PORT_RANGE_END:-9399}"
 FORCED_PORT="${CODEX_CHROME_PORT:-}"
-SEED_PROFILE_DIR="${CODEX_CHROME_SEED_PROFILE_DIR:-${HOME}/.chrome-profiles/claude-agent}"
+# Default seed profile is codex-agent (codex@thereality.report).
+# The claude-agent profile (admin@thereality.report) is prohibited for agent use.
+# Override with CODEX_CHROME_SEED_PROFILE_DIR only with explicit user permission.
+SEED_PROFILE_DIR="${CODEX_CHROME_SEED_PROFILE_DIR:-${HOME}/.chrome-profiles/codex-agent}"
 ISOLATED_HEADLESS="${CODEX_CHROME_ISOLATED_HEADLESS:-1}"
 SHARED_HEADLESS="${CODEX_CHROME_SHARED_HEADLESS:-0}"
 SKIP_BROWSER_BOOT="${CODEX_CHROME_SKIP_BROWSER_BOOT:-0}"
