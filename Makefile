@@ -2,10 +2,12 @@
 	dev dev-lite dev-cloud dev-local dev-full \
 	preflight preflight-local preflight-strict preflight-diagnostics env-contract check-policy codex-check handoff-check handoff-sync smoke status stop logs logs-prune cleanup-disk help \
 	bootstrap doctor test test-fast test-full test-changed test-env-sensitive \
+	workspace-contract-check \
 	cast-screentime-gap-check cast-screentime-live-check \
 	down chrome-devtools-mcp-status chrome-devtools-mcp-clean-stale chrome-devtools-mcp-stop-conflicts \
 	mcp-clean \
-	workspace-pr-agent
+	workspace-pr-agent \
+	getty-server
 
 # Daily default: `make dev` runs the canonical cloud-backed workspace profile.
 # It starts TRR-APP + TRR-Backend locally, enables screenalytics, and bypasses local Docker infra.
@@ -19,12 +21,12 @@
 # WORKSPACE_CLEAN_NEXT_CACHE=1 make dev  # force clean Next.js cache
 # WORKSPACE_TRR_APP_DEV_BUNDLER=webpack make dev  # force the webpack fallback if Turbopack regresses
 # WORKSPACE_OPEN_BROWSER=1 make dev      # opt in to browser tab reuse/open on startup
-# WORKSPACE_BACKEND_AUTO_RESTART=1 make dev  # opt in to backend watchdog auto-restart
+# WORKSPACE_BACKEND_AUTO_RESTART=0 make dev  # disable backend watchdog auto-restart (default profile enables it)
 # WORKSPACE_BROWSER_TAB_SYNC_MODE=reuse_no_reload make dev  # browser sync strategy when enabled
 # WORKSPACE_BROWSER_TAB_SYNC_MODE=reload_first make dev     # reload only the first matching tab
 # WORKSPACE_BROWSER_TAB_SYNC_MODE=reload_all make dev       # legacy behavior: reload every matching tab
 # WORKSPACE_OPEN_SCREENALYTICS_TABS=1 make dev  # opt in to screenalytics Streamlit/Web tabs
-# TRR_BACKEND_RELOAD=1 make dev          # opt in backend hot-reload (default workspace mode is non-reload)
+# TRR_BACKEND_RELOAD=0 make dev          # opt out of backend hot-reload (default workspace mode is reload)
 dev:
 	@$(MAKE) --no-print-directory preflight
 	@PROFILE="$${PROFILE:-default}" WORKSPACE_DEV_MODE=cloud WORKSPACE_SCREENALYTICS=1 WORKSPACE_SCREENALYTICS_SKIP_DOCKER=1 bash scripts/dev-workspace.sh
@@ -84,6 +86,14 @@ smoke:
 status:
 	@bash scripts/status-workspace.sh
 
+# Local Getty scraper server (residential IP). Required for Getty image scraping
+# since Getty blocks cloud/datacenter IPs.  The admin UI calls this automatically
+# when you click Get Images (Getty / NBCUMV).
+# Usage: make getty-server  (default port 3456)
+#        GETTY_PORT=8765 make getty-server
+getty-server:
+	@cd TRR-Backend && ./.venv/bin/python scripts/getty_local_server.py --port "$${GETTY_PORT:-3456}"
+
 # Stops workspace-managed processes only (from make dev).
 stop:
 	@bash scripts/stop-workspace.sh
@@ -118,6 +128,9 @@ test-changed:
 # Environment-sensitive regression gate across repos.
 test-env-sensitive:
 	@bash scripts/test-env-sensitive.sh
+
+workspace-contract-check:
+	@bash scripts/check-workspace-contract.sh
 
 cast-screentime-gap-check:
 	@bash scripts/cast-screentime-gap-check.sh

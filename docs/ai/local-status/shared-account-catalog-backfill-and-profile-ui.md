@@ -8,18 +8,28 @@ handoff:
   include: true
   state: recent
   last_updated: 2026-03-20
-  current_phase: "BravoTV Modal worker was redeployed from the current shared-account catalog fixes, the stale run was cancelled, and a fresh Modal BravoTV backfill is now in flight with expected_total_posts propagated into the fallback posts job"
-  next_action: "Monitor run 1f254eec-0a26-48e0-8fc0-876580cd92ff on /admin/social/instagram/bravotv and confirm the fallback posts stage now either advances materially or fails safely with catalog_incomplete instead of falsely completing"
+  current_phase: "Live catalog-backed account summary and full-account hashtag aggregation are now wired into the BravoTV admin profile, with active-run polling keeping catalog totals, engagement, views, last-post, and hashtag counts current while classify continues in the background"
+  next_action: "Let the current/newest BravoTV frontier run continue, verify that /admin/social/instagram/bravotv summary cards rise with saved catalog rows in real time, and confirm the final completion gap message stays anchored to the stored expected total instead of drifting to the latest live profile count"
   detail: self
 ```
 
 - `TRR-Backend` now supports `shared_account_catalog_backfill` for shared `instagram`, `tiktok`, `twitter`, and `threads` accounts. The mode stages lightweight catalog rows, classifies them with known hashtag assignments, and queues unknown hashtags for async review instead of materializing heavy post data immediately.
+- 2026-03-20 live catalog summary / hashtag accuracy follow-up:
+  - account summary responses now include additive live catalog-backed fields for `catalog posts`, `engagement`, `views`, `last post`, caption coverage, and hashtag instance totals, all computed from the saved shared catalog rows rather than waiting for materialized season-assigned posts
+  - the summary `top_hashtags`, hashtags tab, and catalog verification path now share one canonical full-account hashtag aggregation path against the catalog tables instead of building the summary from a 250-row sample
+  - active account pages now refresh summary data while a catalog run is still active, so `/admin/social/instagram/bravotv` can show rising catalog totals during fetch instead of holding stale values until the run becomes terminal
+  - run progress payloads now prefer the run/frontier `expected_total_posts` denominator over the latest live profile total, and expose additive scrape/classify separation fields plus explicit completion-gap metadata for end-of-run reconciliation
+  - hashtag assignments are now persisted as show-level mappings only; season context remains derived from the posts themselves and their season windows rather than being assigned directly on the hashtag mapping
 - 2026-03-18 follow-up: bounded catalog backfills now shard `shared_account_posts` work per `platform/account` instead of queuing a single long-running scrape job. The scheduler round-robins shard creation across brand platforms, persists shard metadata (`runner_strategy`, `runner_count`, shard window fields, runner lane), raises the shared-account posts stage pool default from `6` to `8`, and adds catalog-specific dispatch caps so one brand can keep multiple workers active per platform without one platform monopolizing the run.
 - 2026-03-18 follow-up: fixed live catalog-run progress for shared Instagram account backfills so account pages report the real Instagram total-post denominator via `post_progress.total_posts`, keep `saved_count` at `0` until catalog rows are actually persisted, and emit in-flight `persist_catalog_posts` / `post_classify_running` progress updates that renew the queue heartbeat during long Modal jobs. This specifically addressed the BravoTV full-history backfill stale-heartbeat failures seen after ~14k scraped posts.
 - 2026-03-18 follow-up: full-history account backfills now support a discovery phase for `instagram` and `tiktok`. Migration `0200_shared_account_run_partitions.sql` adds `social.shared_account_run_partitions`, full-history catalog runs now enqueue `shared_account_discovery` first, and discovery fans out cursor-bounded shard jobs instead of one unbounded `shared_account_posts` job. The account profile progress payload now exposes `partition_strategy`, discovery counts, and account-scoped cancel support, and the app adds `Cancel Run` / `Restart Backfill` controls plus discovery-phase rendering on `/admin/social/[platform]/[handle]`.
 - 2026-03-18 rollout fix: migration `0201_shared_account_discovery_job_type.sql` extends `social.scrape_jobs` to allow the new `shared_account_discovery` job type, and the local worker entrypoints now accept the discovery stage (`scripts/socials/worker.py`, `scripts/socials/start_worker_pool.sh`). A live BravoTV replacement run (`3091e7ea-6f76-41c0-9ad2-273f9e0b4bf7`) successfully entered and completed the new discovery stage under local worker execution after cancelling the first replacement run (`0c7edf70-64b7-4496-9ebe-6d3e1001e975`) that hit an early dispatcher bug.
 - 2026-03-18 BravoTV admin/runtime fix: the account profile now reports the live public Instagram total (`16,454` posts as of March 18, 2026), stale hidden worker check-ins were purged, and platform queue totals now reconcile against live queue scope instead of historical scrape rows. Managed Chrome validation confirmed the UI now shows the corrected denominator and no longer reports the old `116 older worker check-ins hidden` banner.
 - 2026-03-18 BravoTV worker fix: shared-account discovery no longer routes through the legacy season-context path on Modal. Fresh BravoTV runs after redeploy now enter `shared_account_discovery`, record real progress, and fall back into `shared_account_posts` instead of failing immediately with `invalid input syntax for type uuid: ""`.
+- 2026-03-20 BravoTV worker hardening: a later Modal discovery failure (`cf273307-4fc7-4905-9331-a301bbff40a9`) showed one worker path could still lose the shared-account handle and fall back into `get_season_context("")`. The backend now recovers the account handle from `shared_account_source_id` for shared-stage jobs and rejects blank `season_id` values before any SQL runs, so that regression cannot surface as raw Postgres `invalid input syntax for type uuid: ""` again.
+- 2026-03-20 BravoTV fallback root cause: run `d89cc5f4-e859-4721-ba12-16f904531cfe` failed after discovery because Instagram public GraphQL returned the first page (`33` posts) but every cursor-page follow-up request came back `401 Unauthorized` on all supported doc IDs, even after the profile-context refresh/retry loop. The backend now preserves that concrete cursor-auth failure in retrieval metadata (`instagram_graphql_cursor_unauthorized`) so account-run failures surface the real Instagram stop reason instead of only the generic `catalog_incomplete` fallback message.
+- 2026-03-20 Modal-vs-local diagnosis: the exact same `fetch_posts_graphql(...)` pagination flow succeeds locally for BravoTV page 1 and page 2, but the same code inside the Modal social-worker image produces intermittent `403` on the initial GraphQL page and repeat `401/403` responses on cursor pages. This isolates the remaining blocker to Instagram’s treatment of the remote execution environment rather than the local request shape itself.
+- 2026-03-20 retry hardening: the Instagram public GraphQL path now retries the initial page as well as cursor pages, applies bounded retry backoff, and resets the requests session between retry attempts. This covers the transient remote `403` we reproduced in the Modal shell, while the existing metadata path continues to surface concrete cursor-auth failures when Instagram still blocks deeper pagination.
 - 2026-03-18 BravoTV Instagram runtime hardening: shared-account Instagram discovery and shared-post stages now prefer the public/anonymous scraper path (`_build_shared_instagram_scraper`) instead of authenticated session cookies, because the authenticated Modal path was returning `400/401/429` on `web_profile_info` and GraphQL calls. Targeted repository tests now cover the public-scraper selection and shared Instagram discovery/posts entry points.
 - 2026-03-18 late follow-up: shared-account fallback posts jobs now preserve `partition_strategy="cursor_breakpoints"` instead of dropping back to the shallow `scraper.scrape()` path, and shared-stage retry handling now treats retryable retrieval metadata / incomplete fallback scans as `retrying` or `failed` instead of falsely completing with `0` saved posts.
 - 2026-03-18 late follow-up: shared-account Instagram discovery no longer calls the public `web_profile_info` endpoint up front. That removed the deterministic `429` seen on Modal before GraphQL discovery could run, although Modal still receives `403` responses from Instagram GraphQL for BravoTV after the profile-page warm step.
@@ -63,7 +73,48 @@ handoff:
   - `pnpm -C /Users/thomashulihan/Projects/TRR/TRR-APP/apps/web run typecheck`
   - Managed Chrome validation on `http://admin.localhost:3000/admin/social/instagram/bravotv`, `/catalog`, and `/hashtags`
 - Outstanding follow-up:
-  - `scripts/supabase/generate_schema_docs.py` now auto-loads `TRR-Backend/.env.local` and `TRR-Backend/.env`, so schema-doc verification no longer depends on Docker or exported shell vars.
+  - March 20, 2026 social-ingest audit:
+    - Root cause of the recurring BravoTV `33 checked` / `33 saved` failures was the Instagram public GraphQL request body. The shared-account worker was sending a very lean `POST /graphql/query` payload that happened to work locally but was fragile on Modal once cursor pagination kicked in.
+    - Local repro confirmed the current auth-cookie path is not the shared-account fix: authenticated GraphQL returns `400 {"message":"checkpoint_required"}` with the existing session cookies, so the old worker split left us with a public path that was too sparse and an auth path that was challenged.
+    - The scraper now enriches the public GraphQL form body with runtime fields extracted from the warmed profile HTML: `lsd`, computed `jazoest`, `__spin_r`, `__spin_b`, `__spin_t`, `__hsi`, `__hs`, and `dpr`. With those fields present, direct public page 1 and page 2 requests both succeed locally through `InstagramScraper.fetch_posts_graphql(...)`.
+    - Cookie validation now reports `checkpoint_required` explicitly instead of collapsing that state into a generic `graphql_validation_failed`, which makes auth/session problems diagnosable in the pipeline.
+    - Focused validation passed:
+      - `cd /Users/thomashulihan/Projects/TRR/TRR-Backend && ./.venv/bin/pytest -q tests/socials/test_instagram_scraper_public_graphql.py tests/repositories/test_social_season_analytics.py -k "fetch_posts_graphql or validate_instagram_cookie_health_surfaces_checkpoint_required or build_shared_instagram_scraper_prefers_public_requests or discover_instagram_cursor_partitions_uses_public_scraper or scrape_shared_instagram_posts_uses_public_scraper or run_shared_account_posts_stage_raises_for_incomplete_single_runner_fallback or run_shared_account_posts_stage_surfaces_instagram_cursor_auth_failures"`
+      - `cd /Users/thomashulihan/Projects/TRR/TRR-Backend && ./.venv/bin/python -m py_compile trr_backend/socials/instagram/scraper.py trr_backend/repositories/social_season_analytics.py tests/socials/test_instagram_scraper_public_graphql.py tests/repositories/test_social_season_analytics.py`
+    - Modal deploy completed successfully and readiness is green:
+      - app: `trr-backend-jobs`
+      - API: `https://admin-56995--trr-backend-api.modal.run`
+- `scripts/supabase/generate_schema_docs.py` now auto-loads `TRR-Backend/.env.local` and `TRR-Backend/.env`, so schema-doc verification no longer depends on Docker or exported shell vars.
+- 2026-03-20 workspace/runtime hardening:
+  - The local workspace profile is now safer for Modal-owned social ingest: `profiles/default.env` and the local profile variants now enable backend auto-restart and run the local FastAPI server with a single worker instead of two. In practice, `make dev` now stays up cleanly through health checks under the default profile instead of dropping the whole workspace when `TRR_BACKEND` exits transiently.
+  - A missing schema gap in the current database was fixed: `social.account_hashtag_assignments` did not exist even though the backend expected it. Added repo migration [`20260320100000_ensure_social_account_hashtag_assignments.sql`](/Users/thomashulihan/Projects/TRR/TRR-Backend/supabase/migrations/20260320100000_ensure_social_account_hashtag_assignments.sql) and applied it to the live Supabase project so hashtag-assignment lookups no longer warn that migration `0180` is missing.
+- 2026-03-20 shared-account Instagram transport hardening:
+  - Shared-account Instagram discovery/posts now use an adaptive transport strategy instead of a single hard public path. The backend still prefers public GraphQL first, but it can now fall back to authenticated GraphQL when cookies are available, and it records the chosen transport in retrieval metadata.
+  - `InstagramScraper.fetch_posts_graphql(...)` now has a browser-backed fallback. After the requests path exhausts retries, the scraper can launch a Playwright browser on the profile page and attempt to recover the GraphQL page there. For cursor pages, the fallback now listens for Instagram’s own in-page `/graphql/query` requests while scrolling instead of issuing our own synthetic `fetch(...)` call.
+  - New regression coverage now locks:
+    - authenticated shared-scraper construction
+    - shared-account page transport fallback selection
+    - authenticated fallback during partitioned shared-account post scraping
+    - browser fallback invocation after requests-path GraphQL failure
+  - Validation for the latest hardening pass:
+    - `cd /Users/thomashulihan/Projects/TRR/TRR-Backend && ./.venv/bin/pytest -q tests/socials/test_instagram_scraper_public_graphql.py tests/repositories/test_social_season_analytics.py -k "fetch_posts_graphql or build_shared_instagram_scraper or discover_instagram_cursor_partitions or fetch_shared_instagram_graphql_page_falls_back_to_authenticated_scraper or scrape_shared_instagram_posts_partitioned_uses_authenticated_fallback or run_shared_account_posts_stage_raises_for_incomplete_single_runner_fallback or run_shared_account_posts_stage_surfaces_instagram_cursor_auth_failures"`
+    - `cd /Users/thomashulihan/Projects/TRR/TRR-Backend && ./.venv/bin/python -m py_compile trr_backend/socials/instagram/scraper.py trr_backend/repositories/social_season_analytics.py tests/socials/test_instagram_scraper_public_graphql.py tests/repositories/test_social_season_analytics.py`
+    - `cd /Users/thomashulihan/Projects/TRR/TRR-Backend && ./.venv/bin/ruff check trr_backend/socials/instagram/scraper.py trr_backend/repositories/social_season_analytics.py tests/socials/test_instagram_scraper_public_graphql.py tests/repositories/test_social_season_analytics.py`
+  - Modal was redeployed after each transport fix and readiness is still green:
+    - app: `trr-backend-jobs`
+    - API: `https://admin-56995--trr-backend-api.modal.run`
+- 2026-03-20 current BravoTV blocker after the latest hardening:
+  - Fresh probe runs on the latest Modal deploy still do not complete a full BravoTV backfill.
+  - The best current behavior is:
+    - discovery consistently reaches the first page (`33` checked posts)
+    - discovery then falls back to a single `shared_account_posts` job
+    - the cursor-page fetch still fails remotely before deeper history is discovered
+  - Latest probe evidence from run `df2330d3-ef59-49c9-a77e-4a0321be10c3`:
+    - `shared_account_discovery` completed with `pages_scanned=2`, `posts_checked=33`
+    - retrieval metadata reported `error_code=instagram_graphql_cursor_request_failed`
+    - retrieval metadata still showed `retrieval_transport=authenticated`
+    - the fallback `shared_account_posts` job was running but had not yet persisted progress beyond its initial claim when the probe was cancelled
+  - Conclusion: the queue/orchestration, run guards, Modal deploy, workspace settings, schema prerequisites, and failure surfacing are all materially better now, but full BravoTV history on Modal is still blocked by Instagram rejecting page-2 cursor pagination in the remote environment. The next pass likely needs a stronger authenticated remote session source or a different browser-driven deep-pagination strategy for Instagram shared-account history.
   - Migration `0199_shared_account_catalog_backfill.sql` has now been applied to the staging Supabase project (`vwxfvzutyufrkhfgoeaa`), and the staging database now contains:
     - `social.instagram_account_catalog_posts`
     - `social.tiktok_account_catalog_posts`
@@ -85,3 +136,118 @@ handoff:
   - Result: schema-doc verification is now complete on a clean remote Supabase environment, and there is no schema-doc diff to commit from that branch because the generated output matches the repo baseline.
   - `pnpm -C /Users/thomashulihan/Projects/TRR/TRR-APP/apps/web exec next build --webpack` stalls locally without surfacing a compiler error, including under Node `v24.14.0`.
   - The app-wide `pnpm -C /Users/thomashulihan/Projects/TRR/TRR-APP/apps/web run typecheck` failure currently comes from unrelated `src/app/admin/games/flashback/page.tsx` Supabase typing errors, not from the shared-account catalog changes.
+- 2026-03-20 newest-first frontier rollback implemented:
+  - Instagram shared-account full-history catalog backfills now use a newest-first frontier model instead of pre-splitting the account into historical cursor/time shards.
+  - Added additive migration [`20260320113000_add_shared_account_run_frontiers.sql`](/Users/thomashulihan/Projects/TRR/TRR-Backend/supabase/migrations/20260320113000_add_shared_account_run_frontiers.sql) and applied it successfully to the live Supabase project. The new `social.shared_account_run_frontiers` table is now available for run state, progress, retries, and lease ownership.
+  - Backend rollout in [`social_season_analytics.py`](/Users/thomashulihan/Projects/TRR/TRR-Backend/trr_backend/repositories/social_season_analytics.py):
+    - Instagram `shared_account_catalog_backfill` + full-history runs now stamp `runner_strategy=partition_strategy=newest_first_frontier`.
+    - Discovery is now a bootstrap stage: fetch newest page, persist it immediately, capture expected total posts, seed frontier state, and enqueue one frontier fetch worker.
+    - Shared-account posts is now a looping frontier worker with a per-handle lease, per-page persistence, monotonic frontier progress updates, bounded retry metadata, and classify fan-out on saved batches.
+    - Legacy `social.shared_account_run_partitions` behavior remains intact for old runs and non-frontier flows.
+  - Admin/API rollout:
+    - Catalog progress responses now expose additive `frontier` state plus `worker_runtime.frontier_strategy`.
+    - The profile page now renders frontier-first copy for new runs:
+      - `History Discovery` -> `History Bootstrap`
+      - `Shard Workers` -> `Catalog Fetch`
+      - frontier cards show pages scanned, transport, retries, and frontier ownership instead of shard-spread copy.
+    - The page now also background-polls the newest recent run so a stale summary status like `queued/completed` can still resolve to a live active run without letting old failed runs own the page by default.
+  - Validation for the frontier rollout:
+    - `cd /Users/thomashulihan/Projects/TRR/TRR-Backend && ./.venv/bin/python -m py_compile trr_backend/repositories/social_season_analytics.py tests/repositories/test_social_season_analytics.py`
+    - `cd /Users/thomashulihan/Projects/TRR/TRR-Backend && ./.venv/bin/ruff check trr_backend/repositories/social_season_analytics.py tests/repositories/test_social_season_analytics.py`
+    - `cd /Users/thomashulihan/Projects/TRR/TRR-Backend && ./.venv/bin/pytest -q tests/repositories/test_social_season_analytics.py -k "frontier or discovery_stage_enqueues_partitioned_fallback_job or catalog_mode_full_history_queues_discovery_for_supported_platforms or get_social_account_catalog_run_progress_includes_discovery_partition_summary"`
+    - `cd /Users/thomashulihan/Projects/TRR/TRR-Backend && ./.venv/bin/pytest -q tests/api/routers/test_socials_season_analytics.py -k "catalog_backfill or social_account_catalog_backfill"`
+    - `cd /Users/thomashulihan/Projects/TRR/TRR-APP/apps/web && pnpm exec vitest run tests/social-account-profile-page.runtime.test.tsx`
+    - `cd /Users/thomashulihan/Projects/TRR/TRR-APP/apps/web && pnpm exec eslint src/components/admin/SocialAccountProfilePage.tsx src/lib/admin/social-account-profile.ts tests/social-account-profile-page.runtime.test.tsx`
+  - Known caveat after implementation:
+    - `make schema-docs-check` still diffs against broader pre-existing schema drift in unrelated `core.*` objects on the currently targeted database. That drift is not caused by the frontier rollout and was not committed as part of this change.
+- 2026-03-20 BravoTV hardening follow-up implemented:
+  - The shared-account Instagram fallback path no longer drops from zero-partition discovery into the same shallow single-runner posts flow. Discovery now deterministically requeues a frontier-recovery path, and retryable `shared_account_posts` failures such as `catalog_incomplete` or `instagram_graphql_cursor_unauthorized` now mutate job config toward frontier recovery instead of repeating the weak path.
+  - `InstagramScraper.fetch_posts_graphql(...)` now records the actual retrieval transport (`requests_enriched` vs `playwright`) in `last_retrieval_meta`, clears warmed request/profile-page context after cursor-auth failures, and preserves concrete page-2 auth failures so admin progress can distinguish transport/auth rejection from generic incompleteness.
+  - Shared-account worker hardening now rejects blank recovered handles before any shared-stage SQL can run, extends stale-heartbeat defaults for long-running `shared_account_posts` / `post_classify` work, and adds an admin verification route for `get_social_account_catalog_verification(...)`.
+  - `/admin/social/instagram/bravotv` UI/runtime follow-up:
+    - displayed progress now prefers live polled status over stale summary status
+    - `Backfill History` / `Sync Recent` remain locked against the true active run even while inspecting an older run
+    - `Cancel Run` now always targets the active run id
+    - terminal incomplete runs now surface clearer coverage messaging when discovery finished but deep history did not
+    - the app now exposes a proxy route for catalog verification
+  - Validation for this hardening pass:
+    - `cd /Users/thomashulihan/Projects/TRR/TRR-Backend && pytest -q tests/repositories/test_social_season_analytics.py -k "shared_account_discovery_stage_enqueues_partitioned_fallback_job or execute_shared_claimed_job_retries_on_retryable_shared_stage_error or execute_shared_claimed_job_escalates_retry_to_frontier_recovery or run_shared_account_posts_stage_surfaces_instagram_cursor_auth_failures or shared_account_retry_config_updates_prefers_authenticated_frontier_for_cursor_auth or resolve_social_job_stale_seconds_uses_longer_shared_stage_defaults or get_social_account_catalog_verification_uses_catalog_rows_as_truth"`
+    - `cd /Users/thomashulihan/Projects/TRR/TRR-Backend && pytest -q tests/api/routers/test_socials_season_analytics.py -k "catalog_verification or catalog_backfill or catalog_sync_recent or catalog_run_cancel or catalog_run_dismiss"`
+    - `cd /Users/thomashulihan/Projects/TRR/TRR-Backend && pytest -q tests/socials/test_instagram_scraper_public_graphql.py`
+    - `cd /Users/thomashulihan/Projects/TRR/TRR-Backend && ruff check trr_backend/repositories/social_season_analytics.py api/routers/socials.py tests/api/routers/test_socials_season_analytics.py tests/repositories/test_social_season_analytics.py tests/socials/test_instagram_scraper_public_graphql.py`
+    - `cd /Users/thomashulihan/Projects/TRR/TRR-Backend && ruff format --check trr_backend/repositories/social_season_analytics.py api/routers/socials.py tests/api/routers/test_socials_season_analytics.py tests/repositories/test_social_season_analytics.py tests/socials/test_instagram_scraper_public_graphql.py`
+    - `cd /Users/thomashulihan/Projects/TRR/TRR-APP/apps/web && pnpm exec vitest run tests/social-account-profile-page.runtime.test.tsx tests/social-account-catalog-verification-route.test.ts`
+    - `cd /Users/thomashulihan/Projects/TRR/TRR-APP/apps/web && pnpm exec eslint src/components/admin/SocialAccountProfilePage.tsx tests/social-account-profile-page.runtime.test.tsx src/lib/admin/social-account-profile.ts "src/app/api/admin/trr-api/social/profiles/[platform]/[handle]/catalog/verification/route.ts" tests/social-account-catalog-verification-route.test.ts`
+  - Remaining non-blocking validation caveat:
+    - `pnpm -C /Users/thomashulihan/Projects/TRR/TRR-APP/apps/web run lint` still fails for generated `.vercel/output/**` artifacts that predate this change; the touched app files lint clean under the scoped eslint command above.
+# 2026-03-20 17:24 ET
+- Treated scrape-complete shared-account catalog runs as completed even when only `post_classify` backlog remains. Backend now:
+  - finalizes shared-account catalog runs as `completed` once `shared_account_posts` is complete with no non-classify failures
+  - excludes classify-only backlog runs from `get_active_social_account_catalog_run(...)`
+  - marks recent catalog run rows as `completed` in summary payloads when only classify backlog remains
+  - keeps run progress additive fields `scrape_complete` / `classify_incomplete` so the UI can show background classification honestly
+- Updated the admin social profile page so scrape-complete runs:
+  - unlock `Backfill History` / `Sync Recent`
+  - hide `Cancel Run`
+  - show `Run <id> is scrape-complete. New backfills are unlocked while classification continues in the background.`
+  - label `post_classify` as `Background` instead of `Issue` when scrape is already complete
+  - show phase label `Catalog fetch complete`
+- Regression coverage added:
+  - backend: scrape-complete finalize/active-run/recent-run/progress behavior
+  - frontend: scrape-complete classify-backlog action/status rendering
+- Live BravoTV run `a5dadb19-f672-4cd3-997d-16435f12ffa6` was manually updated in Supabase to `status = completed` at `2026-03-20 21:23:30+00` so the existing page state stops presenting the fetch as still running. Classify jobs still exist as background backlog (`post_classify`: 1 running, 7 retrying, 410 queued, 82 failed at the time of update), but the scrape itself is complete.
+
+# 2026-03-20 17:31 ET
+- Switched the default workspace profile to backend reload mode for local `make dev` by setting `TRR_BACKEND_RELOAD=1` in [default.env](/Users/thomashulihan/Projects/TRR/profiles/default.env).
+- Regenerated [env-contract.md](/Users/thomashulihan/Projects/TRR/docs/workspace/env-contract.md) so the documented default now matches the runtime profile.
+- Note: this changes the next workspace start. An already-running `make dev` session will not flip modes until it is restarted.
+
+# 2026-03-22 10:15 ET
+- Corrected the workspace contract drift uncovered during the cross-repo bug sweep:
+  - `scripts/dev-workspace.sh` now defaults `WORKSPACE_TRR_MODAL_ADMIN_OPERATION_FUNCTION` to `run_admin_operation_v2`, matching the checked-in profiles and generated env contract.
+  - the canonical default workspace mode remains backend non-reload (`TRR_BACKEND_RELOAD=0`) for `make dev`; the earlier note above no longer reflects the checked-in default profile.
+  - added [check-workspace-contract.sh](/Users/thomashulihan/Projects/TRR/scripts/check-workspace-contract.sh) so script fallbacks, profile defaults, env docs, and local app examples can be checked together.
+
+# 2026-03-20 22:42 ET
+- Implemented the TikTok shared-account BravoTV parity pass across `TRR-Backend` and `TRR-APP` so `/admin/social/tiktok/bravotv` now follows the same shared profile/catalog flow as Instagram while keeping TikTok on the existing discovery plus cursor-breakpoint history path.
+- Backend TikTok retrieval hardening:
+  - `TikTokScraper` now exposes reusable profile snapshot builders that merge `fetch_user_detail(...)` and profile HTML into one normalized snapshot with `sec_uid`, display name, avatar URL, bio, verification/stats, and best-known total post count.
+  - shared-account TikTok discovery and partitioned posts now bootstrap through that same helper, persist `profile_snapshot` into shared-account source metadata, use the snapshot `total_posts` denominator instead of the weak first-page HTML count, and enrich saved catalog posts with avatar/display-name data before upsert.
+  - TikTok live account summary helpers now surface additive identity fields (`display_name`, `bio`, `is_verified`, `follower_count`, `following_count`, `live_total_posts`) plus better `avatar_url` / `total_posts` fallback behavior for account pages even when catalog rows are still sparse.
+- App/runtime follow-up:
+  - the shared profile summary type now accepts the new optional TikTok identity fields
+  - route coverage now explicitly proves `/admin/social/tiktok/bravotv` normalizes to the generic stats page
+  - runtime coverage now proves TikTok renders `Backfill History` and `Sync Recent`, keeps the public profile link stable, and does not request the Instagram-only hashtag timeline endpoint on the hashtags tab
+- Validation:
+  - `cd /Users/thomashulihan/Projects/TRR/TRR-Backend && ./.venv/bin/python -m py_compile trr_backend/repositories/social_season_analytics.py trr_backend/socials/tiktok/scraper.py`
+  - `cd /Users/thomashulihan/Projects/TRR/TRR-Backend && ./.venv/bin/pytest -q tests/repositories/test_social_season_analytics.py -k 'tiktok_identity_fields or bootstrap_shared_tiktok_account_context or scrape_shared_tiktok_posts_partitioned_applies_profile_snapshot_enrichment'`
+  - `cd /Users/thomashulihan/Projects/TRR/TRR-Backend && ./.venv/bin/pytest -q tests/api/routers/test_socials_season_analytics.py -k 'catalog_backfill_tiktok'`
+  - `cd /Users/thomashulihan/Projects/TRR/TRR-APP && pnpm -C apps/web exec vitest run -c vitest.config.ts tests/social-account-profile-page.runtime.test.tsx --testNamePattern='renders TikTok catalog actions and skips the Instagram-only hashtag timeline fetch'`
+  - `cd /Users/thomashulihan/Projects/TRR/TRR-APP && pnpm -C apps/web exec vitest run -c vitest.config.ts tests/social-account-profile-route.test.ts`
+  - `cd /Users/thomashulihan/Projects/TRR/TRR-APP && pnpm -C apps/web run typecheck`
+- Validation caveat:
+  - `pnpm -C apps/web run typecheck` passed under the local toolchain, but the workspace still reported the pre-existing engine mismatch warning because this shell is on Node `v22.18.0` while `apps/web/package.json` declares `24.x`.
+
+# 2026-03-20 23:18 ET
+- Implemented the Twitter/X, YouTube, and Threads shared-account profile/catalog parity pass across `TRR-Backend` and `TRR-APP`.
+- Backend shared-account/catalog changes:
+  - extended shared-account catalog support to include `youtube`, including a new migration `0200_shared_account_youtube_catalog.sql` for `social.youtube_account_catalog_posts` plus a YouTube-safe update to the hashtag review queue platform constraint
+  - enabled shared YouTube catalog upserts instead of rejecting catalog mode, storing normalized title/description/text, watch URL, thumbnail/media URLs, hashtags, mentions, engagement/view counts, and YouTube-specific metadata in `raw_data`
+  - added shared profile snapshot enrichment for Twitter/X, Threads, and YouTube so shared-account runs now carry best-available `display_name`, `avatar_url`, `profile_url`, verification state, and YouTube channel totals/account metadata through `profile_snapshot`
+  - improved account summary fallback behavior so shared profile pages can use Bravo defaults when no explicit `shared_account_sources` row exists, use catalog totals for catalog-capable platforms, and expose optional identity/live-total fields for Twitter/X, Threads, and YouTube the same way TikTok already does
+- App/runtime follow-up:
+  - added `youtube` to `SOCIAL_ACCOUNT_CATALOG_ENABLED_PLATFORMS`
+  - runtime coverage now proves Twitter and YouTube render shared catalog actions through the generic profile page, and YouTube keeps the Instagram-only hashtag timeline request disabled
+  - route coverage now proves the generic `/admin/social/[platform]/[handle]` route normalizes TikTok, Twitter, Threads, and YouTube handles into the shared profile page
+- Validation:
+  - `python -m py_compile /Users/thomashulihan/Projects/TRR/TRR-Backend/trr_backend/repositories/social_season_analytics.py /Users/thomashulihan/Projects/TRR/TRR-Backend/tests/repositories/test_social_season_analytics.py /Users/thomashulihan/Projects/TRR/TRR-Backend/tests/api/routers/test_socials_season_analytics.py`
+  - `cd /Users/thomashulihan/Projects/TRR/TRR-Backend && ruff check trr_backend/repositories/social_season_analytics.py tests/repositories/test_social_season_analytics.py tests/api/routers/test_socials_season_analytics.py`
+  - `cd /Users/thomashulihan/Projects/TRR/TRR-Backend && ruff format --check trr_backend/repositories/social_season_analytics.py tests/repositories/test_social_season_analytics.py tests/api/routers/test_socials_season_analytics.py`
+  - `cd /Users/thomashulihan/Projects/TRR/TRR-Backend && pytest -q tests/repositories/test_social_season_analytics.py -k "social_account_catalog_backfill or social_account_profile_summary_includes or scrape_shared_twitter_posts_catalog_adds_profile_snapshot or scrape_shared_threads_posts_catalog_adds_profile_snapshot or scrape_shared_youtube_posts_catalog_persists_profile_snapshot_and_totals or fetch_social_account_profile_source_rows_falls_back_to_bravo_defaults"`
+  - `cd /Users/thomashulihan/Projects/TRR/TRR-Backend && pytest -q tests/api/routers/test_socials_season_analytics.py -k "catalog_backfill and (tiktok or supported_platforms or modal_executor or active_profile_run)"`
+  - `cd /Users/thomashulihan/Projects/TRR/TRR-APP && pnpm -C apps/web exec vitest run tests/social-account-profile-page.runtime.test.tsx tests/social-account-profile-route.test.ts`
+  - `cd /Users/thomashulihan/Projects/TRR/TRR-APP && pnpm -C apps/web run typecheck`
+- Remaining caveats:
+  - the new Supabase migration was added to the repo, but I did not apply it against a live database in this session
+  - I did not run a live Bravo shared-account backfill for `twitter/bravotv`, `threads/bravotv`, or `youtube/bravo` in this pass
+  - app typecheck passed, but the local shell still emits the existing Node engine mismatch warning because it is running Node `v22.18.0` while `apps/web` declares `24.x`

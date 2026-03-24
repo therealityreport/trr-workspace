@@ -9,6 +9,26 @@ HEADFUL_OWNER_FILE="${HEADFUL_OWNER_DIR}/headful-chrome-owner.env"
 
 PROFILE_DIR="${CHROME_AGENT_PROFILE_DIR:-${HOME}/.chrome-profiles/claude-agent}"
 DEBUG_PORT="${CHROME_AGENT_DEBUG_PORT:-9222}"
+
+# ── Chrome Profile Identity Guard ──────────────────────────────────
+# This guard applies only to TRR Workspace / Codex agent launches.
+# Claude in Chrome (desktop app browser automation) is permitted to use
+# the admin@thereality.report profile and should NOT trigger this warning.
+#
+# Default agent work must use codex@thereality.report (codex-agent profile).
+# The claude-agent profile contains admin@thereality.report and is reserved
+# for user-authorized tasks only (e.g., paywalled sites like NYTimes).
+# CHROME_AGENT_ADMIN_OVERRIDE=1 signals explicit user permission was granted.
+# CHROME_AGENT_SKIP_PROFILE_GUARD=1 bypasses this guard (set by non-Codex callers).
+ADMIN_PROFILE_PATTERN="${CHROME_AGENT_ADMIN_PROFILE_PATTERN:-claude-agent}"
+if [[ -z "${CHROME_AGENT_ADMIN_OVERRIDE:-}" ]] \
+   && [[ -z "${CHROME_AGENT_SKIP_PROFILE_GUARD:-}" ]] \
+   && [[ "$PROFILE_DIR" == *"${ADMIN_PROFILE_PATTERN}"* ]]; then
+  echo "[chrome-agent] WARNING: Launching with admin-capable profile (${PROFILE_DIR})." >&2
+  echo "[chrome-agent] Policy: TRR Workspace agents should use codex-agent profile for routine work." >&2
+  echo "[chrome-agent] Set CHROME_AGENT_ADMIN_OVERRIDE=1 if user granted permission." >&2
+  echo "[chrome-agent] Set CHROME_AGENT_SKIP_PROFILE_GUARD=1 for non-Codex callers (e.g., Claude in Chrome)." >&2
+fi
 HEADLESS="${CHROME_AGENT_HEADLESS:-0}"
 DISABLE_GPU="${CHROME_AGENT_DISABLE_GPU:-0}"
 
