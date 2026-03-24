@@ -26,7 +26,7 @@
 # WORKSPACE_BROWSER_TAB_SYNC_MODE=reload_first make dev     # reload only the first matching tab
 # WORKSPACE_BROWSER_TAB_SYNC_MODE=reload_all make dev       # legacy behavior: reload every matching tab
 # WORKSPACE_OPEN_SCREENALYTICS_TABS=1 make dev  # opt in to screenalytics Streamlit/Web tabs
-# TRR_BACKEND_RELOAD=0 make dev          # opt out of backend hot-reload (default workspace mode is reload)
+# TRR_BACKEND_RELOAD=1 make dev          # opt in backend hot-reload (default workspace mode is non-reload)
 dev:
 	@$(MAKE) --no-print-directory preflight
 	@PROFILE="$${PROFILE:-default}" WORKSPACE_DEV_MODE=cloud WORKSPACE_SCREENALYTICS=1 WORKSPACE_SCREENALYTICS_SKIP_DOCKER=1 bash scripts/dev-workspace.sh

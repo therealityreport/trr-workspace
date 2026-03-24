@@ -15,11 +15,11 @@ Purpose: active-work index for multi-turn AI agent sessions affecting workspace-
 - None.
 
 ## Recent Completions
-- `Workspace make dev backend reload default` | last updated `2026-03-22` | current phase `workspace dev default now uses backend reload mode` | next action `Start a fresh make dev session to pick up the new default` | details `local-status/workspace-make-dev-backend-reload-default.md`
 - `Workspace Backend Watchdog Busy-Timeout Hardening` | last updated `2026-03-22` | current phase `complete` | next action `Use make dev normally; the backend watchdog now suppresses busy-timeout restarts under active local traffic, so the Reddit admin communities page should bootstrap without backend recycle loops.` | details `local-status/workspace-backend-watchdog-busy-timeout-hardening.md`
 - `TikTok Shared-Account Modal Dispatch Recovery And Admin Status Hardening` | last updated `2026-03-22` | current phase `shared-account Modal dispatch recovery and admin status hardening shipped` | next action `reload the TikTok and Instagram shared-account admin pages, start a fresh backfill, and verify queued runs now surface waiting/retrying/failure dispatch states instead of appearing stuck` | details `local-status/tiktok-shared-account-modal-dispatch-recovery-and-admin-status-hardening.md`
 - `TikTok Shared-Account Fallback Progress And Stage Label Fix` | last updated `2026-03-22` | current phase `tiktok shared-account fallback progress and stage labeling fixed` | next action `Reload the TikTok shared-account admin page and confirm the active fallback runner now reports checked counts and renders as Catalog Fetch instead of Shard Workers.` | details `local-status/tiktok-shared-account-fallback-progress-and-stage-label-fix.md`
 - `Reddit post sync reliability hardening` | last updated `2026-03-22` | current phase `complete` | next action `Reload the admin Reddit season page and verify queued windows now surface worker-unavailable, stranded-queue, or partial-403 messaging instead of lingering on a generic still-running banner.` | details `local-status/reddit-post-sync-reliability-hardening.md`
+- `Reddit Admin sync_full mode contract fix` | last updated `2026-03-22` | current phase `complete` | next action `Reload or restart TRR-Backend if needed, then re-run Sync Posts from the Reddit admin season page and confirm the per-window refresh runs start instead of failing immediately.` | details `local-status/reddit-admin-sync-full-mode-contract-fix.md`
 
 ## Archives / Canonical Links
 - History archive: `archive/HANDOFF-legacy-2026-03-16.md`
