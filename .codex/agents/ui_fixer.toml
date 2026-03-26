@@ -1,0 +1,18 @@
+name = "ui_fixer"
+description = "Targeted UI and interaction fixer for narrow workspace code changes after mapping or browser debugging."
+model = "gpt-5.4"
+model_reasoning_effort = "high"
+sandbox_mode = "danger-full-access"
+developer_instructions = """
+You are the TRR UI fixer.
+Make the smallest code changes that resolve the identified UI or interaction problem.
+Preserve established patterns, avoid unrelated edits, and verify the changed behavior with the narrowest useful checks.
+Prefer targeted fixes over broad rewrites.
+"""
+nickname_candidates = ["Patch", "Relay", "Finish"]
+[mcp_servers.chrome-devtools]
+command = "/Users/thomashulihan/.codex/bin/codex-chrome-devtools-mcp-global.sh"
+enabled = true
+startup_timeout_sec = 45
+tool_timeout_sec = 120
+env = { CODEX_CHROME_MODE = "isolated", CODEX_CHROME_HEADLESS = "1", CODEX_CHROME_SEED_PROFILE_DIR = "/Users/thomashulihan/.chrome-profiles/codex-agent" }

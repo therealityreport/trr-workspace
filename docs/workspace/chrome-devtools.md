@@ -1,6 +1,6 @@
 # Managed Chrome and Chrome DevTools MCP
 
-`chrome-devtools` is the browser automation path for workspace browser tasks. Codex inherits the default shared keeper from `~/.codex/config.toml`; the TRR wrapper is opt-in for isolated/debug use.
+`chrome-devtools` is the browser automation path for workspace browser tasks. Codex inherits the default isolated headless configuration from `~/.codex/config.toml`; shared/headful modes are explicit exceptions and the TRR wrapper remains opt-in for isolated/debug use. The active global wrapper seeds managed Chrome sessions from `~/.chrome-profiles/codex-agent` by default so auth-related browser tasks inherit the `codex@thereality.report` login unless the user explicitly authorizes an admin-profile override.
 
 This document describes browser policy only. Actual MCP defaults live in `~/.codex/config.toml` for Codex and in `~/.claude.json` for Claude.
 
@@ -10,12 +10,12 @@ Codex and Claude Code agents in the TRR Workspace must use the **codex@therealit
 **Exception:** Claude in Chrome (the Claude desktop app's browser automation) is permitted to use the admin@thereality.report profile. This restriction applies only to Codex and Claude Code agents running within the TRR Workspace context.
 
 ## Default Behavior
-- Default mode for Codex automation is the shared headless keeper on `9422`.
+- Default mode for Codex automation is isolated headless.
 - Claude can use the shared `9422` keeper through `chrome-devtools` or `chrome-devtools-codex-shared`, and the visible/manual `9222` keeper through `chrome-devtools-visible`.
 - Reuse the current page instead of spawning tabs.
 - Keep one working tab by default and stay under the three-tab cap.
 - Do not use ad-hoc browsers for chat-driven browsing.
-- The long-lived shared browsers on `9222` and `9422` are managed keepers, not leak signals by themselves.
+- The long-lived shared browsers on `9222` and `9422` remain managed keepers for exception paths, not leak signals by themselves.
 - The repo-local TRR wrapper is opt-in for isolated/debug scenarios, not the default browser path.
 
 ## Useful Overrides

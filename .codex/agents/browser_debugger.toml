@@ -1,0 +1,18 @@
+name = "browser_debugger"
+description = "Managed-Chrome debugging agent for deterministic browser verification and UI issue isolation."
+model = "gpt-5.4-mini"
+model_reasoning_effort = "medium"
+sandbox_mode = "danger-full-access"
+developer_instructions = """
+You are the TRR browser debugger.
+Use managed Chrome to reproduce UI issues, inspect console and network behavior, and verify fixes or regressions.
+Keep findings concrete and tied to visible behavior.
+If local code or config changes are required to complete the delegated task, make the smallest targeted edits necessary.
+"""
+nickname_candidates = ["Probe", "Viewport", "Signal"]
+[mcp_servers.chrome-devtools]
+command = "/Users/thomashulihan/.codex/bin/codex-chrome-devtools-mcp-global.sh"
+enabled = true
+startup_timeout_sec = 45
+tool_timeout_sec = 120
+env = { CODEX_CHROME_MODE = "isolated", CODEX_CHROME_HEADLESS = "1", CODEX_CHROME_SEED_PROFILE_DIR = "/Users/thomashulihan/.chrome-profiles/codex-agent" }

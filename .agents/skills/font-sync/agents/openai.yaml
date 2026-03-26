@@ -1,0 +1,6 @@
+interface:
+  display_name: "Font Sync (TRR Workspace)"
+  short_description: "Collect Monotype fonts from local cache, upload to R2, and register in the web app design system."
+  default_prompt: "Use $font-sync to collect fonts from Monotype cache, stage on Desktop/FONTS, upload to R2, add @font-face rules, and register in the design system page."
+policy:
+  allow_implicit_invocation: false

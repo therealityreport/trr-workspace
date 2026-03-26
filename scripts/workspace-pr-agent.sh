@@ -5,7 +5,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
 PYTHON_BIN="${PYTHON_BIN:-python3}"
-ORCHESTRATOR="$ROOT/skills/multi-repo-pr-merge-sync/scripts/orchestrate_multi_repo_pr_merge_sync.py"
+ORCHESTRATOR="$ROOT/.agents/skills/multi-repo-pr-merge-sync/scripts/orchestrate_multi_repo_pr_merge_sync.py"
 JSON_REPORT="${WORKSPACE_PR_AGENT_JSON_REPORT:-$ROOT/.logs/workspace/pr-agent-report.json}"
 TARGET_REPOS="${WORKSPACE_PR_AGENT_REPOS:-TRR-Backend,screenalytics,TRR-APP}"
 REVISION_COMMAND="${WORKSPACE_PR_AGENT_REVISION_COMMAND:-python3 $ROOT/scripts/workspace-pr-agent-revision.py}"
