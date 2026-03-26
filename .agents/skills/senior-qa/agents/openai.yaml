@@ -1,0 +1,9 @@
+interface:
+  display_name: "Senior QA (TRR Workspace)"
+  short_description: "Workspace-local canonical owner for TRR risk-based validation, regression prevention, and release verification."
+  default_prompt: "Use $senior-qa to define and verify the regression coverage for this TRR change."
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "chrome-devtools"
+      description: "Managed Chrome verification for deterministic UI checks"

@@ -7,9 +7,39 @@ personality = "pragmatic"
 approval_policy = "never"
 sandbox_mode = "danger-full-access"
 web_search = "cached"
+project_doc_max_bytes = 65536
+project_doc_fallback_filenames = []
 
 # Chrome DevTools is inherited from ~/.codex/config.toml so TRR uses the
-# shared 9422 browser keeper by default.
+# isolated headless global default unless a session explicitly overrides it.
+
+[agents]
+max_threads = 6
+max_depth = 1
+
+[agents.pr_explorer]
+description = "Repo and PR discovery, changed-surface mapping, merge-order context, and blocker identification."
+config_file = "./agents/pr_explorer.toml"
+
+[agents.reviewer]
+description = "Risk-first review for correctness, regressions, security, and missing tests."
+config_file = "./agents/reviewer.toml"
+
+[agents.docs_researcher]
+description = "Documentation specialist for Codex, OpenAI, and framework/API verification."
+config_file = "./agents/docs_researcher.toml"
+
+[agents.code_mapper]
+description = "Symbol, config, and dataflow mapping across the TRR workspace."
+config_file = "./agents/code_mapper.toml"
+
+[agents.browser_debugger]
+description = "Managed-Chrome debugging and verification for browser behavior."
+config_file = "./agents/browser_debugger.toml"
+
+[agents.ui_fixer]
+description = "Targeted UI and interaction fixes after mapping or browser debugging."
+config_file = "./agents/ui_fixer.toml"
 
 [mcp_servers.supabase]
 url = "https://mcp.supabase.com/mcp?project_ref=vwxfvzutyufrkhfgoeaa&features=docs%2Caccount%2Cdatabase%2Cdebugging%2Cdevelopment%2Cfunctions%2Cbranching%2Cstorage"

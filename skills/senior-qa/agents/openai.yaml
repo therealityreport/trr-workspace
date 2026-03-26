@@ -1,5 +1,0 @@
-interface:
-  display_name: "Senior QA (TRR Workspace)"
-  short_description: "Workspace-local canonical owner for TRR risk-based validation, regression prevention, and release verification."
-  default_prompt: "Use $senior-qa to define and verify the regression coverage for this TRR change."
-

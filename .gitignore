@@ -24,5 +24,46 @@
 # Local agent config
 /.claude/
 
+# Third-party AI editor configs (not part of tracked workspace)
+/.adal/
+/.agent/
+/.aide/
+/.alex/
+/.ara/
+/.bb/
+/.cline/
+/.codebuddy/
+/.codestory/
+/.commandcode/
+/.continue/
+/.crush/
+/.cursor/
+/.deepagents/
+/.factory/
+/.goose/
+/.helix/
+/.kilocode/
+/.kiro/
+/.lingma/
+/.mcpjam/
+/.meekia/
+/.mux/
+/.neovate/
+/.opencode/
+/.openhands/
+/.pearai/
+/.pi/
+/.pochi/
+/.qoder/
+/.qwen/
+/.roo/
+/.ruler/
+/.sourcegraph/
+/.trae/
+/.void/
+/.windsurf/
+/.zed/
+/.zencoder/
+
 # OS
 .DS_Store

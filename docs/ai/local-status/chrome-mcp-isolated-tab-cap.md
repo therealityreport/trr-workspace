@@ -1,15 +1,15 @@
 # Chrome MCP Isolated Tab Cap
 
-Last updated: 2026-03-16
+Last updated: 2026-03-24
 
 ## Handoff Snapshot
 ```yaml
 handoff:
-  include: true
-  state: recent
-  last_updated: 2026-03-16
-  current_phase: "workspace Chrome isolated default + tab-cap enforcement"
-  next_action: "Restart active Codex chats so they pick up the isolated headful default and verify per-session tab trimming in a fresh chat"
+  include: false
+  state: archived
+  last_updated: 2026-03-24
+  current_phase: "archived continuity note"
+  next_action: "See newer workspace Chrome status notes if this policy needs follow-up"
   detail: self
 ```
 
@@ -35,3 +35,4 @@ handoff:
 ## Notes
 - Shared Chrome remains supported as an explicit override, but hard per-chat tab enforcement applies only to isolated sessions.
 - Existing already-open chats cannot retroactively switch their MCP/browser binding; restart is expected.
+- Archived from active handoff rotation on 2026-03-24 so workspace policy checks stop treating this completed rollout as a fresh continuity item.

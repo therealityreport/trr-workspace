@@ -1,15 +1,15 @@
 # Codex Config Realignment
 
-Last updated: 2026-03-18
+Last updated: 2026-03-26
 
 ## Handoff Snapshot
 ```yaml
 handoff:
   include: true
   state: recent
-  last_updated: 2026-03-18
-  current_phase: "workspace Codex config split aligned with trusted-project activation and dual-Figma MCP support"
-  next_action: "Restart any older Codex chats, then verify global MCPs load everywhere, including figma-console, and TRR-local MCPs load only inside the trusted TRR workspace"
+  last_updated: 2026-03-26
+  current_phase: "workspace Codex config split remains the active baseline while Batch 2 backend/app migration work continues"
+  next_action: "Keep the split user/project Codex config model in place; only reopen this lane if MCP registration or trusted-project activation regresses"
   detail: self
 ```
 
@@ -40,6 +40,9 @@ handoff:
 - `make check-policy`
 
 ## Notes
+- 2026-03-26 check:
+  - no new config realignment work was required during the Batch 2.2 and 2.3 migration run
+  - this note was refreshed so handoff closeout reflects that the current split-config baseline is still the intended workspace state
 - Existing chats may still reflect older MCP registrations until they are restarted.
 - If TRR-local MCPs disappear from a fresh session inside this workspace, check the trusted-project entry in `~/.codex/config.toml` before debugging skills or prompts.
 - Shared/headful Chrome remains available as an explicit exception path; the tracked default is isolated/headless.
