@@ -1,15 +1,15 @@
 # Planning workflow skills upgrade
 
-Last updated: 2026-03-18
+Last updated: 2026-03-26
 
 ## Handoff Snapshot
 ```yaml
 handoff:
-  include: true
-  state: recent
-  last_updated: 2026-03-18
+  include: false
+  state: archived
+  last_updated: 2026-03-26
   current_phase: "complete"
-  next_action: "Use write-plan-codex -> plan-enhancer -> orchestrate-plan-execution for future plan-driven work; monitor only for wording drift in related docs"
+  next_action: "None"
   detail: self
 ```
 
@@ -29,3 +29,7 @@ handoff:
 - Passed: `python3 /Users/thomashulihan/.codex/skills/.system/skill-creator/scripts/quick_validate.py /Users/thomashulihan/.codex/skills/plan-enhancer`
 - Passed: metadata checks for all three `agents/openai.yaml` files
 - Passed: static smoke checks for required planning, enhancement, and execution-alignment sections
+
+## Notes
+- 2026-03-26:
+  - archived from the active handoff surface; the workflow is still the expected default, but this rollout note no longer needs to stay `recent`

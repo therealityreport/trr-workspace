@@ -1,15 +1,15 @@
 # Figma Console dual-MCP rollout
 
-Last updated: 2026-03-18
+Last updated: 2026-03-26
 
 ## Handoff Snapshot
 ```yaml
 handoff:
-  include: true
-  state: recent
-  last_updated: 2026-03-18
+  include: false
+  state: archived
+  last_updated: 2026-03-26
   current_phase: "complete"
-  next_action: "Restart older Codex chats so both figma and figma-console registrations appear, then use the global figma skill as the dual-MCP workflow owner"
+  next_action: "None"
   detail: self
 ```
 
@@ -33,5 +33,7 @@ handoff:
 - Passed: direct `figma-console` launcher smoke test using the Keychain-backed token path
 
 ## Notes
+- 2026-03-26:
+  - archived from the active handoff surface; keep this file as historical context only
 - The PAT was added to macOS Keychain service `codex-figma-console` for the current macOS user.
 - The PAT was pasted into chat history before setup, so it should be rotated after confirming the new MCP path is working.

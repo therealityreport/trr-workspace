@@ -722,7 +722,7 @@ start_bg() {
   PIDS+=("$pid")
   NAMES+=("$name")
   LAST_STARTED_PID="$pid"
-  echo "${name}_PID=${pid}" >>"$PIDFILE"
+  write_pidfile_runtime_value "${name}_PID" "$pid"
   echo "[workspace] ${name} started (pid=${pid})"
 }
 
@@ -737,14 +737,20 @@ start_bg_no_setsid() {
   PIDS+=("$pid")
   NAMES+=("$name")
   LAST_STARTED_PID="$pid"
-  echo "${name}_PID=${pid}" >>"$PIDFILE"
+  write_pidfile_runtime_value "${name}_PID" "$pid"
   echo "[workspace] ${name} started (pid=${pid})"
 }
 
 write_pidfile_runtime_value() {
   local key="$1"
   local value="$2"
-  echo "${key}=${value}" >>"$PIDFILE"
+  local tmp
+  tmp="$(mktemp "${PIDFILE}.XXXXXX")"
+  if [[ -f "$PIDFILE" ]]; then
+    grep -v "^${key}=" "$PIDFILE" >"$tmp" || true
+  fi
+  echo "${key}=${value}" >>"$tmp"
+  mv "$tmp" "$PIDFILE"
 }
 
 json_escape() {

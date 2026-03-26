@@ -3,26 +3,28 @@
 Use TRR-local canonical skills first. This file is the routing summary, not a full inventory.
 
 ## Routing Order
-1. Repo-local skills in the touched repo
-2. Workspace-local skills in `/Users/thomashulihan/Projects/TRR/skills/`
-3. Globally canonical skills in `~/.codex/skills/`
-4. Compatibility shims or generic specialists only when no canonical owner fits
-
-## Canonical Repo-Local Owners
-- `TRR-Backend/skills/senior-backend/SKILL.md` — backend contracts, schema, persistence, and security-sensitive API behavior
-- `TRR-Backend/skills/database-designer/SKILL.md` — backend database design specialist
-- `TRR-APP/skills/senior-frontend/SKILL.md` — Next.js app-router implementation and frontend contract follow-through
-- `TRR-APP/skills/figma-frontend-design-engineer/SKILL.md` — Figma-driven frontend work
-- `screenalytics/.claude/skills/*` — screenalytics-native pipeline, ML, and UI specialists
+1. Workspace-local skills in `/Users/thomashulihan/Projects/TRR/.agents/skills/`
+2. Globally canonical skills in `~/.codex/skills/`
+3. Compatibility shims or generic specialists only when no canonical owner fits
 
 ## Canonical Workspace-Local Owners
-- `skills/senior-fullstack/SKILL.md` — cross-repo implementation ownership
-- `skills/senior-architect/SKILL.md` — architecture and ADR decisions
-- `skills/senior-devops/SKILL.md` — release, rollback, and observability gates
-- `skills/senior-qa/SKILL.md` — regression prevention and validation
-- `skills/code-reviewer/SKILL.md` — review findings and post-change risk audit
-- `skills/social-ingestion-reliability/SKILL.md` — social-ingestion runtime and reliability work
-- `skills/skillcreator/SKILL.md` — TRR-local skill authoring and maintenance
+- `.agents/skills/senior-fullstack/SKILL.md` — cross-repo implementation ownership
+- `.agents/skills/senior-architect/SKILL.md` — architecture and ADR decisions
+- `.agents/skills/senior-devops/SKILL.md` — release, rollback, and observability gates
+- `.agents/skills/senior-qa/SKILL.md` — regression prevention and validation
+- `.agents/skills/code-reviewer/SKILL.md` — review findings and post-change risk audit
+- `.agents/skills/social-ingestion-reliability/SKILL.md` — social-ingestion runtime and reliability work
+- `.agents/skills/skillcreator/SKILL.md` — TRR-local skill authoring and maintenance
+
+## Additional Checked-In Workspace Skills
+- `.agents/skills/crawl4ai/SKILL.md`
+- `.agents/skills/font-sync/SKILL.md`
+- `.agents/skills/multi-repo-pr-merge-sync/SKILL.md`
+- `.agents/skills/workspace-pr-agent-github-mcp/SKILL.md`
+
+## Repo-Local Skill Trees
+- Repo-local `.agents/skills/` trees may remain for direct repo sessions.
+- They are not part of the default workspace routing surface because TRR work is initiated from the workspace root.
 
 ## Canonical Global Skills
 - `write-plan-codex` — first-draft, execution-ready planning sessions
@@ -36,6 +38,7 @@ Use TRR-local canonical skills first. This file is the routing summary, not a fu
 ## Defaults
 - If no plan exists yet, start with `write-plan-codex`.
 - If a plan exists but needs stronger scope, sequencing, or optional-feature discovery, use `plan-enhancer` as the default middle refinement step. Users may explicitly skip it.
-- For cross-repo implementation, start execution with `orchestrate-plan-execution` after plan approval, then add the smallest set of local owners needed for the touched surfaces.
+- For cross-repo implementation, start execution with `orchestrate-plan-execution` after plan approval, then add the smallest set of workspace-local owners needed for the touched surfaces.
 - Prefer one canonical owner per surface instead of stacking overlapping generic skills.
 - Treat global vendored specialists as references, not TRR owners, unless this file explicitly promotes them.
+- Disable deprecated global TRR alias skills in `~/.codex/config.toml` with `[[skills.config]]` so Codex surfaces the checked-in local canonicals only once.

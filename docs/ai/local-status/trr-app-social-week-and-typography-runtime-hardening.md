@@ -1,15 +1,15 @@
 # TRR-APP social-week and typography runtime hardening
 
-Last updated: 2026-03-16
+Last updated: 2026-03-24
 
 ## Handoff Snapshot
 ```yaml
 handoff:
-  include: true
-  state: recent
-  last_updated: 2026-03-16
-  current_phase: "complete"
-  next_action: "Monitor only unless a fresh-session managed Chrome pass reproduces the old dev crash or repeated typography fallback warnings"
+  include: false
+  state: archived
+  last_updated: 2026-03-24
+  current_phase: "archived continuity note"
+  next_action: "See newer TRR-APP runtime notes if follow-up is needed"
   detail: self
 ```
 

@@ -4,6 +4,31 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 RULES_FILE="${ROOT}/.codex/rules/default.rules"
 
+resolve_python_311_bin() {
+  local candidate path
+  for candidate in python3.11 python3 python; do
+    if [[ -x "$candidate" ]]; then
+      path="$candidate"
+    elif command -v "$candidate" >/dev/null 2>&1; then
+      path="$(command -v "$candidate")"
+    else
+      continue
+    fi
+
+    if "$path" - <<'PY' >/dev/null 2>&1
+import sys
+raise SystemExit(0 if sys.version_info >= (3, 11) else 1)
+PY
+    then
+      printf '%s\n' "$path"
+      return 0
+    fi
+  done
+
+  echo "[check-codex] ERROR: Python 3.11+ is required." >&2
+  exit 1
+}
+
 fail() {
   echo "[check-codex] ERROR: $*" >&2
   exit 1
@@ -13,6 +38,8 @@ if ! command -v codex >/dev/null 2>&1; then
   fail "Codex CLI is not available on PATH"
 fi
 
+PYTHON_BIN="$(resolve_python_311_bin)"
+
 bash "${ROOT}/scripts/codex-config-sync.sh" validate
 
 if [[ ! -f "$RULES_FILE" ]]; then
@@ -20,7 +47,7 @@ if [[ ! -f "$RULES_FILE" ]]; then
 fi
 
 reset_policy="$(codex execpolicy check --pretty --rules "$RULES_FILE" -- git reset --hard)"
-python3 - <<'PY' "$reset_policy"
+"$PYTHON_BIN" - <<'PY' "$reset_policy"
 import json
 import sys
 
@@ -31,7 +58,7 @@ if decision != "forbidden":
 PY
 
 bootstrap_policy="$(codex execpolicy check --pretty --rules "$RULES_FILE" -- bash scripts/codex-config-sync.sh bootstrap)"
-python3 - <<'PY' "$bootstrap_policy"
+"$PYTHON_BIN" - <<'PY' "$bootstrap_policy"
 import json
 import sys
 
@@ -41,19 +68,67 @@ if decision != "prompt":
     raise SystemExit(f"[check-codex] ERROR: expected bootstrap command to prompt, found {decision!r}")
 PY
 
+force_push_policy="$(codex execpolicy check --pretty --rules "$RULES_FILE" -- git push --force origin main)"
+"$PYTHON_BIN" - <<'PY' "$force_push_policy"
+import json
+import sys
+
+payload = json.loads(sys.argv[1])
+decision = payload.get("decision")
+if decision != "forbidden":
+    raise SystemExit(f"[check-codex] ERROR: expected git push --force to be forbidden, found {decision!r}")
+PY
+
+deploy_policy="$(codex execpolicy check --pretty --rules "$RULES_FILE" -- vercel deploy --prod)"
+"$PYTHON_BIN" - <<'PY' "$deploy_policy"
+import json
+import sys
+
+payload = json.loads(sys.argv[1])
+decision = payload.get("decision")
+if decision != "prompt":
+    raise SystemExit(f"[check-codex] ERROR: expected vercel deploy --prod to prompt, found {decision!r}")
+PY
+
+safe_policy="$(codex execpolicy check --pretty --rules "$RULES_FILE" -- git status)"
+"$PYTHON_BIN" - <<'PY' "$safe_policy"
+import json
+import sys
+
+payload = json.loads(sys.argv[1])
+decision = payload.get("decision")
+if decision not in {None, "allow", "allowed"}:
+    raise SystemExit(f"[check-codex] ERROR: expected git status to be allowed, found {decision!r}")
+PY
+
+bash_force_push_policy="$(codex execpolicy check --pretty --rules "$RULES_FILE" -- bash -lc 'git push --force origin main')"
+"$PYTHON_BIN" - <<'PY' "$bash_force_push_policy"
+import json
+import sys
+
+payload = json.loads(sys.argv[1])
+decision = payload.get("decision")
+if decision not in {None, "forbidden"}:
+    raise SystemExit(f"[check-codex] ERROR: unexpected decision for bash -lc wrapped git push --force: {decision!r}")
+PY
+
 global_mcp_state="$(cd "$HOME" && codex mcp list --json)"
 workspace_mcp_state="$(cd "$ROOT" && codex mcp list --json)"
-python3 - <<'PY' "$global_mcp_state" "$workspace_mcp_state"
+"$PYTHON_BIN" - <<'PY' "$global_mcp_state" "$workspace_mcp_state"
 import json
 import pathlib
 import sys
+import tomllib
 
-GLOBAL_EXPECTED = {"chrome-devtools", "figma", "figma-console", "figma-desktop", "github", "playwright"}
+GLOBAL_EXPECTED = {"chrome-devtools", "figma", "figma-console", "figma-desktop", "github", "playwright", "context7"}
 WORKSPACE_REQUIRED = GLOBAL_EXPECTED | {"supabase"}
 DISALLOWED = {"awsknowledge", "awsiac", "supabase"}
 GLOBAL_CHROME_COMMAND = f"{pathlib.Path.home()}/.codex/bin/codex-chrome-devtools-mcp-global.sh"
 GLOBAL_FIGMA_CONSOLE_COMMAND = f"{pathlib.Path.home()}/.codex/bin/codex-figma-console-mcp.sh"
 WORKSPACE_CHROME_COMMAND = GLOBAL_CHROME_COMMAND
+CODEX_PROFILE_DIR = str(pathlib.Path.home() / ".chrome-profiles" / "codex-agent")
+USER_CONFIG_FILE = pathlib.Path.home() / ".codex" / "config.toml"
+BROWSER_AGENT_FILE = pathlib.Path.cwd() / ".codex" / "agents" / "browser_debugger.toml"
 
 def extract_servers(payload: str) -> dict[str, dict]:
     data = json.loads(payload)
@@ -114,6 +189,25 @@ if figma_console_command != GLOBAL_FIGMA_CONSOLE_COMMAND:
     raise SystemExit(f"[check-codex] ERROR: global figma-console command mismatch: expected {GLOBAL_FIGMA_CONSOLE_COMMAND!r}, found {figma_console_command!r}")
 if figma_console_enabled not in {True, False}:
     raise SystemExit(f"[check-codex] ERROR: unexpected figma-console enabled state: {figma_console_enabled!r}")
+
+with USER_CONFIG_FILE.open("rb") as handle:
+    user_config = tomllib.load(handle)
+user_chrome_env = (((user_config.get("mcp_servers") or {}).get("chrome-devtools") or {}).get("env") or {})
+expected_chrome_env = {
+    "CODEX_CHROME_MODE": "isolated",
+    "CODEX_CHROME_HEADLESS": "1",
+    "CODEX_CHROME_SEED_PROFILE_DIR": CODEX_PROFILE_DIR,
+}
+for key, value in expected_chrome_env.items():
+    if user_chrome_env.get(key) != value:
+        raise SystemExit(f"[check-codex] ERROR: ~/.codex/config.toml chrome-devtools env {key} mismatch: expected {value!r}, found {user_chrome_env.get(key)!r}")
+
+with BROWSER_AGENT_FILE.open("rb") as handle:
+    browser_agent = tomllib.load(handle)
+qa_chrome_env = (((browser_agent.get("mcp_servers") or {}).get("chrome-devtools")) or {}).get("env") or {}
+for key, value in expected_chrome_env.items():
+    if qa_chrome_env.get(key) != value:
+        raise SystemExit(f"[check-codex] ERROR: browser_debugger agent chrome-devtools env {key} mismatch: expected {value!r}, found {qa_chrome_env.get(key)!r}")
 PY
 
 echo "[check-codex] OK"

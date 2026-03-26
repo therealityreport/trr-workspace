@@ -104,10 +104,29 @@ if trusted_project != "trusted":
 servers = data.get("mcp_servers") or {}
 expected_wrapper = str(path.parent / "bin" / "codex-figma-console-mcp.sh")
 global_chrome_wrapper = str(path.parent / "bin" / "codex-chrome-devtools-mcp-global.sh")
+required_disabled_skill_names = {
+    "senior-architect",
+    "senior-devops",
+    "senior-fullstack",
+    "senior-backend",
+    "senior-frontend",
+    "senior-qa",
+    "code-reviewer",
+    "skillcreator",
+    "social-ingestion-reliability",
+    "figma-frontend-design-engineer",
+}
+required_disabled_skill_paths = {
+    str(path.parent / "skills" / skill_name) for skill_name in required_disabled_skill_names
+}
 required = {
     "chrome-devtools": {
         "command": global_chrome_wrapper,
-        "env": {"CODEX_CHROME_MODE": "shared", "CODEX_CHROME_HEADLESS": "1"},
+        "env": {
+            "CODEX_CHROME_MODE": "isolated",
+            "CODEX_CHROME_HEADLESS": "1",
+            "CODEX_CHROME_SEED_PROFILE_DIR": str(pathlib.Path.home() / ".chrome-profiles" / "codex-agent"),
+        },
         "enabled": True,
         "startup_timeout_sec": 45,
         "tool_timeout_sec": 120,
@@ -117,6 +136,7 @@ required = {
     "figma-console": {"command": expected_wrapper, "enabled": False},
     "playwright": {"command": "npx", "args": ["-y", "@playwright/mcp", "--isolated"], "enabled": False},
     "github": {"url": "https://api.githubcopilot.com/mcp", "bearer_token_env_var": "GITHUB_PAT"},
+    "context7": {"command": "npx", "args": ["-y", "@upstash/context7-mcp"], "enabled": True},
 }
 
 for name, expectations in required.items():
@@ -130,6 +150,22 @@ for name, expectations in required.items():
 for name in servers:
     if name in {"supabase", "awsknowledge", "awsiac"} or name.startswith("awslabs-"):
         raise SystemExit(1)
+
+skills = data.get("skills") or {}
+skill_configs = skills.get("config") or []
+normalized_skill_paths = set()
+for entry in skill_configs:
+    if not isinstance(entry, dict):
+        raise SystemExit(1)
+    skill_path = entry.get("path")
+    if not isinstance(skill_path, str):
+        raise SystemExit(1)
+    normalized_skill_paths.add(skill_path)
+    if skill_path in required_disabled_skill_paths and entry.get("enabled") is not False:
+        raise SystemExit(1)
+
+if not required_disabled_skill_paths.issubset(normalized_skill_paths):
+    raise SystemExit(1)
 PY
 }
 
@@ -227,7 +263,11 @@ for name in list(servers):
 required_servers = {
     "chrome-devtools": {
         "command": f"{pathlib.Path.home()}/.codex/bin/codex-chrome-devtools-mcp-global.sh",
-        "env": {"CODEX_CHROME_MODE": "shared", "CODEX_CHROME_HEADLESS": "1"},
+        "env": {
+            "CODEX_CHROME_MODE": "isolated",
+            "CODEX_CHROME_HEADLESS": "1",
+            "CODEX_CHROME_SEED_PROFILE_DIR": str(pathlib.Path.home() / ".chrome-profiles" / "codex-agent"),
+        },
         "enabled": True,
         "startup_timeout_sec": 45,
         "tool_timeout_sec": 120,
@@ -240,6 +280,7 @@ required_servers = {
     },
     "playwright": {"command": "npx", "args": ["-y", "@playwright/mcp", "--isolated"], "enabled": False},
     "github": {"url": "https://api.githubcopilot.com/mcp", "bearer_token_env_var": "GITHUB_PAT"},
+    "context7": {"command": "npx", "args": ["-y", "@upstash/context7-mcp"], "enabled": True},
 }
 for name, required in required_servers.items():
     server = servers.get(name)
@@ -247,6 +288,48 @@ for name, required in required_servers.items():
         server = {}
         servers[name] = server
     server.update(required)
+
+required_disabled_skill_names = [
+    "senior-architect",
+    "senior-devops",
+    "senior-fullstack",
+    "senior-backend",
+    "senior-frontend",
+    "senior-qa",
+    "code-reviewer",
+    "skillcreator",
+    "social-ingestion-reliability",
+    "figma-frontend-design-engineer",
+]
+required_disabled_skill_paths = {
+    str(pathlib.Path.home() / ".codex" / "skills" / skill_name): False
+    for skill_name in required_disabled_skill_names
+}
+skills = data.get("skills")
+if not isinstance(skills, dict):
+    skills = {}
+data["skills"] = skills
+skill_configs = skills.get("config")
+if not isinstance(skill_configs, list):
+    skill_configs = []
+
+skill_entries_by_path: dict[str, dict] = {}
+retained_skill_entries: list[dict] = []
+for entry in skill_configs:
+    if isinstance(entry, Mapping) and isinstance(entry.get("path"), str):
+        normalized = dict(entry)
+        retained_skill_entries.append(normalized)
+        skill_entries_by_path[normalized["path"]] = normalized
+
+for skill_path, enabled in required_disabled_skill_paths.items():
+    entry = skill_entries_by_path.get(skill_path)
+    if entry is None:
+        entry = {"path": skill_path}
+        retained_skill_entries.append(entry)
+        skill_entries_by_path[skill_path] = entry
+    entry["enabled"] = enabled
+
+skills["config"] = sorted(retained_skill_entries, key=lambda item: str(item.get("path", "")))
 
 lines: list[str] = [
     "# Personal Codex defaults live here.",
@@ -343,13 +426,18 @@ required_user_servers = {
     },
     "chrome-devtools": {
         "command": expected_global_wrapper,
-        "env": {"CODEX_CHROME_MODE": "shared", "CODEX_CHROME_HEADLESS": "1"},
+        "env": {
+            "CODEX_CHROME_MODE": "isolated",
+            "CODEX_CHROME_HEADLESS": "1",
+            "CODEX_CHROME_SEED_PROFILE_DIR": str(pathlib.Path.home() / ".chrome-profiles" / "codex-agent"),
+        },
         "enabled": True,
         "startup_timeout_sec": 45,
         "tool_timeout_sec": 120,
     },
     "playwright": {"command": "npx", "args": ["-y", "@playwright/mcp", "--isolated"], "enabled": False},
     "github": {"url": "https://api.githubcopilot.com/mcp", "bearer_token_env_var": "GITHUB_PAT"},
+    "context7": {"command": "npx", "args": ["-y", "@upstash/context7-mcp"], "enabled": True},
 }
 required_top_level = {
     "model": "gpt-5.4",
@@ -358,10 +446,36 @@ required_top_level = {
     "approval_policy": "never",
     "sandbox_mode": "danger-full-access",
     "web_search": "cached",
+    "project_doc_max_bytes": 65536,
+    "project_doc_fallback_filenames": [],
+}
+required_agents = {
+    "pr_explorer": "./agents/pr_explorer.toml",
+    "reviewer": "./agents/reviewer.toml",
+    "docs_researcher": "./agents/docs_researcher.toml",
+    "code_mapper": "./agents/code_mapper.toml",
+    "browser_debugger": "./agents/browser_debugger.toml",
+    "ui_fixer": "./agents/ui_fixer.toml",
+}
+required_disabled_skill_paths = {
+    str(pathlib.Path.home() / ".codex" / "skills" / skill_name)
+    for skill_name in (
+        "senior-architect",
+        "senior-devops",
+        "senior-fullstack",
+        "senior-backend",
+        "senior-frontend",
+        "senior-qa",
+        "code-reviewer",
+        "skillcreator",
+        "social-ingestion-reliability",
+        "figma-frontend-design-engineer",
+    )
 }
 
 errors = []
 servers = data.get("mcp_servers") or {}
+agents = data.get("agents") or {}
 
 for key, value in required_top_level.items():
     actual = data.get(key)
@@ -387,6 +501,22 @@ unexpected = sorted(name for name in servers if name not in required_servers)
 for name in unexpected:
     errors.append(f"[mcp_servers.{name}] is no longer allowed in the tracked project config")
 
+if agents.get("max_threads") != 6:
+    errors.append(f"[agents] expected max_threads=6, found {agents.get('max_threads')!r}")
+if agents.get("max_depth") != 1:
+    errors.append(f"[agents] expected max_depth=1, found {agents.get('max_depth')!r}")
+for agent_name, config_file in required_agents.items():
+    agent_settings = agents.get(agent_name)
+    if not isinstance(agent_settings, dict):
+        errors.append(f"missing [agents.{agent_name}]")
+        continue
+    if agent_settings.get("config_file") != config_file:
+        errors.append(
+            f"[agents.{agent_name}] expected config_file={config_file!r}, found {agent_settings.get('config_file')!r}"
+        )
+    elif not (project_config_path.parent / config_file).exists():
+        errors.append(f"[agents.{agent_name}] config file not found: {project_config_path.parent / config_file}")
+
 if not user_config_path.exists():
     errors.append(f"user config file not found: {user_config_path}")
 else:
@@ -411,6 +541,24 @@ else:
     user_config_text = user_config_path.read_text(encoding="utf-8")
     if expected_wrapper in user_config_text or "vwxfvzutyufrkhfgoeaa" in user_config_text:
         errors.append(f"user config should not contain TRR-local MCP settings: {user_config_path}")
+
+    user_skills = user_data.get("skills") or {}
+    user_skill_configs = user_skills.get("config") or []
+    normalized_skill_paths = set()
+    for entry in user_skill_configs:
+        if not isinstance(entry, dict):
+            errors.append("user skills.config entries must be objects")
+            continue
+        skill_path = entry.get("path")
+        if not isinstance(skill_path, str):
+            errors.append("user skills.config entries must include string paths")
+            continue
+        normalized_skill_paths.add(skill_path)
+        if skill_path in required_disabled_skill_paths and entry.get("enabled") is not False:
+            errors.append(f"user skills.config must disable {skill_path}")
+    missing_disabled_skills = sorted(required_disabled_skill_paths - normalized_skill_paths)
+    if missing_disabled_skills:
+        errors.append(f"user skills.config missing disabled TRR aliases: {missing_disabled_skills}")
 
 for name in sorted(name for name in servers if name.startswith(legacy_prefix) or name in {legacy_knowledge, legacy_iac}):
     errors.append(f"[mcp_servers.{name}] is no longer allowed in the tracked project config")

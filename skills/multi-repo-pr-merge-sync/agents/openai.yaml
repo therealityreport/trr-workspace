@@ -1,4 +1,0 @@
-interface:
-  display_name: "Multi-Repo PR Merge Sync"
-  short_description: "Commit, PR, check, bot-review revise, merge, and sync all repos"
-  default_prompt: "Use $multi-repo-pr-merge-sync to commit all workspace repos, keep one PR per repo, wait for checks, process bot reviews/messages, apply revisions, resolve merge conflicts, merge to main, and finish with local main matching origin/main and no local branches except main."

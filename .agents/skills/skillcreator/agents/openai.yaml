@@ -1,0 +1,4 @@
+interface:
+  display_name: "SkillCreator (TRR Workspace)"
+  short_description: "Workspace-local canonical owner for TRR checked-in skill authoring, dedupe, trigger boundaries, and governance alignment."
+  default_prompt: "Use $skillcreator to create or refine a TRR-local skill with clear ownership and guardrails."

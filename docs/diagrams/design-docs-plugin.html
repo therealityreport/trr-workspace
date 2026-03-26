@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design Docs Plugin — Architecture Diagram</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface-2: #1a1a26;
+    --border: #2a2a3a;
+    --border-hi: #3a3a52;
+    --text: #e4e4ef;
+    --text-dim: #8888a0;
+    --accent: #6c8cff;
+    --accent-dim: #4a5a99;
+    --wave1: #f59e42;
+    --wave2: #a78bfa;
+    --wave3: #34d399;
+    --wave4: #60a5fa;
+    --wave5: #f472b6;
+    --cmd: #facc15;
+    --skill: #6ee7b7;
+    --agent: #c4b5fd;
+    --test: #fca5a5;
+    --mono: 'SF Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    padding: 40px 24px 80px;
+    min-height: 100vh;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  /* ── Header ── */
+  header {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+  header h1 {
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+  header h1 span { color: var(--accent); }
+  header p {
+    color: var(--text-dim);
+    font-size: 14px;
+    font-family: var(--mono);
+  }
+
+  /* ── Legend ── */
+  .legend {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-bottom: 48px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: var(--mono);
+  }
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+  }
+
+  /* ── Section titles ── */
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+    padding-left: 4px;
+  }
+
+  /* ── Entry point ── */
+  .entry-point {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-bottom: 32px;
+    position: relative;
+  }
+  .entry-point::before {
+    content: 'ENTRY POINT';
+    position: absolute;
+    top: -9px;
+    left: 20px;
+    background: var(--bg);
+    padding: 0 8px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--cmd);
+  }
+  .cmd-name {
+    font-family: var(--mono);
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--cmd);
+    margin-bottom: 4px;
+  }
+  .cmd-desc {
+    color: var(--text-dim);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .cmd-path {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    opacity: 0.7;
+    margin-top: 8px;
+  }
+
+  /* ── Connector lines ── */
+  .connector {
+    display: flex;
+    justify-content: center;
+    margin: 0 0 32px;
+  }
+  .connector .line {
+    width: 2px;
+    height: 32px;
+    background: var(--border-hi);
+  }
+  .connector .arrow {
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 8px solid var(--border-hi);
+  }
+  .connector-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* ── Orchestrator ── */
+  .orchestrator {
+    background: var(--surface);
+    border: 1px solid var(--accent-dim);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-bottom: 32px;
+    position: relative;
+  }
+  .orchestrator::before {
+    content: 'ORCHESTRATOR SKILL';
+    position: absolute;
+    top: -9px;
+    left: 20px;
+    background: var(--bg);
+    padding: 0 8px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--accent);
+  }
+  .orch-name {
+    font-family: var(--mono);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--skill);
+    margin-bottom: 4px;
+  }
+  .orch-desc {
+    color: var(--text-dim);
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+
+  /* ── Auto-detect block ── */
+  .auto-detect {
+    background: var(--surface-2);
+    border: 1px dashed var(--border-hi);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 0;
+  }
+  .auto-detect-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 10px;
+    font-family: var(--mono);
+  }
+  .mode-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 8px;
+  }
+  .mode-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 12px;
+  }
+  .mode-card .mode-name {
+    font-family: var(--mono);
+    font-weight: 600;
+    color: var(--accent);
+    font-size: 11px;
+    margin-bottom: 3px;
+  }
+  .mode-card .mode-cond {
+    color: var(--text-dim);
+    font-size: 11px;
+    line-height: 1.4;
+  }
+
+  /* ── Wave sections ── */
+  .wave {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-bottom: 20px;
+    position: relative;
+    border-left: 3px solid;
+  }
+  .wave-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .wave-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.06);
+  }
+  .wave-title {
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .wave-meta {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    margin-left: auto;
+  }
+
+  .wave-1 { border-left-color: var(--wave1); }
+  .wave-1 .wave-num { color: var(--wave1); }
+  .wave-1 .wave-title { color: var(--wave1); }
+
+  .wave-2 { border-left-color: var(--wave2); }
+  .wave-2 .wave-num { color: var(--wave2); }
+  .wave-2 .wave-title { color: var(--wave2); }
+
+  .wave-3 { border-left-color: var(--wave3); }
+  .wave-3 .wave-num { color: var(--wave3); }
+  .wave-3 .wave-title { color: var(--wave3); }
+
+  .wave-4 { border-left-color: var(--wave4); }
+  .wave-4 .wave-num { color: var(--wave4); }
+  .wave-4 .wave-title { color: var(--wave4); }
+
+  .wave-5 { border-left-color: var(--wave5); }
+  .wave-5 .wave-num { color: var(--wave5); }
+  .wave-5 .wave-title { color: var(--wave5); }
+
+  /* ── Skill cards ── */
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 10px;
+  }
+  .skill-card {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    transition: border-color 0.15s;
+  }
+  .skill-card:hover {
+    border-color: var(--border-hi);
+  }
+  .skill-name {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .skill-output {
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.4;
+  }
+  .skill-tag {
+    display: inline-block;
+    font-size: 9px;
+    font-family: var(--mono);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-top: 6px;
+  }
+  .tag-parallel {
+    background: rgba(245, 158, 66, 0.15);
+    color: var(--wave1);
+  }
+  .tag-sequential {
+    background: rgba(167, 139, 250, 0.15);
+    color: var(--wave2);
+  }
+  .tag-skip {
+    background: rgba(255,255,255,0.06);
+    color: var(--text-dim);
+    font-style: italic;
+  }
+  .tag-always {
+    background: rgba(96, 165, 250, 0.15);
+    color: var(--wave4);
+  }
+  .tag-gate {
+    background: rgba(244, 114, 182, 0.15);
+    color: var(--wave5);
+  }
+
+  /* ── Brand tabs grid ── */
+  .tabs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .tab-chip {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--wave4);
+  }
+
+  /* ── Test block ── */
+  .test-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--test);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-top: 32px;
+    position: relative;
+  }
+  .test-block::before {
+    content: 'INTEGRATION TEST';
+    position: absolute;
+    top: -9px;
+    left: 20px;
+    background: var(--bg);
+    padding: 0 8px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--test);
+  }
+  .test-name {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--test);
+    margin-bottom: 8px;
+  }
+  .test-cases {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 8px;
+  }
+  .test-case {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  .test-case strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  /* ── File tree ── */
+  .file-tree {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-top: 32px;
+    position: relative;
+  }
+  .file-tree::before {
+    content: 'FILE LAYOUT';
+    position: absolute;
+    top: -9px;
+    left: 20px;
+    background: var(--bg);
+    padding: 0 8px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--text-dim);
+  }
+  .tree {
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.8;
+    color: var(--text-dim);
+    white-space: pre;
+    overflow-x: auto;
+  }
+  .tree .dir { color: var(--accent); }
+  .tree .file-cmd { color: var(--cmd); }
+  .tree .file-skill { color: var(--skill); }
+  .tree .file-test { color: var(--test); }
+
+  /* ── Rules ── */
+  .rules-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-top: 32px;
+    position: relative;
+  }
+  .rules-block::before {
+    content: 'CRITICAL RULES';
+    position: absolute;
+    top: -9px;
+    left: 20px;
+    background: var(--bg);
+    padding: 0 8px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: #ef4444;
+  }
+  .rules-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 10px;
+  }
+  .rule-card {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 16px;
+  }
+  .rule-card .rule-name {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: #ef4444;
+    margin-bottom: 4px;
+  }
+  .rule-card .rule-desc {
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.4;
+  }
+
+  /* ── Spacer ── */
+  .spacer { height: 12px; }
+
+  /* ── Footer ── */
+  footer {
+    text-align: center;
+    margin-top: 56px;
+    font-size: 11px;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    opacity: 0.5;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <header>
+    <h1><span>design-docs</span> plugin</h1>
+    <p>TRR &middot; 1 command &middot; 1 orchestrator &middot; 11 sub-skills &middot; 1 integration test</p>
+  </header>
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--cmd)"></div> Command</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--skill)"></div> Skill</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--wave1)"></div> Wave 1 &mdash; Extract</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--wave2)"></div> Wave 2 &mdash; Generate</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--wave3)"></div> Wave 3 &mdash; Wire</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--wave4)"></div> Wave 4 &mdash; Sync</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--wave5)"></div> Wave 5 &mdash; Verify</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--test)"></div> Test</div>
+  </div>
+
+  <!-- Entry Point: /design-docs command -->
+  <div class="entry-point">
+    <div class="cmd-name">/design-docs</div>
+    <div class="cmd-desc">Unified command. User provides an article URL + source HTML. The agent auto-detects mode and runs the full pipeline.</div>
+    <div class="cmd-path">.claude/commands/design-docs.md</div>
+  </div>
+
+  <!-- Connector -->
+  <div class="connector"><div class="connector-col"><div class="line"></div><div class="arrow"></div></div></div>
+
+  <!-- Orchestrator -->
+  <div class="orchestrator">
+    <div class="orch-name">design-docs-agent</div>
+    <div class="orch-desc">Top-level orchestrator &mdash; coordinates 11 sub-skills across 5 waves. Parses inputs, launches parallel extraction agents, sequences generation &amp; wiring, syncs brand tabs, and gates on TypeScript type-check.</div>
+
+    <!-- Auto-detect -->
+    <div class="auto-detect">
+      <div class="auto-detect-title">Step 0: Auto-Detection (domain &rarr; brand &rarr; mode)</div>
+      <div class="mode-grid">
+        <div class="mode-card">
+          <div class="mode-name">CREATE-BRAND</div>
+          <div class="mode-cond">No brand exists for this domain. Creates brand section + first article.</div>
+        </div>
+        <div class="mode-card">
+          <div class="mode-name">ADD-FIRST-ARTICLE</div>
+          <div class="mode-cond">Brand tabs exist but ARTICLES array has no entries yet.</div>
+        </div>
+        <div class="mode-card">
+          <div class="mode-name">ADD-ARTICLE</div>
+          <div class="mode-cond">Brand + existing articles. Appends to ARTICLES array.</div>
+        </div>
+        <div class="mode-card">
+          <div class="mode-name">UPDATE-ARTICLE</div>
+          <div class="mode-cond">Article URL already in ARTICLES. Re-extracts and overwrites.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Connector -->
+  <div class="connector"><div class="connector-col"><div class="line"></div><div class="arrow"></div></div></div>
+
+  <!-- Wave 1: Extract -->
+  <div class="wave wave-1">
+    <div class="wave-header">
+      <span class="wave-num">WAVE 1</span>
+      <span class="wave-title">Extract</span>
+      <span class="wave-meta">7 parallel subagents</span>
+    </div>
+    <div class="skills-grid">
+      <div class="skill-card">
+        <div class="skill-name" style="color:var(--wave1)">extract-page-structure</div>
+        <div class="skill-output">metadata, contentBlocks[], tools detected, document order</div>
+        <span class="skill-tag tag-parallel">PARALLEL</span>
+      </div>
+      <div class="skill-card">
+        <div class="skill-name" style="color:var(--wave1)">extract-css-tokens</div>
+        <div class="skill-output">fonts[], colors, architecture, layoutTokens &mdash; per-article accuracy enforced</div>
+        <span class="skill-tag tag-parallel">PARALLEL</span>
+      </div>
+      <div class="skill-card">
+        <div class="skill-name" style="color:var(--wave1)">extract-datawrapper-charts</div>
+        <div class="skill-output">chart data constants, type mapping (tables &rarr; DatawrapperTableData)</div>
+        <span class="skill-tag tag-parallel">PARALLEL</span> <span class="skill-tag tag-skip">skip if 0</span>
+      </div>
+      <div class="skill-card">
+        <div class="skill-name" style="color:var(--wave1)">extract-ai2html-artboards</div>
+        <div class="skill-output">artboard overlays, Scenario A default (plain img)</div>
+        <span class="skill-tag tag-parallel">PARALLEL</span> <span class="skill-tag tag-skip">skip if 0</span>
+      </div>
+      <div class="skill-card">
+        <div class="skill-name" style="color:var(--wave1)">extract-quote-components</div>
+        <div class="skill-output">quoteSections[], CSS property capture per quote</div>
+        <span class="skill-tag tag-parallel">PARALLEL</span> <span class="skill-tag tag-skip">skip if 0</span>
+      </div>
+      <div class="skill-card">
+        <div class="skill-name" style="color:var(--wave1)">extract-birdkit-tables</div>
+        <div class="skill-output">medal/data tables, dropdown options, consistent row counts</div>
+        <span class="skill-tag tag-parallel">PARALLEL</span> <span class="skill-tag tag-skip">skip if 0</span>
+      </div>
+      <div class="skill-card">
+        <div class="skill-name" style="color:var(--wave1)">extract-icons-and-media</div>
+        <div class="skill-output">SVG icons, logos, avatars, base64 images &mdash; deduplicated</div>
+        <span class="skill-tag tag-parallel">PARALLEL</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+
+  <!-- Wave 2: Generate -->
+  <div class="wave wave-2">
+    <div class="wave-header">
+      <span class="wave-num">WAVE 2</span>
+      <span class="wave-title">Generate</span>
+      <span class="wave-meta">sequential</span>
+    </div>
+    <div class="skills-grid">
+      <div class="skill-card">
+        <div class="skill-name" style="color:var(--wave2)">generate-article-page</div>
+        <div class="skill-output">ARTICLES config entry + chart-data.ts constants + ArticleDetailPage component &mdash; 6 main steps</div>
+        <span class="skill-tag tag-sequential">SEQUENTIAL</span>
+      </div>
+      <div class="skill-card">
+        <div class="skill-name" style="color:var(--wave2)">generate-brand-section</div>
+        <div class="skill-output">Brand tab components (Typography, Colors, Components, Charts, Layout, Architecture, Resources)</div>
+        <span class="skill-tag tag-sequential">SEQUENTIAL</span> <span class="skill-tag tag-skip">CREATE-BRAND only</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+
+  <!-- Wave 3: Wire -->
+  <div class="wave wave-3">
+    <div class="wave-header">
+      <span class="wave-num">WAVE 3</span>
+      <span class="wave-title">Wire</span>
+      <span class="wave-meta">7 insertion points</span>
+    </div>
+    <div class="skills-grid">
+      <div class="skill-card" style="max-width:500px">
+        <div class="skill-name" style="color:var(--wave3)">wire-config-and-routing</div>
+        <div class="skill-output">Sidebar registration, routing, config registration, ARTICLES array append, bg-white enforcement</div>
+        <span class="skill-tag tag-sequential">SEQUENTIAL</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+
+  <!-- Wave 4: Sync -->
+  <div class="wave wave-4">
+    <div class="wave-header">
+      <span class="wave-num">WAVE 4</span>
+      <span class="wave-title">Sync Brand Tabs</span>
+      <span class="wave-meta">always runs</span>
+    </div>
+    <div class="skills-grid" style="margin-bottom:12px">
+      <div class="skill-card" style="max-width:500px">
+        <div class="skill-name" style="color:var(--wave4)">sync-brand-page</div>
+        <div class="skill-output">Verify all 7 brand tabs dynamically aggregate data from ARTICLES array</div>
+        <span class="skill-tag tag-always">ALWAYS RUNS</span>
+      </div>
+    </div>
+    <div class="tabs-grid">
+      <div class="tab-chip">Typography</div>
+      <div class="tab-chip">Colors</div>
+      <div class="tab-chip">Components</div>
+      <div class="tab-chip">Charts</div>
+      <div class="tab-chip">Layout</div>
+      <div class="tab-chip">Architecture</div>
+      <div class="tab-chip">Resources</div>
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+
+  <!-- Wave 5: Verify -->
+  <div class="wave wave-5">
+    <div class="wave-header">
+      <span class="wave-num">WAVE 5</span>
+      <span class="wave-title">Verify</span>
+      <span class="wave-meta">gate</span>
+    </div>
+    <div class="skills-grid">
+      <div class="skill-card">
+        <div class="skill-name" style="color:var(--wave5)">npx tsc --noEmit</div>
+        <div class="skill-output">TypeScript type-check must exit with zero errors</div>
+        <span class="skill-tag tag-gate">GATE</span>
+      </div>
+      <div class="skill-card">
+        <div class="skill-name" style="color:var(--wave5)">Pre-flight checklist</div>
+        <div class="skill-output">contentBlocks coverage, h2/h3 diff, font uniqueness, bg-white, brand tab sync</div>
+        <span class="skill-tag tag-gate">GATE</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Critical Rules -->
+  <div class="rules-block">
+    <div class="rules-grid">
+      <div class="rule-card">
+        <div class="rule-name">Per-Article Font Accuracy</div>
+        <div class="rule-desc">NEVER copy-paste font data between articles. Each article's fonts[] must be independently extracted from its own source HTML.</div>
+      </div>
+      <div class="rule-card">
+        <div class="rule-name">Per-Article Heading Styles</div>
+        <div class="rule-desc">h2 and h3 MUST have different extracted values. If they appear identical, re-extract &mdash; it's a bug.</div>
+      </div>
+      <div class="rule-card">
+        <div class="rule-name">contentBlocks = Single Source of Truth</div>
+        <div class="rule-desc">Every interactive element needs BOTH a metadata entry AND a working React component with data.</div>
+      </div>
+      <div class="rule-card">
+        <div class="rule-name">AI2HTML: Image Already Has Text</div>
+        <div class="rule-desc">Text appears as PNG pixels AND HTML overlays. Default to Scenario A: plain &lt;img&gt; only.</div>
+      </div>
+      <div class="rule-card">
+        <div class="rule-name">bg-white Requirement</div>
+        <div class="rule-desc">Article page must use bg-white, NOT bg-zinc-50. Known enforcement point.</div>
+      </div>
+      <div class="rule-card">
+        <div class="rule-name">Dynamic Brand Tab Aggregation</div>
+        <div class="rule-desc">Tabs aggregate on every render from the ARTICLES array. No manual updates needed when articles are added.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Integration Test -->
+  <div class="test-block">
+    <div class="test-name">integration-test.md</div>
+    <div class="test-cases">
+      <div class="test-case"><strong>NYT Trump Economy</strong><br>6+ fonts, 3 colors, 8 charts, 8 quotes</div>
+      <div class="test-case"><strong>Sweepstakes Casino</strong><br>Heading: 31px/700/italic (not 45px/800)</div>
+      <div class="test-case"><strong>Winter Olympics</strong><br>6+ birdkit tables, medal circles, row counts</div>
+      <div class="test-case"><strong>NFL Playoff Coaches</strong><br>14-row heatmap, heading: 40px/400/italic</div>
+    </div>
+  </div>
+
+  <!-- File Layout -->
+  <div class="file-tree">
+    <div class="tree"><span class="dir">.claude/commands/</span>
+  <span class="file-cmd">design-docs.md</span>                    <span style="color:var(--text-dim)"># entry point command</span>
+
+<span class="dir">TRR-APP/.claude/skills/design-docs-agent/</span>
+  <span class="file-skill">SKILL.md</span>                          <span style="color:var(--text-dim)"># orchestrator (28KB)</span>
+  <span class="dir">extract-page-structure/</span><span class="file-skill">SKILL.md</span>
+  <span class="dir">extract-css-tokens/</span><span class="file-skill">SKILL.md</span>        <span style="color:var(--text-dim)"># 624 lines</span>
+  <span class="dir">extract-datawrapper-charts/</span><span class="file-skill">SKILL.md</span> <span style="color:var(--text-dim)"># 391 lines</span>
+  <span class="dir">extract-ai2html-artboards/</span><span class="file-skill">SKILL.md</span>  <span style="color:var(--text-dim)"># 282 lines</span>
+  <span class="dir">extract-quote-components/</span><span class="file-skill">SKILL.md</span>   <span style="color:var(--text-dim)"># 224 lines</span>
+  <span class="dir">extract-birdkit-tables/</span><span class="file-skill">SKILL.md</span>     <span style="color:var(--text-dim)"># 498 lines</span>
+  <span class="dir">extract-icons-and-media/</span><span class="file-skill">SKILL.md</span>    <span style="color:var(--text-dim)"># 288 lines</span>
+  <span class="dir">generate-article-page/</span><span class="file-skill">SKILL.md</span>      <span style="color:var(--text-dim)"># 945 lines, 6 steps</span>
+  <span class="dir">generate-brand-section/</span><span class="file-skill">SKILL.md</span>     <span style="color:var(--text-dim)"># 408 lines</span>
+  <span class="dir">wire-config-and-routing/</span><span class="file-skill">SKILL.md</span>    <span style="color:var(--text-dim)"># 352 lines</span>
+  <span class="dir">sync-brand-page/</span><span class="file-skill">SKILL.md</span>            <span style="color:var(--text-dim)"># 120 lines</span>
+  <span class="dir">test/</span><span class="file-test">integration-test.md</span>          <span style="color:var(--text-dim)"># 306 lines</span></div>
+  </div>
+
+  <footer>design-docs plugin &middot; TRR &middot; generated 2026-03-26</footer>
+
+</div>
+</body>
+</html>

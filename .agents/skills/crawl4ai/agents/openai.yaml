@@ -1,0 +1,6 @@
+interface:
+  display_name: "Crawl4AI (TRR Workspace)"
+  short_description: "Optional web crawling and structured extraction toolkit for screenalytics research and tooling flows."
+  default_prompt: "Use $crawl4ai to install, configure, or run Crawl4AI-based crawling in the TRR workspace."
+policy:
+  allow_implicit_invocation: false

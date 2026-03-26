@@ -5,11 +5,11 @@ Last updated: 2026-03-18
 ## Handoff Snapshot
 ```yaml
 handoff:
-  include: true
-  state: recent
+  include: false
+  state: archived
   last_updated: 2026-03-18
-  current_phase: "complete"
-  next_action: "Use the season cast comparison tab with the refreshed RHOSLC Season 6 SocialBlade rows; if another cast member is missing, attach the Instagram handle to core.people.external_ids and rerun the local cast-comparison refresh path"
+  current_phase: "archived continuity note"
+  next_action: "Refer to newer Bravo/social status notes if follow-up work resumes on cast comparison or SocialBlade continuity."
   detail: self
 ```
 
