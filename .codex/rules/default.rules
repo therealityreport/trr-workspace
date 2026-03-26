@@ -15,6 +15,30 @@ prefix_rule(
 )
 
 prefix_rule(
+    pattern = ["git", "push", "--force"],
+    decision = "forbidden",
+    justification = "Force-pushing can rewrite shared history. Use a new commit or coordinate an explicit recovery workflow instead.",
+    match = [["git", "push", "--force", "origin", "main"]],
+    not_match = [["git", "push", "origin", "feature/trr-codex-realignment"]],
+)
+
+prefix_rule(
+    pattern = ["git", "push", "--force-with-lease"],
+    decision = "prompt",
+    justification = "Even with lease protection, history rewriting needs an explicit sanity check before it runs.",
+    match = [["git", "push", "--force-with-lease", "origin", "feature/trr-codex-realignment"]],
+    not_match = [["git", "push", "origin", "feature/trr-codex-realignment"]],
+)
+
+prefix_rule(
+    pattern = ["git", "branch", "-D"],
+    decision = "prompt",
+    justification = "Deleting local branches can remove useful recovery points. Review whether the branch is still needed first.",
+    match = [["git", "branch", "-D", "feature/trr-codex-realignment"]],
+    not_match = [["git", "branch", "--show-current"]],
+)
+
+prefix_rule(
     pattern = ["rm", "-rf"],
     decision = "prompt",
     justification = "Recursive deletion can destroy workspace state. Prefer targeted cleanup under known temp directories unless a broader purge is explicitly required.",
@@ -40,6 +64,15 @@ prefix_rule(
     decision = "prompt",
     justification = "Changing global Codex MCP registrations affects every workspace. Prefer tracked project config or review the blast radius first.",
     match = [["codex", "mcp", "add", "example", "--url", "https://example.com/mcp"]],
+    not_match = [["codex", "mcp", "list"]],
+)
+
+prefix_rule(
+    pattern = ["codex", "mcp", "login"],
+    decision = "prompt",
+    justification = "MCP OAuth login mutates user-level Codex credentials and should be intentional.",
+    match = [["codex", "mcp", "login", "github"]],
+    not_match = [["codex", "mcp", "list"]],
 )
 
 prefix_rule(
@@ -47,4 +80,52 @@ prefix_rule(
     decision = "prompt",
     justification = "Logging out removes the active Codex authentication session for all projects.",
     match = [["codex", "logout"]],
+)
+
+prefix_rule(
+    pattern = ["gh", "pr", "merge"],
+    decision = "prompt",
+    justification = "Merging a PR changes remote branch state. Review CI status and repo ordering before merging.",
+    match = [["gh", "pr", "merge", "123", "--squash"]],
+    not_match = [["gh", "pr", "view", "123"]],
+)
+
+prefix_rule(
+    pattern = ["vercel", "deploy", "--prod"],
+    decision = "prompt",
+    justification = "Production deployments should stay explicit so release timing and environment selection are reviewed.",
+    match = [["vercel", "deploy", "--prod"]],
+    not_match = [["vercel", "deploy"]],
+)
+
+prefix_rule(
+    pattern = ["firebase", "deploy"],
+    decision = "prompt",
+    justification = "Firebase deploy mutates hosted infrastructure and should stay explicit.",
+    match = [["firebase", "deploy"]],
+    not_match = [["firebase", "emulators:start"]],
+)
+
+prefix_rule(
+    pattern = ["supabase", "db", "push"],
+    decision = "prompt",
+    justification = "Database pushes can alter remote schema state. Review migration intent and target before proceeding.",
+    match = [["supabase", "db", "push"]],
+    not_match = [["supabase", "db", "lint"]],
+)
+
+prefix_rule(
+    pattern = ["supabase", "db", "reset"],
+    decision = "prompt",
+    justification = "Database resets are destructive and need an explicit confirmation step.",
+    match = [["supabase", "db", "reset"]],
+    not_match = [["supabase", "db", "lint"]],
+)
+
+prefix_rule(
+    pattern = ["supabase", "migration", "repair"],
+    decision = "prompt",
+    justification = "Migration repair changes migration tracking state and should be reviewed before it runs.",
+    match = [["supabase", "migration", "repair", "--status", "applied", "202603240001"]],
+    not_match = [["supabase", "migration", "list"]],
 )

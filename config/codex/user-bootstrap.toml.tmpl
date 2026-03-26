@@ -6,7 +6,7 @@ trust_level = "trusted"
 
 [mcp_servers.chrome-devtools]
 command = "__HOME__/.codex/bin/codex-chrome-devtools-mcp-global.sh"
-env = { CODEX_CHROME_MODE = "shared", CODEX_CHROME_HEADLESS = "1" }
+env = { CODEX_CHROME_MODE = "isolated", CODEX_CHROME_HEADLESS = "1", CODEX_CHROME_SEED_PROFILE_DIR = "__HOME__/.chrome-profiles/codex-agent" }
 enabled = true
 startup_timeout_sec = 45
 tool_timeout_sec = 120
@@ -31,3 +31,48 @@ enabled = false
 [mcp_servers.github]
 url = "https://api.githubcopilot.com/mcp"
 bearer_token_env_var = "GITHUB_PAT"
+
+[mcp_servers.context7]
+command = "npx"
+args = ["-y", "@upstash/context7-mcp"]
+enabled = true
+
+[[skills.config]]
+path = "__HOME__/.codex/skills/senior-architect"
+enabled = false
+
+[[skills.config]]
+path = "__HOME__/.codex/skills/senior-devops"
+enabled = false
+
+[[skills.config]]
+path = "__HOME__/.codex/skills/senior-fullstack"
+enabled = false
+
+[[skills.config]]
+path = "__HOME__/.codex/skills/senior-backend"
+enabled = false
+
+[[skills.config]]
+path = "__HOME__/.codex/skills/senior-frontend"
+enabled = false
+
+[[skills.config]]
+path = "__HOME__/.codex/skills/senior-qa"
+enabled = false
+
+[[skills.config]]
+path = "__HOME__/.codex/skills/code-reviewer"
+enabled = false
+
+[[skills.config]]
+path = "__HOME__/.codex/skills/skillcreator"
+enabled = false
+
+[[skills.config]]
+path = "__HOME__/.codex/skills/social-ingestion-reliability"
+enabled = false
+
+[[skills.config]]
+path = "__HOME__/.codex/skills/figma-frontend-design-engineer"
+enabled = false

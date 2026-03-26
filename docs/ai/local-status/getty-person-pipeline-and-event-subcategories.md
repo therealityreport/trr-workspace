@@ -1,17 +1,106 @@
 # Getty person pipeline and event subcategories
 
-Last updated: 2026-03-22
+Last updated: 2026-03-24
 
 ## Handoff Snapshot
 ```yaml
 handoff:
   include: true
   state: recent
-  last_updated: 2026-03-22
-  current_phase: "deterministic-getty-nbcumv-ingest"
-  next_action: "Live-smoke the Brandi gallery path again and confirm Getty diagnostics explain zero-result runs when they occur"
+  last_updated: 2026-03-24
+  current_phase: "modal Getty challenge-page guardrail deployed"
+  next_action: "Investigate true Getty recovery path in Modal or route blocked Getty searches through the local/residential prefetch fallback"
   detail: self
 ```
+
+- 2026-03-24 Modal Getty zero-result fix deployed and smoke-validated:
+  - root cause confirmed:
+    - the Getty parser works locally for both live search URLs:
+      - `Brandi Glanville`
+      - `Brandi Glanville Bravo`
+    - Modal/live runtime is hitting a Getty bot wall instead of a real search results page:
+      - `getty_access_mode = live_modal_unavailable`
+      - `getty_unavailable_reason = challenge_page`
+      - `getty_failure_stage = search`
+      - `getty_http_status = 200`
+      - `getty_page_classification = challenge_page`
+  - backend fixes landed in `TRR-Backend/api/routers/admin_person_images.py`:
+    - person refresh/reprocess stream startup now forces `allow_attach=False` so a fresh user-triggered run cannot silently inherit an older in-flight person refresh payload
+    - Getty direct-search subtasks now emit `warning` with unavailable messaging when Modal is on the Getty challenge page instead of showing a misleading `Found 0 Getty candidates`
+    - grouped Getty subtasks also surface Getty-unavailable warnings when appropriate
+    - Getty/NBCUMV no longer widens into BravoTV supplemental import unless `BravoTV` was explicitly requested
+    - when both direct Getty searches return zero, the stream now aborts cleanly before grouped Getty, NBCUMV fallback, BravoTV import, hosting, and later post-processing stages
+  - targeted validation:
+    - `cd /Users/thomashulihan/Projects/TRR/TRR-Backend && python -m py_compile api/routers/admin_person_images.py tests/api/routers/test_admin_person_images.py`
+    - `cd /Users/thomashulihan/Projects/TRR/TRR-Backend && ruff check api/routers/admin_person_images.py tests/api/routers/test_admin_person_images.py`
+    - `cd /Users/thomashulihan/Projects/TRR/TRR-Backend && pytest -q tests/api/routers/test_admin_person_images.py -k 'aborts_when_both_direct_getty_searches_return_zero or marks_direct_getty_searches_as_warning_when_getty_is_unavailable or refresh_stream_starts_new_operation_without_attach or refresh_aborts_after_double_zero_getty_direct_searches'`
+  - redeployed Modal from the current workspace:
+    - `cd /Users/thomashulihan/Projects/TRR/TRR-Backend && TRR_MODAL_ADMIN_KEEP_WARM=2 TRR_MODAL_ADMIN_OPERATION_CONCURRENCY_LIMIT=12 ./.venv/bin/python -m modal deploy -m trr_backend.modal_jobs`
+  - post-deploy readiness recheck passed:
+    - `cd /Users/thomashulihan/Projects/TRR/TRR-Backend && ./.venv/bin/python scripts/modal/verify_modal_readiness.py --json`
+  - live Brandi smoke against Modal now behaves correctly:
+    - person id: `66ce2444-c6c4-46bc-94d0-4c15ae3d04af`
+    - operation id: `12175234-17b4-4645-a791-9e15f2a6c21b`
+    - payload used:
+      - `sources=["nbcumv"]`
+      - `skip_mirror=true`
+      - `skip_auto_count=true`
+      - `skip_word_detection=true`
+      - `skip_centering=true`
+      - `skip_resize=true`
+      - `skip_prune=true`
+    - observed result:
+      - both direct Getty searches were marked as `warning` with `Getty unavailable during direct person search ... (challenge page, HTTP 200).`
+      - grouped Getty, pairing, NBCUMV-only supplement, BravoTV-only supplement, and hosting subtasks were all marked `skipped`
+      - the run ended with `getty_initial_search_zero_abort=true` and did not continue into BravoTV or later post-processing stages
+
+- 2026-03-24 local Getty prefetch made mandatory across app launchers:
+  - added shared app helper:
+    - `TRR-APP/apps/web/src/lib/admin/getty-local-prefetch.ts`
+  - person refresh launchers now all use the shared local Getty prefetch helper instead of knowingly falling back to blocked Modal Getty:
+    - `TRR-APP/apps/web/src/app/admin/trr-shows/people/[personId]/PersonPageClient.tsx`
+    - `TRR-APP/apps/web/src/app/admin/trr-shows/[showId]/page.tsx`
+    - `TRR-APP/apps/web/src/app/admin/trr-shows/[showId]/seasons/[seasonNumber]/page.tsx`
+  - behavior change:
+    - when Getty/NBCUMV is part of the requested person refresh, the app now requires a successful local Getty prefetch before starting the backend run
+    - if local Getty prefetch fails, the app stops the run immediately with a clear error instead of sending the request into blocked live Getty on Modal
+  - validation:
+    - `pnpm -C /Users/thomashulihan/Projects/TRR/TRR-APP/apps/web exec vitest run tests/person-refresh-request-id-wiring.test.ts tests/show-person-refresh-getty-prefetch-wiring.test.ts tests/season-cast-tab-quality-wiring.test.ts`
+    - targeted eslint on the touched app files passed with only pre-existing warnings in `PersonPageClient.tsx`
+  - local scrape proof:
+    - local Getty scrape for Brandi returned real data again:
+      - `180` Bravo images
+      - `180` broad images
+      - `39` Bravo events before broad-event completion
+    - a prefetched Modal refresh run was started with:
+      - `getty_prefetch_attempted = true`
+      - `getty_prefetch_succeeded = true`
+      - `80` prefetched Getty assets in the stored request payload
+      - operation id: `1ac926ec-a88f-49bf-aaae-6156b70f5bf4`
+    - unlike the blocked live Modal path, that run advanced into real Getty matching work:
+      - `Matching Getty asset 44/59 ...`
+      - later `Supplementing Getty matches with NBCUMV caption search for 'Brandi Glanville' across 6 search scopes...`
+    - takeaway:
+      - the successful production path is now local Getty prefetch -> Modal prefetched ingest
+      - live Modal Getty remains blocked by Getty’s bot wall and is no longer treated as a viable normal path for app-launched Getty/NBCUMV refreshes
+
+- 2026-03-24 Modal deploy + live Brandi smoke:
+  - redeployed the current `TRR-Backend` workspace to Modal:
+    - `cd /Users/thomashulihan/Projects/TRR/TRR-Backend && TRR_MODAL_ADMIN_KEEP_WARM=2 TRR_MODAL_ADMIN_OPERATION_CONCURRENCY_LIMIT=12 ./.venv/bin/python -m modal deploy -m trr_backend.modal_jobs`
+  - post-deploy readiness check passed:
+    - `cd /Users/thomashulihan/Projects/TRR/TRR-Backend && ./.venv/bin/python scripts/modal/verify_modal_readiness.py --json`
+    - `ok=true`; `run_admin_operation_v2` resolved successfully
+  - live Brandi refresh smoke against Modal used person id `66ce2444-c6c4-46bc-94d0-4c15ae3d04af` and operation `a80ca547-b787-4a65-ab86-78599592be16`
+  - smoke payload intentionally constrained the run to `sources=["nbcumv"]`, `limit_per_source=1`, and all later post-processing flags set to skip
+  - observed runtime behavior did not match the intended early-abort contract:
+    - direct Getty searches for `Brandi Glanville Bravo` and `Brandi Glanville` both reported `0` candidate asset pages
+    - the Modal job still continued into additional Getty/network query variants, grouped Getty collection, NBCUMV direct fallback, BravoTV import, and later resize work instead of aborting after the first two zero-result direct searches
+    - the smoke also surfaced that the live refresh path still ran TMDb/IMDb/Fandom stages even though only `nbcumv` was requested
+  - requested cancellation via the admin operations repository helper after capturing the regression:
+    - operation status moved to `cancelling`
+  - takeaway:
+    - the deployed worker is healthy and the new code is live on Modal
+    - the live Brandi path still needs a follow-up fix because the actual stream execution path is not honoring the intended "abort after two zero direct Getty searches" guardrail
 
 - 2026-03-22 deterministic Getty/NBCUMV ingest follow-through:
   - `Get Images (Getty / NBCUMV)` now treats `nbcumv` as the shared Getty ingest path consistently in both refresh and reprocess flows.

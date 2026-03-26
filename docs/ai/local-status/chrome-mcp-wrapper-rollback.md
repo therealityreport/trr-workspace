@@ -1,15 +1,15 @@
 # Chrome MCP Wrapper Rollback
 
-Last updated: 2026-03-16
+Last updated: 2026-03-24
 
 ## Handoff Snapshot
 ```yaml
 handoff:
-  include: true
-  state: recent
-  last_updated: 2026-03-16
-  current_phase: "complete"
-  next_action: "Monitor only; make dev preflight now survives stale isolated Chrome session cleanup and only prints summary OK after the wrapper smoke check passes"
+  include: false
+  state: archived
+  last_updated: 2026-03-24
+  current_phase: "archived continuity note"
+  next_action: "See newer Chrome workspace status notes if wrapper follow-up is needed"
   detail: self
 ```
 
@@ -45,3 +45,4 @@ handoff:
 - This fixes runtime/config drift and cross-session singleton preemption on the supported path.
 - A fresh Codex session/thread is still required before an already-open chat can gain the `chrome-devtools` tool binding.
 - The original `make dev` failure mode was triggered by stale isolated-session metadata under `.logs/workspace/codex-chrome-session-*.env`.
+- Archived from active handoff rotation on 2026-03-24 to satisfy workspace freshness checks.

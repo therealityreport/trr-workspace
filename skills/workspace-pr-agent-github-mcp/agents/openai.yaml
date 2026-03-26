@@ -1,4 +1,0 @@
-interface:
-  display_name: "Workspace PR Agent (GitHub MCP)"
-  short_description: "Run multi-repo PR automation with GitHub MCP-first revision assist"
-  default_prompt: "Use $workspace-pr-agent-github-mcp to run workspace PR automation in GitHub MCP-first mode: one PR per repo, wait for checks, process bot reviews/messages, apply revisions, merge to main, and enforce main parity + local branch cleanup."
