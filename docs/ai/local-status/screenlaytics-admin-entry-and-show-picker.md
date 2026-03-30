@@ -1,15 +1,15 @@
 # Screenlaytics admin entry and show picker
 
-Last updated: 2026-03-21
+Last updated: 2026-03-30
 
 ## Handoff Snapshot
 ```yaml
 handoff:
-  include: true
-  state: recent
-  last_updated: 2026-03-21
-  current_phase: "complete"
-  next_action: "Use the Screenalytics card from /admin, open /screenalytics, and verify the root-level /<show> workspace plus /design-system/admin-labels in the browser"
+  include: false
+  state: archived
+  last_updated: 2026-03-30
+  current_phase: "archived continuity note"
+  next_action: "Refer to newer status notes if follow-up work resumes on this thread."
   detail: self
 ```
 

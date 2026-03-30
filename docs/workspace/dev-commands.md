@@ -23,7 +23,7 @@ Use these commands from `/Users/thomashulihan/Projects/TRR`.
 - TRR-APP: `http://127.0.0.1:3000`
 - TRR-Backend: `http://127.0.0.1:8000`
 - screenalytics API: `http://127.0.0.1:8001`
-- screenalytics Streamlit: `http://127.0.0.1:8501`
-- screenalytics Web: `http://127.0.0.1:8080`
+
+The default `make dev` profile keeps the screenalytics API on but leaves the Streamlit and Web UIs disabled. Re-enable them with `WORKSPACE_SCREENALYTICS_STREAMLIT_ENABLED=1` and/or `WORKSPACE_SCREENALYTICS_WEB_ENABLED=1`.
 
 For startup tuning and env overrides, see `/Users/thomashulihan/Projects/TRR/docs/workspace/env-contract.md`.

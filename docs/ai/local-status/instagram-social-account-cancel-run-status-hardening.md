@@ -1,15 +1,15 @@
 # Instagram Social Account Cancel Run Status Hardening
 
-Date: 2026-03-22
+Last updated: 2026-03-30
 
 ## Handoff Snapshot
 ```yaml
 handoff:
-  include: true
-  state: recent
-  last_updated: 2026-03-22
-  current_phase: "cancel flow and shared-account run status hardening shipped"
-  next_action: "reload the shared-account Instagram admin page and verify active runs now show a consistent status banner and cancel optimistically without surfacing summary timeout noise"
+  include: false
+  state: archived
+  last_updated: 2026-03-30
+  current_phase: "archived continuity note"
+  next_action: "Refer to newer status notes if follow-up work resumes on this thread."
   detail: self
 ```
 

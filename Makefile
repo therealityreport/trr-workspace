@@ -7,10 +7,11 @@
 	down chrome-devtools-mcp-status chrome-devtools-mcp-clean-stale chrome-devtools-mcp-stop-conflicts \
 	mcp-clean \
 	workspace-pr-agent \
-	getty-server
+	getty-server getty-tunnel getty-remote
 
 # Daily default: `make dev` runs the canonical cloud-backed workspace profile.
-# It starts TRR-APP + TRR-Backend locally, enables screenalytics, and bypasses local Docker infra.
+# It starts TRR-APP + TRR-Backend locally, keeps the screenalytics API on, and bypasses local Docker infra.
+# screenalytics Streamlit/Web UIs are disabled in the default profile unless explicitly re-enabled.
 # Use `make dev-local` only when you intentionally want Docker-backed local Redis + MinIO.
 # To override the default profile explicitly:
 # PROFILE=default make dev
@@ -92,7 +93,29 @@ status:
 # Usage: make getty-server  (default port 3456)
 #        GETTY_PORT=8765 make getty-server
 getty-server:
-	@cd TRR-Backend && ./.venv/bin/python scripts/getty_local_server.py --port "$${GETTY_PORT:-3456}"
+	@GETTY_PORT="$${GETTY_PORT:-3456}"; \
+	if lsof -iTCP:"$$GETTY_PORT" -sTCP:LISTEN -t >/dev/null 2>&1; then \
+		EXISTING_PID=$$(lsof -iTCP:"$$GETTY_PORT" -sTCP:LISTEN -t 2>/dev/null | head -1); \
+		echo "[getty-server] Port $$GETTY_PORT already in use by PID $$EXISTING_PID — server is already running."; \
+		echo "[getty-server] To restart: kill $$EXISTING_PID && make getty-server"; \
+		echo "[getty-server] To use a different port: GETTY_PORT=8765 make getty-server"; \
+	else \
+		cd TRR-Backend && ./.venv/bin/python scripts/getty_local_server.py --port "$$GETTY_PORT"; \
+	fi
+
+# Cloudflare Tunnel — exposes the local Getty scraper at scraper.thereality.report.
+# Run this alongside `make getty-server` to allow cloud/Vercel to reach the scraper.
+# First-time setup:
+#   brew install cloudflared && cloudflared tunnel login
+#   cloudflared tunnel create getty-scraper
+#   cloudflared tunnel route dns getty-scraper scraper.thereality.report
+getty-tunnel:
+	@cloudflared tunnel --config TRR-Backend/scripts/cloudflared-tunnel-config.yml run getty-scraper
+
+# Starts both the Getty server and the Cloudflare Tunnel in parallel.
+# If the server is already running, only the tunnel starts.
+getty-remote:
+	@$(MAKE) getty-server & $(MAKE) getty-tunnel & wait
 
 # Stops workspace-managed processes only (from make dev).
 stop:
@@ -145,7 +168,7 @@ down:
 
 help:
 	@echo "Workspace commands:"
-	@echo "  make dev          - recommended default; cloud-backed screenalytics, no local Docker infra"
+	@echo "  make dev          - recommended default; cloud-backed screenalytics API, no local Docker infra"
 	@echo "  make dev-local    - local Docker mode; starts Redis + MinIO for screenalytics"
 	@echo "  make preflight    - validates the default no-Docker dev path"
 	@echo "  make preflight-local - validates the Docker-backed local path"

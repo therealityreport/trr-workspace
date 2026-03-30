@@ -1,15 +1,15 @@
 # Person Get Images source selection and Getty alias
 
-Last updated: 2026-03-20
+Last updated: 2026-03-30
 
 ## Handoff Snapshot
 ```yaml
 handoff:
-  include: true
-  state: recent
-  last_updated: 2026-03-20
-  current_phase: "complete"
-  next_action: "Use the new Gallery-tab source selector in person pages, then follow up later only if we want broader Show Run fan-out, richer Google reverse-search automation, or extra UI around Getty fallback metadata"
+  include: false
+  state: archived
+  last_updated: 2026-03-30
+  current_phase: "archived continuity note"
+  next_action: "Refer to newer status notes if follow-up work resumes on this thread."
   detail: self
 ```
 

@@ -1,15 +1,15 @@
 # Reddit post sync reliability hardening
 
-Date: 2026-03-22
+Last updated: 2026-03-30
 
 ## Handoff Snapshot
 ```yaml
 handoff:
-  include: true
-  state: recent
-  last_updated: 2026-03-22
-  current_phase: "complete"
-  next_action: "Reload the admin Reddit season page and verify queued windows now surface worker-unavailable, stranded-queue, or partial-403 messaging instead of lingering on a generic still-running banner."
+  include: false
+  state: archived
+  last_updated: 2026-03-30
+  current_phase: "archived continuity note"
+  next_action: "Refer to newer status notes if follow-up work resumes on this thread."
   detail: self
 ```
 

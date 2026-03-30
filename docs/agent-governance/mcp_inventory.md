@@ -1,4 +1,4 @@
-# MCP Inventory (Codex Config)
+# MCP Inventory (Workspace)
 
 Reusable MCP registrations live in `~/.codex/config.toml`. TRR-local MCPs live in `.codex/config.toml` and activate only when `/Users/thomashulihan/Projects/TRR` is trusted in the global config. If shared MCPs disappear in TRR, check the trusted-project entry first; this is a config activation issue, not a skill-routing issue.
 
