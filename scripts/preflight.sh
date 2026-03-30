@@ -149,8 +149,15 @@ if [[ "$env_contract_rc" != "0" ]]; then
   if [[ "$WORKSPACE_PREFLIGHT_STRICT" == "1" ]]; then
     exit "$env_contract_rc"
   fi
-  echo "[preflight] WARNING: generated env contract check failed; continuing because WORKSPACE_PREFLIGHT_STRICT=0." >&2
-  echo "[preflight] WARNING: Run 'make env-contract' to regenerate docs/workspace/env-contract.md." >&2
+  echo "[preflight] WARNING: generated env contract is out of date; regenerating because WORKSPACE_PREFLIGHT_STRICT=0." >&2
+  run_preflight_phase "env-contract-generate" "[preflight] Regenerating generated env contract..." bash "$ROOT/scripts/workspace-env-contract.sh" --generate
+  env_contract_rc=0
+  run_preflight_phase "env-contract-verify" "[preflight] Re-validating generated env contract..." bash "$ROOT/scripts/workspace-env-contract.sh" --check || env_contract_rc="$?"
+  if [[ "$env_contract_rc" != "0" ]]; then
+    echo "[preflight] ERROR: env contract is still out of date after regeneration." >&2
+    exit "$env_contract_rc"
+  fi
+  echo "[preflight] NOTE: generated env contract was refreshed in-place; review and commit docs/workspace/env-contract.md if the new baseline is intended." >&2
 fi
 
 run_preflight_phase "handoff-sync" "[preflight] Syncing generated handoffs..." python3 "$ROOT/scripts/sync-handoffs.py" --write

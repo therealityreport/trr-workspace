@@ -66,7 +66,7 @@ POLICY_SCAN_FILES=(
   "$ROOT/docs/workspace/dev-commands.md"
   "$ROOT/docs/workspace/chrome-devtools.md"
   "$ROOT/docs/ai/HANDOFF_WORKFLOW.md"
-  "$ROOT/docs/agent-governance/codex_skills.md"
+  "$ROOT/docs/agent-governance/skill_routing.md"
   "$ROOT/docs/agent-governance/claude_skill_overlap.md"
   "$ROOT/docs/agent-governance/mcp_inventory.md"
 )
@@ -120,7 +120,7 @@ check_root_agents() {
     failures=$((failures + 1))
   fi
 
-  if ! rg -q 'docs/agent-governance/codex_skills\.md' "$file"; then
+  if ! rg -q 'docs/agent-governance/skill_routing\.md' "$file"; then
     echo "[check-policy] ERROR: missing skill-routing reference in $file" >&2
     failures=$((failures + 1))
   fi

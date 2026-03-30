@@ -8,8 +8,8 @@ handoff:
   include: true
   state: recent
   last_updated: 2026-03-26
-  current_phase: "workspace Codex config split remains the active baseline while Batch 2 backend/app migration work continues"
-  next_action: "Keep the split user/project Codex config model in place; only reopen this lane if MCP registration or trusted-project activation regresses"
+  current_phase: "workspace Codex config split remains the active baseline with the new TRR-only skill-pruning bootstrap enforced"
+  next_action: "Keep the split user/project Codex config model and the TRR-only disabled-skill/plugin baseline in place; only reopen this lane if bootstrap or validation regresses"
   detail: self
 ```
 
@@ -25,6 +25,8 @@ handoff:
 - Repurposed `scripts/codex-config-sync.sh` from user-config templating into:
   - `bootstrap` for restoring the expected global MCP set plus the TRR trusted-project entry in `~/.codex`
   - `validate` for both the global user config and the tracked TRR-local config
+- Expanded the user bootstrap and validation flow to disable unrelated global skill families for TRR-only chats, including non-TRR framework specialists, AWS-only infra skills, and duplicate generic ownership surfaces already replaced by workspace-local canonicals.
+- Added plugin-state enforcement so `github` and `vercel` remain enabled for TRR, while `gmail`, `google-drive`, and `hugging-face` are disabled by default unless explicitly needed.
 - Updated workspace policy/docs so `AGENTS.md` describes browser and trust policy, while `.codex/config.toml` and wrapper scripts define actual Chrome MCP defaults.
 - Aligned the shared Chrome default back to `isolated + headless` and removed the shared-mode drift from validation/status output.
 - Added `scripts/check-codex.sh` and `make codex-check` so workspace validation covers the global/project config split, trusted-project activation, rules parsing, and user bootstrap state.
@@ -33,6 +35,7 @@ handoff:
 ## Validation
 - `bash scripts/codex-config-sync.sh bootstrap`
 - `bash scripts/codex-config-sync.sh validate`
+- `bash scripts/check-policy.sh`
 - `(cd ~ && codex mcp list --json)`
 - `(cd ~ && codex mcp get figma-console)`
 - `(cd /Users/thomashulihan/Projects/TRR && codex mcp list --json)`
@@ -41,8 +44,8 @@ handoff:
 
 ## Notes
 - 2026-03-26 check:
-  - no new config realignment work was required during the Batch 2.2 and 2.3 migration run
-  - this note was refreshed so handoff closeout reflects that the current split-config baseline is still the intended workspace state
+  - extended the user bootstrap baseline to suppress unrelated global skills and non-TRR plugins during workspace chats
+  - this note was refreshed so handoff closeout reflects that the current split-config baseline now includes TRR-only skill pruning as part of the intended workspace state
 - Existing chats may still reflect older MCP registrations until they are restarted.
 - If TRR-local MCPs disappear from a fresh session inside this workspace, check the trusted-project entry in `~/.codex/config.toml` before debugging skills or prompts.
 - Shared/headful Chrome remains available as an explicit exception path; the tracked default is isolated/headless.

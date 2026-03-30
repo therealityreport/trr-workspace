@@ -1,15 +1,15 @@
 # Cross-Platform Shared-Account Backfill Hardening And Facebook Catalog Parity
 
-Date: 2026-03-22
+Last updated: 2026-03-30
 
 ## Handoff Snapshot
 ```yaml
 handoff:
-  include: true
-  state: recent
-  last_updated: 2026-03-22
-  current_phase: "shared-account backfill hardening shipped across Twitter, Threads, YouTube, and Facebook, with Facebook catalog support enabled end to end"
-  next_action: "apply migration 0202, start fresh Twitter/Threads/YouTube/Facebook account backfills from the admin profile pages, and confirm each platform now reports live progress plus accurate Modal waiting states without false clean completion"
+  include: false
+  state: archived
+  last_updated: 2026-03-30
+  current_phase: "archived continuity note"
+  next_action: "Refer to newer status notes if follow-up work resumes on this thread."
   detail: self
 ```
 

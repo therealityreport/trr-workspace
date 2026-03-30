@@ -1,15 +1,15 @@
 # Cast Screentime pipeline revision
 
-Last updated: 2026-03-20
+Last updated: 2026-03-30
 
 ## Handoff Snapshot
 ```yaml
 handoff:
-  include: true
-  state: recent
-  last_updated: 2026-03-20
-  current_phase: "complete"
-  next_action: "Use the new media_type-driven cast screentime flow, review cast-coverage warnings in admin, and treat accepted suggestions/unknown decisions as rerun inputs rather than retroactive metric edits"
+  include: false
+  state: archived
+  last_updated: 2026-03-30
+  current_phase: "archived continuity note"
+  next_action: "Refer to newer status notes if follow-up work resumes on this thread."
   detail: self
 ```
 

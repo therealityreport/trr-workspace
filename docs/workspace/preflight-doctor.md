@@ -3,9 +3,9 @@
 `make preflight` runs `scripts/doctor.sh` before any workspace startup.
 
 Preflight modes:
-- `make preflight` is the default local developer gate. It still fails on Node baseline, policy drift, and Chrome DevTools MCP readiness, but env-contract drift is warning-only.
+- `make preflight` is the default local developer gate. It still fails on Node baseline, policy drift, and Chrome DevTools MCP readiness; env-contract drift is auto-healed in-place and then re-checked.
 - `make preflight-strict` enables `WORKSPACE_PREFLIGHT_STRICT=1` and fails on env-contract drift as well.
-- `make env-contract` regenerates `docs/workspace/env-contract.md` when the warning appears.
+- `make env-contract` regenerates `docs/workspace/env-contract.md` directly when you want to refresh the contract without running the full preflight chain.
 
 Node baseline behavior:
 - Required local baseline is Node `24.x`.
