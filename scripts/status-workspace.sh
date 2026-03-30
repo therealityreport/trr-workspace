@@ -22,6 +22,8 @@ TRR_APP_HOST="${TRR_APP_HOST:-127.0.0.1}"
 SCREENALYTICS_API_PORT="${SCREENALYTICS_API_PORT:-8001}"
 SCREENALYTICS_STREAMLIT_PORT="${SCREENALYTICS_STREAMLIT_PORT:-8501}"
 SCREENALYTICS_WEB_PORT="${SCREENALYTICS_WEB_PORT:-8080}"
+WORKSPACE_SCREENALYTICS_STREAMLIT_ENABLED="${WORKSPACE_SCREENALYTICS_STREAMLIT_ENABLED:-1}"
+WORKSPACE_SCREENALYTICS_WEB_ENABLED="${WORKSPACE_SCREENALYTICS_WEB_ENABLED:-1}"
 WORKSPACE_HEALTH_CURL_MAX_TIME="${WORKSPACE_HEALTH_CURL_MAX_TIME:-2}"
 WORKSPACE_BACKEND_AUTO_RESTART="${WORKSPACE_BACKEND_AUTO_RESTART:-1}"
 WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS="${WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS:-5}"
@@ -346,6 +348,20 @@ screenalytics_enabled() {
   return 0
 }
 
+screenalytics_streamlit_enabled() {
+  if ! screenalytics_enabled; then
+    return 1
+  fi
+  [[ "${WORKSPACE_SCREENALYTICS_STREAMLIT_ENABLED:-1}" == "1" ]]
+}
+
+screenalytics_web_enabled() {
+  if ! screenalytics_enabled; then
+    return 1
+  fi
+  [[ "${WORKSPACE_SCREENALYTICS_WEB_ENABLED:-1}" == "1" ]]
+}
+
 backend_reload_mode() {
   if [[ "$HAVE_PIDFILE" -ne 1 ]]; then
     echo "n/a"
@@ -462,8 +478,16 @@ fi
 TRR_APP_LISTENERS="$(port_listeners "${TRR_APP_PORT}")"
 TRR_BACKEND_LISTENERS="$(port_listeners "${TRR_BACKEND_PORT}")"
 SCREENALYTICS_API_LISTENERS="$(port_listeners "${SCREENALYTICS_API_PORT}")"
-SCREENALYTICS_STREAMLIT_LISTENERS="$(port_listeners "${SCREENALYTICS_STREAMLIT_PORT}")"
-SCREENALYTICS_WEB_LISTENERS="$(port_listeners "${SCREENALYTICS_WEB_PORT}")"
+if screenalytics_streamlit_enabled; then
+  SCREENALYTICS_STREAMLIT_LISTENERS="$(port_listeners "${SCREENALYTICS_STREAMLIT_PORT}")"
+else
+  SCREENALYTICS_STREAMLIT_LISTENERS="disabled"
+fi
+if screenalytics_web_enabled; then
+  SCREENALYTICS_WEB_LISTENERS="$(port_listeners "${SCREENALYTICS_WEB_PORT}")"
+else
+  SCREENALYTICS_WEB_LISTENERS="disabled"
+fi
 RUN_STATE="$([[ "$HAVE_PIDFILE" -eq 1 ]] && echo active || echo inactive)"
 BACKEND_WATCHDOG_STATE_LABEL="active"
 CODEX_APP_SERVER_ROWS="$(list_codex_app_servers)"
@@ -491,6 +515,8 @@ if [[ "$OUTPUT_FORMAT" == "json" ]]; then
     "screenalytics_mode": "$(json_escape "$(screenalytics_mode_label)")",
     "workspace_screenalytics": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_SCREENALYTICS:-}")")",
     "workspace_screenalytics_skip_docker": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_SCREENALYTICS_SKIP_DOCKER:-}")")",
+    "workspace_screenalytics_streamlit_enabled": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_SCREENALYTICS_STREAMLIT_ENABLED:-}")")",
+    "workspace_screenalytics_web_enabled": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_SCREENALYTICS_WEB_ENABLED:-}")")",
     "workspace_open_browser": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_OPEN_BROWSER:-}")")",
     "workspace_browser_tab_sync_mode": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_BROWSER_TAB_SYNC_MODE:-}")")",
     "workspace_open_screenalytics_tabs": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_OPEN_SCREENALYTICS_TABS:-}")")",
@@ -589,6 +615,8 @@ echo "  WORKSPACE_DEV_MODE: $(workspace_dev_mode_value)"
 echo "  screenalytics mode: $(screenalytics_mode_label)"
 echo "  WORKSPACE_SCREENALYTICS: $(runtime_value_or_na "${WORKSPACE_SCREENALYTICS:-}")"
 echo "  WORKSPACE_SCREENALYTICS_SKIP_DOCKER: $(runtime_value_or_na "${WORKSPACE_SCREENALYTICS_SKIP_DOCKER:-}")"
+echo "  WORKSPACE_SCREENALYTICS_STREAMLIT_ENABLED: $(runtime_value_or_na "${WORKSPACE_SCREENALYTICS_STREAMLIT_ENABLED:-}")"
+echo "  WORKSPACE_SCREENALYTICS_WEB_ENABLED: $(runtime_value_or_na "${WORKSPACE_SCREENALYTICS_WEB_ENABLED:-}")"
 echo "  WORKSPACE_OPEN_BROWSER: $(runtime_value_or_na "${WORKSPACE_OPEN_BROWSER:-}")"
 echo "  WORKSPACE_BROWSER_TAB_SYNC_MODE: $(runtime_value_or_na "${WORKSPACE_BROWSER_TAB_SYNC_MODE:-}")"
 echo "  WORKSPACE_OPEN_SCREENALYTICS_TABS: $(runtime_value_or_na "${WORKSPACE_OPEN_SCREENALYTICS_TABS:-}")"

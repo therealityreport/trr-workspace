@@ -1,15 +1,15 @@
 # TikTok Shared-Account Modal Dispatch Recovery And Admin Status Hardening
 
-Date: 2026-03-22
+Last updated: 2026-03-30
 
 ## Handoff Snapshot
 ```yaml
 handoff:
-  include: true
-  state: recent
-  last_updated: 2026-03-22
-  current_phase: "shared-account Modal dispatch recovery and admin status hardening shipped"
-  next_action: "reload the TikTok and Instagram shared-account admin pages, start a fresh backfill, and verify queued runs now surface waiting/retrying/failure dispatch states instead of appearing stuck"
+  include: false
+  state: archived
+  last_updated: 2026-03-30
+  current_phase: "archived continuity note"
+  next_action: "Refer to newer status notes if follow-up work resumes on this thread."
   detail: self
 ```
 

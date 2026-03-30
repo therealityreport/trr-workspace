@@ -93,7 +93,15 @@ status:
 # Usage: make getty-server  (default port 3456)
 #        GETTY_PORT=8765 make getty-server
 getty-server:
-	@cd TRR-Backend && ./.venv/bin/python scripts/getty_local_server.py --port "$${GETTY_PORT:-3456}"
+	@GETTY_PORT="$${GETTY_PORT:-3456}"; \
+	if lsof -iTCP:"$$GETTY_PORT" -sTCP:LISTEN -t >/dev/null 2>&1; then \
+		EXISTING_PID=$$(lsof -iTCP:"$$GETTY_PORT" -sTCP:LISTEN -t 2>/dev/null | head -1); \
+		echo "[getty-server] Port $$GETTY_PORT already in use by PID $$EXISTING_PID — server is already running."; \
+		echo "[getty-server] To restart: kill $$EXISTING_PID && make getty-server"; \
+		echo "[getty-server] To use a different port: GETTY_PORT=8765 make getty-server"; \
+	else \
+		cd TRR-Backend && ./.venv/bin/python scripts/getty_local_server.py --port "$$GETTY_PORT"; \
+	fi
 
 # Cloudflare Tunnel — exposes the local Getty scraper at scraper.thereality.report.
 # Run this alongside `make getty-server` to allow cloud/Vercel to reach the scraper.
@@ -105,6 +113,7 @@ getty-tunnel:
 	@cloudflared tunnel --config TRR-Backend/scripts/cloudflared-tunnel-config.yml run getty-scraper
 
 # Starts both the Getty server and the Cloudflare Tunnel in parallel.
+# If the server is already running, only the tunnel starts.
 getty-remote:
 	@$(MAKE) getty-server & $(MAKE) getty-tunnel & wait
 

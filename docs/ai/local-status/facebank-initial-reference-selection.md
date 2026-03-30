@@ -1,15 +1,15 @@
 # Facebank initial reference selection
 
-Last updated: 2026-03-20
+Last updated: 2026-03-30
 
 ## Handoff Snapshot
 ```yaml
 handoff:
-  include: true
-  state: recent
-  last_updated: 2026-03-20
-  current_phase: "complete"
-  next_action: "Use the new backend-ranked facebank initial selection flow for cast gallery imports, then follow up later only if we want richer face-quality metadata or an explicit admin review UI for the preselected starter set"
+  include: false
+  state: archived
+  last_updated: 2026-03-30
+  current_phase: "archived continuity note"
+  next_action: "Refer to newer status notes if follow-up work resumes on this thread."
   detail: self
 ```
 

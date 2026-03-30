@@ -1,15 +1,15 @@
 # Shared account catalog backfill and profile UI
 
-Last updated: 2026-03-20
+Last updated: 2026-03-30
 
 ## Handoff Snapshot
 ```yaml
 handoff:
-  include: true
-  state: recent
-  last_updated: 2026-03-20
-  current_phase: "Live catalog-backed account summary and full-account hashtag aggregation are now wired into the BravoTV admin profile, with active-run polling keeping catalog totals, engagement, views, last-post, and hashtag counts current while classify continues in the background"
-  next_action: "Let the current/newest BravoTV frontier run continue, verify that /admin/social/instagram/bravotv summary cards rise with saved catalog rows in real time, and confirm the final completion gap message stays anchored to the stored expected total instead of drifting to the latest live profile count"
+  include: false
+  state: archived
+  last_updated: 2026-03-30
+  current_phase: "archived continuity note"
+  next_action: "Refer to newer status notes if follow-up work resumes on this thread."
   detail: self
 ```
 

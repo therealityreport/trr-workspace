@@ -923,10 +923,20 @@ pressure_state="safe"
 if is_summary_mode; then
   summary_pressure_line="$(pressure_verdict "$owner_state" "$managed_root_count" "$chrome_rss_mb" "$figma_rss_mb" "$figma_orphans_count")"
   if [[ "$wrapper_mode" == "isolated" ]]; then
-    summary_status_line="[chrome-devtools-mcp] OK: browser automation is ready (isolated default, tab cap enforceable)."
+    if [[ "$summary_pressure_line" == "safe" ]]; then
+      summary_status_line="[chrome-devtools-mcp] OK: browser automation is ready (isolated default, tab cap enforceable)."
+    else
+      summary_status_line="[chrome-devtools-mcp] WARNING: browser automation is ready, but local browser pressure is ${summary_pressure_line} (isolated default, tab cap enforceable)."
+      summary_warning_line="[chrome-devtools-mcp] WARNING: consider 'make mcp-clean' if stale Chrome/Figma runtime artifacts are not expected."
+    fi
     summary_note_line="[chrome-devtools-mcp] NOTE: fresh chats will launch isolated headless Chrome with a target of ${tab_target} working tab and a hard cap of ${tab_cap} tabs."
   elif [[ "$(endpoint_state "$SHARED_PORT")" == "reachable" ]]; then
-    summary_status_line="[chrome-devtools-mcp] OK: browser automation is ready."
+    if [[ "$summary_pressure_line" == "safe" ]]; then
+      summary_status_line="[chrome-devtools-mcp] OK: browser automation is ready."
+    else
+      summary_status_line="[chrome-devtools-mcp] WARNING: browser automation is ready, but local browser pressure is ${summary_pressure_line}."
+      summary_warning_line="[chrome-devtools-mcp] WARNING: consider 'make mcp-clean' if stale Chrome/Figma runtime artifacts are not expected."
+    fi
     summary_note_line="[chrome-devtools-mcp] NOTE: if this already-open chat still lacks chrome-devtools, restart the Codex session/thread to reload MCP registrations."
   else
     summary_warning_line="[chrome-devtools-mcp] WARNING: shared Chrome is not responding on port ${SHARED_PORT}."

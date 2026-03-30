@@ -1,15 +1,15 @@
 # Workspace bug sweep: admin normalization and fallback hardening
 
-Last updated: 2026-03-22
+Last updated: 2026-03-30
 
 ## Handoff Snapshot
 ```yaml
 handoff:
-  include: true
-  state: recent
-  last_updated: 2026-03-20
-  current_phase: "complete"
-  next_action: "If more workspace bug-sweep time is needed later, continue from the remaining unreviewed admin surfaces rather than reopening the normalized external-id or Getty fallback regressions"
+  include: false
+  state: archived
+  last_updated: 2026-03-30
+  current_phase: "archived continuity note"
+  next_action: "Refer to newer status notes if follow-up work resumes on this thread."
   detail: self
 ```
 
@@ -35,6 +35,43 @@ handoff:
   - `cd /Users/thomashulihan/Projects/TRR/TRR-APP/apps/web && pnpm exec vitest run tests/person-external-ids.test.ts tests/person-external-ids-route.test.ts tests/social-account-hashtag-timeline-route.test.ts tests/social-account-catalog-verification-route.test.ts tests/social-account-profile-page.runtime.test.tsx tests/social-account-hashtag-timeline.runtime.test.tsx tests/bravotv-image-runs.test.ts tests/bravotv-image-routes.test.ts tests/bravotv-image-run-panel-wiring.test.ts tests/people-page-tabs-runtime.test.tsx tests/person-credits-route.test.ts tests/person-credits-show-scope-wiring.test.ts tests/person-refresh-request-id-wiring.test.ts tests/photo-metadata.test.ts tests/image-lightbox-metadata.test.tsx tests/show-admin-routes.test.ts --reporter=dot`
 - Validation caveat:
   - A long-running fresh invocation of `cd /Users/thomashulihan/Projects/TRR/TRR-Backend && ./.venv/bin/pytest -q tests/api/routers/test_admin_person_images.py` stopped returning output through the tool session after partial progress, so the fully completed signal for that exact rerun was not captured here. The directly affected Getty fallback case and the broader Getty/NBCUMV subset both passed.
+
+## 2026-03-26 Follow-up
+- `TRR-APP`
+  - Finished the canonical admin-route cleanup for middleware rewrites, design-doc links, job docs, and leftover back-links that were still emitting legacy `/admin/*` paths.
+  - Fixed the stale Getty prefetch callback dependency in the show admin page so cross-show navigation cannot reuse an old `show?.name` closure.
+  - Reduced the social week detail startup cost by keeping the full metrics backfill behind truncation detection while preserving the lighter summary backfill path, and added regression coverage for rewrite-query preservation plus route-table parity.
+- `TRR-Backend`
+  - Kept `trr_backend.clients.computer_use` non-shipping by leaving it unregistered in `api/main.py`, but made the router safe-by-default with `InternalAdminUser` auth, sanitized client errors, optional dependency handling, and bounded response payloads that no longer expose full agent transcripts.
+  - Added focused router smoke/auth/response-shape coverage in `tests/clients/test_computer_use.py`.
+  - Refreshed `requirements.lock.txt` after the Anthropic dependency pass; `claude-computer-use` could not be locked because it is not resolvable from the configured package registry, so the runtime now fails closed with a configuration error instead of breaking import-time startup.
+- `screenalytics`
+  - Kept `apps.api.routers.computer_use` unregistered in `apps/api/main.py`, added bearer-token service auth, sanitized error responses, and made the Claude runtime optional/fail-closed like the backend.
+  - Hardened `inspect_frame()` by validating the file path, restricting supported image suffixes, and shell-quoting the resolved absolute path before it is embedded in the model prompt.
+  - Added focused router/auth/path-sanitization coverage in `tests/api/test_computer_use.py` and refreshed `requirements-core.lock.txt`.
+- Validation:
+  - `cd /Users/thomashulihan/Projects/TRR/TRR-APP/apps/web && pnpm exec eslint src/proxy.ts tests/admin-host-middleware.test.ts tests/admin-route-paths.test.ts tests/week-social-thumbnails.test.tsx`
+  - `cd /Users/thomashulihan/Projects/TRR/TRR-APP/apps/web && pnpm exec vitest run tests/admin-host-middleware.test.ts tests/admin-route-paths.test.ts tests/show-admin-routes.test.ts tests/show-route-parity.test.ts tests/week-social-thumbnails.test.tsx`
+  - `cd /Users/thomashulihan/Projects/TRR/TRR-Backend && uv run ruff check trr_backend/clients/computer_use.py tests/clients/test_computer_use.py`
+  - `cd /Users/thomashulihan/Projects/TRR/TRR-Backend && pytest tests/clients/test_computer_use.py -q`
+  - `cd /Users/thomashulihan/Projects/TRR/TRR-Backend && uv pip compile requirements.in --python-version 3.11 -o requirements.lock.txt`
+  - `cd /Users/thomashulihan/Projects/TRR/screenalytics && python -m py_compile apps/api/routers/computer_use.py tests/api/test_computer_use.py`
+  - `cd /Users/thomashulihan/Projects/TRR/screenalytics && pytest tests/api/test_computer_use.py -q`
+  - `cd /Users/thomashulihan/Projects/TRR/screenalytics && uv pip compile requirements-core.in --python-version 3.11 -o requirements-core.lock.txt`
+
+## 2026-03-26 Earlier Follow-up
+- `TRR-Backend`
+  - Extended the admin show-seasons read query to include per-season episode aggregates from `core.episodes`: total episode count, first aired episode date, and last aired episode date, alongside the existing aired-episode signal.
+- `TRR-APP`
+  - Switched the show seasons tab to request `include_episode_signal=true` during the primary season fetch and hydrate season card summaries from that payload instead of depending on a second per-season episode fan-out.
+  - Kept the episode fan-out only as a fallback when the aggregate fields are missing, and tightened the season-card date fallback order to prefer `premiere_date` and the last aired episode when available.
+  - This fixes the duplicated single-day date ranges on `/[show-slug]/seasons` that were coming from the `core.seasons.air_date` fallback, and restores episode counts on the season cards.
+- Validation:
+  - `cd /Users/thomashulihan/Projects/TRR/TRR-Backend && pytest -q tests/repositories/test_admin_show_reads_repository.py -k 'show_seasons'`
+  - `cd /Users/thomashulihan/Projects/TRR/TRR-Backend && ruff check trr_backend/repositories/admin_show_reads.py tests/repositories/test_admin_show_reads_repository.py`
+  - `cd /Users/thomashulihan/Projects/TRR/TRR-APP && pnpm -C apps/web exec vitest run -c vitest.config.ts tests/show-social-load-resilience-wiring.test.ts tests/show-season-cards.runtime.test.tsx tests/show-seasons-route-episode-signal.test.ts`
+  - `cd /Users/thomashulihan/Projects/TRR/TRR-APP && pnpm -C apps/web exec eslint 'src/app/admin/trr-shows/[showId]/page.tsx' 'src/components/admin/show-tabs/ShowSeasonCards.tsx' 'src/components/admin/show-tabs/ShowSeasonsTab.tsx' 'tests/show-social-load-resilience-wiring.test.ts'`
+  - ESLint reported one pre-existing warning in `apps/web/src/app/admin/trr-shows/[showId]/page.tsx:3422` for a missing `show?.name` hook dependency; no new lint errors were introduced by this fix.
 
 ## 2026-03-22 Follow-up
 - `workspace`
