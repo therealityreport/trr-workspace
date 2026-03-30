@@ -57,6 +57,8 @@ fi
 # Workspace toggles
 WORKSPACE_SCREENALYTICS="${WORKSPACE_SCREENALYTICS:-1}"
 WORKSPACE_SCREENALYTICS_SKIP_DOCKER="${WORKSPACE_SCREENALYTICS_SKIP_DOCKER:-1}"
+WORKSPACE_SCREENALYTICS_STREAMLIT_ENABLED="${WORKSPACE_SCREENALYTICS_STREAMLIT_ENABLED:-1}"
+WORKSPACE_SCREENALYTICS_WEB_ENABLED="${WORKSPACE_SCREENALYTICS_WEB_ENABLED:-1}"
 WORKSPACE_DEV_MODE="${WORKSPACE_DEV_MODE:-}"
 WORKSPACE_STRICT="${WORKSPACE_STRICT:-0}"
 WORKSPACE_FORCE_KILL_PORT_CONFLICTS="${WORKSPACE_FORCE_KILL_PORT_CONFLICTS:-0}"
@@ -149,9 +151,25 @@ workspace_screenalytics_mode_label() {
   echo "cloud-backed (no Docker)"
 }
 
+workspace_screenalytics_streamlit_enabled() {
+  [[ "$WORKSPACE_SCREENALYTICS" == "1" && "$WORKSPACE_SCREENALYTICS_STREAMLIT_ENABLED" == "1" ]]
+}
+
+workspace_screenalytics_web_enabled() {
+  [[ "$WORKSPACE_SCREENALYTICS" == "1" && "$WORKSPACE_SCREENALYTICS_WEB_ENABLED" == "1" ]]
+}
+
 if ! [[ "$WORKSPACE_BACKEND_AUTO_RESTART" =~ ^[01]$ ]]; then
   echo "[workspace] WARNING: invalid WORKSPACE_BACKEND_AUTO_RESTART='${WORKSPACE_BACKEND_AUTO_RESTART}', using 1." >&2
   WORKSPACE_BACKEND_AUTO_RESTART="1"
+fi
+if ! [[ "$WORKSPACE_SCREENALYTICS_STREAMLIT_ENABLED" =~ ^[01]$ ]]; then
+  echo "[workspace] WARNING: invalid WORKSPACE_SCREENALYTICS_STREAMLIT_ENABLED='${WORKSPACE_SCREENALYTICS_STREAMLIT_ENABLED}', using 1." >&2
+  WORKSPACE_SCREENALYTICS_STREAMLIT_ENABLED="1"
+fi
+if ! [[ "$WORKSPACE_SCREENALYTICS_WEB_ENABLED" =~ ^[01]$ ]]; then
+  echo "[workspace] WARNING: invalid WORKSPACE_SCREENALYTICS_WEB_ENABLED='${WORKSPACE_SCREENALYTICS_WEB_ENABLED}', using 1." >&2
+  WORKSPACE_SCREENALYTICS_WEB_ENABLED="1"
 fi
 if ! [[ "$WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS" =~ ^[1-9][0-9]*$ ]]; then
   echo "[workspace] WARNING: invalid WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS='${WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS}', using 5." >&2
@@ -622,7 +640,7 @@ if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
       WORKSPACE_SCREENALYTICS=0
     fi
 
-    if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
+    if workspace_screenalytics_streamlit_enabled; then
       rc=0
       ensure_port_free "$SCREENALYTICS_STREAMLIT_PORT" "screenalytics Streamlit" 0 || rc=$?
       if [[ "$rc" -ne 0 ]]; then
@@ -630,12 +648,12 @@ if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
           echo "[workspace] ERROR: screenalytics Streamlit port conflict in strict mode." >&2
           exit 1
         fi
-        echo "[workspace] WARNING: screenalytics Streamlit port not available; disabling screenalytics for this session." >&2
-        WORKSPACE_SCREENALYTICS=0
+        echo "[workspace] WARNING: screenalytics Streamlit port not available; disabling the Streamlit UI for this session." >&2
+        WORKSPACE_SCREENALYTICS_STREAMLIT_ENABLED=0
       fi
     fi
 
-    if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
+    if workspace_screenalytics_web_enabled; then
       rc=0
       ensure_port_free "$SCREENALYTICS_WEB_PORT" "screenalytics Web" 0 || rc=$?
       if [[ "$rc" -ne 0 ]]; then
@@ -643,8 +661,8 @@ if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
           echo "[workspace] ERROR: screenalytics Web port conflict in strict mode." >&2
           exit 1
         fi
-        echo "[workspace] WARNING: screenalytics Web port not available; disabling screenalytics for this session." >&2
-        WORKSPACE_SCREENALYTICS=0
+        echo "[workspace] WARNING: screenalytics Web port not available; disabling the Web UI for this session." >&2
+        WORKSPACE_SCREENALYTICS_WEB_ENABLED=0
       fi
     fi
   fi
@@ -928,9 +946,10 @@ start_trr_app() {
   local trr_app_fallback_command="pnpm -C TRR-APP/apps/web run dev:stable"
   if [[ "$WORKSPACE_TRR_APP_DEV_BUNDLER" == "webpack" ]]; then
     trr_app_dev_flag="--webpack"
+    echo "[workspace] TRR-APP dev bundler: webpack."
+  else
+    echo "[workspace] TRR-APP dev bundler: ${WORKSPACE_TRR_APP_DEV_BUNDLER}. If you hit Turbopack issues: ${trr_app_fallback_command}"
   fi
-
-  echo "[workspace] TRR-APP dev bundler: ${WORKSPACE_TRR_APP_DEV_BUNDLER}. If you hit Turbopack issues: ${trr_app_fallback_command}"
 
   # Keep TRR_APP attached to its parent shell process; with setsid wrappers,
   # Next.js can re-parent and make PID tracking flaky.
@@ -1096,6 +1115,8 @@ write_backend_watchdog_state
   echo "WORKSPACE_DEV_MODE=${WORKSPACE_DEV_MODE}"
   echo "WORKSPACE_SCREENALYTICS=${WORKSPACE_SCREENALYTICS}"
   echo "WORKSPACE_SCREENALYTICS_SKIP_DOCKER=${WORKSPACE_SCREENALYTICS_SKIP_DOCKER}"
+  echo "WORKSPACE_SCREENALYTICS_STREAMLIT_ENABLED=${WORKSPACE_SCREENALYTICS_STREAMLIT_ENABLED}"
+  echo "WORKSPACE_SCREENALYTICS_WEB_ENABLED=${WORKSPACE_SCREENALYTICS_WEB_ENABLED}"
   echo "WORKSPACE_STRICT=${WORKSPACE_STRICT}"
   echo "WORKSPACE_TRR_APP_DEV_BUNDLER=${WORKSPACE_TRR_APP_DEV_BUNDLER}"
   echo "WORKSPACE_OPEN_BROWSER=${WORKSPACE_OPEN_BROWSER}"
@@ -1172,6 +1193,8 @@ if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
     STREAMLIT_PORT=\"$SCREENALYTICS_STREAMLIT_PORT\" \
     WEB_PORT=\"$SCREENALYTICS_WEB_PORT\" \
     SCREENALYTICS_SKIP_DOCKER=\"$WORKSPACE_SCREENALYTICS_SKIP_DOCKER\" \
+    SCREENALYTICS_STREAMLIT_ENABLED=\"$WORKSPACE_SCREENALYTICS_STREAMLIT_ENABLED\" \
+    SCREENALYTICS_WEB_ENABLED=\"$WORKSPACE_SCREENALYTICS_WEB_ENABLED\" \
     DEV_AUTO_ALLOW_DB_ERROR=\"$SCREENALYTICS_DEV_AUTO_ALLOW_DB_ERROR\" \
     DEV_AUTO_OPEN_BROWSER=0 \
     DEV_AUTO_YES=1 \
@@ -1197,7 +1220,11 @@ fi
 echo "  TRR-Backend mode:      $([[ \"$TRR_BACKEND_RELOAD\" == \"1\" ]] && echo \"reload\" || echo \"non-reload\")"
 echo "  Job plane mode:        ${WORKSPACE_TRR_JOB_PLANE_MODE} (enforce_remote=${WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE}, executor=${WORKSPACE_TRR_REMOTE_EXECUTOR}, modal_enabled=${WORKSPACE_TRR_MODAL_ENABLED})"
 echo "  Workspace dev mode:    ${WORKSPACE_DEV_MODE}"
-echo "  TRR-APP dev bundler:   ${WORKSPACE_TRR_APP_DEV_BUNDLER} (fallback: pnpm -C TRR-APP/apps/web run dev:stable)"
+if [[ "$WORKSPACE_TRR_APP_DEV_BUNDLER" == "webpack" ]]; then
+  echo "  TRR-APP dev bundler:   webpack"
+else
+  echo "  TRR-APP dev bundler:   ${WORKSPACE_TRR_APP_DEV_BUNDLER} (fallback: pnpm -C TRR-APP/apps/web run dev:stable)"
+fi
 if [[ "$WORKSPACE_OPEN_BROWSER" == "1" ]]; then
   echo "  Browser sync:          enabled (mode=${WORKSPACE_BROWSER_TAB_SYNC_MODE})"
 else
@@ -1219,6 +1246,8 @@ if [[ "$WORKSPACE_TRR_REMOTE_WORKERS_ENABLED" == "1" ]]; then
   if [[ "$WORKSPACE_TRR_REMOTE_EXECUTOR" == "modal" && "$WORKSPACE_TRR_MODAL_ENABLED" == "1" ]]; then
     echo "  Remote execution:      Modal dispatch active (admin=${WORKSPACE_TRR_REMOTE_ADMIN_WORKERS}, reddit=${WORKSPACE_TRR_REMOTE_REDDIT_WORKERS}, google-news=${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS}; local claim loops skipped)"
     echo "  Modal social tuning:  $(workspace_modal_social_tuning_summary)"
+    echo "  Modal target:          ${WORKSPACE_TRR_MODAL_APP_NAME}.${WORKSPACE_TRR_MODAL_SOCIAL_JOB_FUNCTION}"
+    echo "  Modal readiness:       cd TRR-Backend && python3.11 scripts/modal/verify_modal_readiness.py --json"
   else
     echo "  Remote job workers:    enabled (admin=${WORKSPACE_TRR_REMOTE_ADMIN_WORKERS}, reddit=${WORKSPACE_TRR_REMOTE_REDDIT_WORKERS}, google-news=${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS}, social=${WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS}, poll=${WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS}s)"
   fi
@@ -1231,8 +1260,16 @@ if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
   if [[ "$SCREENALYTICS_API_URL" != "$SCREENALYTICS_LOCAL_API_URL" ]]; then
     echo "  screenalytics API local:  ${SCREENALYTICS_LOCAL_API_URL}"
   fi
-  echo "  screenalytics Streamlit: http://127.0.0.1:${SCREENALYTICS_STREAMLIT_PORT}"
-  echo "  screenalytics Web:     http://127.0.0.1:${SCREENALYTICS_WEB_PORT}"
+  if workspace_screenalytics_streamlit_enabled; then
+    echo "  screenalytics Streamlit: http://127.0.0.1:${SCREENALYTICS_STREAMLIT_PORT}"
+  else
+    echo "  screenalytics Streamlit: disabled"
+  fi
+  if workspace_screenalytics_web_enabled; then
+    echo "  screenalytics Web:     http://127.0.0.1:${SCREENALYTICS_WEB_PORT}"
+  else
+    echo "  screenalytics Web:     disabled"
+  fi
   if [[ "$WORKSPACE_SCREENALYTICS_SKIP_DOCKER" == "1" ]]; then
     echo "  screenalytics infra:   local Docker bypass enabled"
   else
@@ -1321,19 +1358,23 @@ if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
 
   # UI servers can take longer (model warmup, Next dev, etc). Don't fail the workspace if they're slow.
   SCREENALYTICS_STREAMLIT_OK=0
-  if wait_http_ok "screenalytics Streamlit" "http://127.0.0.1:${SCREENALYTICS_STREAMLIT_PORT}/" "$WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_STREAMLIT"; then
-    SCREENALYTICS_STREAMLIT_OK=1
-  else
-    echo "[workspace] WARNING: screenalytics Streamlit did not become reachable within ${WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_STREAMLIT}s (continuing)." >&2
-    tail -n 120 "$SCREENALYTICS_LOG" >&2 || true
+  if workspace_screenalytics_streamlit_enabled; then
+    if wait_http_ok "screenalytics Streamlit" "http://127.0.0.1:${SCREENALYTICS_STREAMLIT_PORT}/" "$WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_STREAMLIT"; then
+      SCREENALYTICS_STREAMLIT_OK=1
+    else
+      echo "[workspace] WARNING: screenalytics Streamlit did not become reachable within ${WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_STREAMLIT}s (continuing)." >&2
+      tail -n 120 "$SCREENALYTICS_LOG" >&2 || true
+    fi
   fi
 
   SCREENALYTICS_WEB_OK=0
-  if wait_http_ok "screenalytics Web" "http://127.0.0.1:${SCREENALYTICS_WEB_PORT}/" "$WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_WEB"; then
-    SCREENALYTICS_WEB_OK=1
-  else
-    echo "[workspace] WARNING: screenalytics Web did not become reachable within ${WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_WEB}s (continuing)." >&2
-    tail -n 120 "$SCREENALYTICS_LOG" >&2 || true
+  if workspace_screenalytics_web_enabled; then
+    if wait_http_ok "screenalytics Web" "http://127.0.0.1:${SCREENALYTICS_WEB_PORT}/" "$WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_WEB"; then
+      SCREENALYTICS_WEB_OK=1
+    else
+      echo "[workspace] WARNING: screenalytics Web did not become reachable within ${WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_WEB}s (continuing)." >&2
+      tail -n 120 "$SCREENALYTICS_LOG" >&2 || true
+    fi
   fi
 
 fi

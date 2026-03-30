@@ -105,19 +105,75 @@ servers = data.get("mcp_servers") or {}
 expected_wrapper = str(path.parent / "bin" / "codex-figma-console-mcp.sh")
 global_chrome_wrapper = str(path.parent / "bin" / "codex-chrome-devtools-mcp-global.sh")
 required_disabled_skill_names = {
-    "senior-architect",
-    "senior-devops",
-    "senior-fullstack",
-    "senior-backend",
-    "senior-frontend",
-    "senior-qa",
+    "api-gateway",
+    "aws-solution-architect",
+    "cloudwatch",
     "code-reviewer",
+    "context7-cli",
+    "ec2",
+    "eventbridge",
+    "figma-frontend-design-engineer",
+    "iam",
+    "lambda",
+    "secrets-manager",
+    "senior-architect",
+    "senior-backend",
+    "senior-devops",
+    "senior-frontend",
+    "senior-fullstack",
+    "senior-qa",
     "skillcreator",
     "social-ingestion-reliability",
-    "figma-frontend-design-engineer",
+    "sqs",
+    "step-functions",
 }
 required_disabled_skill_paths = {
     str(path.parent / "skills" / skill_name) for skill_name in required_disabled_skill_names
+}
+required_disabled_skill_paths.update(
+    {
+        str(pathlib.Path.home() / ".agents" / "skills" / "frontend-design" / "SKILL.md"),
+        str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "angular-architect" / "SKILL.md"),
+        str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "architecture-designer" / "SKILL.md"),
+        str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "atlassian-mcp" / "SKILL.md"),
+        str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "chromedevtools-expert" / "SKILL.md"),
+        str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "cloud-architect" / "SKILL.md"),
+        str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "cpp-pro" / "SKILL.md"),
+        str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "csharp-developer" / "SKILL.md"),
+        str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "devops-engineer" / "SKILL.md"),
+        str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "django-expert" / "SKILL.md"),
+        str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "dotnet-core-expert" / "SKILL.md"),
+        str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "embedded-systems" / "SKILL.md"),
+        str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "fastapi-expert" / "SKILL.md"),
+        str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "flutter-expert" / "SKILL.md"),
+        str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "fullstack-guardian" / "SKILL.md"),
+        str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "game-developer" / "SKILL.md"),
+        str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "java-architect" / "SKILL.md"),
+        str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "kotlin-specialist" / "SKILL.md"),
+        str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "kubernetes-specialist" / "SKILL.md"),
+        str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "laravel-specialist" / "SKILL.md"),
+        str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "monitoring-expert" / "SKILL.md"),
+        str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "nestjs-expert" / "SKILL.md"),
+        str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "nextjs-developer" / "SKILL.md"),
+        str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "rails-expert" / "SKILL.md"),
+        str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "rust-engineer" / "SKILL.md"),
+        str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "salesforce-developer" / "SKILL.md"),
+        str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "security-reviewer" / "SKILL.md"),
+        str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "secure-code-guardian" / "SKILL.md"),
+        str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "shopify-expert" / "SKILL.md"),
+        str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "spring-boot-engineer" / "SKILL.md"),
+        str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "swift-expert" / "SKILL.md"),
+        str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "terraform-engineer" / "SKILL.md"),
+        str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "test-master" / "SKILL.md"),
+        str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "wordpress-pro" / "SKILL.md"),
+    }
+)
+required_plugins = {
+    "github@openai-curated": True,
+    "gmail@openai-curated": False,
+    "google-drive@openai-curated": False,
+    "hugging-face@openai-curated": False,
+    "vercel@openai-curated": True,
 }
 required = {
     "chrome-devtools": {
@@ -149,6 +205,14 @@ for name, expectations in required.items():
 
 for name in servers:
     if name in {"supabase", "awsknowledge", "awsiac"} or name.startswith("awslabs-"):
+        raise SystemExit(1)
+
+plugins = data.get("plugins") or {}
+for plugin_name, enabled in required_plugins.items():
+    plugin = plugins.get(plugin_name)
+    if not isinstance(plugin, dict):
+        raise SystemExit(1)
+    if plugin.get("enabled") is not enabled:
         raise SystemExit(1)
 
 skills = data.get("skills") or {}
@@ -289,7 +353,34 @@ for name, required in required_servers.items():
         servers[name] = server
     server.update(required)
 
+required_plugins = {
+    "github@openai-curated": {"enabled": True},
+    "gmail@openai-curated": {"enabled": False},
+    "google-drive@openai-curated": {"enabled": False},
+    "hugging-face@openai-curated": {"enabled": False},
+    "vercel@openai-curated": {"enabled": True},
+}
+plugins = data.get("plugins")
+if not isinstance(plugins, dict):
+    plugins = {}
+data["plugins"] = plugins
+for plugin_name, settings in required_plugins.items():
+    plugin = plugins.get(plugin_name)
+    if not isinstance(plugin, dict):
+        plugin = {}
+        plugins[plugin_name] = plugin
+    plugin.update(settings)
+
 required_disabled_skill_names = [
+    "api-gateway",
+    "aws-solution-architect",
+    "cloudwatch",
+    "context7-cli",
+    "ec2",
+    "eventbridge",
+    "iam",
+    "lambda",
+    "secrets-manager",
     "senior-architect",
     "senior-devops",
     "senior-fullstack",
@@ -300,11 +391,51 @@ required_disabled_skill_names = [
     "skillcreator",
     "social-ingestion-reliability",
     "figma-frontend-design-engineer",
+    "sqs",
+    "step-functions",
 ]
 required_disabled_skill_paths = {
     str(pathlib.Path.home() / ".codex" / "skills" / skill_name): False
     for skill_name in required_disabled_skill_names
 }
+required_disabled_skill_paths.update(
+    {
+        str(pathlib.Path.home() / ".agents" / "skills" / "frontend-design" / "SKILL.md"): False,
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "angular-architect" / "SKILL.md"): False,
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "architecture-designer" / "SKILL.md"): False,
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "atlassian-mcp" / "SKILL.md"): False,
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "chromedevtools-expert" / "SKILL.md"): False,
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "cloud-architect" / "SKILL.md"): False,
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "cpp-pro" / "SKILL.md"): False,
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "csharp-developer" / "SKILL.md"): False,
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "devops-engineer" / "SKILL.md"): False,
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "django-expert" / "SKILL.md"): False,
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "dotnet-core-expert" / "SKILL.md"): False,
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "embedded-systems" / "SKILL.md"): False,
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "fastapi-expert" / "SKILL.md"): False,
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "flutter-expert" / "SKILL.md"): False,
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "fullstack-guardian" / "SKILL.md"): False,
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "game-developer" / "SKILL.md"): False,
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "java-architect" / "SKILL.md"): False,
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "kotlin-specialist" / "SKILL.md"): False,
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "kubernetes-specialist" / "SKILL.md"): False,
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "laravel-specialist" / "SKILL.md"): False,
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "monitoring-expert" / "SKILL.md"): False,
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "nestjs-expert" / "SKILL.md"): False,
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "nextjs-developer" / "SKILL.md"): False,
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "rails-expert" / "SKILL.md"): False,
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "rust-engineer" / "SKILL.md"): False,
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "salesforce-developer" / "SKILL.md"): False,
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "security-reviewer" / "SKILL.md"): False,
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "secure-code-guardian" / "SKILL.md"): False,
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "shopify-expert" / "SKILL.md"): False,
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "spring-boot-engineer" / "SKILL.md"): False,
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "swift-expert" / "SKILL.md"): False,
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "terraform-engineer" / "SKILL.md"): False,
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "test-master" / "SKILL.md"): False,
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "wordpress-pro" / "SKILL.md"): False,
+    }
+)
 skills = data.get("skills")
 if not isinstance(skills, dict):
     skills = {}
@@ -439,6 +570,13 @@ required_user_servers = {
     "github": {"url": "https://api.githubcopilot.com/mcp", "bearer_token_env_var": "GITHUB_PAT"},
     "context7": {"command": "npx", "args": ["-y", "@upstash/context7-mcp"], "enabled": True},
 }
+required_user_plugins = {
+    "github@openai-curated": {"enabled": True},
+    "gmail@openai-curated": {"enabled": False},
+    "google-drive@openai-curated": {"enabled": False},
+    "hugging-face@openai-curated": {"enabled": False},
+    "vercel@openai-curated": {"enabled": True},
+}
 required_top_level = {
     "model": "gpt-5.4",
     "model_reasoning_effort": "high",
@@ -460,6 +598,15 @@ required_agents = {
 required_disabled_skill_paths = {
     str(pathlib.Path.home() / ".codex" / "skills" / skill_name)
     for skill_name in (
+        "api-gateway",
+        "aws-solution-architect",
+        "cloudwatch",
+        "context7-cli",
+        "ec2",
+        "eventbridge",
+        "iam",
+        "lambda",
+        "secrets-manager",
         "senior-architect",
         "senior-devops",
         "senior-fullstack",
@@ -470,8 +617,48 @@ required_disabled_skill_paths = {
         "skillcreator",
         "social-ingestion-reliability",
         "figma-frontend-design-engineer",
+        "sqs",
+        "step-functions",
     )
 }
+required_disabled_skill_paths.update(
+    {
+        str(pathlib.Path.home() / ".agents" / "skills" / "frontend-design" / "SKILL.md"),
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "angular-architect" / "SKILL.md"),
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "architecture-designer" / "SKILL.md"),
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "atlassian-mcp" / "SKILL.md"),
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "chromedevtools-expert" / "SKILL.md"),
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "cloud-architect" / "SKILL.md"),
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "cpp-pro" / "SKILL.md"),
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "csharp-developer" / "SKILL.md"),
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "devops-engineer" / "SKILL.md"),
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "django-expert" / "SKILL.md"),
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "dotnet-core-expert" / "SKILL.md"),
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "embedded-systems" / "SKILL.md"),
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "fastapi-expert" / "SKILL.md"),
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "flutter-expert" / "SKILL.md"),
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "fullstack-guardian" / "SKILL.md"),
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "game-developer" / "SKILL.md"),
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "java-architect" / "SKILL.md"),
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "kotlin-specialist" / "SKILL.md"),
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "kubernetes-specialist" / "SKILL.md"),
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "laravel-specialist" / "SKILL.md"),
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "monitoring-expert" / "SKILL.md"),
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "nestjs-expert" / "SKILL.md"),
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "nextjs-developer" / "SKILL.md"),
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "rails-expert" / "SKILL.md"),
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "rust-engineer" / "SKILL.md"),
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "salesforce-developer" / "SKILL.md"),
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "security-reviewer" / "SKILL.md"),
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "secure-code-guardian" / "SKILL.md"),
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "shopify-expert" / "SKILL.md"),
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "spring-boot-engineer" / "SKILL.md"),
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "swift-expert" / "SKILL.md"),
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "terraform-engineer" / "SKILL.md"),
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "test-master" / "SKILL.md"),
+        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "wordpress-pro" / "SKILL.md"),
+    }
+)
 
 errors = []
 servers = data.get("mcp_servers") or {}
@@ -537,6 +724,17 @@ else:
             actual = server.get(key)
             if actual != value:
                 errors.append(f"user [mcp_servers.{name}] expected {key}={value!r}, found {actual!r}")
+
+    user_plugins = user_data.get("plugins") or {}
+    for name, expectations in required_user_plugins.items():
+        plugin = user_plugins.get(name)
+        if not isinstance(plugin, dict):
+            errors.append(f"user config missing [plugins.{name}]")
+            continue
+        for key, value in expectations.items():
+            actual = plugin.get(key)
+            if actual != value:
+                errors.append(f"user [plugins.{name}] expected {key}={value!r}, found {actual!r}")
 
     user_config_text = user_config_path.read_text(encoding="utf-8")
     if expected_wrapper in user_config_text or "vwxfvzutyufrkhfgoeaa" in user_config_text:

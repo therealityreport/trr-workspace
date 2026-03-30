@@ -1,15 +1,15 @@
 # Instagram Admin Social Profile Timeout Fix
 
-Date: 2026-03-22
+Last updated: 2026-03-30
 
 ## Handoff Snapshot
 ```yaml
 handoff:
-  include: true
-  state: recent
-  last_updated: 2026-03-22
-  current_phase: "complete"
-  next_action: "Restart make dev so the local app picks up TRR_API_URL=http://127.0.0.1:8000 and verify the Instagram admin profile page no longer shows timeout banners."
+  include: false
+  state: archived
+  last_updated: 2026-03-30
+  current_phase: "archived continuity note"
+  next_action: "Refer to newer status notes if follow-up work resumes on this thread."
   detail: self
 ```
 

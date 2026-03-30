@@ -1,15 +1,15 @@
 # Reddit Admin sync_full mode contract fix
 
-Date: 2026-03-22
+Last updated: 2026-03-30
 
 ## Handoff Snapshot
 ```yaml
 handoff:
-  include: true
-  state: recent
-  last_updated: 2026-03-22
-  current_phase: "complete"
-  next_action: "Reload or restart TRR-Backend if needed, then re-run Sync Posts from the Reddit admin season page and confirm the per-window refresh runs start instead of failing immediately."
+  include: false
+  state: archived
+  last_updated: 2026-03-30
+  current_phase: "archived continuity note"
+  next_action: "Refer to newer status notes if follow-up work resumes on this thread."
   detail: self
 ```
 

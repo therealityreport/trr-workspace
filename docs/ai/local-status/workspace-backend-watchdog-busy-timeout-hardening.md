@@ -1,15 +1,15 @@
 # Workspace Backend Watchdog Busy-Timeout Hardening
 
-Date: 2026-03-22
+Last updated: 2026-03-30
 
 ## Handoff Snapshot
 ```yaml
 handoff:
-  include: true
-  state: recent
-  last_updated: 2026-03-22
-  current_phase: "complete"
-  next_action: "Use make dev normally; the backend watchdog now suppresses busy-timeout restarts under active local traffic, so the Reddit admin communities page should bootstrap without backend recycle loops."
+  include: false
+  state: archived
+  last_updated: 2026-03-30
+  current_phase: "archived continuity note"
+  next_action: "Refer to newer status notes if follow-up work resumes on this thread."
   detail: self
 ```
 

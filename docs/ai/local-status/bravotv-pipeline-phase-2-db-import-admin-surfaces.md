@@ -1,15 +1,15 @@
 # BRAVOTV Pipeline Phase 2: DB Import and Admin Surfaces
 
-Last updated: 2026-03-20
+Last updated: 2026-03-30
 
 ## Handoff Snapshot
 ```yaml
 handoff:
-  include: true
-  state: recent
-  last_updated: 2026-03-20
-  current_phase: "Phase 2 shipped across backend and app, then the person-source contract was expanded so BRAVOTV Run All now includes Fandom gallery cards alongside Getty, IMDb, and TMDb with richer supplemental import metadata"
-  next_action: "Run managed Chrome validation on the person admin page to confirm the Fandom-aware BRAVOTV source selector reads clearly, then decide whether to remove the lower legacy Get Images source buttons or keep them as separate maintenance tooling"
+  include: false
+  state: archived
+  last_updated: 2026-03-30
+  current_phase: "archived continuity note"
+  next_action: "Refer to newer status notes if follow-up work resumes on this thread."
   detail: self
 ```
 

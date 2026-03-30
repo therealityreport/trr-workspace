@@ -1,15 +1,15 @@
 # BRAVOTV Get Images Pipeline CLI Foundation
 
-Last updated: 2026-03-20
+Last updated: 2026-03-30
 
 ## Handoff Snapshot
 ```yaml
 handoff:
-  include: true
-  state: recent
-  last_updated: 2026-03-20
-  current_phase: "CLI/runtime foundation shipped in tracked backend code, with show-mode smoke validation passing and person/show source-family orchestration now in place"
-  next_action: "Decide whether to add a DB import path for merged artifacts next or wire the existing person-gallery/admin surfaces to consume the new standalone pipeline outputs"
+  include: false
+  state: archived
+  last_updated: 2026-03-30
+  current_phase: "archived continuity note"
+  next_action: "Refer to newer status notes if follow-up work resumes on this thread."
   detail: self
 ```
 
