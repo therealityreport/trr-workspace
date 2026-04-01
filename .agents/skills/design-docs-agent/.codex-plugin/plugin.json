@@ -1,0 +1,24 @@
+{
+  "name": "design-docs-agent",
+  "version": "1.0.0",
+  "description": "Generate or update TRR design-docs pages from saved source bundles, HTML captures, and source inventories.",
+  "skills": "./",
+  "author": {
+    "name": "The Reality Report",
+    "email": "dev@therealityreport.com"
+  },
+  "interface": {
+    "displayName": "Design Docs Agent",
+    "shortDescription": "Generate or update TRR design-docs pages from saved source bundles, HTML captures, and source inventories.",
+    "longDescription": "Shared Design Docs package for Claude Code and Codex. Roster, status, and ordering are defined in agents/openai.yaml. Workflow behavior is defined in package SKILL.md, including saved-bundle inputs, component-inventory provenance, hosted-media rules, and interactive coverage.",
+    "developerName": "The Reality Report",
+    "category": "Productivity",
+    "capabilities": ["Read", "Write"],
+    "defaultPrompt": [
+      "Use design docs to ingest an article plus a saved source bundle.",
+      "List the shared Design Docs skill roster.",
+      "Verify shared package skill parity."
+    ],
+    "brandColor": "#1B365D"
+  }
+}

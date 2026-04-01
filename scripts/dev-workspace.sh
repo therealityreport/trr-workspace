@@ -4,6 +4,8 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
+source "$ROOT/scripts/lib/runtime-db-env.sh"
+
 # Optional profile defaults.
 # Usage: PROFILE=default make dev
 PROFILE="${PROFILE:-}"
@@ -43,6 +45,12 @@ if [[ -n "$PROFILE" ]]; then
       ;;
   esac
 fi
+
+if ! WORKSPACE_TRR_DB_URL="$(trr_runtime_db_resolve_local_app_url "$ROOT")"; then
+  trr_runtime_db_require_local_app_url "$ROOT"
+  exit 1
+fi
+export TRR_DB_URL="$WORKSPACE_TRR_DB_URL"
 
 LOG_DIR="${ROOT}/.logs/workspace"
 PIDFILE="${LOG_DIR}/pids.env"
@@ -138,6 +146,24 @@ if [[ "$WORKSPACE_DEV_MODE" == "cloud" ]]; then
 elif [[ "$WORKSPACE_DEV_MODE" == "local_docker" ]]; then
   WORKSPACE_SCREENALYTICS_SKIP_DOCKER="0"
 fi
+
+workspace_local_auth_secret() {
+  local label="$1"
+  local seed
+
+  if command -v shasum >/dev/null 2>&1; then
+    seed="$(printf '%s' "${ROOT}:${USER}:${label}" | shasum -a 256 | awk '{print $1}')"
+  elif command -v sha256sum >/dev/null 2>&1; then
+    seed="$(printf '%s' "${ROOT}:${USER}:${label}" | sha256sum | awk '{print $1}')"
+  else
+    seed="$(printf '%s' "${ROOT}:${USER}:${label}" | openssl dgst -sha256 -binary | xxd -p -c 256)"
+  fi
+
+  printf 'trr-local-dev-%s-%s' "$label" "$seed"
+}
+
+WORKSPACE_TRR_INTERNAL_ADMIN_SHARED_SECRET="${TRR_INTERNAL_ADMIN_SHARED_SECRET:-$(workspace_local_auth_secret internal-admin)}"
+WORKSPACE_SCREENALYTICS_SERVICE_TOKEN="${SCREENALYTICS_SERVICE_TOKEN:-$(workspace_local_auth_secret screenalytics-service)}"
 
 workspace_screenalytics_mode_label() {
   if [[ "$WORKSPACE_SCREENALYTICS" != "1" ]]; then
@@ -359,11 +385,24 @@ SCREENALYTICS_API_PORT="${SCREENALYTICS_API_PORT:-8001}"
 SCREENALYTICS_STREAMLIT_PORT="${SCREENALYTICS_STREAMLIT_PORT:-8501}"
 SCREENALYTICS_WEB_PORT="${SCREENALYTICS_WEB_PORT:-8080}"
 
-TRR_API_URL="${TRR_API_URL:-http://127.0.0.1:${TRR_BACKEND_PORT}}"
-BACKEND_HEALTH_URL="${BACKEND_HEALTH_URL:-${TRR_API_URL}/health}"
+# Managed local workspace runs always use loopback service URLs derived from
+# the launcher ports. Inherited shell values must not hijack local routing.
+TRR_API_URL="http://127.0.0.1:${TRR_BACKEND_PORT}"
+BACKEND_HEALTH_URL="${TRR_API_URL}/health"
 SCREENALYTICS_LOCAL_API_URL="http://127.0.0.1:${SCREENALYTICS_API_PORT}"
-SCREENALYTICS_API_URL="${SCREENALYTICS_API_URL:-$SCREENALYTICS_LOCAL_API_URL}"
+SCREENALYTICS_API_URL="${SCREENALYTICS_LOCAL_API_URL}"
 SCREENALYTICS_LOCAL_HEALTH_URL="${SCREENALYTICS_LOCAL_API_URL}/healthz"
+TRR_APP_LOCAL_ENV_FILE="$ROOT/TRR-APP/apps/web/.env.local"
+TRR_BACKEND_LOCAL_ENV_FILE="$ROOT/TRR-Backend/.env"
+
+trr_export_runtime_db_env_from_file "$TRR_APP_LOCAL_ENV_FILE"
+trr_export_runtime_db_env_from_file "$TRR_BACKEND_LOCAL_ENV_FILE"
+
+if ! trr_runtime_db_env_present "$TRR_APP_LOCAL_ENV_FILE"; then
+  echo "[workspace] ERROR: TRR-APP is missing runtime DB config." >&2
+  echo "[workspace] Add TRR_DB_URL to ${TRR_APP_LOCAL_ENV_FILE} (or export TRR_DB_URL) before running make dev." >&2
+  exit 1
+fi
 
 TRR_BACKEND_LOG="${LOG_DIR}/trr-backend.log"
 TRR_APP_LOG="${LOG_DIR}/trr-app.log"
@@ -860,6 +899,11 @@ start_trr_backend() {
 
   start_bg "TRR_BACKEND" "$TRR_BACKEND_LOG" "$BASH_BIN" -lc "cd \"$ROOT/TRR-Backend\" && \
     PYTHONUNBUFFERED=1 \
+    TRR_LOCAL_DEV=1 \
+    TRR_DB_URL=\"$TRR_DB_URL\" \
+    TRR_DB_FALLBACK_URL=\"${TRR_DB_FALLBACK_URL:-}\" \
+    TRR_INTERNAL_ADMIN_SHARED_SECRET=\"$WORKSPACE_TRR_INTERNAL_ADMIN_SHARED_SECRET\" \
+    SCREENALYTICS_SERVICE_TOKEN=\"$WORKSPACE_SCREENALYTICS_SERVICE_TOKEN\" \
     TRR_BACKEND_PORT=\"$TRR_BACKEND_PORT\" \
     TRR_BACKEND_RELOAD=\"$TRR_BACKEND_RELOAD\" \
     TRR_BACKEND_WORKERS=\"$TRR_BACKEND_WORKERS\" \
@@ -959,8 +1003,12 @@ start_trr_app() {
       nvm use --silent >/dev/null 2>&1 || echo \"[workspace] WARNING: nvm use failed; continuing with current node.\" >&2; \
     fi && \
     cd \"$TRR_APP_DIR\" && \
+    TRR_LOCAL_DEV=1 \
+    TRR_DB_URL=\"$TRR_DB_URL\" \
+    TRR_DB_FALLBACK_URL=\"${TRR_DB_FALLBACK_URL:-}\" \
     TRR_API_URL=\"$TRR_API_URL\" \
     SCREENALYTICS_API_URL=\"$SCREENALYTICS_API_URL\" \
+    TRR_INTERNAL_ADMIN_SHARED_SECRET=\"$WORKSPACE_TRR_INTERNAL_ADMIN_SHARED_SECRET\" \
     TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS=\"$TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS\" \
     TRR_SOCIAL_PROXY_DEFAULT_TIMEOUT_MS=\"$TRR_SOCIAL_PROXY_DEFAULT_TIMEOUT_MS\" \
     TRR_REDDIT_CACHE_LOOKUP_TIMEOUT_MS=\"$TRR_REDDIT_CACHE_LOOKUP_TIMEOUT_MS\" \
@@ -1185,8 +1233,10 @@ echo "[workspace] Starting services..."
 if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
   start_bg "SCREENALYTICS" "$SCREENALYTICS_LOG" "$BASH_BIN" -lc "cd \"$ROOT/screenalytics\" && \
     PYTHONUNBUFFERED=1 \
+    TRR_LOCAL_DEV=1 \
     SCREENALYTICS_ENV=dev \
     TRR_API_URL=\"$TRR_API_URL\" \
+    SCREENALYTICS_SERVICE_TOKEN=\"$WORKSPACE_SCREENALYTICS_SERVICE_TOKEN\" \
     SCREENALYTICS_API_URL=\"$SCREENALYTICS_LOCAL_API_URL\" \
     API_BASE_URL=\"$SCREENALYTICS_LOCAL_API_URL\" \
     API_PORT=\"$SCREENALYTICS_API_PORT\" \

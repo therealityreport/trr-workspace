@@ -179,8 +179,9 @@ required = {
     "chrome-devtools": {
         "command": global_chrome_wrapper,
         "env": {
-            "CODEX_CHROME_MODE": "isolated",
+            "CODEX_CHROME_MODE": "shared",
             "CODEX_CHROME_HEADLESS": "1",
+            "CODEX_CHROME_AUTO_LAUNCH": "1",
             "CODEX_CHROME_SEED_PROFILE_DIR": str(pathlib.Path.home() / ".chrome-profiles" / "codex-agent"),
         },
         "enabled": True,
@@ -328,8 +329,9 @@ required_servers = {
     "chrome-devtools": {
         "command": f"{pathlib.Path.home()}/.codex/bin/codex-chrome-devtools-mcp-global.sh",
         "env": {
-            "CODEX_CHROME_MODE": "isolated",
+            "CODEX_CHROME_MODE": "shared",
             "CODEX_CHROME_HEADLESS": "1",
+            "CODEX_CHROME_AUTO_LAUNCH": "1",
             "CODEX_CHROME_SEED_PROFILE_DIR": str(pathlib.Path.home() / ".chrome-profiles" / "codex-agent"),
         },
         "enabled": True,
@@ -558,8 +560,9 @@ required_user_servers = {
     "chrome-devtools": {
         "command": expected_global_wrapper,
         "env": {
-            "CODEX_CHROME_MODE": "isolated",
+            "CODEX_CHROME_MODE": "shared",
             "CODEX_CHROME_HEADLESS": "1",
+            "CODEX_CHROME_AUTO_LAUNCH": "1",
             "CODEX_CHROME_SEED_PROFILE_DIR": str(pathlib.Path.home() / ".chrome-profiles" / "codex-agent"),
         },
         "enabled": True,

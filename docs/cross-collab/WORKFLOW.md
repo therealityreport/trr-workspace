@@ -169,6 +169,9 @@ Purpose: active-work index for multi-turn AI agent sessions in this scope. Keep 
 ## Recent Completions
 - `{task/reference}` | last updated `{timestamp}` | current phase `{phase}` | next action `{next action}` | details `{canonical link}`
 
+## Older Plans
+- `{task/reference}` | last updated `{timestamp}` | current phase `{phase}` | next action `{next action}` | details `{canonical link}`
+
 ## Archives / Canonical Links
 - History archive: `{archive link}`
 - Active task detail: `{STATUS.md or equivalent link}`
@@ -177,6 +180,7 @@ Purpose: active-work index for multi-turn AI agent sessions in this scope. Keep 
 Rules:
 - Keep `HANDOFF.md` as generated output, not an append-only changelog.
 - Cap `Recent Completions` to a short recent window.
+- Move stale entries into generated `Older Plans` instead of failing handoff sync. Freshness windows are `active` 3 days, `blocked` 14 days, and `recent` 7 days.
 - For work without a `TASK*` folder, create `docs/ai/local-status/*.md` and let the generator link to that canonical doc.
 
 ### 3e. PR Description Template
@@ -205,6 +209,8 @@ Rules:
 **View bridge**: When dropping a table that has consumers in other repos, create a replacement view first (`CREATE VIEW ... AS SELECT ... FROM new_tables`). Deploy the view, switch all consumers, then drop the original table.
 
 **Independent phases**: When a task has multiple phases with no data dependencies between them, implement them in parallel across repos. Document which phases are independent in PLAN.md.
+
+**Vercel env review gate**: Before any survey or app cutover that depends on Vercel runtime env contracts, compare `vercel env ls` and `vercel env pull` for the active project. Any pull-only or otherwise unexplained env must be classified as `canonical`, `deprecated-removable`, `integration-managed-retained`, or `unknown-blocking`. Cutover is blocked while any `unknown-blocking` entry remains. Reviewed retained vars should be recorded in `docs/workspace/vercel-env-review.md`.
 
 ## Section 5 — Production Deploy Runbook (Current Release)
 
