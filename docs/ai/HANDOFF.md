@@ -11,11 +11,14 @@ Purpose: active-work index for multi-turn AI agent sessions affecting workspace-
 - None.
 
 ## Recent Completions
+- `Supabase read-path stabilization and Flashback RPCs` | last updated `2026-03-30` | current phase `complete` | next action `If the separate social-ingest contract mismatch needs attention, handle it as its own slice; do not fold it back into this Supabase performance work.` | details `local-status/supabase-read-path-stabilization-and-flashback-rpcs.md`
+- `Supabase connection and env standardization` | last updated `2026-03-30` | current phase `complete` | next action `Resume downstream survey compatibility work against the standardized env contract; keep intentional compatibility-only fallbacks and reviewed integration-managed retained envs as documented exceptions.` | details `local-status/supabase-connection-and-env-standardization-2026-03-30.md`
+- `Instagram remote backfill readiness` | last updated `2026-03-30` | current phase `complete` | next action `Use Sync Recent as the first operator canary, then run Resume Tail if a resumable frontier exists, then launch full-history Backfill Posts with Modal worker-health monitoring.` | details `local-status/instagram-remote-backfill-readiness-2026-03-30.md`
+- `Env contract migration and local startup recovery` | last updated `2026-03-30` | current phase `complete` | next action `Use docs/workspace/vercel-env-review.md as the reviewed live-env source of truth; survey cutover may resume from the Vercel env-governance standpoint because no unknown-blocking entries remain.` | details `local-status/env-contract-migration-and-local-startup-recovery-2026-03-30.md`
 - `Social runtime warning and closeout cleanup` | last updated `2026-03-27` | current phase `complete` | next action `If runtime warnings reappear, start from the social account and auth-bypass test mocks before changing app code.` | details `local-status/social-runtime-warning-and-closeout-cleanup-2026-03-27.md`
-- `Social reliability regression sweep` | last updated `2026-03-27` | current phase `complete` | next action `Continue from broader social backend/app validation if new queue, mirror, or proxy regressions appear.` | details `local-status/social-reliability-regression-sweep-2026-03-27.md`
-- `Workspace screenalytics API-only default and DB pool return hardening` | last updated `2026-03-26` | current phase `complete` | next action `Use make dev normally; default startup now keeps only the screenalytics API on, and admin people photo reads no longer fail behind recycled closed DB connections.` | details `local-status/workspace-screenalytics-api-only-and-db-pool-return-hardening.md`
-- `Supavisor session mode and egress reduction rollout` | last updated `2026-03-26` | current phase `batches through 2.4 are completed, with Batch 2.4 closed as a summary-only lane; Phase 2 should not be described as fully complete end-to-end because later mixed-ownership families remain in later lanes` | next action `keep later mixed-ownership route families tracked as later lanes, not as retroactive failures of the completed batches through 2.4` | details `local-status/supavisor-session-mode-and-egress-reduction-rollout.md`
-- `Social queue health generalization` | last updated `2026-03-26` | current phase `complete` | next action `If any social admin page still shows blocked or likely stuck work, verify the dispatcher runtime with TRR-Backend/scripts/modal/verify_modal_readiness.py and inspect the queue health modal for Dispatch Blocked vs Likely Stuck separation.` | details `local-status/social-queue-health-generalization.md`
+
+## Older Plans
+- None.
 
 ## Archives / Canonical Links
 - History archive: `archive/HANDOFF-legacy-2026-03-16.md`

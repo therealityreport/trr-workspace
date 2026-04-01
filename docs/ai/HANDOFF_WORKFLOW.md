@@ -7,6 +7,11 @@
 - Cross-repo task continuity: `docs/cross-collab/TASK*/STATUS.md`
 
 Use those files for the real state. Generated `HANDOFF.md` files are short indexes only.
+Generated handoffs render four sections: `Current Active Work`, `Blocked / Waiting`, `Recent Completions`, and `Older Plans`.
+When a source snapshot ages past its freshness window, the generator keeps the source file unchanged and moves the entry into generated `Older Plans` instead of failing sync:
+- `active` older than 3 days
+- `blocked` older than 14 days
+- `recent` older than 7 days
 
 ## Lifecycle Commands
 - `scripts/handoff-lifecycle.sh pre-plan` before any formal `<proposed_plan>` or documented multi-phase implementation plan

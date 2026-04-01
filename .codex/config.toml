@@ -11,7 +11,7 @@ project_doc_max_bytes = 65536
 project_doc_fallback_filenames = []
 
 # Chrome DevTools is inherited from ~/.codex/config.toml so TRR uses the
-# isolated headless global default unless a session explicitly overrides it.
+# shared headless global default unless a session explicitly overrides it.
 
 [agents]
 max_threads = 6

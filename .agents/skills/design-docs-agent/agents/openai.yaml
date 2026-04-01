@@ -1,0 +1,124 @@
+# Canonical roster, status, and ordering source for the shared Design Docs package.
+interface:
+  display_name: "Design Docs Agent (TRR)"
+  short_description: "Generate or update TRR design-docs pages from saved source bundles, HTML captures, and source inventories."
+  default_prompt: "Use $design-docs-agent to ingest an articleUrl plus saved source bundle inputs, extract structure, media, and source-component inventories, and generate or update the matching TRR design-docs pages."
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "chrome-devtools"
+      description: "Optional browser extraction for embeds, CSS discovery, and computed-style verification"
+
+skillset:
+  version: 2
+  supporting:
+    - skill: senior-frontend
+      source: "/Users/thomashulihan/Projects/TRR/TRR-APP/.agents/skills/senior-frontend"
+      role: "App Router, server/client boundaries, rendering conventions"
+      phases: [extraction, generation]
+      wave: 1
+      status: active
+    - skill: senior-qa
+      source: "/Users/thomashulihan/Projects/TRR/.agents/skills/senior-qa"
+      role: "Risk-ranked validation, verification report structure"
+      phases: [verification]
+      wave: 1
+      status: active
+    - skill: code-reviewer
+      source: "/Users/thomashulihan/Projects/TRR/.agents/skills/code-reviewer"
+      role: "Pre-closeout correctness gate for generated TypeScript"
+      phases: [closeout]
+      wave: 1
+      status: active
+    - skill: font-sync
+      source: "/Users/thomashulihan/Projects/TRR/.agents/skills/font-sync"
+      role: "Font specimen generation, R2 upload, font-family validation"
+      phases: [post-generation]
+      wave: 1
+      status: active
+  owned:
+    - skill: extract-page-structure
+      action: upgrade
+      phases: [extraction]
+      wave: 1
+      status: active
+    - skill: extract-css-tokens
+      action: upgrade
+      phases: [extraction]
+      wave: 1
+      status: active
+    - skill: extract-icons-and-media
+      action: upgrade
+      phases: [extraction]
+      wave: 1
+      status: active
+    - skill: extract-navigation
+      action: create
+      phases: [extraction]
+      wave: 1
+      status: active
+    - skill: extract-source-component-inventory
+      action: create
+      phases: [extraction]
+      wave: 1
+      status: active
+    - skill: classify-publisher-patterns
+      action: create
+      phases: [pre-extraction]
+      wave: 1
+      status: active
+    - skill: audit-generated-config-integrity
+      action: create
+      phases: [verification]
+      wave: 1
+      status: active
+    - skill: extract-datawrapper-charts
+      action: upgrade
+      phases: [extraction]
+      wave: 2
+      status: active
+    - skill: extract-birdkit-tables
+      action: upgrade
+      phases: [extraction]
+      wave: 2
+      status: active
+    - skill: generate-article-page
+      action: upgrade
+      phases: [generation]
+      wave: 2
+      status: active
+    - skill: sync-brand-page
+      action: upgrade
+      phases: [post-generation]
+      wave: 2
+      status: active
+    - skill: extract-ai2html-artboards
+      action: retain
+      phases: [extraction]
+      wave: 2
+      status: active
+    - skill: extract-quote-components
+      action: retain
+      phases: [extraction]
+      wave: 2
+      status: active
+    - skill: wire-config-and-routing
+      action: retain
+      phases: [wiring]
+      wave: 2
+      status: active
+    - skill: generate-brand-section
+      action: retain
+      phases: [generation]
+      wave: 2
+      status: active
+    - skill: audit-responsive-accessibility
+      action: create
+      phases: [verification]
+      wave: 2
+      status: active
+    - skill: integration-test-runner
+      action: create
+      phases: [verification]
+      wave: 2
+      status: active

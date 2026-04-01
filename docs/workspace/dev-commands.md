@@ -26,4 +26,6 @@ Use these commands from `/Users/thomashulihan/Projects/TRR`.
 
 The default `make dev` profile keeps the screenalytics API on but leaves the Streamlit and Web UIs disabled. Re-enable them with `WORKSPACE_SCREENALYTICS_STREAMLIT_ENABLED=1` and/or `WORKSPACE_SCREENALYTICS_WEB_ENABLED=1`.
 
+The same default profile now runs TRR long jobs on the remote Modal executor by default. Shared-account Instagram `Sync Recent`, `Resume Tail`, and `Backfill Posts` should use Modal-owned dispatch unless you explicitly override the workspace profile for rollback/debug.
+
 For startup tuning and env overrides, see `/Users/thomashulihan/Projects/TRR/docs/workspace/env-contract.md`.

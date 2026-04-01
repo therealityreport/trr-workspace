@@ -33,6 +33,13 @@ class SyncHandoffsTests(unittest.TestCase):
         path.write_text(textwrap.dedent(content).strip() + "\n", encoding="utf-8")
         return path
 
+    def extract_section(self, rendered: str, heading: str, next_heading: str | None = None) -> str:
+        marker = f"## {heading}\n"
+        section = rendered.split(marker, 1)[1]
+        if next_heading is not None:
+            section = section.split(f"\n## {next_heading}\n", 1)[0]
+        return section
+
     def test_parse_valid_snapshot(self) -> None:
         source = self.write_file(
             "TRR-Backend/docs/cross-collab/TASK12/STATUS.md",
@@ -131,27 +138,176 @@ class SyncHandoffsTests(unittest.TestCase):
         finally:
             MODULE.ROOT = original_root
 
-    def test_freshness_failure_raises(self) -> None:
-        source = self.write_file(
-            "screenalytics/docs/cross-collab/TASK8/STATUS.md",
-            """
-            # Status — Task 8 (Cast Screen-Time Analytics)
+    def test_fresh_items_stay_in_primary_sections(self) -> None:
+        original_root = MODULE.ROOT
+        MODULE.ROOT = self.root
+        try:
+            self.write_file(
+                "screenalytics/docs/ai/local-status/fresh-active.md",
+                """
+                # Fresh Active
 
-            ## Handoff Snapshot
-            ```yaml
-            handoff:
-              include: true
-              state: blocked
-              last_updated: 2026-02-01
-              current_phase: "waiting"
-              next_action: "refresh"
-              detail: self
-            ```
-            """,
-        )
+                ## Handoff Snapshot
+                ```yaml
+                handoff:
+                  include: true
+                  state: active
+                  last_updated: 2026-03-18
+                  current_phase: "in progress"
+                  next_action: "continue"
+                  detail: self
+                ```
+                """,
+            )
+            self.write_file(
+                "screenalytics/docs/ai/local-status/fresh-blocked.md",
+                """
+                # Fresh Blocked
 
-        with self.assertRaises(MODULE.FreshnessError):
-            MODULE.parse_source_file(source, MODULE.dt.date(2026, 3, 16))
+                ## Handoff Snapshot
+                ```yaml
+                handoff:
+                  include: true
+                  state: blocked
+                  last_updated: 2026-03-10
+                  current_phase: "waiting"
+                  next_action: "resume"
+                  detail: self
+                ```
+                """,
+            )
+            self.write_file(
+                "screenalytics/docs/ai/local-status/fresh-recent.md",
+                """
+                # Fresh Recent
+
+                ## Handoff Snapshot
+                ```yaml
+                handoff:
+                  include: true
+                  state: recent
+                  last_updated: 2026-03-15
+                  current_phase: "complete"
+                  next_action: "monitor"
+                  detail: self
+                ```
+                """,
+            )
+
+            scope = MODULE.build_scopes(self.root)["screenalytics"]
+            rendered = MODULE.render_scope(scope, MODULE.dt.date(2026, 3, 20))
+            self.assertIn("Fresh Active", self.extract_section(rendered, "Current Active Work", "Blocked / Waiting"))
+            self.assertIn("Fresh Blocked", self.extract_section(rendered, "Blocked / Waiting", "Recent Completions"))
+            self.assertIn("Fresh Recent", self.extract_section(rendered, "Recent Completions", "Older Plans"))
+            self.assertNotIn("Fresh Active", self.extract_section(rendered, "Older Plans", "Archives / Canonical Links"))
+            self.assertNotIn("Fresh Blocked", self.extract_section(rendered, "Older Plans", "Archives / Canonical Links"))
+            self.assertNotIn("Fresh Recent", self.extract_section(rendered, "Older Plans", "Archives / Canonical Links"))
+        finally:
+            MODULE.ROOT = original_root
+
+    def test_stale_items_render_in_older_plans(self) -> None:
+        original_root = MODULE.ROOT
+        MODULE.ROOT = self.root
+        try:
+            self.write_file(
+                "screenalytics/docs/ai/local-status/stale-active.md",
+                """
+                # Stale Active
+
+                ## Handoff Snapshot
+                ```yaml
+                handoff:
+                  include: true
+                  state: active
+                  last_updated: 2026-03-16
+                  current_phase: "in progress"
+                  next_action: "refresh"
+                  detail: self
+                ```
+                """,
+            )
+            self.write_file(
+                "screenalytics/docs/ai/local-status/stale-blocked.md",
+                """
+                # Stale Blocked
+
+                ## Handoff Snapshot
+                ```yaml
+                handoff:
+                  include: true
+                  state: blocked
+                  last_updated: 2026-03-01
+                  current_phase: "waiting"
+                  next_action: "refresh"
+                  detail: self
+                ```
+                """,
+            )
+            self.write_file(
+                "screenalytics/docs/ai/local-status/stale-recent.md",
+                """
+                # Stale Recent
+
+                ## Handoff Snapshot
+                ```yaml
+                handoff:
+                  include: true
+                  state: recent
+                  last_updated: 2026-03-10
+                  current_phase: "complete"
+                  next_action: "archive later"
+                  detail: self
+                ```
+                """,
+            )
+
+            scope = MODULE.build_scopes(self.root)["screenalytics"]
+            rendered = MODULE.render_scope(scope, MODULE.dt.date(2026, 3, 20))
+            older_plans = self.extract_section(rendered, "Older Plans", "Archives / Canonical Links")
+
+            self.assertIn("Stale Active", older_plans)
+            self.assertIn("Stale Blocked", older_plans)
+            self.assertIn("Stale Recent", older_plans)
+            self.assertNotIn("Stale Active", self.extract_section(rendered, "Current Active Work", "Blocked / Waiting"))
+            self.assertNotIn("Stale Blocked", self.extract_section(rendered, "Blocked / Waiting", "Recent Completions"))
+            self.assertNotIn("Stale Recent", self.extract_section(rendered, "Recent Completions", "Older Plans"))
+        finally:
+            MODULE.ROOT = original_root
+
+    def test_older_plans_are_capped_and_sorted(self) -> None:
+        original_root = MODULE.ROOT
+        MODULE.ROOT = self.root
+        try:
+            for index in range(1, 13):
+                self.write_file(
+                    f"TRR-APP/docs/ai/local-status/older-{index}.md",
+                    f"""
+                    # Older Item {index}
+
+                    ## Handoff Snapshot
+                    ```yaml
+                    handoff:
+                      include: true
+                      state: recent
+                      last_updated: 2026-03-{index:02d}
+                      current_phase: "complete"
+                      next_action: "leave in backlog"
+                      detail: self
+                    ```
+                    """,
+                )
+
+            scope = MODULE.build_scopes(self.root)["app"]
+            rendered = MODULE.render_scope(scope, MODULE.dt.date(2026, 3, 31))
+            older_plans = self.extract_section(rendered, "Older Plans", "Archives / Canonical Links")
+
+            self.assertIn("`Older Item 12`", older_plans)
+            self.assertIn("`Older Item 3`", older_plans)
+            self.assertNotIn("`Older Item 2`", older_plans)
+            self.assertNotIn("`Older Item 1`", older_plans)
+            self.assertLess(older_plans.index("`Older Item 12`"), older_plans.index("`Older Item 11`"))
+        finally:
+            MODULE.ROOT = original_root
 
 
 if __name__ == "__main__":

@@ -67,3 +67,6 @@
 
 # OS
 .DS_Store
+# Generated output
+/artifacts/
+__pycache__/

@@ -15,4 +15,4 @@ command = "/Users/thomashulihan/.codex/bin/codex-chrome-devtools-mcp-global.sh"
 enabled = true
 startup_timeout_sec = 45
 tool_timeout_sec = 120
-env = { CODEX_CHROME_MODE = "isolated", CODEX_CHROME_HEADLESS = "1", CODEX_CHROME_SEED_PROFILE_DIR = "/Users/thomashulihan/.chrome-profiles/codex-agent" }
+env = { CODEX_CHROME_MODE = "shared", CODEX_CHROME_HEADLESS = "1", CODEX_CHROME_AUTO_LAUNCH = "1", CODEX_CHROME_SEED_PROFILE_DIR = "/Users/thomashulihan/.chrome-profiles/codex-agent" }
