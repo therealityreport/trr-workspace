@@ -6,6 +6,7 @@ cd "$ROOT"
 
 source "$ROOT/scripts/lib/node-baseline.sh"
 source "$ROOT/scripts/lib/preflight-diagnostics.sh"
+source "$ROOT/scripts/lib/runtime-db-env.sh"
 
 preflight_diag_init "preflight.sh" "$ROOT" "preflight"
 
@@ -141,6 +142,10 @@ WORKSPACE_PREFLIGHT_STRICT="${WORKSPACE_PREFLIGHT_STRICT:-0}"
 
 echo "[preflight] Mode: ${WORKSPACE_DEV_MODE}"
 
+if ! trr_runtime_db_require_local_app_url "$ROOT" "preflight"; then
+  exit 1
+fi
+
 run_preflight_phase "doctor" "[preflight] Running workspace doctor..." env WORKSPACE_DEV_MODE="$WORKSPACE_DEV_MODE" WORKSPACE_PREFLIGHT_STRICT="$WORKSPACE_PREFLIGHT_STRICT" bash "$ROOT/scripts/doctor.sh"
 
 env_contract_rc=0
@@ -158,6 +163,23 @@ if [[ "$env_contract_rc" != "0" ]]; then
     exit "$env_contract_rc"
   fi
   echo "[preflight] NOTE: generated env contract was refreshed in-place; review and commit docs/workspace/env-contract.md if the new baseline is intended." >&2
+fi
+
+env_contract_report_rc=0
+run_preflight_phase "env-contract-report" "[preflight] Validating env contract reports..." python3 "$ROOT/scripts/env_contract_report.py" validate || env_contract_report_rc="$?"
+if [[ "$env_contract_report_rc" != "0" ]]; then
+  if [[ "$WORKSPACE_PREFLIGHT_STRICT" == "1" ]]; then
+    exit "$env_contract_report_rc"
+  fi
+  echo "[preflight] WARNING: env contract reports are out of date; regenerating because WORKSPACE_PREFLIGHT_STRICT=0." >&2
+  run_preflight_phase "env-contract-report-write" "[preflight] Regenerating env contract reports..." python3 "$ROOT/scripts/env_contract_report.py" write
+  env_contract_report_rc=0
+  run_preflight_phase "env-contract-report-verify" "[preflight] Re-validating env contract reports..." python3 "$ROOT/scripts/env_contract_report.py" validate || env_contract_report_rc="$?"
+  if [[ "$env_contract_report_rc" != "0" ]]; then
+    echo "[preflight] ERROR: env contract reports are still out of date after regeneration." >&2
+    exit "$env_contract_report_rc"
+  fi
+  echo "[preflight] NOTE: env contract reports were refreshed in-place; review and commit docs/workspace/env-contract-inventory.md, docs/workspace/env-deprecations.md, and docs/workspace/vercel-env-review.md if the new baseline is intended." >&2
 fi
 
 run_preflight_phase "handoff-sync" "[preflight] Syncing generated handoffs..." python3 "$ROOT/scripts/sync-handoffs.py" --write

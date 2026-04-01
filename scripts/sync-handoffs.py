@@ -28,7 +28,15 @@ STATE_ACTIVE = "active"
 STATE_BLOCKED = "blocked"
 STATE_RECENT = "recent"
 STATE_ARCHIVED = "archived"
+STATE_OLDER = "older"
 VALID_STATES = {STATE_ACTIVE, STATE_BLOCKED, STATE_RECENT, STATE_ARCHIVED}
+FRESHNESS_LIMITS = {
+    STATE_ACTIVE: 3,
+    STATE_BLOCKED: 14,
+    STATE_RECENT: 7,
+}
+RECENT_COMPLETIONS_LIMIT = 5
+OLDER_PLANS_LIMIT = 10
 
 TASK_STATUS_RE = re.compile(r"^Status\s+[—-]\s+Task\s+(\d+)\s+\((.+)\)\s*$")
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
@@ -286,21 +294,12 @@ def derive_title(h1: str) -> str:
     return h1.strip()
 
 
-def validate_freshness(item: HandoffItem, today: dt.date) -> None:
+def classify_render_state(item: HandoffItem, today: dt.date) -> str:
     age_days = (today - item.snapshot.last_updated).days
-    title = item.title
-    if item.snapshot.state == STATE_ACTIVE and age_days > 3:
-        raise FreshnessError(
-            f"{item.source_path}: active entry '{title}' is {age_days} days old; refresh or archive it."
-        )
-    if item.snapshot.state == STATE_BLOCKED and age_days > 14:
-        raise FreshnessError(
-            f"{item.source_path}: blocked entry '{title}' is {age_days} days old; refresh or archive it."
-        )
-    if item.snapshot.state == STATE_RECENT and age_days > 7:
-        raise FreshnessError(
-            f"{item.source_path}: recent entry '{title}' is {age_days} days old; archive or remove it."
-        )
+    freshness_limit = FRESHNESS_LIMITS.get(item.snapshot.state)
+    if freshness_limit is not None and age_days > freshness_limit:
+        return STATE_OLDER
+    return item.snapshot.state
 
 
 def parse_source_file(source_path: Path, today: dt.date, *, snapshot_required: bool = True) -> HandoffItem | None:
@@ -313,7 +312,6 @@ def parse_source_file(source_path: Path, today: dt.date, *, snapshot_required: b
     if not snapshot.include or snapshot.state == STATE_ARCHIVED:
         return None
     item = HandoffItem(title=derive_title(h1), source_path=source_path, snapshot=snapshot)
-    validate_freshness(item, today)
     return item
 
 
@@ -365,10 +363,15 @@ def render_scope(scope: ScopeConfig, today: dt.date) -> str:
     items = collect_scope_items(scope, today)
     sorted_items = sorted(items, key=lambda item: (item.snapshot.last_updated, item.title), reverse=True)
     grouped = {
-        STATE_ACTIVE: [item for item in sorted_items if item.snapshot.state == STATE_ACTIVE],
-        STATE_BLOCKED: [item for item in sorted_items if item.snapshot.state == STATE_BLOCKED],
-        STATE_RECENT: [item for item in sorted_items if item.snapshot.state == STATE_RECENT][:5],
+        STATE_ACTIVE: [],
+        STATE_BLOCKED: [],
+        STATE_RECENT: [],
+        STATE_OLDER: [],
     }
+    for item in sorted_items:
+        grouped[classify_render_state(item, today)].append(item)
+    grouped[STATE_RECENT] = grouped[STATE_RECENT][:RECENT_COMPLETIONS_LIMIT]
+    grouped[STATE_OLDER] = grouped[STATE_OLDER][:OLDER_PLANS_LIMIT]
 
     lines = [
         f"# Session Handoff ({scope.title})",
@@ -385,6 +388,9 @@ def render_scope(scope: ScopeConfig, today: dt.date) -> str:
         "",
         "## Recent Completions",
         *render_items(grouped[STATE_RECENT], scope.handoff_path),
+        "",
+        "## Older Plans",
+        *render_items(grouped[STATE_OLDER], scope.handoff_path),
         "",
         "## Archives / Canonical Links",
     ]

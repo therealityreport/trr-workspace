@@ -194,8 +194,9 @@ with USER_CONFIG_FILE.open("rb") as handle:
     user_config = tomllib.load(handle)
 user_chrome_env = (((user_config.get("mcp_servers") or {}).get("chrome-devtools") or {}).get("env") or {})
 expected_chrome_env = {
-    "CODEX_CHROME_MODE": "isolated",
+    "CODEX_CHROME_MODE": "shared",
     "CODEX_CHROME_HEADLESS": "1",
+    "CODEX_CHROME_AUTO_LAUNCH": "1",
     "CODEX_CHROME_SEED_PROFILE_DIR": CODEX_PROFILE_DIR,
 }
 for key, value in expected_chrome_env.items():
