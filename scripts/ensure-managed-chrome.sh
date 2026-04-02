@@ -3,7 +3,28 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 MODE="${CODEX_CHROME_MODE:-isolated}"
-SHARED_PORT="${CODEX_CHROME_PORT:-9222}"
+SHARED_PORT="${CODEX_CHROME_SHARED_PORT:-${CODEX_CHROME_PORT:-9422}}"
+
+shared_profile_for_port() {
+  local port="$1"
+  case "$port" in
+    9222|9422)
+      echo "${CHROME_AGENT_PROFILE_DIR:-${HOME}/.chrome-profiles/codex-agent}"
+      ;;
+    *)
+      echo "${CHROME_AGENT_PROFILE_DIR:-${HOME}/.chrome-profiles/codex-chat-${port}}"
+      ;;
+  esac
+}
+
+shared_headless_for_port() {
+  local port="$1"
+  if [[ "$port" == "9222" ]]; then
+    echo "0"
+  else
+    echo "1"
+  fi
+}
 
 shared_ready() {
   curl -sf "http://127.0.0.1:${SHARED_PORT}/json/version" >/dev/null 2>&1
@@ -14,21 +35,21 @@ shared_remediation() {
 [ensure-managed-chrome] Shared managed Chrome is not available on http://127.0.0.1:${SHARED_PORT}.
 [ensure-managed-chrome] Shared mode will not auto-launch Chrome.
 [ensure-managed-chrome] Start it explicitly:
-[ensure-managed-chrome]   CHROME_AGENT_DEBUG_PORT=${SHARED_PORT} CHROME_AGENT_PROFILE_DIR=\${HOME}/.chrome-profiles/claude-agent bash "${ROOT}/scripts/chrome-agent.sh"
+[ensure-managed-chrome]   CHROME_AGENT_DEBUG_PORT=${SHARED_PORT} CHROME_AGENT_PROFILE_DIR=\${HOME}/.chrome-profiles/codex-agent CHROME_AGENT_HEADLESS=$(shared_headless_for_port "${SHARED_PORT}") bash "${ROOT}/scripts/chrome-agent.sh"
 EOF
 }
 
 case "$MODE" in
   shared)
-    if [[ "$SHARED_PORT" != "9222" ]]; then
-      echo "[ensure-managed-chrome] ERROR: Shared mode is pinned to port 9222." >&2
+    if [[ "$SHARED_PORT" != "9422" && "$SHARED_PORT" != "9222" ]]; then
+      echo "[ensure-managed-chrome] ERROR: Shared mode supports default automation on 9422 and explicit visible/manual work on 9222." >&2
       exit 1
     fi
     if ! shared_ready; then
       echo "[ensure-managed-chrome] Shared Chrome not running on ${SHARED_PORT}; auto-launching..." >&2
       CHROME_AGENT_DEBUG_PORT="${SHARED_PORT}" \
-        CHROME_AGENT_PROFILE_DIR="${CHROME_AGENT_PROFILE_DIR:-${HOME}/.chrome-profiles/claude-agent}" \
-        CHROME_AGENT_HEADLESS=0 \
+        CHROME_AGENT_PROFILE_DIR="$(shared_profile_for_port "${SHARED_PORT}")" \
+        CHROME_AGENT_HEADLESS="$(shared_headless_for_port "${SHARED_PORT}")" \
         bash "${ROOT}/scripts/chrome-agent.sh" >/dev/null
       if ! shared_ready; then
         shared_remediation

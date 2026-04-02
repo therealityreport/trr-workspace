@@ -31,7 +31,7 @@ print_instance() {
   local reachable="no"
   if endpoint_reachable "$port"; then
     reachable="yes"
-    if [[ "$port" == "9222" ]]; then
+    if [[ "$port" == "9222" || "$port" == "9422" ]]; then
       healed_state="$(heal_shared_chrome_runtime_state "$LOG_DIR" "$port" 2>/dev/null || true)"
     fi
   fi
@@ -80,8 +80,17 @@ for pidfile in "${pidfiles[@]:-}"; do
   add_port "$port"
 done
 
-if [[ -f "${LOG_DIR}/chrome-agent.pid" ]] || endpoint_reachable "9222"; then
+if endpoint_reachable "9222"; then
   add_port "9222"
+elif [[ -f "${LOG_DIR}/chrome-agent.pid" ]]; then
+  legacy_pid="$(cat "${LOG_DIR}/chrome-agent.pid" 2>/dev/null || true)"
+  if [[ -n "$legacy_pid" ]] && kill -0 "$legacy_pid" >/dev/null 2>&1; then
+    add_port "9222"
+  fi
+fi
+
+if [[ -f "${LOG_DIR}/chrome-agent-9422.pid" ]] || endpoint_reachable "9422"; then
+  add_port "9422"
 fi
 
 if [[ "${#PORTS[@]}" -eq 0 ]]; then

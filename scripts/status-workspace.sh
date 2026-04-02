@@ -419,7 +419,7 @@ app_server_mcp_children() {
     [[ -n "$child" ]] || continue
     command="$(process_command "$child")"
     case "$command" in
-      *"scripts/codex-chrome-devtools-mcp.sh"*|*"chrome-devtools-mcp --browserUrl http://127.0.0.1:9222"*)
+      *"scripts/codex-chrome-devtools-mcp.sh"*|*"codex-chrome-devtools-mcp-global.sh"*|*"chrome-devtools-mcp --browserUrl http://127.0.0.1:9422"*|*"chrome-devtools-mcp --browserUrl http://127.0.0.1:9222"*)
         has_chrome=1
         ;;
     esac

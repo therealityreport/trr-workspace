@@ -6,7 +6,7 @@ trust_level = "trusted"
 
 [mcp_servers.chrome-devtools]
 command = "__HOME__/.codex/bin/codex-chrome-devtools-mcp-global.sh"
-env = { CODEX_CHROME_MODE = "isolated", CODEX_CHROME_HEADLESS = "1", CODEX_CHROME_SEED_PROFILE_DIR = "__HOME__/.chrome-profiles/codex-agent" }
+env = { CODEX_CHROME_MODE = "shared", CODEX_CHROME_HEADLESS = "1", CODEX_CHROME_AUTO_LAUNCH = "1", CODEX_CHROME_SEED_PROFILE_DIR = "__HOME__/.chrome-profiles/codex-agent" }
 enabled = true
 startup_timeout_sec = 45
 tool_timeout_sec = 120
@@ -36,21 +36,6 @@ bearer_token_env_var = "GITHUB_PAT"
 command = "npx"
 args = ["-y", "@upstash/context7-mcp"]
 enabled = true
-
-[plugins."github@openai-curated"]
-enabled = true
-
-[plugins."vercel@openai-curated"]
-enabled = true
-
-[plugins."gmail@openai-curated"]
-enabled = false
-
-[plugins."google-drive@openai-curated"]
-enabled = false
-
-[plugins."hugging-face@openai-curated"]
-enabled = false
 
 [[skills.config]]
 path = "__HOME__/.codex/skills/senior-architect"

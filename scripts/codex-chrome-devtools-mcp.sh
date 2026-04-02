@@ -24,7 +24,7 @@ FORCED_PORT="${CODEX_CHROME_PORT:-}"
 # Override with CODEX_CHROME_SEED_PROFILE_DIR only with explicit user permission.
 SEED_PROFILE_DIR="${CODEX_CHROME_SEED_PROFILE_DIR:-${HOME}/.chrome-profiles/codex-agent}"
 ISOLATED_HEADLESS="${CODEX_CHROME_ISOLATED_HEADLESS:-1}"
-SHARED_HEADLESS="${CODEX_CHROME_SHARED_HEADLESS:-0}"
+SHARED_HEADLESS="${CODEX_CHROME_SHARED_HEADLESS:-1}"
 SKIP_BROWSER_BOOT="${CODEX_CHROME_SKIP_BROWSER_BOOT:-0}"
 DIAGNOSTIC_ONLY="${CODEX_CHROME_DIAGNOSTIC_ONLY:-0}"
 TAB_CAP="${CODEX_CHROME_TAB_CAP:-3}"
@@ -303,7 +303,7 @@ release_visible_browser_owner() {
   if [[ "$owner_wrapper_pid" != "$SCRIPT_PID" ]]; then
     return 0
   fi
-  if [[ "$MODE" == "shared" ]] && headful_mode_enabled && pid_alive "$owner_browser_pid" && is_browser_endpoint_ready "${owner_port:-${BROWSER_PORT:-9222}}"; then
+  if [[ "$MODE" == "shared" ]] && headful_mode_enabled && pid_alive "$owner_browser_pid" && is_browser_endpoint_ready "${owner_port:-${BROWSER_PORT:-9422}}"; then
     return 0
   fi
   if [[ "$owner_wrapper_pid" == "$SCRIPT_PID" ]]; then
@@ -390,7 +390,7 @@ _sweep_stale_mcp_sessions
 # Stop non-isolated Playwright MCP processes that would compete on a shared
 # Chrome port.  Playwright with --isolated launches its own Chromium and does
 # not conflict; only bare `playwright-mcp` or `@playwright/mcp` without
-# --isolated is a problem on shared port 9222.
+# --isolated is a problem only when the visible/manual 9222 exception path is in use.
 _stop_playwright_conflicts_on_port() {
   local port="$1"
   local pw_pid
@@ -550,7 +550,7 @@ shared_browser_remediation() {
 [codex-chrome-mcp] Shared managed Chrome is not available on http://127.0.0.1:${port}.
 [codex-chrome-mcp] Shared mode attempted to auto-launch Chrome, but the DevTools endpoint never became ready.
 [codex-chrome-mcp] Remediation:
-[codex-chrome-mcp]   CHROME_AGENT_DEBUG_PORT=${port} CHROME_AGENT_PROFILE_DIR=\${HOME}/.chrome-profiles/claude-agent bash "${ROOT}/scripts/chrome-agent.sh"
+[codex-chrome-mcp]   CHROME_AGENT_DEBUG_PORT=${port} CHROME_AGENT_PROFILE_DIR=\${HOME}/.chrome-profiles/codex-agent bash "${ROOT}/scripts/chrome-agent.sh"
 [codex-chrome-mcp] Then run: make chrome-devtools-mcp-status
 [codex-chrome-mcp] If the tool is still missing in this chat after that, restart the Codex session.
 EOF
@@ -770,31 +770,10 @@ managed_chrome_root_count() {
   } | sed '/^$/d' | awk '!seen[$0]++' | wc -l | tr -d ' '
 }
 
-count_orphaned_figma_console_processes() {
-  local pid=""
-  local count=0
-
-  while IFS= read -r pid; do
-    [[ -n "$pid" ]] || continue
-    if process_has_live_ancestor_matching "$pid" "codex-figma-console-mcp\\.sh"; then
-      continue
-    fi
-    count=$((count + 1))
-  done < <(pgrep -f "figma-console-mcp" 2>/dev/null || true)
-
-  printf '%s\n' "$count"
-}
-
 enforce_browser_pressure_guard() {
   local launch_kind="$1"
   local free_mb
   local managed_roots
-  local orphaned_figma
-
-  orphaned_figma="$(count_orphaned_figma_console_processes)"
-  if [[ "$orphaned_figma" =~ ^[0-9]+$ ]] && (( orphaned_figma > 0 )); then
-    fail "Detected ${orphaned_figma} orphaned figma-console process(es); refusing to launch ${launch_kind} browser work under pressure. Run: make mcp-clean"
-  fi
 
   managed_roots="$(managed_chrome_root_count)"
   if [[ "$managed_roots" =~ ^[0-9]+$ ]] && (( managed_roots >= MANAGED_CHROME_ROOT_LIMIT )) && [[ "$launch_kind" == "isolated" ]]; then
@@ -1285,7 +1264,7 @@ if [[ "$DIAGNOSTIC_ONLY" == "1" ]]; then
   if [[ "$MODE" == "isolated" ]]; then
     BROWSER_PORT="${FORCED_PORT:-0}"
   else
-    BROWSER_PORT="${FORCED_PORT:-9222}"
+    BROWSER_PORT="${FORCED_PORT:-9422}"
   fi
   echo "mode=${MODE}"
   echo "port=${BROWSER_PORT}"
@@ -1304,9 +1283,9 @@ trap 'cleanup; exit 143' TERM
 
 case "$MODE" in
   shared)
-    BROWSER_PORT="${FORCED_PORT:-9222}"
-    if [[ "$BROWSER_PORT" != "9222" ]]; then
-      fail "Shared mode is pinned to port 9222. Remove CODEX_CHROME_PORT or use CODEX_CHROME_MODE=isolated."
+    BROWSER_PORT="${FORCED_PORT:-9422}"
+    if [[ "$BROWSER_PORT" != "9422" && "$BROWSER_PORT" != "9222" ]]; then
+      fail "Shared mode supports the default automation port 9422 and the explicit visible/manual port 9222."
     fi
     cleanup_stale_state_for_port "$BROWSER_PORT"
     if ! is_port_listening "$BROWSER_PORT"; then

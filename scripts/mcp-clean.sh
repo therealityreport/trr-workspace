@@ -5,7 +5,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "${ROOT}/scripts/lib/mcp-runtime.sh"
 
 LOG_DIR="${ROOT}/.logs/workspace"
-SHARED_WRAPPER_PIDFILE="${LOG_DIR}/codex-chrome-shared-wrapper-9222.pid"
+SHARED_WRAPPER_PIDFILE="${LOG_DIR}/codex-chrome-shared-wrapper-9422.pid"
 SOAK_MODE=0
 SOAK_ITERATIONS="${MCP_CLEAN_SOAK_ITERATIONS:-3}"
 SOAK_SLEEP_SEC="${MCP_CLEAN_SOAK_SLEEP_SEC:-1}"

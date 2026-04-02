@@ -5,7 +5,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LOG_DIR="${ROOT}/.logs/workspace"
 CODEX_HOME_DIR="${CODEX_HOME:-$HOME/.codex}"
 HEADFUL_OWNER_FILE="${CODEX_CHROME_OWNER_DIR:-${CODEX_HOME_DIR}/tmp/browser-control}/headful-chrome-owner.env"
-DEBUG_PORT="${CHROME_AGENT_DEBUG_PORT:-9222}"
+DEBUG_PORT="${CHROME_AGENT_DEBUG_PORT:-9422}"
 LEGACY_PIDFILE="${LOG_DIR}/chrome-agent.pid"
 STOP_ALL="${CHROME_AGENT_STOP_ALL:-0}"
 
