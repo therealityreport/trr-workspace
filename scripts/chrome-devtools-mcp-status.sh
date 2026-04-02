@@ -143,9 +143,48 @@ print_scope_diagnosis() {
   fi
 }
 
-validate_repo_managed_codex_config() {
-  if ! CODEX_CONFIG_FILE= bash "${ROOT}/scripts/codex-config-sync.sh" validate >/dev/null; then
-    fail "Codex config drift detected. Run: bash ${ROOT}/scripts/codex-config-sync.sh bootstrap"
+validate_chrome_registration() {
+  local source="$1"
+  local command="$2"
+  local enabled="$3"
+  local startup_timeout
+  local tool_timeout
+  local expected_seed="${HOME}/.chrome-profiles/codex-agent"
+
+  if [[ "$enabled" != "true" ]]; then
+    fail "chrome-devtools MCP is not enabled in ${source}"
+  fi
+
+  if [[ "$command" != "$EXPECTED_COMMAND" && "$command" != "$GLOBAL_CHROME_COMMAND" ]]; then
+    warn "Configured command differs from supported Chrome launchers: ${command}"
+    warn "Restore the expected bootstrap state with: bash ${ROOT}/scripts/codex-config-sync.sh bootstrap"
+    return 0
+  fi
+
+  if [[ "$command" != "$GLOBAL_CHROME_COMMAND" ]]; then
+    return 0
+  fi
+
+  startup_timeout="$(printf '%s\n' "$chrome_section" | awk -F' = ' '/^startup_timeout_sec = / {print $2; exit}')"
+  tool_timeout="$(printf '%s\n' "$chrome_section" | awk -F' = ' '/^tool_timeout_sec = / {print $2; exit}')"
+
+  if [[ "$(configured_env_value "CODEX_CHROME_MODE" "")" != "shared" ]]; then
+    fail "chrome-devtools config drift: global launcher must set CODEX_CHROME_MODE=shared"
+  fi
+  if [[ "$(configured_env_value "CODEX_CHROME_HEADLESS" "")" != "1" ]]; then
+    fail "chrome-devtools config drift: global launcher must set CODEX_CHROME_HEADLESS=1"
+  fi
+  if [[ "$(configured_env_value "CODEX_CHROME_AUTO_LAUNCH" "")" != "1" ]]; then
+    fail "chrome-devtools config drift: global launcher must set CODEX_CHROME_AUTO_LAUNCH=1"
+  fi
+  if [[ "$(configured_env_value "CODEX_CHROME_SEED_PROFILE_DIR" "")" != "$expected_seed" ]]; then
+    fail "chrome-devtools config drift: global launcher must seed from ${expected_seed}"
+  fi
+  if [[ "$startup_timeout" != "45" ]]; then
+    fail "chrome-devtools config drift: startup_timeout_sec must be 45 in ${source}"
+  fi
+  if [[ "$tool_timeout" != "120" ]]; then
+    fail "chrome-devtools config drift: tool_timeout_sec must be 120 in ${source}"
   fi
 }
 
@@ -275,19 +314,6 @@ managed_chrome_root_count() {
   printf '%s\n' "$count"
 }
 
-orphaned_figma_console_count() {
-  local pid
-  local count=0
-  while IFS= read -r pid; do
-    [[ -n "$pid" ]] || continue
-    if process_has_live_ancestor_matching "$pid" "codex-figma-console-mcp\\.sh"; then
-      continue
-    fi
-    count=$((count + 1))
-  done < <(count_matching_processes "figma-console-mcp")
-  printf '%s\n' "$count"
-}
-
 visible_browser_owner_state() {
   if [[ ! -f "$VISIBLE_BROWSER_OWNER_FILE" ]]; then
     echo "none"
@@ -353,9 +379,9 @@ print_shared_keeper_summary() {
     ws_url="$(ws_url_for_port "$port")"
     ws_port="$(ws_port_for_port "$port")"
     if [[ "$port" == "9222" ]]; then
-      label="managed shared headful"
+      label="visible/manual exception"
     else
-      label="managed shared headless"
+      label="shared automation headless"
     fi
     echo "  - keeper ${label} port=${port} endpoint=$(port_query_state "$port") listener=${listener_pid:-missing} ws_port=${ws_port:-missing}"
     if [[ -n "$ws_url" ]]; then
@@ -424,10 +450,10 @@ configured_mode() {
 
 default_shared_port_for_command() {
   local command="$1"
-  if [[ "$command" == "$GLOBAL_CHROME_COMMAND" ]]; then
+  if [[ "$command" == "$GLOBAL_CHROME_COMMAND" || "$command" == "$EXPECTED_COMMAND" ]]; then
     printf '%s\n' "9422"
   else
-    printf '%s\n' "9222"
+    printf '%s\n' "9422"
   fi
 }
 
@@ -588,9 +614,10 @@ collect_external_conflicts() {
   local mode="${1:-shared}"
   local shared_port="${2:-$SHARED_PORT}"
   # In isolated mode each Codex session has its own Chrome on a unique port.
-  # External clients (Claude in Chrome, Playwright --isolated) connect to the
-  # shared port 9222 or their own Chromium, so they cannot interfere with
-  # isolated sessions.  Skip the scan entirely to avoid false positives.
+  # External clients (Claude in Chrome, Playwright --isolated) use either the
+  # visible/manual 9222 exception path or their own Chromium, so they cannot
+  # interfere with isolated sessions. Skip the scan entirely to avoid false
+  # positives.
   if [[ "$mode" == "isolated" ]]; then
     return 0
   fi
@@ -643,15 +670,15 @@ print_conflict_summary_short() {
   if [[ "$count" == "0" ]]; then
     return 0
   fi
-  # In isolated mode, external clients are on port 9222 while Codex sessions
-  # use their own ports.  Conflicts cannot cause interference, so downgrade
-  # from WARNING to NOTE.
+  # In isolated mode, external clients are on the visible/manual 9222 path
+  # while Codex sessions use their own ports. Conflicts cannot interfere, so
+  # downgrade from WARNING to NOTE.
   if [[ "$mode" == "isolated" ]]; then
     echo "[chrome-devtools-mcp] NOTE: ${count} other browser-control process(es) detected (Claude/Playwright)." >&2
     echo "[chrome-devtools-mcp] NOTE: These do not affect isolated Codex sessions (separate Chrome per session)." >&2
     return 0
   fi
-  echo "[chrome-devtools-mcp] WARNING: ${count} other browser-control process(es) may contend with shared Chrome on port 9222." >&2
+  echo "[chrome-devtools-mcp] WARNING: ${count} other browser-control process(es) may contend with shared Chrome on port ${SHARED_PORT}." >&2
   echo "[chrome-devtools-mcp] WARNING: These come from other browser tools or extensions, not normal Codex shared sessions." >&2
   echo "[chrome-devtools-mcp] WARNING: Browser automation may act strangely until they are cleared." >&2
   echo "[chrome-devtools-mcp] WARNING: Run: bash scripts/chrome-devtools-mcp-stop-conflicts.sh --apply" >&2
@@ -723,6 +750,17 @@ report_stale_runtime() {
     cleaned_count=$((cleaned_count + 1))
   done
 
+  pidfile="${LOG_DIR}/chrome-agent.pid"
+  if [[ -f "$pidfile" ]]; then
+    browser_pid="$(cat "$pidfile" 2>/dev/null || true)"
+    if ! chrome_endpoint_reachable "9222" && { [[ -z "$browser_pid" ]] || ! kill -0 "$browser_pid" >/dev/null 2>&1; }; then
+      rm -f "$pidfile"
+      echo "[chrome-devtools-mcp] Cleaned stale legacy pidfile: $(basename "$pidfile") pid=${browser_pid:-missing}"
+      stale_count=$((stale_count + 1))
+      cleaned_count=$((cleaned_count + 1))
+    fi
+  fi
+
   for statefile in "${LOG_DIR}"/chrome-agent-*.env; do
     pidfile="${statefile%.env}.pid"
     if [[ ! -f "$pidfile" ]]; then
@@ -780,25 +818,14 @@ report_stale_runtime() {
     fi
   fi
 
-  figma_orphans="$(orphaned_figma_console_count)"
-  if [[ "$figma_orphans" == "0" ]]; then
-    echo "[chrome-devtools-mcp] Orphaned figma-console trees: none"
-  else
-    echo "[chrome-devtools-mcp] Orphaned figma-console trees: ${figma_orphans}"
-  fi
 }
 
 pressure_verdict() {
   local owner_state="$1"
   local managed_root_count="$2"
   local chrome_rss_mb="$3"
-  local figma_rss_mb="$4"
-  local figma_orphans="$5"
-
-  if [[ "$figma_orphans" != "0" ]]; then
-    echo "unsafe"
-    return 0
-  fi
+  local shared_client_count="$4"
+  local conflict_count="$5"
 
   if [[ "$owner_state" == "stale-browser" ]]; then
     echo "unsafe"
@@ -815,12 +842,22 @@ pressure_verdict() {
     return 0
   fi
 
-  if awk -v chrome="$chrome_rss_mb" -v figma="$figma_rss_mb" 'BEGIN { exit !((chrome >= 5000.0) || (figma >= 250.0)) }'; then
-    echo "unsafe"
+  if [[ "$conflict_count" != "0" ]]; then
+    echo "degraded"
     return 0
   fi
 
-  if awk -v chrome="$chrome_rss_mb" -v figma="$figma_rss_mb" 'BEGIN { exit !((chrome >= 3500.0) || (figma >= 150.0)) }'; then
+  if awk -v chrome="$chrome_rss_mb" 'BEGIN { exit !(chrome >= 5000.0) }'; then
+    echo "degraded"
+    return 0
+  fi
+
+  if awk -v chrome="$chrome_rss_mb" 'BEGIN { exit !(chrome >= 3500.0) }'; then
+    echo "degraded"
+    return 0
+  fi
+
+  if [[ "$shared_client_count" =~ ^[0-9]+$ ]] && (( shared_client_count > 12 )); then
     echo "degraded"
     return 0
   fi
@@ -829,7 +866,7 @@ pressure_verdict() {
 }
 
 pressure_snapshot_line() {
-  echo "[chrome-devtools-mcp] Pressure snapshot: owner_state=${owner_state} managed_roots=${managed_root_count} chrome_rss_mb=${chrome_rss_mb} figma_rss_mb=${figma_rss_mb} figma_orphans=${figma_orphans_count} shared_clients=${shared_client_count} conflicts=${conflict_count}"
+  echo "[chrome-devtools-mcp] Pressure snapshot: owner_state=${owner_state} managed_roots=${managed_root_count} chrome_rss_mb=${chrome_rss_mb} shared_clients=${shared_client_count} conflicts=${conflict_count}"
 }
 
 if [[ ! -f "$CONFIG_FILE" ]]; then
@@ -847,8 +884,6 @@ fi
 if ! codex_cli_available; then
   fail "Codex CLI is not available on PATH"
 fi
-
-validate_repo_managed_codex_config
 
 project_chrome_section="$(extract_chrome_section "$CONFIG_FILE")"
 user_chrome_section="$(extract_chrome_section "$DEFAULT_USER_CONFIG_FILE")"
@@ -870,16 +905,9 @@ if [[ -z "$configured_enabled" ]]; then
   configured_enabled="true"
 fi
 
-if [[ "$configured_enabled" != "true" ]]; then
-  fail "chrome-devtools MCP is not enabled in ${config_source}"
-fi
+validate_chrome_registration "$config_source" "$configured_command" "$configured_enabled"
 
-if [[ "$configured_command" != "$EXPECTED_COMMAND" && "$configured_command" != "$GLOBAL_CHROME_COMMAND" ]]; then
-  warn "Configured command differs from workspace wrapper: ${configured_command}"
-  warn "This configuration is unsupported. Restore the expected bootstrap state with: bash ${ROOT}/scripts/codex-config-sync.sh bootstrap"
-fi
-
-seed_profile="${CODEX_CHROME_SEED_PROFILE_DIR:-${HOME}/.chrome-profiles/claude-agent}"
+seed_profile="$(configured_env_value "CODEX_CHROME_SEED_PROFILE_DIR" "${HOME}/.chrome-profiles/codex-agent")"
 wrapper_mode="$(configured_mode)"
 SHARED_PORT="$(configured_shared_port)"
 shared_singleton="$(configured_shared_singleton)"
@@ -914,20 +942,18 @@ summary_note_line=""
 summary_warning_line=""
 summary_pressure_line=""
 owner_state="$(visible_browser_owner_state)"
-figma_orphans_count="$(orphaned_figma_console_count)"
 managed_root_count="$(managed_chrome_root_count)"
 chrome_rss_mb="$(process_rss_mb_for_regex "Google Chrome|chrome-devtools-mcp|codex-chrome-devtools-mcp|Codex.app")"
-figma_rss_mb="$(process_rss_mb_for_regex "figma-console-mcp|codex-figma-console-mcp")"
 pressure_state="safe"
 
 if is_summary_mode; then
-  summary_pressure_line="$(pressure_verdict "$owner_state" "$managed_root_count" "$chrome_rss_mb" "$figma_rss_mb" "$figma_orphans_count")"
+  summary_pressure_line="$(pressure_verdict "$owner_state" "$managed_root_count" "$chrome_rss_mb" "$shared_client_count" "$conflict_count")"
   if [[ "$wrapper_mode" == "isolated" ]]; then
     if [[ "$summary_pressure_line" == "safe" ]]; then
       summary_status_line="[chrome-devtools-mcp] OK: browser automation is ready (isolated default, tab cap enforceable)."
     else
       summary_status_line="[chrome-devtools-mcp] WARNING: browser automation is ready, but local browser pressure is ${summary_pressure_line} (isolated default, tab cap enforceable)."
-      summary_warning_line="[chrome-devtools-mcp] WARNING: consider 'make mcp-clean' if stale Chrome/Figma runtime artifacts are not expected."
+      summary_warning_line="[chrome-devtools-mcp] WARNING: consider 'make mcp-clean' if stale Chrome runtime artifacts or external MCP leftovers are not expected."
     fi
     summary_note_line="[chrome-devtools-mcp] NOTE: fresh chats will launch isolated headless Chrome with a target of ${tab_target} working tab and a hard cap of ${tab_cap} tabs."
   elif [[ "$(endpoint_state "$SHARED_PORT")" == "reachable" ]]; then
@@ -935,7 +961,7 @@ if is_summary_mode; then
       summary_status_line="[chrome-devtools-mcp] OK: browser automation is ready."
     else
       summary_status_line="[chrome-devtools-mcp] WARNING: browser automation is ready, but local browser pressure is ${summary_pressure_line}."
-      summary_warning_line="[chrome-devtools-mcp] WARNING: consider 'make mcp-clean' if stale Chrome/Figma runtime artifacts are not expected."
+      summary_warning_line="[chrome-devtools-mcp] WARNING: consider 'make mcp-clean' if stale Chrome runtime artifacts or external MCP leftovers are not expected."
     fi
     summary_note_line="[chrome-devtools-mcp] NOTE: if this already-open chat still lacks chrome-devtools, restart the Codex session/thread to reload MCP registrations."
   else
@@ -977,7 +1003,6 @@ else
   print_visible_browser_owner_summary
   echo "[chrome-devtools-mcp] Managed Chrome roots: ${managed_root_count}"
   echo "[chrome-devtools-mcp] Chrome RSS total (MB): ${chrome_rss_mb}"
-  echo "[chrome-devtools-mcp] figma-console RSS total (MB): ${figma_rss_mb}"
   if [[ -n "$project_chrome_section" ]]; then
     echo "[chrome-devtools-mcp] Tracked project config defines chrome-devtools via ${configured_command}"
   else
@@ -995,7 +1020,7 @@ else
   fi
   print_conflict_summary "$conflicts"
   pressure_snapshot_line
-  pressure_state="$(pressure_verdict "$owner_state" "$managed_root_count" "$chrome_rss_mb" "$figma_rss_mb" "$figma_orphans_count")"
+  pressure_state="$(pressure_verdict "$owner_state" "$managed_root_count" "$chrome_rss_mb" "$shared_client_count" "$conflict_count")"
   echo "[chrome-devtools-mcp] Pressure verdict: ${pressure_state}"
 fi
 if ! CODEX_CHROME_SKIP_BROWSER_BOOT=1 "$EXPECTED_COMMAND" --version >/dev/null; then
@@ -1008,7 +1033,7 @@ if is_summary_mode; then
   fi
   print_scope_diagnosis "$current_scope" "$current_shell_command" >&2
   print_visible_browser_owner_summary >&2
-  echo "[chrome-devtools-mcp] Shared keepers: 9222 managed shared headful, 9422 managed shared headless" >&2
+  echo "[chrome-devtools-mcp] Shared keepers: 9222 visible/manual exception, 9422 shared automation headless" >&2
   echo "[chrome-devtools-mcp] Pressure verdict: ${summary_pressure_line}" >&2
   if [[ -n "$summary_note_line" ]]; then
     echo "$summary_note_line" >&2
@@ -1029,7 +1054,7 @@ fi
 if ! is_summary_mode && [[ "$wrapper_mode" == "shared" && "$(endpoint_state "$SHARED_PORT")" != "reachable" ]]; then
   echo "[chrome-devtools-mcp] Shared Chrome is not running, but the MCP wrapper will auto-launch it at session start." >&2
   echo "[chrome-devtools-mcp] To start it manually now:" >&2
-  echo "[chrome-devtools-mcp]   CHROME_AGENT_DEBUG_PORT=${SHARED_PORT} CHROME_AGENT_PROFILE_DIR=\${HOME}/.chrome-profiles/claude-agent bash ${ROOT}/scripts/chrome-agent.sh" >&2
+  echo "[chrome-devtools-mcp]   CHROME_AGENT_DEBUG_PORT=${SHARED_PORT} CHROME_AGENT_PROFILE_DIR=\${HOME}/.chrome-profiles/codex-agent CHROME_AGENT_HEADLESS=$(default_chrome_headless_for_port "${SHARED_PORT}") bash ${ROOT}/scripts/chrome-agent.sh" >&2
 elif ! is_summary_mode && [[ "$conflict_count" != "0" && "$wrapper_mode" == "shared" ]]; then
   echo "[chrome-devtools-mcp] Recommended next action: inspect or stop conflicting non-Codex browser-control clients:" >&2
   echo "[chrome-devtools-mcp]   bash ${ROOT}/scripts/chrome-devtools-mcp-stop-conflicts.sh" >&2

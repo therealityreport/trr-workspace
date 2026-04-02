@@ -402,6 +402,7 @@ TRR_BACKEND_LOCAL_ENV_FILE="$ROOT/TRR-Backend/.env"
 
 trr_export_runtime_db_env_from_file "$TRR_APP_LOCAL_ENV_FILE"
 trr_export_runtime_db_env_from_file "$TRR_BACKEND_LOCAL_ENV_FILE"
+trr_export_env_value_from_file_if_unset "$TRR_BACKEND_LOCAL_ENV_FILE" "SUPABASE_JWT_SECRET"
 
 if ! trr_runtime_db_env_present "$TRR_APP_LOCAL_ENV_FILE"; then
   echo "[workspace] ERROR: TRR-APP is missing runtime DB config." >&2
@@ -916,6 +917,7 @@ start_trr_backend() {
     TRR_LOCAL_DEV=1 \
     TRR_DB_URL=\"$TRR_DB_URL\" \
     TRR_DB_FALLBACK_URL=\"${TRR_DB_FALLBACK_URL:-}\" \
+    SUPABASE_JWT_SECRET=\"${SUPABASE_JWT_SECRET:-}\" \
     TRR_INTERNAL_ADMIN_SHARED_SECRET=\"$WORKSPACE_TRR_INTERNAL_ADMIN_SHARED_SECRET\" \
     SCREENALYTICS_SERVICE_TOKEN=\"$WORKSPACE_SCREENALYTICS_SERVICE_TOKEN\" \
     TRR_BACKEND_PORT=\"$TRR_BACKEND_PORT\" \

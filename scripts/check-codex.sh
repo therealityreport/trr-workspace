@@ -120,11 +120,10 @@ import pathlib
 import sys
 import tomllib
 
-GLOBAL_EXPECTED = {"chrome-devtools", "figma", "figma-console", "figma-desktop", "github", "playwright", "context7"}
+GLOBAL_EXPECTED = {"chrome-devtools", "figma", "figma-desktop", "github", "playwright", "context7"}
 WORKSPACE_REQUIRED = GLOBAL_EXPECTED | {"supabase"}
 DISALLOWED = {"awsknowledge", "awsiac", "supabase"}
 GLOBAL_CHROME_COMMAND = f"{pathlib.Path.home()}/.codex/bin/codex-chrome-devtools-mcp-global.sh"
-GLOBAL_FIGMA_CONSOLE_COMMAND = f"{pathlib.Path.home()}/.codex/bin/codex-figma-console-mcp.sh"
 WORKSPACE_CHROME_COMMAND = GLOBAL_CHROME_COMMAND
 CODEX_PROFILE_DIR = str(pathlib.Path.home() / ".chrome-profiles" / "codex-agent")
 USER_CONFIG_FILE = pathlib.Path.home() / ".codex" / "config.toml"
@@ -181,14 +180,6 @@ if global_command != GLOBAL_CHROME_COMMAND:
     raise SystemExit(f"[check-codex] ERROR: global chrome-devtools command mismatch: expected {GLOBAL_CHROME_COMMAND!r}, found {global_command!r}")
 if workspace_command != WORKSPACE_CHROME_COMMAND:
     raise SystemExit(f"[check-codex] ERROR: workspace chrome-devtools command mismatch: expected {WORKSPACE_CHROME_COMMAND!r}, found {workspace_command!r}")
-
-figma_console = global_servers.get("figma-console") or {}
-figma_console_enabled = figma_console.get("enabled")
-figma_console_command = (((figma_console.get("transport") or {}).get("command")) if isinstance(figma_console, dict) else None)
-if figma_console_command != GLOBAL_FIGMA_CONSOLE_COMMAND:
-    raise SystemExit(f"[check-codex] ERROR: global figma-console command mismatch: expected {GLOBAL_FIGMA_CONSOLE_COMMAND!r}, found {figma_console_command!r}")
-if figma_console_enabled not in {True, False}:
-    raise SystemExit(f"[check-codex] ERROR: unexpected figma-console enabled state: {figma_console_enabled!r}")
 
 with USER_CONFIG_FILE.open("rb") as handle:
     user_config = tomllib.load(handle)

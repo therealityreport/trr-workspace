@@ -18,7 +18,8 @@ Purpose: active-work index for multi-turn AI agent sessions affecting workspace-
 - `Social runtime warning and closeout cleanup` | last updated `2026-03-27` | current phase `complete` | next action `If runtime warnings reappear, start from the social account and auth-bypass test mocks before changing app code.` | details `local-status/social-runtime-warning-and-closeout-cleanup-2026-03-27.md`
 
 ## Older Plans
-- None.
+- `TRR Backend Batch 1 SQL Diagnosis` | last updated `2026-03-25` | current phase `batch-1 backend-owned admin reads were traced to exact SQL; direct SQL is mostly reachable, but hanging backend requests still fail before matching SQL appears in pg_stat_activity` | next action `fix the broken person-detail query and then diagnose backend pool init / connection acquisition churn separately from the SQL plans` | details `local-status/backend-batch1-sql-diagnosis-2026-03-25.md`
+- `Getty person pipeline and event subcategories` | last updated `2026-03-24` | current phase `modal Getty challenge-page guardrail deployed` | next action `Investigate true Getty recovery path in Modal or route blocked Getty searches through the local/residential prefetch fallback` | details `local-status/getty-person-pipeline-and-event-subcategories.md`
 
 ## Archives / Canonical Links
 - History archive: `archive/HANDOFF-legacy-2026-03-16.md`

@@ -67,20 +67,39 @@ chrome_listener_pid() {
 
 default_chrome_profile_for_port() {
   local port="$1"
-  if [[ "$port" == "9222" ]]; then
-    echo "${HOME}/.chrome-profiles/claude-agent"
-  else
-    echo "${HOME}/.chrome-profiles/codex-chat-${port}"
-  fi
+  case "$port" in
+    9222|9422)
+      echo "${HOME}/.chrome-profiles/codex-agent"
+      ;;
+    *)
+      echo "${HOME}/.chrome-profiles/codex-chat-${port}"
+      ;;
+  esac
+}
+
+default_chrome_headless_for_port() {
+  local port="$1"
+  case "$port" in
+    9422)
+      echo "1"
+      ;;
+    9222)
+      echo "0"
+      ;;
+    *)
+      echo "1"
+      ;;
+  esac
 }
 
 heal_shared_chrome_runtime_state() {
   local log_dir="$1"
-  local port="${2:-9222}"
+  local port="${2:-9422}"
   local pidfile="${log_dir}/chrome-agent-${port}.pid"
   local statefile="${log_dir}/chrome-agent-${port}.env"
   local legacy_pidfile="${log_dir}/chrome-agent.pid"
   local profile_dir
+  local desired_headless
   local listener_pid
   local current_pid
   local current_profile
@@ -111,13 +130,14 @@ heal_shared_chrome_runtime_state() {
   fi
 
   profile_dir="$(default_chrome_profile_for_port "$port")"
+  desired_headless="$(default_chrome_headless_for_port "$port")"
   current_profile="$(sed -n 's/^PROFILE_DIR=//p' "$statefile" | head -n 1)"
   current_headless="$(sed -n 's/^HEADLESS=//p' "$statefile" | head -n 1)"
-  if [[ "$current_profile" != "$profile_dir" || "$current_headless" != "0" || "$(sed -n 's/^PID=//p' "$statefile" | head -n 1)" != "$listener_pid" ]]; then
+  if [[ "$current_profile" != "$profile_dir" || "$current_headless" != "$desired_headless" || "$(sed -n 's/^PID=//p' "$statefile" | head -n 1)" != "$listener_pid" ]]; then
     cat >"$statefile" <<EOF
 DEBUG_PORT=${port}
 PROFILE_DIR=${profile_dir}
-HEADLESS=0
+HEADLESS=${desired_headless}
 PID=${listener_pid}
 EOF
     changed=1
