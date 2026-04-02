@@ -6,7 +6,6 @@ Reusable MCP registrations live in `~/.codex/config.toml`. TRR-local MCPs live i
 |---|---|---|
 | `chrome-devtools` | user-global `~/.codex/config.toml` | Browser navigation, inspection, and authenticated web automation. Default is isolated headless; shared/headful are opt-in exceptions. |
 | `figma` | user-global `~/.codex/config.toml` | Official Figma cloud design context, screenshots, variables, and code connect. |
-| `figma-console` | user-global `~/.codex/config.toml` | Figma Console MCP for write actions, Desktop Bridge workflows, plugin debugging, and live monitoring. |
 | `figma-desktop` | user-global `~/.codex/config.toml` | Local desktop Figma workflows when enabled. |
 | `github` | user-global `~/.codex/config.toml` | GitHub metadata and MCP-hosted remote operations with `GITHUB_PAT`. |
 | `context7` | user-global `~/.codex/config.toml` | Library and framework documentation lookup for implementation and review flows. |

@@ -7,8 +7,19 @@ CODEX_HOME_DIR="${CODEX_HOME:-$HOME/.codex}"
 HEADFUL_OWNER_DIR="${CODEX_CHROME_OWNER_DIR:-${CODEX_HOME_DIR}/tmp/browser-control}"
 HEADFUL_OWNER_FILE="${HEADFUL_OWNER_DIR}/headful-chrome-owner.env"
 
-PROFILE_DIR="${CHROME_AGENT_PROFILE_DIR:-${HOME}/.chrome-profiles/claude-agent}"
-DEBUG_PORT="${CHROME_AGENT_DEBUG_PORT:-9222}"
+PROFILE_DIR="${CHROME_AGENT_PROFILE_DIR:-${HOME}/.chrome-profiles/codex-agent}"
+DEBUG_PORT="${CHROME_AGENT_DEBUG_PORT:-9422}"
+
+default_headless_for_port() {
+  case "$1" in
+    9222)
+      echo "0"
+      ;;
+    *)
+      echo "1"
+      ;;
+  esac
+}
 
 # ── Chrome Profile Identity Guard ──────────────────────────────────
 # This guard applies only to TRR Workspace / Codex agent launches.
@@ -29,7 +40,7 @@ if [[ -z "${CHROME_AGENT_ADMIN_OVERRIDE:-}" ]] \
   echo "[chrome-agent] Set CHROME_AGENT_ADMIN_OVERRIDE=1 if user granted permission." >&2
   echo "[chrome-agent] Set CHROME_AGENT_SKIP_PROFILE_GUARD=1 for non-Codex callers (e.g., Claude in Chrome)." >&2
 fi
-HEADLESS="${CHROME_AGENT_HEADLESS:-0}"
+HEADLESS="${CHROME_AGENT_HEADLESS:-$(default_headless_for_port "$DEBUG_PORT")}"
 DISABLE_GPU="${CHROME_AGENT_DISABLE_GPU:-0}"
 
 PIDFILE="${LOG_DIR}/chrome-agent-${DEBUG_PORT}.pid"
@@ -270,11 +281,21 @@ echo "[chrome-agent]   DevTools: http://localhost:${DEBUG_PORT}"
 if [[ "$FIRST_RUN" == "1" ]]; then
   echo ""
   echo "[chrome-agent] ============================================"
-  echo "[chrome-agent]  FIRST RUN — manual login required"
+  if [[ "$HEADLESS" == "1" ]]; then
+    echo "[chrome-agent]  FIRST RUN — headless profile seeded"
+  else
+    echo "[chrome-agent]  FIRST RUN — manual login required"
+  fi
   echo "[chrome-agent] ============================================"
-  echo "[chrome-agent]  A new Chrome window has opened. Please:"
-  echo "[chrome-agent]  1. Log into the agent Gmail account"
-  echo "[chrome-agent]  2. Log into any other sites the agent needs"
-  echo "[chrome-agent]  3. Sessions will persist across restarts"
+  if [[ "$HEADLESS" == "1" ]]; then
+    echo "[chrome-agent]  Headless shared automation is now using this profile."
+    echo "[chrome-agent]  To perform a first-time manual login, re-run with:"
+    echo "[chrome-agent]  CHROME_AGENT_DEBUG_PORT=9222 CHROME_AGENT_HEADLESS=0 bash ${ROOT}/scripts/chrome-agent.sh"
+  else
+    echo "[chrome-agent]  A new Chrome window has opened. Please:"
+    echo "[chrome-agent]  1. Log into the agent Gmail account"
+    echo "[chrome-agent]  2. Log into any other sites the agent needs"
+    echo "[chrome-agent]  3. Sessions will persist across restarts"
+  fi
   echo "[chrome-agent] ============================================"
 fi

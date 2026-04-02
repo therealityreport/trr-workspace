@@ -34,6 +34,18 @@ trr_read_env_file_value() {
   printf '%s\n' "$value"
 }
 
+trr_export_env_value_from_file_if_unset() {
+  local env_file="$1"
+  local key="$2"
+  local value=""
+
+  [[ -n "${!key:-}" ]] && return 0
+
+  if value="$(trr_read_env_file_value "$env_file" "$key" 2>/dev/null)"; then
+    export "${key}=${value}"
+  fi
+}
+
 trr_runtime_db_env_present() {
   local env_file="$1"
   [[ -n "${TRR_DB_URL:-}" ]] && return 0
@@ -56,15 +68,9 @@ trr_legacy_runtime_db_env_present() {
 
 trr_export_runtime_db_env_from_file() {
   local env_file="$1"
-  local value=""
 
-  if [[ -z "${TRR_DB_URL:-}" ]] && value="$(trr_read_env_file_value "$env_file" "TRR_DB_URL" 2>/dev/null)"; then
-    export TRR_DB_URL="$value"
-  fi
-
-  if [[ -z "${TRR_DB_FALLBACK_URL:-}" ]] && value="$(trr_read_env_file_value "$env_file" "TRR_DB_FALLBACK_URL" 2>/dev/null)"; then
-    export TRR_DB_FALLBACK_URL="$value"
-  fi
+  trr_export_env_value_from_file_if_unset "$env_file" "TRR_DB_URL"
+  trr_export_env_value_from_file_if_unset "$env_file" "TRR_DB_FALLBACK_URL"
 }
 
 trr_runtime_db_resolve_local_app_url() {

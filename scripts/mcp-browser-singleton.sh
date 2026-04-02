@@ -11,7 +11,7 @@
 #   mcp-browser-singleton.sh <group-name> <mcp-command...>
 #
 # Examples:
-#   mcp-browser-singleton.sh chrome-devtools npx -y chrome-devtools-mcp@0.20.0 --browserUrl http://127.0.0.1:9222
+#   mcp-browser-singleton.sh chrome-devtools npx -y chrome-devtools-mcp@0.20.0 --browserUrl http://127.0.0.1:9422
 #   mcp-browser-singleton.sh playwright npx -y @playwright/mcp --browser chrome --user-data-dir ~/.chrome-profiles/playwright-agent
 #
 # How it works:
