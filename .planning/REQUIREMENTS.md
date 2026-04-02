@@ -97,11 +97,11 @@
 | REVW-04 | Phase 4 | Pending |
 | REVW-05 | Phase 4 | Pending |
 | ADMIN-01 | Phase 4 | Pending |
-| ADMIN-02 | Phase 4 | Pending |
+| ADMIN-02 | Phase 5 | Pending |
 | ADMIN-03 | Phase 4 | Pending |
 | MIGR-01 | Phase 1 | Pending |
 | MIGR-02 | Phase 1 | Pending |
-| MIGR-03 | Phase 5 | Pending |
+| MIGR-03 | Phase 3 | Pending |
 | MIGR-04 | Phase 5 | Pending |
 
 **Coverage:**
@@ -111,4 +111,4 @@
 
 ---
 *Requirements defined: 2026-04-02*
-*Last updated: 2026-04-02 after initial definition*
+*Last updated: 2026-04-02 after roadmap alignment*
