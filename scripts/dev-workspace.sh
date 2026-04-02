@@ -618,6 +618,15 @@ else
 fi
 
 # ---------------------------------------------------------------------------
+# Flashback browser-env guard (warning-only)
+# ---------------------------------------------------------------------------
+if [ -z "${NEXT_PUBLIC_SUPABASE_URL:-}" ] || [ -z "${NEXT_PUBLIC_SUPABASE_ANON_KEY:-}" ]; then
+  echo "[workspace] WARNING: NEXT_PUBLIC_SUPABASE_URL and/or NEXT_PUBLIC_SUPABASE_ANON_KEY not set." >&2
+  echo "   Flashback (/flashback/cover, /flashback/play) requires these browser-side Supabase envs." >&2
+  echo "   Set them in apps/web/.env.local — they should point to the same project as TRR_CORE_SUPABASE_URL." >&2
+fi
+
+# ---------------------------------------------------------------------------
 # Optional screenalytics gating (Docker is only required in local_docker mode)
 # ---------------------------------------------------------------------------
 if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
