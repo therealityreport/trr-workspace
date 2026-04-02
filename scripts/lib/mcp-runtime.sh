@@ -206,9 +206,10 @@ list_codex_app_servers() {
 }
 
 chrome_wrapper_pids() {
-  find_matching_pids "scripts/codex-chrome-devtools-mcp\\.sh"
+  find_matching_pids "codex-chrome-devtools-mcp(-global)?\\.sh"
 }
 
 shared_chrome_client_pids() {
-  find_matching_pids "chrome-devtools-mcp --browserUrl http://127\\.0\\.0\\.1:9222"
+  local shared_port="${CODEX_CHROME_SHARED_PORT:-9422}"
+  find_matching_pids "chrome-devtools-mcp --browserUrl http://127\\.0\\.0\\.1:${shared_port}"
 }

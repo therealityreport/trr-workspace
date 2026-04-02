@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SEED_PROFILE_DIR="${CODEX_CHROME_SEED_PROFILE_DIR:-${HOME}/.chrome-profiles/claude-agent}"
+SEED_PROFILE_DIR="${CODEX_CHROME_SEED_PROFILE_DIR:-${HOME}/.chrome-profiles/codex-agent}"
 TARGET_GLOB="${HOME}/.chrome-profiles/codex-chat-*"
 
 if [[ ! -d "$SEED_PROFILE_DIR" ]]; then

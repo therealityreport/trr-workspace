@@ -15,6 +15,7 @@ handoff:
 
 ## Status
 - Workspace-level rollback complete.
+- Historical continuity note only. The current canonical Chrome DevTools runtime is the user-global launcher on shared headless `9422`, not the older `9222` shared default.
 
 ## What changed
 - Restored Codex live config at `/Users/thomashulihan/.codex/config.toml` to the canonical Chrome wrapper:
@@ -29,7 +30,7 @@ handoff:
 - Passed: `bash -n scripts/mcp-browser-singleton.sh scripts/chrome-devtools-mcp-status.sh scripts/codex-chrome-devtools-mcp.sh scripts/codex-config-sync.sh`
 - Passed: `bash scripts/codex-config-sync.sh validate`
 - Passed: `make chrome-devtools-mcp-status`
-  - shared `9222` reachable
+  - shared `9422` reachable
   - supported wrapper path reported
   - conflict risk `0`
   - smoke check passed

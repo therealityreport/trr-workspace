@@ -102,7 +102,6 @@ if trusted_project != "trusted":
     raise SystemExit(1)
 
 servers = data.get("mcp_servers") or {}
-expected_wrapper = str(path.parent / "bin" / "codex-figma-console-mcp.sh")
 global_chrome_wrapper = str(path.parent / "bin" / "codex-chrome-devtools-mcp-global.sh")
 required_disabled_skill_names = {
     "api-gateway",
@@ -168,13 +167,6 @@ required_disabled_skill_paths.update(
         str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "wordpress-pro" / "SKILL.md"),
     }
 )
-required_plugins = {
-    "github@openai-curated": True,
-    "gmail@openai-curated": False,
-    "google-drive@openai-curated": False,
-    "hugging-face@openai-curated": False,
-    "vercel@openai-curated": True,
-}
 required = {
     "chrome-devtools": {
         "command": global_chrome_wrapper,
@@ -190,7 +182,6 @@ required = {
     },
     "figma": {"url": "https://mcp.figma.com/mcp", "enabled": True},
     "figma-desktop": {"url": "http://127.0.0.1:3845/mcp", "enabled": False},
-    "figma-console": {"command": expected_wrapper, "enabled": False},
     "playwright": {"command": "npx", "args": ["-y", "@playwright/mcp", "--isolated"], "enabled": False},
     "github": {"url": "https://api.githubcopilot.com/mcp", "bearer_token_env_var": "GITHUB_PAT"},
     "context7": {"command": "npx", "args": ["-y", "@upstash/context7-mcp"], "enabled": True},
@@ -209,13 +200,6 @@ for name in servers:
         raise SystemExit(1)
 
 plugins = data.get("plugins") or {}
-for plugin_name, enabled in required_plugins.items():
-    plugin = plugins.get(plugin_name)
-    if not isinstance(plugin, dict):
-        raise SystemExit(1)
-    if plugin.get("enabled") is not enabled:
-        raise SystemExit(1)
-
 skills = data.get("skills") or {}
 skill_configs = skills.get("config") or []
 normalized_skill_paths = set()
@@ -340,10 +324,6 @@ required_servers = {
     },
     "figma": {"url": "https://mcp.figma.com/mcp", "enabled": True},
     "figma-desktop": {"url": "http://127.0.0.1:3845/mcp", "enabled": False},
-    "figma-console": {
-        "command": f"{pathlib.Path.home()}/.codex/bin/codex-figma-console-mcp.sh",
-        "enabled": False,
-    },
     "playwright": {"command": "npx", "args": ["-y", "@playwright/mcp", "--isolated"], "enabled": False},
     "github": {"url": "https://api.githubcopilot.com/mcp", "bearer_token_env_var": "GITHUB_PAT"},
     "context7": {"command": "npx", "args": ["-y", "@upstash/context7-mcp"], "enabled": True},
@@ -354,24 +334,6 @@ for name, required in required_servers.items():
         server = {}
         servers[name] = server
     server.update(required)
-
-required_plugins = {
-    "github@openai-curated": {"enabled": True},
-    "gmail@openai-curated": {"enabled": False},
-    "google-drive@openai-curated": {"enabled": False},
-    "hugging-face@openai-curated": {"enabled": False},
-    "vercel@openai-curated": {"enabled": True},
-}
-plugins = data.get("plugins")
-if not isinstance(plugins, dict):
-    plugins = {}
-data["plugins"] = plugins
-for plugin_name, settings in required_plugins.items():
-    plugin = plugins.get(plugin_name)
-    if not isinstance(plugin, dict):
-        plugin = {}
-        plugins[plugin_name] = plugin
-    plugin.update(settings)
 
 required_disabled_skill_names = [
     "api-gateway",
@@ -553,10 +515,6 @@ required_servers = {
 required_user_servers = {
     "figma": {"url": "https://mcp.figma.com/mcp", "enabled": True},
     "figma-desktop": {"url": "http://127.0.0.1:3845/mcp", "enabled": False},
-    "figma-console": {
-        "command": expected_global_wrapper.replace("codex-chrome-devtools-mcp-global.sh", "codex-figma-console-mcp.sh"),
-        "enabled": False,
-    },
     "chrome-devtools": {
         "command": expected_global_wrapper,
         "env": {
@@ -572,13 +530,6 @@ required_user_servers = {
     "playwright": {"command": "npx", "args": ["-y", "@playwright/mcp", "--isolated"], "enabled": False},
     "github": {"url": "https://api.githubcopilot.com/mcp", "bearer_token_env_var": "GITHUB_PAT"},
     "context7": {"command": "npx", "args": ["-y", "@upstash/context7-mcp"], "enabled": True},
-}
-required_user_plugins = {
-    "github@openai-curated": {"enabled": True},
-    "gmail@openai-curated": {"enabled": False},
-    "google-drive@openai-curated": {"enabled": False},
-    "hugging-face@openai-curated": {"enabled": False},
-    "vercel@openai-curated": {"enabled": True},
 }
 required_top_level = {
     "model": "gpt-5.4",
@@ -727,17 +678,6 @@ else:
             actual = server.get(key)
             if actual != value:
                 errors.append(f"user [mcp_servers.{name}] expected {key}={value!r}, found {actual!r}")
-
-    user_plugins = user_data.get("plugins") or {}
-    for name, expectations in required_user_plugins.items():
-        plugin = user_plugins.get(name)
-        if not isinstance(plugin, dict):
-            errors.append(f"user config missing [plugins.{name}]")
-            continue
-        for key, value in expectations.items():
-            actual = plugin.get(key)
-            if actual != value:
-                errors.append(f"user [plugins.{name}] expected {key}={value!r}, found {actual!r}")
 
     user_config_text = user_config_path.read_text(encoding="utf-8")
     if expected_wrapper in user_config_text or "vwxfvzutyufrkhfgoeaa" in user_config_text:

@@ -57,6 +57,7 @@ HISTORICAL_PATH_FRAGMENTS = (
     "docs/cross-collab/",
     "docs/ai/",
     "docs/_archive/",
+    "docs/superpowers/plans/",
 )
 
 IN_PROGRESS_PATH_FRAGMENTS = (

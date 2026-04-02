@@ -15,11 +15,12 @@ handoff:
 
 ## Status
 - Complete.
+- Historical only. `figma-console` is no longer part of the active expected MCP baseline for TRR.
 
 ## What changed
 - Added a new user-global `figma-console` MCP registration alongside the existing `figma` and `figma-desktop` servers.
 - Added a Keychain-backed launcher at `/Users/thomashulihan/Projects/TRR/scripts/codex-figma-console-mcp.sh` so the Figma Console PAT is resolved from macOS Keychain service `codex-figma-console` or, if needed, inherited `FIGMA_ACCESS_TOKEN`.
-- Updated the global bootstrap and validation flow so `figma-console` is part of the expected global MCP set.
+- Updated the global bootstrap and validation flow so `figma-console` was part of the expected global MCP set at the time of rollout.
 - Upgraded the global `figma` skill and related aliases to treat official Figma MCP and `figma-console` as complementary tools with explicit capability routing.
 - Updated the relevant TRR MCP inventory and skill-governance docs to document the dual-Figma workflow.
 
