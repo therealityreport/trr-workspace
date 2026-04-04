@@ -1,100 +1,101 @@
 # Technology Stack
 
-**Analysis Date:** 2026-04-02
+**Analysis Date:** 2026-04-04
 
 ## Languages
 
 **Primary:**
-- TypeScript - Frontend and server route code in `TRR-APP/apps/web/src/**`, optional Next.js prototype code in `screenalytics/web/**`, and workspace app code in `TRR-APP/apps/vue-wordle/**`.
-- Python 3.11.9 - Backend and pipeline code in `TRR-Backend/api/**`, `TRR-Backend/trr_backend/**`, `screenalytics/apps/**`, and `screenalytics/packages/py-screenalytics/**`.
+- Python `3.11` / `3.11.9` - backend, API, ML, pipelines, and workspace automation in `TRR-Backend/api/`, `TRR-Backend/trr_backend/`, `screenalytics/apps/api/`, `screenalytics/packages/py-screenalytics/`, `scripts/`, `TRR-Backend/.python-version`, and `screenalytics/.python-version`.
+- TypeScript - application and server code in `TRR-APP/apps/web/src/`, `TRR-APP/apps/web/scripts/`, `TRR-APP/apps/web/tests/`, and `screenalytics/web/`.
 
 **Secondary:**
-- JavaScript / ESM scripts - Build, migration, and design-doc tooling in `TRR-APP/apps/web/scripts/**`.
-- TOML / YAML / JSON - Runtime and deployment config in `TRR-Backend/supabase/config.toml`, `TRR-Backend/render.yaml`, `TRR-APP/apps/web/vercel.json`, `TRR-APP/pnpm-workspace.yaml`, and GitHub Actions workflow files under each repo’s `.github/workflows/`.
-- SQL - Database ownership lives under `TRR-Backend/supabase/**`; app-side migrations are triggered by `TRR-APP/apps/web/scripts/run-migrations.mjs`.
+- JavaScript / ESM - build tooling and migration scripts in `TRR-APP/apps/web/next.config.ts`, `TRR-APP/apps/web/scripts/*.mjs`, and `screenalytics/web/next.config.mjs`.
+- SQL - schema and operational data definition in `TRR-Backend/supabase/migrations/` and ad hoc SQL under `TRR-APP/scripts/sql/`.
+- Bash / shell - workspace orchestration and operator tooling in `Makefile`, `scripts/`, `TRR-Backend/scripts/`, and `screenalytics/scripts/`.
 
 ## Runtime
 
 **Environment:**
-- Node `24.x` is the workspace JS target from `.nvmrc`, `TRR-APP/.nvmrc`, `TRR-APP/package.json`, and `screenalytics/web/package.json`.
-- Python `3.11.9` is the pinned backend/runtime target from `TRR-Backend/.python-version` and `screenalytics/.python-version`.
-- Container runtime targets use Debian Bookworm slim base images in `TRR-Backend/Dockerfile` and `screenalytics/Dockerfile.pipeline`.
+- Node `24.x` is the workspace target in `AGENTS.md`, enforced in `TRR-APP/package.json`, `TRR-APP/apps/web/package.json`, and `screenalytics/web/package.json`.
+- `.nvmrc` and `TRR-APP/.nvmrc` both pin major `24`.
+- Python `3.11` is the workspace target in `AGENTS.md`; `TRR-Backend/.python-version` and `screenalytics/.python-version` pin `3.11.9`.
+- Container runtimes use `python:3.11-slim-bookworm` in `TRR-Backend/Dockerfile` and `screenalytics/Dockerfile.pipeline`.
 
 **Package Manager:**
-- `pnpm@10.15.0` is the canonical JS package manager in `TRR-APP/package.json`.
-- Lockfile: present in `TRR-APP/pnpm-lock.yaml` and `TRR-APP/apps/web/pnpm-lock.yaml`.
-- Python installs use `pip install -r requirements.txt`, but Python locks are compiled with `uv` from `TRR-Backend/requirements.in` -> `TRR-Backend/requirements.lock.txt` and `screenalytics/requirements-*.in` -> `screenalytics/requirements-*.lock.txt`.
-- `hatchling` builds the shared Python package defined in `screenalytics/packages/py-screenalytics/pyproject.toml`.
+- `pnpm@10.15.0` - primary Node package manager in `TRR-APP/package.json`.
+- Lockfile: present in `TRR-APP/pnpm-lock.yaml`.
+- `pip` + `venv` + compiled requirements - Python dependency installation via `TRR-Backend/requirements.txt`, `screenalytics/requirements.txt`, `screenalytics/requirements-core.txt`, and `TRR-APP/requirements.txt`.
+- Lockfile: present as compiled requirement references in `TRR-Backend/requirements.txt` -> `requirements.lock.txt`, `screenalytics/requirements-core.txt` -> `requirements-core.lock.txt`, and `TRR-APP/requirements.txt` -> `requirements.lock.txt`.
+- `hatchling` - package build backend for the reusable Python package in `screenalytics/packages/py-screenalytics/pyproject.toml`.
 
 ## Frameworks
 
 **Core:**
-- Next.js `16.1.6` + React `19.1.0` in `TRR-APP/apps/web/package.json` for the primary TRR web/admin surface.
-- FastAPI `0.135.2` in `TRR-Backend/requirements.lock.txt` for the TRR API in `TRR-Backend/api/main.py`.
-- FastAPI `0.129.0` in `screenalytics/requirements-core.in` for the Screenalytics API in `screenalytics/apps/api/main.py`.
-- Streamlit `1.54.0` in `screenalytics/requirements-core.in` for the Screenalytics operator UI under `screenalytics/apps/workspace-ui/**`.
-- Next.js `14.2.35` + React `18.2.0` in `screenalytics/web/package.json` for the optional Screenalytics web prototype.
+- FastAPI - API framework for `TRR-Backend` in `TRR-Backend/api/main.py` and for `screenalytics` in `screenalytics/apps/api/main.py`.
+- Next.js `16.1.6` - primary web app framework in `TRR-APP/apps/web/package.json` and `TRR-APP/apps/web/next.config.ts`.
+- React `19.1.0` - UI layer for `TRR-APP/apps/web` in `TRR-APP/apps/web/package.json`.
+- Streamlit `1.54.0` - screenalytics review UI in `screenalytics/requirements-core.in` and `screenalytics/apps/workspace-ui/streamlit_app.py`.
+- Next.js `14.2.35` - secondary screenalytics web surface in `screenalytics/web/package.json` and `screenalytics/web/next.config.mjs`.
 
 **Testing:**
-- Vitest `2.1.9` in `TRR-APP/apps/web/package.json` with config in `TRR-APP/apps/web/vitest.config.ts`.
-- Playwright `1.58.2` in `TRR-APP/apps/web/package.json` for E2E coverage via `TRR-APP/apps/web/scripts` and `TRR-APP/apps/web/tests/e2e/**`.
-- Pytest `8.x` in `TRR-Backend/requirements.in`, `screenalytics/requirements-core.in`, and their CI workflows.
+- `pytest` - Python test runner in `TRR-Backend/pytest.ini`, `TRR-Backend/requirements.in`, and `screenalytics/requirements-core.in`.
+- `Vitest` - unit/component tests for `TRR-APP` in `TRR-APP/apps/web/package.json` and `TRR-APP/apps/web/vitest.config.ts`.
+- `Playwright` - browser and smoke tests for `TRR-APP` in `TRR-APP/apps/web/package.json` and `TRR-APP/apps/web/playwright.config.ts`.
 
 **Build/Dev:**
-- Turbopack and Webpack are both used by `TRR-APP/apps/web/package.json`; `TRR-APP/apps/web/next.config.ts` keeps Webpack aliases and Turbopack root config in sync.
-- Tailwind CSS `4.x` and `@tailwindcss/postcss` drive frontend styling in `TRR-APP/apps/web/package.json` and `screenalytics/web/package.json`.
-- Uvicorn + Gunicorn back the Python APIs via `TRR-Backend/Dockerfile`, `TRR-Backend/requirements.in`, and `screenalytics/apps/api/main.py`.
-- Celery `5.6.2` with Redis backs background jobs in `screenalytics/apps/api/celery_app.py`.
-- Modal `1.4.0` backs TRR remote long-job execution in `TRR-Backend/trr_backend/modal_dispatch.py`.
+- Supabase CLI/config - schema docs, migrations, and local DB replay from `TRR-Backend/Makefile` and `TRR-Backend/supabase/config.toml`.
+- Modal - remote job runtime in `TRR-Backend/trr_backend/modal_jobs.py`.
+- Vercel - deployment and cron surface for the main app in `TRR-APP/apps/web/vercel.json`.
+- Tailwind CSS `4.x` - frontend styling in `TRR-APP/apps/web/package.json` and `screenalytics/web/package.json`.
+- ESLint - TypeScript/Next linting in `TRR-APP/apps/web/eslint.config.mjs`.
+- Ruff / Pyright - Python linting and type checking in `TRR-Backend/ruff.toml`, `TRR-Backend/pyrightconfig.json`, `screenalytics/pyproject.toml`, and `screenalytics/pyrightconfig.json`.
 
 ## Key Dependencies
 
 **Critical:**
-- `firebase` / `firebase-admin` in `TRR-APP/apps/web/package.json` and `TRR-APP/package.json` for client auth, session setup, Firestore-backed features, and emulator support in `TRR-APP/apps/web/src/lib/firebase.ts`, `TRR-APP/apps/web/src/lib/firebaseAdmin.ts`, and `TRR-APP/apps/web/src/lib/server/auth.ts`.
-- `@supabase/supabase-js` in `TRR-APP/apps/web/package.json` for Supabase-auth verification and admin access in `TRR-APP/apps/web/src/lib/server/auth.ts` and `TRR-APP/apps/web/src/lib/server/supabase-trr-admin.ts`.
-- `pg` in `TRR-APP/apps/web/package.json` for direct Postgres reads/writes and migrations in `TRR-APP/apps/web/src/lib/server/postgres.ts` and `TRR-APP/apps/web/scripts/run-migrations.mjs`.
-- `supabase==2.28.3` and `postgrest==2.28.3` in `TRR-Backend/requirements.in` for backend-side Supabase access.
-- `psycopg2-binary` in `TRR-Backend/requirements.in` and `screenalytics/requirements-core.in` for direct Postgres access.
-- `boto3` in `TRR-Backend/requirements.in` and `screenalytics/requirements-core.in` for S3/R2-compatible object storage.
-- `modal` in `TRR-Backend/requirements.in` for remote execution ownership and job dispatch.
-- `celery[redis]` and `redis` in `screenalytics/requirements-core.in` for asynchronous Screenalytics processing.
+- `@supabase/supabase-js` - TRR-APP server auth/admin access in `TRR-APP/apps/web/package.json`, `TRR-APP/apps/web/src/lib/server/auth.ts`, and `TRR-APP/apps/web/src/lib/server/supabase-trr-admin.ts`.
+- `pg` - direct Postgres access from TRR-APP in `TRR-APP/apps/web/package.json` and `TRR-APP/apps/web/src/lib/server/postgres.ts`.
+- `psycopg2-binary` - direct Postgres access in `TRR-Backend/requirements.in`, `TRR-Backend/trr_backend/db/*.py`, and `screenalytics/apps/api/services/supabase_db.py`.
+- `firebase` / `firebase-admin` - client and server auth/session surfaces in `TRR-APP/package.json`, `TRR-APP/apps/web/package.json`, `TRR-APP/apps/web/src/lib/firebase.ts`, and `TRR-APP/apps/web/src/lib/firebaseAdmin.ts`.
+- `modal` - backend remote execution plane in `TRR-Backend/requirements.in` and `TRR-Backend/trr_backend/modal_jobs.py`.
+- `celery[redis]` + `redis` - screenalytics async jobs in `screenalytics/requirements-core.in`, `screenalytics/apps/api/celery_app.py`, and `screenalytics/apps/api/routers/celery_jobs.py`.
+- `boto3` - S3/R2/MinIO-compatible storage access in `TRR-Backend/requirements.in`, `TRR-Backend/trr_backend/object_storage.py`, `screenalytics/requirements-core.in`, and `screenalytics/apps/api/services/storage.py`.
 
 **Infrastructure:**
-- `google-genai` in `TRR-Backend/requirements.in` and `screenalytics/requirements-ml.in` for Gemini-based enrichment and ML-adjacent tooling.
-- `anthropic` in `TRR-Backend/requirements.in` and `screenalytics/requirements-core.in` for Claude-based computer-use and diagnostics flows.
-- `openai` appears in `screenalytics/web/package.json` and is used directly in `screenalytics/apps/api/services/openai_diagnostics.py` and `TRR-APP/apps/web/src/app/api/design-docs/generate-image/route.ts`.
-- `torch`, `torchvision`, `ultralytics`, `insightface`, `onnxruntime`, `faiss-cpu`, `hdbscan`, and `pgvector` in `screenalytics/requirements-ml.in` define the optional ML pipeline.
-- `@tanstack/react-query`, `zod`, `@prisma/client`, and `prisma` in `screenalytics/web/package.json` support the optional Screenalytics Next.js app.
+- `fastapi`, `uvicorn`, `gunicorn` - API serving in `TRR-Backend/requirements.in`, `TRR-Backend/Dockerfile`, and `screenalytics/requirements-core.in`.
+- `requests` / `httpx` / `undici` - outbound HTTP clients in `TRR-Backend/requirements.in`, `screenalytics/requirements-core.in`, and `TRR-APP/apps/web/src/lib/server/sse-proxy.ts`.
+- `crawlee` - social scraping runtime in `TRR-Backend/requirements.in` and `TRR-Backend/trr_backend/socials/crawlee_runtime/`.
+- `openai`, `anthropic`, `google-genai` / `google-generativeai` - AI-backed utilities in `TRR-Backend/requirements.in`, `TRR-Backend/trr_backend/integrations/openai_fandom_cleanup.py`, `TRR-Backend/trr_backend/clients/computer_use.py`, `screenalytics/apps/api/services/openai_diagnostics.py`, and `TRR-APP/requirements.in`.
+- `torch`, `opencv-python`, `numpy`, `pyarrow`, `pandas` - ML/data pipeline stack in `screenalytics/requirements-core.in` and `screenalytics/packages/py-screenalytics/pyproject.toml`.
 
 ## Configuration
 
 **Environment:**
-- Root Node version pin lives in `.nvmrc`; repo-level pins live in `TRR-APP/.nvmrc`, `TRR-Backend/.python-version`, and `screenalytics/.python-version`.
-- Workspace env contract is documented in `docs/workspace/env-contract.md`.
-- Env files are present but must not be read directly: `TRR-Backend/.env`, `TRR-Backend/.env.example`, `TRR-APP/apps/web/.env.example`, `TRR-APP/apps/web/.env.local`, `TRR-APP/apps/web/.env.production.local`, `TRR-APP/apps/web/.env.vercel.local`, `screenalytics/.env`, `screenalytics/.env.example`, and `screenalytics/web/.env.local.example`.
-- Runtime DB resolution is standardized on `TRR_DB_URL` then `TRR_DB_FALLBACK_URL` in `TRR-Backend/trr_backend/db/connection.py`, `screenalytics/apps/api/services/supabase_db.py`, and `TRR-APP/apps/web/src/lib/server/postgres.ts`.
-- Frontend auth/config surfaces are statically read from `TRR-APP/apps/web/src/lib/firebase-client-config.ts`, `TRR-APP/apps/web/src/lib/server/auth.ts`, and `TRR-APP/apps/web/src/lib/server/supabase-trr-admin.ts`.
+- Shared cross-repo env naming is documented in `docs/workspace/env-contract.md`, `docs/workspace/env-contract-inventory.md`, and enforced by `scripts/env_contract_report.py` and `scripts/check-workspace-contract.sh`.
+- Workspace startup and env derivation are centralized in `scripts/dev-workspace.sh` and `scripts/lib/runtime-db-env.sh`.
+- Vercel env governance for `TRR-APP` is documented in `docs/workspace/vercel-env-review.md`.
+- Repo-specific runtime env surfaces are validated at startup in `TRR-Backend/api/main.py`, `screenalytics/apps/api/main.py`, and `TRR-APP/apps/web/src/lib/server/postgres.ts`.
 
 **Build:**
-- JS workspace config: `TRR-APP/pnpm-workspace.yaml`, `TRR-APP/apps/web/tsconfig.json`, `TRR-APP/apps/web/next.config.ts`, `TRR-APP/apps/web/vitest.config.ts`.
-- Optional Screenalytics web config: `screenalytics/web/next.config.mjs`, `screenalytics/web/tsconfig.json`.
-- Python local Supabase stack config: `TRR-Backend/supabase/config.toml`.
-- Deployment descriptors: `TRR-APP/apps/web/vercel.json`, `TRR-Backend/render.yaml`, `TRR-Backend/Dockerfile`, `screenalytics/Dockerfile.pipeline`.
-- CI workflows: `TRR-APP/.github/workflows/web-tests.yml`, `TRR-Backend/.github/workflows/ci.yml`, `screenalytics/.github/workflows/ci.yml`.
+- Workspace orchestration lives in `Makefile` and `docs/workspace/dev-commands.md`.
+- TRR-APP build config is in `TRR-APP/apps/web/next.config.ts`, `TRR-APP/apps/web/vercel.json`, `TRR-APP/apps/web/eslint.config.mjs`, `TRR-APP/apps/web/playwright.config.ts`, and `TRR-APP/apps/web/vitest.config.ts`.
+- TRR-Backend build/runtime config is in `TRR-Backend/Dockerfile`, `TRR-Backend/Makefile`, `TRR-Backend/ruff.toml`, `TRR-Backend/pytest.ini`, and `TRR-Backend/supabase/config.toml`.
+- screenalytics build/runtime config is in `screenalytics/Dockerfile.pipeline`, `screenalytics/Makefile`, `screenalytics/pyproject.toml`, `screenalytics/requirements-core.in`, and `screenalytics/web/next.config.mjs`.
 
 ## Platform Requirements
 
 **Development:**
-- Node `24.x` with Corepack/pnpm for `TRR-APP/**`.
-- Python `3.11.9` virtualenvs for `TRR-Backend/**` and `screenalytics/**`.
-- Docker is required for the Supabase local stack in `TRR-Backend/supabase/config.toml` and for the default Screenalytics local infra described in `screenalytics/README.md`; `screenalytics` also supports a no-Docker mode with external Redis/object storage.
-- `ffmpeg` is required by `screenalytics/Dockerfile.pipeline` and the Screenalytics local setup in `screenalytics/README.md`.
+- Use `make dev` for the canonical cloud-first workspace path from `Makefile` and `docs/workspace/dev-commands.md`.
+- Use `make dev-local` only for the explicit Docker-backed Screenalytics fallback with local Redis + MinIO, as documented in `Makefile` and `docs/workspace/dev-commands.md`.
+- `TRR-Backend` expects a Python virtualenv plus Supabase-compatible DB/auth envs as documented in `TRR-Backend/docs/api/run.md`.
+- `TRR-APP` expects Node `24.x`, `pnpm`, and runtime env injection for Firebase, Supabase admin access, Postgres, and backend base URLs in `TRR-APP/apps/web/src/lib/firebase-client-config.ts`, `TRR-APP/apps/web/src/lib/server/postgres.ts`, and `TRR-APP/apps/web/src/lib/server/trr-api/backend.ts`.
 
 **Production:**
-- `TRR-APP/apps/web` is Vercel-oriented via `TRR-APP/apps/web/vercel.json` and cron route handlers in `TRR-APP/apps/web/src/app/api/cron/**`.
-- `TRR-Backend` is containerized for generic HTTP platforms via `TRR-Backend/Dockerfile`; `TRR-Backend/render.yaml` explicitly defines a Render web service, and the container entrypoint is also Cloud Run compatible.
-- `screenalytics` production is container- and worker-oriented: API in `screenalytics/apps/api/main.py`, Celery workers in `screenalytics/apps/api/celery_app.py`, optional Streamlit UI in `screenalytics/apps/workspace-ui/streamlit_app.py`, and object storage/Redis/Postgres dependencies from `screenalytics/apps/api/config/__init__.py`.
+- `TRR-APP` deploys to Vercel with scheduled cron routes defined in `TRR-APP/apps/web/vercel.json`.
+- `TRR-Backend` is containerizable via `TRR-Backend/Dockerfile`; current deployment guidance references a Render API host plus Modal job plane in `TRR-Backend/docs/api/run.md` and `TRR-Backend/trr_backend/modal_jobs.py`.
+- Modal is the remote executor for backend long-running work in `TRR-Backend/trr_backend/modal_jobs.py` and `scripts/dev-workspace.sh`.
+- `screenalytics` has a local/API pipeline deployment surface plus a secondary Next.js web surface in `screenalytics/apps/api/main.py`, `screenalytics/Dockerfile.pipeline`, and `screenalytics/web/package.json`; no separate workspace-level production hosting contract is declared in shared docs.
 
 ---
 
-*Stack analysis: 2026-04-02*
+*Stack analysis: 2026-04-04*
