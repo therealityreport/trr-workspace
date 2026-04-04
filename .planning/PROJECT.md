@@ -4,7 +4,7 @@
 
 An internal TRR engineering planning track for major backend, runtime, and workspace improvements that cut across the shared repos. The first completed milestone delivered the backend-owned screentime reset; the current milestone focuses on making workspace development and validation cloud-first so Docker is optional instead of assumed.
 
-## Current Milestone: v1.1 Cloud-First / No-Docker Workspace Tooling
+## Latest Shipped Milestone: v1.1 Cloud-First / No-Docker Workspace Tooling
 
 **Goal:** Make this workspace's development and validation flows cloud-first so Docker is optional instead of assumed.
 
@@ -25,14 +25,14 @@ Ship repo-spanning changes through workflows that are trustworthy, repeatable, a
 - ✓ The screentime reset delivered backend-owned asset intake, identity governance, execution, review, publication, and runtime retirement across `TRR-Backend` and `TRR-APP` — milestone v1.0
 - ✓ The workspace can run backend-owned screentime verification against a remote Supabase environment without `SCREENALYTICS_*` production runtime dependencies — milestone v1.0
 - ✓ The screentime admin UI can operate against backend-owned contracts while the split runtime is retired — milestone v1.0
+- ✓ Phase 6 froze the preferred cloud-first workspace contract in shared docs, generated env docs, and handoff notes — milestone v1.1
+- ✓ Phase 6 set backend schema-validation guidance to prefer isolated remote Supabase branches or disposable targets and explicitly exclude shared persistent databases from destructive validation — milestone v1.1
+- ✓ Phase 7 aligned root help surfaces, shared profiles, and runtime messaging so Docker-backed Screenalytics infra is explicit fallback rather than assumed baseline — milestone v1.1
+- ✓ Phase 8 proved a real no-Docker verification lane in this workspace and documented the remaining Docker-only cases as explicit fallback — milestone v1.1
 
 ### Active
 
-- [ ] Workspace development defaults prefer cloud-first or remote validation flows over Docker-dependent local infrastructure
-- [ ] Schema and migration validation can be performed safely against remote Supabase branches or disposable environments without requiring local `supabase start` as the default path
-- [ ] Workspace scripts, profiles, and doctor checks make Docker opt-in for narrow cases instead of the assumed baseline
-- [ ] Screenalytics-specific local infra assumptions are isolated so they do not block unrelated backend or app development
-- [ ] Docs and handoffs clearly describe the no-Docker preferred path and when a Docker fallback is still acceptable
+- [ ] Define the next milestone scope
 
 ### Out of Scope
 
@@ -51,8 +51,13 @@ Ship repo-spanning changes through workflows that are trustworthy, repeatable, a
 ## Current State
 
 - Milestone v1.0 is complete in the prior workstream and delivered the five-phase screentime reset.
-- Milestone v1.1 is starting in `feature-b` and is focused on workspace/tooling defaults rather than product/runtime feature expansion.
-- The next planning target is Phase 6 of the cloud-first workspace tooling roadmap.
+- Milestone v1.1 in `feature-b` is shipped and archived.
+- The workspace is ready for the next milestone definition.
+
+## Next Milestone Goals
+
+- Decide whether the next milestone continues workspace-tooling simplification, returns to product/runtime work, or tackles a different cross-repo objective.
+- Start the next milestone with fresh requirements instead of extending archived v1.1 scope.
 
 ## Constraints
 
@@ -68,8 +73,8 @@ Ship repo-spanning changes through workflows that are trustworthy, repeatable, a
 |----------|-----------|---------|
 | Build the screentime reset as a backend-owned migration first | The production runtime needed to leave the standalone `screenalytics` service behind before tooling cleanup | ✓ Good |
 | Keep the screentime system internal admin-first | Reviewability and operator trust mattered more than public product expansion for v1 | ✓ Good |
-| Treat no-Docker workspace operation as a milestone-level tooling goal, not a one-off complaint | The preference affects validation defaults, script behavior, and future milestone planning | — Pending |
-| Prefer remote Supabase branches or disposable environments over local Docker when they answer the same validation question | This reduces machine-specific friction while preserving safe, isolated verification | — Pending |
+| Treat no-Docker workspace operation as a milestone-level tooling goal, not a one-off complaint | The preference affects validation defaults, script behavior, and future milestone planning | ✓ Good |
+| Prefer remote Supabase branches or disposable environments over local Docker when they answer the same validation question | This reduces machine-specific friction while preserving safe, isolated verification | ✓ Good |
 
 ## Evolution
 
@@ -89,4 +94,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-03 after starting milestone v1.1 Cloud-First / No-Docker Workspace Tooling*
+*Last updated: 2026-04-04 after v1.1 milestone archival*

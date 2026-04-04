@@ -8,6 +8,8 @@ source "$ROOT/scripts/lib/runtime-db-env.sh"
 
 # Optional profile defaults.
 # Usage: PROFILE=default make dev
+# Default workspace contract: `make dev` is cloud-first. `local_docker` is an
+# explicit fallback for local-only Screenalytics / Redis / MinIO cases.
 PROFILE="${PROFILE:-}"
 if [[ -n "$PROFILE" ]]; then
   PROFILE_FILE="$ROOT/profiles/${PROFILE}.env"
@@ -41,7 +43,7 @@ if [[ -n "$PROFILE" ]]; then
       echo "[workspace] NOTE: PROFILE=local-cloud is deprecated; use make dev (or PROFILE=default make dev)." >&2
       ;;
     local-full)
-      echo "[workspace] NOTE: PROFILE=local-full is deprecated; use make dev-local (or PROFILE=local-docker make dev-local)." >&2
+      echo "[workspace] NOTE: PROFILE=local-full is deprecated; use the explicit Docker fallback: make dev-local (or PROFILE=local-docker make dev-local)." >&2
       ;;
   esac
 fi
@@ -138,7 +140,7 @@ if [[ -z "$WORKSPACE_DEV_MODE" ]]; then
 fi
 
 if [[ "$WORKSPACE_DEV_MODE" != "cloud" && "$WORKSPACE_DEV_MODE" != "local_docker" ]]; then
-  echo "[workspace] ERROR: invalid WORKSPACE_DEV_MODE='${WORKSPACE_DEV_MODE}' (expected cloud or local_docker)." >&2
+  echo "[workspace] ERROR: invalid WORKSPACE_DEV_MODE='${WORKSPACE_DEV_MODE}' (expected cloud for the preferred no-Docker path or local_docker for the explicit Docker fallback)." >&2
   exit 1
 fi
 
@@ -172,10 +174,18 @@ workspace_screenalytics_mode_label() {
     return 0
   fi
   if [[ "$WORKSPACE_DEV_MODE" == "local_docker" ]]; then
-    echo "local Docker (Redis + MinIO)"
+    echo "explicit local Docker fallback (Redis + MinIO)"
     return 0
   fi
-  echo "cloud-backed (no Docker)"
+  echo "preferred cloud-backed (no Docker)"
+}
+
+workspace_dev_mode_label() {
+  if [[ "$WORKSPACE_DEV_MODE" == "local_docker" ]]; then
+    echo "local_docker (explicit Docker fallback)"
+    return 0
+  fi
+  echo "cloud (preferred no-Docker path)"
 }
 
 workspace_screenalytics_streamlit_enabled() {
@@ -633,23 +643,23 @@ if [ -z "${NEXT_PUBLIC_SUPABASE_URL:-}" ] || [ -z "${NEXT_PUBLIC_SUPABASE_ANON_K
 fi
 
 # ---------------------------------------------------------------------------
-# Optional screenalytics gating (Docker is only required in local_docker mode)
+# Optional screenalytics gating (Docker is only required in the explicit local_docker fallback mode)
 # ---------------------------------------------------------------------------
 if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
   if [[ "$WORKSPACE_SCREENALYTICS_SKIP_DOCKER" != "1" ]]; then
     if ! command -v docker >/dev/null 2>&1; then
       if [[ "$WORKSPACE_STRICT" == "1" ]]; then
-        echo "[workspace] ERROR: docker not found (required for make dev-local / local Redis + MinIO)." >&2
+        echo "[workspace] ERROR: docker not found (required for the explicit make dev-local fallback / local Screenalytics Redis + MinIO)." >&2
         exit 1
       fi
-      echo "[workspace] WARNING: docker not found; disabling screenalytics for this session." >&2
+      echo "[workspace] WARNING: docker not found; disabling screenalytics for this session because the explicit Docker fallback is unavailable." >&2
       WORKSPACE_SCREENALYTICS=0
     elif ! docker info >/dev/null 2>&1; then
-      echo "[workspace] Docker daemon is not running. Starting Docker..."
+      echo "[workspace] Docker fallback selected; Docker daemon is not running. Starting Docker..."
       if [[ "$(uname)" == "Darwin" ]]; then
         if [[ -d "/Applications/Docker.app" ]]; then
           open -a Docker
-          echo "[workspace] Waiting for Docker daemon..."
+          echo "[workspace] Waiting for Docker daemon for the explicit dev-local fallback..."
           for i in $(seq 1 60); do
             if docker info >/dev/null 2>&1; then
               echo "[workspace] Docker daemon is ready."
@@ -665,19 +675,19 @@ if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
 
       if ! docker info >/dev/null 2>&1; then
         if [[ "$WORKSPACE_STRICT" == "1" ]]; then
-          echo "[workspace] ERROR: Docker daemon is not running (required for make dev-local / local Redis + MinIO)." >&2
+          echo "[workspace] ERROR: Docker daemon is not running (required for the explicit make dev-local fallback / local Screenalytics Redis + MinIO)." >&2
           exit 1
         fi
-        echo "[workspace] WARNING: Docker daemon not available; disabling screenalytics for this session." >&2
+        echo "[workspace] WARNING: Docker daemon not available; disabling screenalytics for this session because the explicit Docker fallback is unavailable." >&2
         WORKSPACE_SCREENALYTICS=0
       else
-        echo "[workspace] Docker daemon is running."
+        echo "[workspace] Docker daemon is running for the explicit dev-local fallback."
       fi
     else
-      echo "[workspace] Docker daemon is running."
+      echo "[workspace] Docker daemon is running for the explicit dev-local fallback."
     fi
   else
-    echo "[workspace] screenalytics mode is cloud-backed; skipping local Docker preflight and compose startup."
+    echo "[workspace] screenalytics mode is cloud-backed; skipping local Docker fallback preflight and compose startup."
   fi
 
   if [[ "$WORKSPACE_SCREENALYTICS" == "1" && "$HAVE_LSOF" -eq 1 ]]; then
@@ -722,8 +732,8 @@ if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
   fi
 
   if [[ "$WORKSPACE_SCREENALYTICS" == "1" && "$WORKSPACE_SCREENALYTICS_SKIP_DOCKER" != "1" ]]; then
-    # Start local screenalytics infrastructure (Redis + MinIO) before services.
-    echo "[workspace] Starting local Docker infrastructure (Redis + MinIO)..."
+    # Start explicit local screenalytics fallback infrastructure (Redis + MinIO) before services.
+    echo "[workspace] Starting explicit local Docker fallback infrastructure for Screenalytics (Redis + MinIO)..."
     docker compose -f "${ROOT}/screenalytics/infra/docker/compose.yaml" up -d
   fi
 fi
@@ -926,6 +936,7 @@ start_trr_backend() {
     TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER=\"$TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER\" \
     TRR_JOB_PLANE_MODE=\"$WORKSPACE_TRR_JOB_PLANE_MODE\" \
     TRR_LONG_JOB_ENFORCE_REMOTE=\"$WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE\" \
+    TRR_ALLOW_LOCAL_ADMIN_OPERATION_OVERRIDE=\"${TRR_ALLOW_LOCAL_ADMIN_OPERATION_OVERRIDE:-1}\" \
     TRR_REMOTE_EXECUTOR=\"$WORKSPACE_TRR_REMOTE_EXECUTOR\" \
     TRR_MODAL_ENABLED=\"$WORKSPACE_TRR_MODAL_ENABLED\" \
     TRR_MODAL_APP_NAME=\"$WORKSPACE_TRR_MODAL_APP_NAME\" \
@@ -1208,6 +1219,7 @@ write_backend_watchdog_state
   echo "WORKSPACE_SOCIAL_WORKER_INTERVAL_SEC=${WORKSPACE_SOCIAL_WORKER_INTERVAL_SEC}"
   echo "WORKSPACE_TRR_JOB_PLANE_MODE=${WORKSPACE_TRR_JOB_PLANE_MODE}"
   echo "WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE=${WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE}"
+  echo "TRR_ALLOW_LOCAL_ADMIN_OPERATION_OVERRIDE=${TRR_ALLOW_LOCAL_ADMIN_OPERATION_OVERRIDE:-1}"
   echo "WORKSPACE_TRR_REMOTE_EXECUTOR=${WORKSPACE_TRR_REMOTE_EXECUTOR}"
   echo "WORKSPACE_TRR_MODAL_ENABLED=${WORKSPACE_TRR_MODAL_ENABLED}"
   echo "WORKSPACE_TRR_MODAL_APP_NAME=${WORKSPACE_TRR_MODAL_APP_NAME}"
@@ -1276,6 +1288,11 @@ start_trr_social_worker
 start_trr_remote_workers
 start_trr_app
 
+local_admin_override_label="disabled"
+if [[ "${TRR_ALLOW_LOCAL_ADMIN_OPERATION_OVERRIDE:-1}" == "1" ]]; then
+  local_admin_override_label="enabled (header-gated)"
+fi
+
 echo ""
 echo "[workspace] URLs:"
 echo "  TRR-APP:               http://${TRR_APP_HOST}:${TRR_APP_PORT}"
@@ -1287,7 +1304,8 @@ if [[ -n "$PROFILE" ]]; then
 fi
 echo "  TRR-Backend mode:      $([[ \"$TRR_BACKEND_RELOAD\" == \"1\" ]] && echo \"reload\" || echo \"non-reload\")"
 echo "  Job plane mode:        ${WORKSPACE_TRR_JOB_PLANE_MODE} (enforce_remote=${WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE}, executor=${WORKSPACE_TRR_REMOTE_EXECUTOR}, modal_enabled=${WORKSPACE_TRR_MODAL_ENABLED})"
-echo "  Workspace dev mode:    ${WORKSPACE_DEV_MODE}"
+echo "  Local admin override:  ${local_admin_override_label}"
+echo "  Workspace dev mode:    $(workspace_dev_mode_label)"
 if [[ "$WORKSPACE_TRR_APP_DEV_BUNDLER" == "webpack" ]]; then
   echo "  TRR-APP dev bundler:   webpack"
 else
@@ -1339,9 +1357,9 @@ if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
     echo "  screenalytics Web:     disabled"
   fi
   if [[ "$WORKSPACE_SCREENALYTICS_SKIP_DOCKER" == "1" ]]; then
-    echo "  screenalytics infra:   local Docker bypass enabled"
+    echo "  screenalytics infra:   cloud-first path active; no local Docker fallback infra"
   else
-    echo "  screenalytics infra:   local Redis + MinIO via Docker"
+    echo "  screenalytics infra:   explicit local Redis + MinIO fallback via Docker"
   fi
 else
   echo "  screenalytics:         (disabled)"

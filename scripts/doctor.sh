@@ -24,7 +24,7 @@ WORKSPACE_DEV_MODE="${WORKSPACE_DEV_MODE:-cloud}"
 case "$WORKSPACE_DEV_MODE" in
   cloud|local_docker) ;;
   *)
-    echo "[doctor] ERROR: invalid WORKSPACE_DEV_MODE='${WORKSPACE_DEV_MODE}' (expected cloud or local_docker)." >&2
+    echo "[doctor] ERROR: invalid WORKSPACE_DEV_MODE='${WORKSPACE_DEV_MODE}' (expected cloud for the preferred no-Docker path or local_docker for the explicit Docker fallback)." >&2
     exit 1
     ;;
 esac
@@ -142,17 +142,17 @@ if [[ "$WORKSPACE_DEV_MODE" == "local_docker" ]]; then
     echo "  docker: $({ docker --version; } 2>/dev/null)"
     if ! docker info >/dev/null 2>&1; then
       if [[ "$WORKSPACE_PREFLIGHT_STRICT" == "1" ]]; then
-        echo "[doctor] ERROR: docker daemon not running (required for make dev-local / local screenalytics Redis+MinIO)." >&2
+        echo "[doctor] ERROR: docker daemon not running (required for the explicit make dev-local fallback / local screenalytics Redis+MinIO)." >&2
         exit 1
       fi
-      echo "[doctor] WARNING: docker daemon not running (needed only for make dev-local / local screenalytics Redis+MinIO)." >&2
+      echo "[doctor] WARNING: docker daemon not running (needed only for the explicit make dev-local fallback / local screenalytics Redis+MinIO)." >&2
     fi
   else
     if [[ "$WORKSPACE_PREFLIGHT_STRICT" == "1" ]]; then
-      echo "[doctor] ERROR: docker not found (required for make dev-local / local screenalytics Redis+MinIO)." >&2
+      echo "[doctor] ERROR: docker not found (required for the explicit make dev-local fallback / local screenalytics Redis+MinIO)." >&2
       exit 1
     fi
-    echo "[doctor] WARNING: docker not found (needed only for make dev-local / local screenalytics Redis+MinIO)." >&2
+    echo "[doctor] WARNING: docker not found (needed only for the explicit make dev-local fallback / local screenalytics Redis+MinIO)." >&2
   fi
 fi
 
