@@ -26,7 +26,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   1. Workspace docs describe one preferred cloud-first development and verification path.
   2. The preferred database validation path uses isolated Supabase branches or disposable environments rather than assuming local Docker-backed reset.
   3. Docker-backed flows are clearly labeled as optional fallback behavior, not the default.
-**Plans**: none yet
+**Plans**: `06-01-PLAN.md`
 
 ### Phase 7: Workspace Defaults And Script Alignment
 **Goal**: Shared workspace scripts, profiles, and diagnostics match the cloud-first contract instead of nudging developers into Docker-heavy defaults.
@@ -55,6 +55,6 @@ Phases execute in numeric order: 6 -> 7 -> 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 6. Cloud-First Validation Contract | 0/0 | Ready to plan | - |
+| 6. Cloud-First Validation Contract | 0/1 | Ready to execute | - |
 | 7. Workspace Defaults And Script Alignment | 0/0 | Pending | - |
 | 8. Adoption, Verification & Fallback Boundaries | 0/0 | Pending | - |
