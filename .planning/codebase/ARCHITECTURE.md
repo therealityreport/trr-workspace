@@ -4,199 +4,240 @@
 
 ## Pattern Overview
 
-**Overall:** Multi-repo workspace with a root orchestration layer, a Next.js App Router frontend/BFF, a FastAPI backend for TRR domain data, and a separate FastAPI + Streamlit Screenalytics system for video-analysis workflows.
+**Overall:** Brownfield multi-repo workspace with a root orchestration layer, a Next.js App Router frontend/BFF in `TRR-APP`, a FastAPI + shared-library backend in `TRR-Backend`, and a separate Screenalytics system that combines FastAPI, Streamlit, a reusable Python pipeline package, and an optional Next.js surface.
 
 **Key Characteristics:**
-- Workspace startup, policy checks, handoff sync, and browser automation are centralized at the root in `Makefile`, `scripts/dev-workspace.sh`, `scripts/preflight.sh`, `docs/workspace/dev-commands.md`, and `docs/workspace/env-contract.md`.
-- `TRR-APP` behaves as both UI and backend-for-frontend: page routes live under `TRR-APP/apps/web/src/app/`, and many admin/data routes proxy to `TRR-Backend` through `TRR-APP/apps/web/src/lib/server/trr-api/backend.ts`.
-- `TRR-Backend` owns shared contracts first: FastAPI routers in `TRR-Backend/api/routers/` call repository and service code in `TRR-Backend/trr_backend/`, while schema state and migrations live in `TRR-Backend/supabase/`.
-- `screenalytics` is split into three layers: API surfaces in `screenalytics/apps/api/`, operator UI in `screenalytics/apps/workspace-ui/`, and reusable pipeline/runtime code in `screenalytics/packages/py-screenalytics/src/py_screenalytics/`.
-- Cross-repo ordering is explicit in `AGENTS.md` and `docs/cross-collab/WORKFLOW.md`: shared contract changes land in `TRR-Backend` first, then `screenalytics`, then `TRR-APP`.
+- Use the workspace root as the coordination layer only. Startup, environment validation, handoff sync, and browser/MCP wrappers live in `Makefile`, `scripts/dev-workspace.sh`, `scripts/preflight.sh`, `scripts/status-workspace.sh`, `docs/workspace/dev-commands.md`, and `docs/cross-collab/WORKFLOW.md`.
+- Treat `TRR-Backend` as the contract owner. Shared schema, API, auth, and database-lane decisions are implemented first in `TRR-Backend/api/`, `TRR-Backend/trr_backend/`, and `TRR-Backend/supabase/`, then consumed by `screenalytics`, then by `TRR-APP`.
+- Treat `TRR-APP` as presentation plus backend-for-frontend. Browser routes live in `TRR-APP/apps/web/src/app/`, but many admin reads and writes are mediated through server-only modules in `TRR-APP/apps/web/src/lib/server/`.
+- Treat `screenalytics` as a subsystem, not a shared contract source. Its API in `screenalytics/apps/api/` consumes TRR-owned metadata and shared DB contracts through `screenalytics/apps/api/services/supabase_db.py`, `screenalytics/apps/api/services/trr_metadata_db.py`, and `screenalytics/apps/api/services/trr_ingest.py`.
+- Keep processing logic out of HTTP/UI layers. Reusable Screenalytics runtime code is concentrated under `screenalytics/packages/py-screenalytics/src/py_screenalytics/`, and reusable backend domain code is concentrated under `TRR-Backend/trr_backend/`.
+
+## Cross-Repo Boundaries
+
+**Workspace Coordination Boundary:**
+- Root files coordinate repos but do not own product-domain logic.
+- Use `Makefile` and `scripts/dev-workspace.sh` to start repos together.
+- Use `docs/workspace/env-contract.md` and `scripts/workspace-env-contract.sh` as the cross-repo env contract reference.
+
+**Backend Ownership Boundary:**
+- `TRR-Backend` owns the canonical API entrypoint in `TRR-Backend/api/main.py`.
+- `TRR-Backend` owns schema/migration state in `TRR-Backend/supabase/migrations/`.
+- `screenalytics` and `TRR-APP` should consume backend contracts rather than redefine them.
+
+**Frontend Boundary:**
+- `TRR-APP` owns public/admin UI and request normalization, not the underlying domain contracts.
+- Backend URLs are derived from `TRR_API_URL` in `TRR-APP/apps/web/src/lib/server/trr-api/backend.ts`.
+- Internal admin hops are wrapped in `TRR-APP/apps/web/src/lib/server/trr-api/internal-admin-auth.ts` and `TRR-APP/apps/web/src/lib/server/trr-api/admin-read-proxy.ts`.
+
+**Screenalytics Boundary:**
+- `screenalytics` owns video-analysis pipelines, run/job orchestration, operator review flows, and artifact conventions.
+- `screenalytics` reads TRR-owned metadata from `core.*` via `screenalytics/apps/api/services/trr_metadata_db.py` and imports TRR data through `screenalytics/apps/api/services/trr_ingest.py`.
+- `screenalytics` does not own the shared TRR schema contract; it adapts after backend changes.
 
 ## Layers
 
 **Workspace Orchestration Layer:**
-- Purpose: Start local services, enforce workspace policy, generate env/handoff docs, and coordinate multi-repo development.
-- Location: `Makefile`, `scripts/dev-workspace.sh`, `scripts/preflight.sh`, `scripts/workspace-env-contract.sh`, `scripts/status-workspace.sh`, `scripts/check-policy.sh`.
-- Contains: profile loading, port/runtime wiring, health checks, generated-doc verification, browser/MCP wrappers, and shared auth-secret derivation for local dev.
-- Depends on: repo-local runtimes in `TRR-APP/`, `TRR-Backend/`, and `screenalytics/`, plus generated docs under `docs/workspace/`.
-- Used by: local development, preflight validation, multi-repo handoff flow, and policy enforcement.
+- Purpose: Start, stop, validate, and coordinate all repos in one developer workflow.
+- Location: `Makefile`, `scripts/`, `profiles/`, `docs/workspace/`, `docs/cross-collab/`.
+- Contains: startup profiles, cloud-first vs local-docker modes, handoff sync, policy checks, browser tooling, and env-contract generation.
+- Depends on: repo-local runtimes in `TRR-APP/`, `TRR-Backend/`, and `screenalytics/`.
+- Used by: every multi-repo task, verification run, and local workspace session.
 
 **TRR-APP Presentation + BFF Layer:**
-- Purpose: Render public/admin pages and expose App Router route handlers that normalize access to backend and third-party services.
-- Location: `TRR-APP/apps/web/src/app/`, `TRR-APP/apps/web/src/components/`, `TRR-APP/apps/web/src/lib/server/`, `TRR-APP/apps/web/src/lib/server/trr-api/`.
-- Contains: App Router pages/layouts, client components, server-only repositories, auth/session routes, and admin proxy routes.
-- Depends on: `TRR-Backend` via `TRR_API_URL`, Firebase auth/session helpers in `TRR-APP/apps/web/src/lib/firebase*`, and direct Postgres/Supabase utilities in `TRR-APP/apps/web/src/lib/server/postgres.ts` and `TRR-APP/apps/web/src/lib/supabase/`.
-- Used by: browser clients and admin operators.
+- Purpose: Render public/admin UI and expose App Router handlers that proxy or compose server-side data access.
+- Location: `TRR-APP/apps/web/src/app/`, `TRR-APP/apps/web/src/components/`, `TRR-APP/apps/web/src/lib/server/`.
+- Contains: layouts/pages, route handlers, client components, auth/session routes, admin navigation, and proxy helpers.
+- Depends on: `TRR-Backend` through `TRR_API_URL`, Firebase in `TRR-APP/apps/web/src/lib/firebase*.ts`, and direct DB/Supabase helpers in `TRR-APP/apps/web/src/lib/server/postgres.ts` and `TRR-APP/apps/web/src/lib/server/supabase-trr-admin.ts`.
+- Used by: browser users, admins, cron routes, and internal server-side fetches.
 
 **TRR-Backend API Layer:**
-- Purpose: Own the canonical TRR API, auth boundaries, shared admin endpoints, realtime endpoints, and Screenalytics-facing service endpoints.
-- Location: `TRR-Backend/api/main.py`, `TRR-Backend/api/routers/`, `TRR-Backend/api/auth.py`, `TRR-Backend/api/screenalytics_auth.py`.
-- Contains: FastAPI app setup, CORS, observability middleware, startup validation, health/metrics endpoints, public routers, admin routers, and service-to-service routers.
-- Depends on: domain/persistence code in `TRR-Backend/trr_backend/`, shared DB URL env contracts, and schema objects under `TRR-Backend/supabase/`.
-- Used by: `TRR-APP`, `screenalytics`, and direct operational scripts.
+- Purpose: Publish the canonical TRR HTTP surface, realtime surface, auth checks, and service-to-service endpoints.
+- Location: `TRR-Backend/api/main.py`, `TRR-Backend/api/routers/`, `TRR-Backend/api/auth.py`, `TRR-Backend/api/screenalytics_auth.py`, `TRR-Backend/api/realtime/`.
+- Contains: FastAPI app setup, startup validation, observability middleware, router registration, request timeout middleware, and realtime broker lifecycle.
+- Depends on: `TRR-Backend/trr_backend/` modules and runtime DB resolution in `TRR-Backend/trr_backend/db/connection.py`.
+- Used by: `TRR-APP`, `screenalytics`, scripts, and ops tooling.
 
 **TRR-Backend Domain + Persistence Layer:**
-- Purpose: Encapsulate SQL access, integration clients, media/social services, and internal runtime utilities behind stable modules.
-- Location: `TRR-Backend/trr_backend/db/`, `TRR-Backend/trr_backend/repositories/`, `TRR-Backend/trr_backend/services/`, `TRR-Backend/trr_backend/clients/`, `TRR-Backend/trr_backend/security/`.
-- Contains: `DbSession` abstractions in `TRR-Backend/trr_backend/db/session.py`, pooled DB access in `TRR-Backend/trr_backend/db/pg.py`, repositories per domain object, internal token verification, and feature-specific services.
-- Depends on: the shared Postgres/Supabase database and external integrations implemented in `TRR-Backend/trr_backend/integrations/` and `TRR-Backend/trr_backend/socials/`.
-- Used by: FastAPI routers and worker/scripts inside `TRR-Backend`.
+- Purpose: Centralize data access, domain services, external integrations, and backend-internal clients behind stable modules.
+- Location: `TRR-Backend/trr_backend/db/`, `TRR-Backend/trr_backend/repositories/`, `TRR-Backend/trr_backend/services/`, `TRR-Backend/trr_backend/clients/`, `TRR-Backend/trr_backend/security/`, `TRR-Backend/trr_backend/integrations/`.
+- Contains: pooled DB access, typed security helpers, repository modules per domain, media/social services, Screenalytics client code, and pipeline support.
+- Depends on: Postgres/Supabase, external providers, and object-storage/runtime configuration.
+- Used by: FastAPI routers, CLI entrypoints, and repo-local scripts.
+
+**TRR-Backend Pipeline/CLI Layer:**
+- Purpose: Execute resumable ingestion and synchronization flows outside the HTTP request path.
+- Location: `TRR-Backend/trr_backend/cli/`, `TRR-Backend/trr_backend/pipeline/`, `TRR-Backend/scripts/`.
+- Contains: Typer CLI entrypoints, sequential stage orchestration, run metadata persistence, manifest writing, and many sync/backfill scripts.
+- Depends on: domain/persistence modules and schema objects in `pipeline.*` and `core.*`.
+- Used by: local operators, batch jobs, and recovery flows.
 
 **Screenalytics API + Jobs Layer:**
-- Purpose: Expose video-processing endpoints, manage run/job orchestration, and bridge operational state to shared TRR infrastructure.
+- Purpose: Expose processing endpoints, orchestrate setup and analysis runs, and persist Screenalytics run state.
 - Location: `screenalytics/apps/api/main.py`, `screenalytics/apps/api/routers/`, `screenalytics/apps/api/services/`, `screenalytics/apps/api/tasks*.py`.
-- Contains: FastAPI app setup, optional Celery router/task registration, run-state services, storage abstraction, TRR ingest adapters, and V2 pipeline endpoints.
-- Depends on: direct Postgres access via `screenalytics/apps/api/services/supabase_db.py`, pipeline library code in `screenalytics/packages/py-screenalytics/src/py_screenalytics/`, and service-to-service calls to `TRR-Backend`.
-- Used by: Streamlit UI, background workers, and possibly external API clients in local/dev workflows.
+- Contains: FastAPI app setup, router registration, optional Celery integration, pipeline orchestration services, storage helpers, TRR ingest adapters, and V2 video-asset routes.
+- Depends on: DB lane resolution in `screenalytics/apps/api/services/supabase_db.py`, reusable runtime code in `screenalytics/packages/py-screenalytics/src/py_screenalytics/`, and TRR-owned metadata.
+- Used by: Streamlit workspace UI, the optional Next.js `screenalytics/web/` app, background workers, and local tooling.
 
 **Screenalytics Operator UI Layer:**
-- Purpose: Provide a multi-page Streamlit workspace for upload, review, cast, screentime, and diagnostics flows.
-- Location: `screenalytics/apps/workspace-ui/streamlit_app.py`, `screenalytics/apps/workspace-ui/pages/`, `screenalytics/apps/workspace-ui/components/`, `screenalytics/ui_helpers.py`.
-- Contains: a single Streamlit entrypoint, numbered page modules, interactive review helpers, and shared UI/session helpers.
-- Depends on: `screenalytics/apps/api/` endpoints and reusable workspace helpers under `screenalytics/packages/py-screenalytics/src/py_screenalytics/workspace_ui/`.
-- Used by: internal Screenalytics operators.
+- Purpose: Provide internal review and operational workflows for upload, runs, faces, cast, screentime, health, and docs.
+- Location: `screenalytics/apps/workspace-ui/streamlit_app.py`, `screenalytics/apps/workspace-ui/pages/`, `screenalytics/apps/workspace-ui/components/`.
+- Contains: a single Streamlit entrypoint, numbered multipage screens, workspace helpers, and review widgets.
+- Depends on: `screenalytics/apps/api/` and helper logic in `py_screenalytics.workspace_ui`.
+- Used by: operators, reviewers, and local development workflows.
 
-**Screenalytics Pipeline Library Layer:**
-- Purpose: Hold reusable processing logic and artifact/run contracts outside the API layer.
+**Screenalytics Reusable Pipeline Library Layer:**
+- Purpose: Isolate artifact contracts, stage plans, runtime helpers, and ML/pipeline logic from the API/UI surfaces.
 - Location: `screenalytics/packages/py-screenalytics/src/py_screenalytics/`.
-- Contains: run layout helpers in `screenalytics/packages/py-screenalytics/src/py_screenalytics/run_layout.py`, stage plans in `screenalytics/packages/py-screenalytics/src/py_screenalytics/pipeline_stages.py`, audio pipeline modules, reporting modules, config resolvers, and artifact contracts.
-- Depends on: config files in `screenalytics/config/pipeline/` and runtime storage paths/artifact conventions.
-- Used by: `screenalytics/apps/api/`, CLI tools in `screenalytics/tools/`, and tests in `screenalytics/tests/`.
+- Contains: pipeline stages, run layout, run manifests, audio modules, reporting modules, config resolution, and workspace-ui helper logic.
+- Depends on: configuration under `screenalytics/config/pipeline/` and artifact roots under `SCREENALYTICS_DATA_ROOT`.
+- Used by: `screenalytics/apps/api/`, `screenalytics/tools/episode_run.py`, tests, and Streamlit pages.
+
+**Screenalytics Web Prototype Layer:**
+- Purpose: Provide a Next.js-based Screenalytics UI separate from the Streamlit workspace.
+- Location: `screenalytics/web/app/`, `screenalytics/web/components/`, `screenalytics/web/api/`, `screenalytics/web/lib/`.
+- Contains: app routes, React Query providers, generated API client helpers, and UI components.
+- Depends on: `screenalytics/apps/api/` through local `/api` routes and generated schema/types in `screenalytics/web/api/`.
+- Used by: optional local/operator workflows. It is not the primary pipeline entry surface.
 
 ## Data Flow
 
-**Frontend Request Flow (`TRR-APP` -> `TRR-Backend`):**
+**Public/Admin Request Flow (`TRR-APP` -> `TRR-Backend`):**
 
-1. A route under `TRR-APP/apps/web/src/app/` renders a page or a route handler receives a browser request.
-2. Server-only modules under `TRR-APP/apps/web/src/lib/server/` or `TRR-APP/apps/web/src/app/api/**/route.ts` build upstream URLs via `TRR-APP/apps/web/src/lib/server/trr-api/backend.ts`.
-3. The request is forwarded to `TRR-Backend/api/main.py` under the `/api/v1` prefix, usually through admin proxy helpers such as `TRR-APP/apps/web/src/lib/server/trr-api/admin-read-proxy.ts` or `TRR-APP/apps/web/src/lib/server/trr-api/social-admin-proxy.ts`.
-4. A FastAPI router in `TRR-Backend/api/routers/` invokes repositories/services in `TRR-Backend/trr_backend/`.
-5. Data is read or written through `TRR-Backend/trr_backend/db/` and returned to the app route/page for rendering or client mutation responses.
+1. A route under `TRR-APP/apps/web/src/app/` renders a page or handles a request.
+2. Server-only code under `TRR-APP/apps/web/src/lib/server/` or `TRR-APP/apps/web/src/app/api/**/route.ts` prepares an upstream request.
+3. Backend URLs are normalized through `TRR-APP/apps/web/src/lib/server/trr-api/backend.ts`, which forces a `/api/v1` base.
+4. Admin requests pass through helpers such as `TRR-APP/apps/web/src/lib/server/trr-api/admin-read-proxy.ts`, which adds internal auth headers from `TRR-APP/apps/web/src/lib/server/trr-api/internal-admin-auth.ts`.
+5. `TRR-Backend/api/main.py` dispatches to a router in `TRR-Backend/api/routers/`.
+6. Router modules call repositories/services in `TRR-Backend/trr_backend/`.
+7. Repositories hit the shared database through `TRR-Backend/trr_backend/db/`.
+8. JSON responses are returned to the page, route handler, or client component for rendering.
 
-**Admin Authentication Flow (`TRR-APP` -> `TRR-Backend`):**
+**Backend Ingestion/Batch Flow (`TRR-Backend` scripts/CLI -> DB):**
 
-1. Browser login/session routes in `TRR-APP/apps/web/src/app/api/session/login/route.ts` create the app session cookie.
-2. Server-side admin proxy code generates a short-lived internal bearer token in `TRR-APP/apps/web/src/lib/server/trr-api/internal-admin-auth.ts`.
-3. Backend dependencies in `TRR-Backend/api/auth.py` and `TRR-Backend/api/screenalytics_auth.py` accept allowlisted user JWTs, service-role JWTs, or the signed internal admin token.
-4. Backend admin routers continue the request as authenticated internal/admin work without exposing backend-only secrets to the browser.
+1. An operator invokes `TRR-Backend/scripts/**` or `python -m trr_backend.cli pipeline ...`.
+2. CLI code in `TRR-Backend/trr_backend/cli/` constructs a run config.
+3. `TRR-Backend/trr_backend/pipeline/orchestrator.py` records run/stage state and executes stage functions sequentially.
+4. Domain modules in `TRR-Backend/trr_backend/repositories/`, `services/`, and `integrations/` fetch external data and write to `core.*` or `pipeline.*`.
+5. Manifest files are written via `TRR-Backend/trr_backend/pipeline/manifests.py`.
 
-**Screenalytics Metadata + Run Persistence Flow:**
+**Screenalytics Run Flow (`screenalytics` UI/API -> pipeline package -> DB/artifacts):**
 
-1. Screenalytics API/services use `screenalytics/apps/api/services/supabase_db.py` to resolve the shared TRR database URL and read/write shared metadata directly.
-2. Screenalytics also calls `TRR-Backend` service endpoints in `TRR-Backend/api/routers/screenalytics.py` and `TRR-Backend/api/routers/screenalytics_runs_v2.py` for service-to-service cast/photo/run operations.
-3. Authentication is enforced with `SCREENALYTICS_SERVICE_TOKEN` or the shared internal admin token path handled by `TRR-Backend/api/screenalytics_auth.py`.
-4. Run status and artifact pointers are normalized in `screenalytics/apps/api/services/run_state.py`, which relies on `screenalytics/packages/py-screenalytics/src/py_screenalytics/run_layout.py` for storage layout.
+1. A Streamlit page in `screenalytics/apps/workspace-ui/pages/` or a Next.js page in `screenalytics/web/app/` triggers an API call.
+2. `screenalytics/apps/api/main.py` routes the request to a module under `screenalytics/apps/api/routers/`.
+3. Router modules delegate to services such as `screenalytics/apps/api/services/pipeline_orchestration.py`, `run_state.py`, `runs_v2.py`, or `storage.py`.
+4. Reusable stage plans and artifact contracts are resolved from `screenalytics/packages/py-screenalytics/src/py_screenalytics/`.
+5. Operational state is stored in the shared database through `screenalytics/apps/api/services/supabase_db.py` and related services.
+6. Artifacts and manifests are written under `SCREENALYTICS_DATA_ROOT` using layout helpers from `py_screenalytics.run_layout` and `py_screenalytics.artifacts`.
 
-**Screenalytics Processing Flow:**
+**TRR Metadata Consumption Flow (`screenalytics` -> TRR data):**
 
-1. API routers under `screenalytics/apps/api/routers/` trigger jobs, run state transitions, or review endpoints.
-2. Task modules such as `screenalytics/apps/api/tasks_v2.py` and orchestration helpers in `screenalytics/apps/api/services/pipeline_orchestration.py` coordinate stage transitions.
-3. Shared stage plans and artifact naming come from `screenalytics/packages/py-screenalytics/src/py_screenalytics/pipeline_stages.py` and `screenalytics/packages/py-screenalytics/src/py_screenalytics/run_layout.py`.
-4. Artifacts are persisted through storage/run services in `screenalytics/apps/api/services/storage*.py`, `screenalytics/apps/api/services/run_persistence.py`, and related helpers, then surfaced back through API or Streamlit UI.
-
-**Workspace Startup Flow:**
-
-1. `make dev` in `Makefile` calls `scripts/preflight.sh` and then `scripts/dev-workspace.sh`.
-2. `scripts/preflight.sh` validates Node/runtime/db contracts, syncs handoffs, and checks shared policy/docs.
-3. `scripts/dev-workspace.sh` loads a profile from `profiles/*.env`, resolves the runtime DB lane, derives local shared secrets when needed, and starts repo-local processes.
-4. The default contract keeps `TRR-APP`, `TRR-Backend`, and the Screenalytics API active, while Streamlit/Web UI stay opt-in through workspace env toggles documented in `docs/workspace/env-contract.md`.
+1. `screenalytics/apps/api/services/trr_metadata_db.py` reads canonical metadata from `core.shows`, `core.seasons`, `core.episodes`, and `core.people`.
+2. `screenalytics/apps/api/services/trr_ingest.py` imports cast/photo data either directly from the DB or, for legacy paths, over HTTP using `TRR_API_URL` plus `SCREENALYTICS_SERVICE_TOKEN`.
+3. Imported TRR metadata is converted into Screenalytics-specific operational records such as facebank seeds, candidate-cast snapshots, and run-scoped assignments.
 
 **State Management:**
-- UI routing state is file-system based in `TRR-APP/apps/web/src/app/`; client state is localized inside client components such as `TRR-APP/apps/web/src/app/page.tsx` and large admin clients under `TRR-APP/apps/web/src/app/admin/`.
-- App server state lives in route handlers and server-only repositories under `TRR-APP/apps/web/src/lib/server/`, with session state stored in the `__session` cookie managed by `TRR-APP/apps/web/src/app/api/session/login/route.ts`.
-- TRR backend state is intentionally stateless at process level apart from startup hooks, broker/runtime services in `TRR-Backend/api/realtime/`, and DB-backed domain state.
-- Screenalytics state is split between DB metadata, filesystem/S3-style artifact layout from `screenalytics/packages/py-screenalytics/src/py_screenalytics/run_layout.py`, and orchestration snapshots managed by `screenalytics/apps/api/services/run_state.py`.
+- `TRR-APP` uses App Router server rendering for most data-fetching, with client state added selectively in client-marked components such as `TRR-APP/apps/web/src/app/page.tsx` and provider wrappers like `TRR-APP/apps/web/src/components/SideMenuProvider.tsx`.
+- `TRR-Backend` keeps request state mostly stateless per request, with shared runtime state limited to observability, DB pools, and realtime broker lifecycle in `TRR-Backend/api/realtime/`.
+- `screenalytics` persists long-running run state in services such as `screenalytics/apps/api/services/run_state.py` and complements it with filesystem/object-storage artifacts managed by `py_screenalytics`.
 
 ## Key Abstractions
 
-**Backend Router Modules:**
-- Purpose: Expose one bounded API surface per domain or admin area.
-- Examples: `TRR-Backend/api/routers/shows.py`, `TRR-Backend/api/routers/admin_cast.py`, `TRR-Backend/api/routers/screenalytics_runs_v2.py`.
-- Pattern: thin FastAPI routers calling repository/service modules, all mounted from `TRR-Backend/api/main.py` under `/api/v1`.
+**Backend Base Normalization:**
+- Purpose: Guarantee that app-side server fetches always target the canonical backend base path.
+- Examples: `TRR-APP/apps/web/src/lib/server/trr-api/backend.ts`.
+- Pattern: small server-only URL normalizer used by many route handlers and repositories.
 
-**Repository Modules:**
-- Purpose: Isolate SQL and persistence operations from HTTP-layer code.
-- Examples: `TRR-Backend/trr_backend/repositories/shows.py`, `TRR-Backend/trr_backend/repositories/media_assets.py`, `TRR-Backend/trr_backend/repositories/screenalytics_runs.py`.
-- Pattern: snake_case modules grouped by domain entity; routers import them directly or through services.
+**Internal Admin Proxy:**
+- Purpose: Centralize admin request timeouts, retries, error normalization, and internal-auth header generation.
+- Examples: `TRR-APP/apps/web/src/lib/server/trr-api/admin-read-proxy.ts`, `TRR-APP/apps/web/src/lib/server/trr-api/internal-admin-auth.ts`.
+- Pattern: BFF proxy wrapper around backend requests with typed proxy errors.
 
-**Server-Only App Proxies:**
-- Purpose: Keep backend URLs, auth headers, and admin proxy logic off the client.
-- Examples: `TRR-APP/apps/web/src/lib/server/trr-api/admin-read-proxy.ts`, `TRR-APP/apps/web/src/lib/server/trr-api/social-admin-proxy.ts`, `TRR-APP/apps/web/src/lib/server/admin/*.ts`.
-- Pattern: `"server-only"` modules consumed by App Router route handlers or server components.
+**Runtime DB Lane Resolution:**
+- Purpose: Keep every repo on the same `TRR_DB_URL` / `TRR_DB_FALLBACK_URL` contract and reject unsupported database lanes.
+- Examples: `TRR-Backend/trr_backend/db/connection.py`, `TRR-APP/apps/web/src/lib/server/postgres.ts`, `screenalytics/apps/api/services/supabase_db.py`.
+- Pattern: repo-local resolver with the same source precedence and session-pooler policy.
 
-**Internal Admin Token Bridge:**
-- Purpose: Allow `TRR-APP` and trusted services to call backend admin routes without passing browser-only credentials directly.
-- Examples: `TRR-APP/apps/web/src/lib/server/trr-api/internal-admin-auth.ts`, `TRR-Backend/trr_backend/security/internal_admin.py`, `TRR-Backend/api/auth.py`.
-- Pattern: short-lived signed token minted in the app, verified in backend dependencies.
+**Backend Repository/Service Split:**
+- Purpose: Separate HTTP router modules from persistence and business logic.
+- Examples: `TRR-Backend/api/routers/admin_cast_screentime.py`, `TRR-Backend/trr_backend/repositories/cast_screentime.py`, `TRR-Backend/trr_backend/services/retained_cast_screentime_runtime.py`.
+- Pattern: router -> repository/service -> DB/helpers.
 
-**Run Layout / Stage Contracts:**
-- Purpose: Give Screenalytics one canonical vocabulary for run IDs, stage progression, artifact paths, and storage keys.
-- Examples: `screenalytics/packages/py-screenalytics/src/py_screenalytics/run_layout.py`, `screenalytics/packages/py-screenalytics/src/py_screenalytics/pipeline_stages.py`, `screenalytics/apps/api/services/run_state.py`.
-- Pattern: API/services import shared package helpers instead of inventing per-endpoint filenames or stage names.
+**Pipeline Orchestrator:**
+- Purpose: Run resumable stage pipelines with manifest-backed progress and skip-by-hash behavior.
+- Examples: `TRR-Backend/trr_backend/pipeline/orchestrator.py`, `TRR-Backend/trr_backend/pipeline/repository.py`, `TRR-Backend/trr_backend/pipeline/models.py`.
+- Pattern: sequential orchestrator object with persisted run/stage metadata.
 
-**Workspace Contract Docs as Executable Architecture:**
-- Purpose: Make shared repo order, env names, and handoff behavior part of the system boundary.
-- Examples: `AGENTS.md`, `docs/cross-collab/WORKFLOW.md`, `docs/workspace/env-contract.md`.
-- Pattern: root docs are enforced by root scripts rather than treated as passive prose.
+**Screenalytics Setup Orchestration:**
+- Purpose: Advance multi-stage run setup across detect, embed, cluster, and follow-on stages.
+- Examples: `screenalytics/apps/api/services/pipeline_orchestration.py`, `screenalytics/packages/py-screenalytics/src/py_screenalytics/pipeline_stages.py`.
+- Pattern: normalized stage aliases plus persisted orchestration state and next-stage transitions.
+
+**Artifact Layout Contract:**
+- Purpose: Keep filesystem/object-storage outputs in predictable, stage-aware locations.
+- Examples: `screenalytics/packages/py-screenalytics/src/py_screenalytics/run_layout.py`, `screenalytics/packages/py-screenalytics/src/py_screenalytics/artifacts.py`, `screenalytics/tools/episode_run.py`.
+- Pattern: shared path/layout helpers reused by API, CLI, and tests.
 
 ## Entry Points
 
-**Workspace Dev Entry Point:**
-- Location: `Makefile`
-- Triggers: local operator runs `make dev`, `make preflight`, `make status`, or related root commands.
-- Responsibilities: select the canonical cloud-first lane, invoke preflight, and delegate to root scripts.
+**Workspace Startup:**
+- Location: `Makefile`, `scripts/dev-workspace.sh`, `scripts/preflight.sh`.
+- Triggers: `make dev`, `make dev-local`, `make preflight`, `make status`.
+- Responsibilities: select a workspace profile, start repo-local processes, run preflight checks, and expose health/status.
 
-**Workspace Process Orchestrator:**
-- Location: `scripts/dev-workspace.sh`
-- Triggers: `make dev` or `make dev-local`.
-- Responsibilities: load profile defaults, resolve DB/env state, derive local shared secrets, and start repo-local processes with consistent ports and toggles.
+**TRR Backend HTTP Server:**
+- Location: `TRR-Backend/api/main.py`.
+- Triggers: `uvicorn api.main:app`.
+- Responsibilities: validate startup config, prewarm DB pool, initialize realtime broker, register routers, and export metrics.
 
-**TRR Backend API:**
-- Location: `TRR-Backend/api/main.py`
-- Triggers: Uvicorn startup, then all HTTP requests to `TRR-Backend`.
-- Responsibilities: validate runtime config, prewarm DB pool, initialize realtime broker, install middleware, mount routers, and expose health/metrics endpoints.
+**TRR Backend CLI:**
+- Location: `TRR-Backend/trr_backend/cli/__main__.py`, `TRR-Backend/trr_backend/cli/pipeline.py`.
+- Triggers: `python -m trr_backend.cli ...`.
+- Responsibilities: batch execution, pipeline runs, and operator-facing CLI workflows.
 
-**TRR App Root Layout:**
-- Location: `TRR-APP/apps/web/src/app/layout.tsx`
-- Triggers: every App Router request rendered by Next.js.
-- Responsibilities: install global fonts/styles/providers and wrap page content in shared UI/runtime boundaries.
-
-**TRR App API Surface:**
-- Location: `TRR-APP/apps/web/src/app/api/**/route.ts`
-- Triggers: browser requests to app-owned API routes.
-- Responsibilities: act as BFF routes, cron entrypoints, auth/session endpoints, and backend/admin proxies.
+**TRR App HTTP Surface:**
+- Location: `TRR-APP/apps/web/src/app/layout.tsx`, `TRR-APP/apps/web/src/app/page.tsx`, `TRR-APP/apps/web/src/app/api/**/route.ts`.
+- Triggers: `next dev`, `next build`, browser navigation, cron hooks, and admin API requests.
+- Responsibilities: render pages, host route handlers, and proxy/admin orchestration.
 
 **Screenalytics API:**
-- Location: `screenalytics/apps/api/main.py`
-- Triggers: Uvicorn startup and HTTP requests to the Screenalytics API.
-- Responsibilities: load env defaults early, apply CPU limits, mount routers, expose health/ready/storage endpoints, and optionally expose Celery-backed routes.
+- Location: `screenalytics/apps/api/main.py`.
+- Triggers: `uvicorn apps.api.main:app`.
+- Responsibilities: load env and CPU caps early, register routers, expose health/metrics, and optionally register Celery routes.
 
-**Screenalytics Workspace UI:**
-- Location: `screenalytics/apps/workspace-ui/streamlit_app.py`
-- Triggers: Streamlit startup.
-- Responsibilities: set page config first, initialize UI helpers, and route operators into numbered page modules.
+**Screenalytics Streamlit Workspace:**
+- Location: `screenalytics/apps/workspace-ui/streamlit_app.py`.
+- Triggers: `streamlit run screenalytics/apps/workspace-ui/streamlit_app.py`.
+- Responsibilities: initialize page config first, expose multipage navigation, and front operator tools.
+
+**Screenalytics CLI/Tooling:**
+- Location: `screenalytics/tools/episode_run.py`.
+- Triggers: direct CLI execution for episode pipeline runs.
+- Responsibilities: set runtime guards, load shared configs, and invoke reusable pipeline code.
+
+**Screenalytics Web Prototype:**
+- Location: `screenalytics/web/app/layout.tsx`, `screenalytics/web/app/page.tsx`, `screenalytics/web/app/screenalytics/page.tsx`.
+- Triggers: `cd screenalytics/web && npm run dev`.
+- Responsibilities: provide an optional Next.js operator UI backed by the Screenalytics API.
 
 ## Error Handling
 
-**Strategy:** Fail fast at startup for invalid runtime lanes or missing critical auth config, then convert runtime failures into HTTP-level errors close to the boundary that owns them.
+**Strategy:** Fail fast on invalid runtime configuration, normalize upstream/proxy failures into typed responses, and preserve long-running run state across retries and restarts.
 
 **Patterns:**
-- `TRR-Backend/api/main.py` validates database/auth configuration during lifespan startup and rejects unsupported runtime lanes before serving traffic.
-- `TRR-Backend/api/auth.py` and `TRR-Backend/api/screenalytics_auth.py` translate auth failures into `401`, `403`, or `500` depending on whether the problem is user input or auth-service availability.
-- `TRR-APP` proxy routes typically guard missing `TRR_API_URL` early and return normalized error JSON from route handlers instead of surfacing raw upstream failures.
-- `screenalytics/apps/api/errors.py` is installed from `screenalytics/apps/api/main.py`, while many services keep degraded-mode paths for optional dependencies such as Celery or psycopg2.
-- Health/readiness endpoints in both API apps provide the canonical place to distinguish boot failure, dependency failure, and steady-state traffic.
+- `TRR-Backend/api/main.py` validates required auth and DB env at startup and refuses unsupported DB connection classes.
+- `TRR-APP/apps/web/src/lib/server/trr-api/admin-read-proxy.ts` converts timeouts and fetch failures into `AdminReadProxyError` with retryable metadata.
+- `screenalytics/apps/api/main.py` conditionally mounts Celery routes and exposes a 503 stub when Celery dependencies are unavailable.
+- `screenalytics/apps/api/services/pipeline_orchestration.py` updates persisted orchestration state instead of relying on in-memory stage progress.
+- Streamlit and CLI entrypoints load env and runtime guards before heavy imports so failure modes are early and actionable.
 
 ## Cross-Cutting Concerns
 
-**Logging:** Request observability is centralized in `TRR-Backend/api/main.py` and `screenalytics/apps/api/main.py`; root orchestration logs live under `.logs/workspace/` via `scripts/dev-workspace.sh`.
+**Logging:** Structured request/runtime logging and metrics live in `TRR-Backend/trr_backend/observability.py` and `screenalytics/apps/api/services/observability.py`; workspace scripts expose status and logs through `scripts/status-workspace.sh` and `scripts/logs-workspace.sh`.
 
-**Validation:** Runtime/env validation happens in `scripts/preflight.sh`, `scripts/dev-workspace.sh`, `TRR-Backend/api/main.py`, and `screenalytics/apps/api/services/supabase_db.py`; request validation relies on FastAPI/Pydantic models and Next route-handler guards.
+**Validation:** Runtime DB-lane validation is duplicated intentionally per repo in `TRR-Backend/trr_backend/db/connection.py`, `TRR-APP/apps/web/src/lib/server/postgres.ts`, and `screenalytics/apps/api/services/supabase_db.py`. Route and payload validation use FastAPI/Pydantic in backend/screenalytics and TypeScript types in `TRR-APP`.
 
-**Authentication:** Browser auth/session logic lives in `TRR-APP/apps/web/src/app/api/session/login/route.ts`; admin proxy auth bridges through `TRR-APP/apps/web/src/lib/server/trr-api/internal-admin-auth.ts`; backend enforcement lives in `TRR-Backend/api/auth.py`; Screenalytics service auth lives in `TRR-Backend/api/screenalytics_auth.py`.
-
-**Cross-Repo Dependencies:** `TRR-APP` depends on `TRR-Backend` URL/auth/error contracts, especially through `TRR-APP/apps/web/src/lib/server/trr-api/backend.ts`; `screenalytics` depends on `TRR-Backend` for service endpoints in `TRR-Backend/api/routers/screenalytics*.py` and on the shared DB contract in `TRR_DB_URL`; root workflow docs and scripts define the required implementation order across all three repos.
+**Authentication:** `TRR-APP` handles browser auth in `TRR-APP/apps/web/src/lib/server/auth.ts` and Firebase helpers, then uses internal admin headers for backend hops. `TRR-Backend` enforces admin/service auth in `api/auth.py` and `api/screenalytics_auth.py`. `screenalytics` uses service tokens or shared DB access for TRR integration, not browser auth.
 
 ---
 

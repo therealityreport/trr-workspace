@@ -2,234 +2,132 @@
 
 **Analysis Date:** 2026-04-04
 
-## Scope
-
-This document captures the current coding conventions across the active TRR workspace repos:
-
-- `TRR-Backend/`
-- `TRR-APP/`
-- `screenalytics/`
-- Shared workspace policy and command references in `AGENTS.md` and `docs/workspace/dev-commands.md`
-
-Use repo-local conventions first, then apply workspace rules from `AGENTS.md` when changes cross repo boundaries.
-
 ## Naming Patterns
 
 **Files:**
-- Python modules use `snake_case.py` under `TRR-Backend/api/`, `TRR-Backend/trr_backend/`, `screenalytics/apps/api/`, and `screenalytics/packages/py-screenalytics/src/py_screenalytics/`.
-- FastAPI router files are resource-oriented and admin-prefixed where needed, for example `TRR-Backend/api/routers/admin_show_news.py`, `TRR-Backend/api/routers/screenalytics.py`, and `screenalytics/apps/api/routers/jobs.py`.
-- Next.js App Router files follow framework naming: `page.tsx`, `layout.tsx`, `route.ts`, nested under route segments such as `TRR-APP/apps/web/src/app/shows/[showId]/page.tsx`.
-- React component and utility files are split by concern. Components often use `PascalCase.tsx` in `TRR-APP/apps/web/src/components/`, while utility modules use `kebab-case.ts` in `TRR-APP/apps/web/src/lib/`.
-- Test files are descriptive and behavior-oriented rather than mirroring source names exactly, for example `TRR-APP/apps/web/tests/show-refresh-health-center-wiring.test.ts` and `TRR-Backend/tests/repositories/test_social_sync_orchestrator.py`.
+- Use `snake_case` for Python modules and tests in `TRR-Backend` and `screenalytics`: `TRR-Backend/api/routers/admin_recent_people.py`, `TRR-Backend/tests/api/test_health.py`, `screenalytics/apps/api/services/trr_metadata_db.py`, `screenalytics/tests/api/test_trr_health.py`.
+- Use Next.js App Router file conventions in `TRR-APP`: `page.tsx`, `layout.tsx`, and `route.ts` under `TRR-APP/apps/web/src/app/...`.
+- Use `PascalCase.tsx` for React components and `camelCase.ts` for utilities and hooks: `TRR-APP/apps/web/src/components/GlobalHeader.tsx`, `TRR-APP/apps/web/src/hooks/useNormalizedSurvey.ts`, `screenalytics/web/lib/state/uploadMachine.ts`.
 
 **Functions:**
-- Python functions use `snake_case`, including private helpers prefixed with `_`, as seen in `TRR-Backend/api/main.py` and `screenalytics/apps/api/services/validation.py`.
-- TypeScript/React functions use `camelCase` for helpers and `PascalCase` for components and page functions, as seen in `TRR-APP/apps/web/src/lib/server/trr-api/backend.ts` and `TRR-APP/apps/web/src/app/page.tsx`.
-- Route handlers in Next.js export HTTP verb functions directly: `export async function GET(...)` or `POST(...)` in files like `TRR-APP/apps/web/src/app/api/session/login/route.ts`.
+- Use `snake_case` for Python functions and helpers: `TRR-Backend/api/routers/admin_recent_people.py`, `TRR-Backend/trr_backend/services/retained_cast_screentime_runtime.py`, `screenalytics/apps/api/services/trr_metadata_db.py`.
+- Use `camelCase` for TypeScript functions and reducers: `TRR-APP/apps/web/src/lib/server/trr-api/backend.ts`, `TRR-APP/apps/web/src/lib/validation/user.ts`, `screenalytics/web/api/client.ts`.
+- Prefix internal helpers with `_` in Python when they are module-private: `_parse_limit` in `TRR-Backend/api/routers/admin_recent_people.py`, `_cache_get` in `screenalytics/apps/api/services/trr_metadata_db.py`.
 
 **Variables:**
-- Module constants use `UPPER_SNAKE_CASE` in both Python and TypeScript, for example `CANONICAL_DB_ENV` in `TRR-Backend/trr_backend/db/connection.py` and `LOOPBACK_BACKEND_HOSTNAMES` in `TRR-APP/apps/web/src/lib/server/trr-api/backend.ts`.
-- Mutable local variables stay lower-case or `camelCase` and tend to be explicit rather than abbreviated.
-- Logger instances are consistently `logger` or `LOGGER`.
+- Use `UPPER_SNAKE_CASE` for module constants and environment-derived defaults: `_DEFAULT_LIMIT` in `TRR-Backend/api/routers/admin_recent_people.py`, `API_BASE` in `screenalytics/web/api/client.ts`, `_DEFAULT_CLIP_TTL_DAYS` in `TRR-Backend/trr_backend/services/retained_cast_screentime_runtime.py`.
+- Use descriptive state names in React and reducer code: `isSettingsOpen`, `settingsMenuRef`, `progress`, `speedBps` in `TRR-APP/apps/web/src/components/GlobalHeader.tsx` and `screenalytics/web/lib/state/uploadMachine.ts`.
 
 **Types:**
-- Python dataclasses, exceptions, enums, and typed containers use `PascalCase`, for example `DatabaseConnectionError` in `TRR-Backend/trr_backend/db/connection.py` and `StorageConfigResult` in `screenalytics/apps/api/services/validation.py`.
-- TypeScript types and props interfaces use `PascalCase`, for example `UserProfile` in `TRR-APP/apps/web/src/lib/validation/user.ts`.
-- Literal unions and typed records are preferred over untyped objects when the module is already strongly typed.
+- Use `PascalCase` for Python Pydantic models and `TypedDict` names: `RecentPersonViewRequest` in `TRR-Backend/api/routers/admin_recent_people.py`, `_ReadyCheckResult` in `screenalytics/apps/api/main.py`.
+- Use `PascalCase` for TypeScript types with semantic suffixes such as `Props`, `State`, `Response`, and `Request`: `SurveyXState` in `TRR-APP/apps/web/src/lib/validation/user.ts`, `UploadState` in `screenalytics/web/lib/state/uploadMachine.ts`.
+- Prefer union literals for constrained UI state in TypeScript: `UploadStep` and `UploadMode` in `screenalytics/web/lib/state/uploadMachine.ts`.
 
 ## Code Style
 
 **Formatting:**
-- `TRR-Backend/` uses Ruff formatting via `TRR-Backend/ruff.toml`.
-- `screenalytics/` declares both Ruff and Black in `screenalytics/pyproject.toml`, with both set to line length `120`.
-- `TRR-APP/` does not declare Prettier or Biome. Formatting is implicitly enforced through ESLint, TypeScript strictness, and existing file style in `TRR-APP/apps/web/`.
-- Workspace target runtimes are documented in `AGENTS.md` and `.nvmrc`: Node `24` and Python `3.11`.
+- Use Ruff as the enforced formatter for Python in `TRR-Backend` and the Python utilities inside `TRR-APP`; the config sets `line-length = 120`, double quotes, and space indentation in `TRR-Backend/ruff.toml` and `TRR-APP/ruff.toml`.
+- `screenalytics` keeps Ruff and Black aligned at 120 characters in `screenalytics/pyproject.toml`.
+- No Prettier, Biome, or repo-wide TypeScript formatter config is detected in `TRR-APP` or `screenalytics/web`; TypeScript/TSX style is governed by existing file patterns plus ESLint.
 
-**Key settings:**
-- Python line length is `120` in `TRR-Backend/ruff.toml` and `screenalytics/pyproject.toml`.
-- `TRR-Backend/ruff.toml` enables `E`, `F`, `I`, `N`, `UP`, `B`, and `C4`, and explicitly ignores `B008` for FastAPI dependency defaults.
-- `screenalytics/pyproject.toml` ignores `E402`, `F841`, and `E731` because this repo intentionally mutates `sys.path`, keeps some debugging variables, and accepts simple lambda assignments.
-- `TRR-APP/apps/web/tsconfig.json` runs with `strict: true` and an `@/*` path alias.
-
-**Observed style rules:**
-- Python files commonly start with `from __future__ import annotations`.
-- Imports are grouped and blank-line separated: stdlib, third-party, then local modules.
-- Docstrings are common in Python entrypoints, services, and tests when the behavior is non-trivial.
-- TypeScript files use semicolons inconsistently by ecosystem style, but each file remains internally consistent.
-- Server-only Next.js modules put `import "server-only";` first, as in `TRR-APP/apps/web/src/lib/server/trr-api/backend.ts`.
-
-## Linting
-
-**Python repos:**
-- Run `ruff check .` and `ruff format --check .` in `TRR-Backend/`.
-- `screenalytics/.github/workflows/ci.yml` uses a narrower CI lint gate: `ruff check --select=E9,F63,F7,F82 --target-version=py311 .`.
-- `screenalytics/.github/workflows/ci.yml` also enforces custom scripts: `scripts/check_ruff_policy.py` and `scripts/check_f401_regression.py`.
-
-**TypeScript repo:**
-- `TRR-APP/apps/web/eslint.config.mjs` extends `eslint-config-next/core-web-vitals` and `eslint-config-next/typescript`.
-- `@next/next/no-img-element` is an explicit error; exceptions require inline disable comments with justification per the comment in `TRR-APP/apps/web/eslint.config.mjs`.
-- Test files under `TRR-APP/apps/web/tests/**/*` can use `@ts-nocheck` only with a description, and `no-explicit-any` is disabled there.
-
-**Not detected:**
-- No root-level monorepo linter config.
-- No Prettier config in the active repos.
-- No repo-wide mypy config in the active repos.
+**Linting:**
+- Use Ruff rule families `E`, `F`, `I`, `N`, `UP`, `B`, and `C4` for backend/app Python code, with FastAPI-specific default-argument allowance via `B008` ignore in `TRR-Backend/ruff.toml`.
+- `screenalytics` Ruff keeps a lighter rule surface and explicitly tolerates import-order bootstrapping and debug leftovers via `ignore = ["E402", "F841", "E731"]` in `screenalytics/pyproject.toml`.
+- Use Next.js ESLint presets for `TRR-APP/apps/web`, with custom hard enforcement for `@next/next/no-img-element` in `TRR-APP/apps/web/eslint.config.mjs`.
+- `TRR-APP` test files relax two TypeScript lint rules only inside `tests/**/*` in `TRR-APP/apps/web/eslint.config.mjs`.
+- `screenalytics/web` inherits `next/core-web-vitals` and warns on `console` except `warn` and `error` in `screenalytics/web/.eslintrc.json`.
 
 ## Import Organization
 
-**Python order:**
-1. `from __future__ import annotations`
-2. Standard library imports
-3. Third-party imports
-4. App-local imports
+**Order:**
+1. Python modules follow standard-library, third-party, then local-package imports, which Ruff `I` enforcement expects in `TRR-Backend/ruff.toml` and is visible in `TRR-Backend/api/main.py` and `screenalytics/apps/api/main.py`.
+2. TypeScript files usually import framework/runtime modules first, then external packages, then alias-based local modules: `TRR-APP/apps/web/src/components/GlobalHeader.tsx`, `TRR-APP/apps/web/tests/admin-global-header.test.tsx`.
+3. Type-only imports are separated explicitly in TypeScript where useful: `TRR-APP/apps/web/src/components/GlobalHeader.tsx`, `screenalytics/web/api/client.ts`.
 
-Use the layout already present in `TRR-Backend/api/main.py`, `TRR-Backend/api/auth.py`, and `screenalytics/apps/api/main.py`.
-
-**TypeScript order:**
-1. Framework and package imports
-2. `@/` alias imports
-3. Relative imports
-
-Use the ordering in `TRR-APP/apps/web/tests/admin-global-header.test.tsx` and `TRR-APP/apps/web/src/lib/server/trr-api/backend.ts`.
-
-**Path aliases:**
-- `TRR-APP/apps/web/tsconfig.json` defines `@/* -> ./src/*`.
-- Vitest mirrors that alias in `TRR-APP/apps/web/vitest.config.ts`.
-- `screenalytics/tests/conftest.py` and `screenalytics/apps/workspace-ui/tests/conftest.py` add `PROJECT_ROOT` and `packages/py-screenalytics/src` to `sys.path`; tests depend on that import setup.
-
-## Repeated Implementation Conventions
-
-**Environment access and normalization:**
-- Use focused env helper functions rather than reading raw env vars repeatedly.
-- Examples:
-
-```python
-def _env_flag(name: str, default: bool) -> bool:
-    raw = (os.getenv(name) or "").strip().lower()
-    if not raw:
-        return default
-    return raw not in {"0", "false", "no", "off"}
-```
-
-From `TRR-Backend/api/main.py`.
-
-```typescript
-export const getBackendApiBase = (): string | null => {
-  const raw = process.env.TRR_API_URL?.trim();
-  if (!raw) return null;
-  return normalizeBackendBase(raw);
-};
-```
-
-From `TRR-APP/apps/web/src/lib/server/trr-api/backend.ts`.
-
-- In Next.js client config files, env vars are referenced statically so Next can inline them, as in `TRR-APP/apps/web/src/lib/firebase-client-config.ts`.
-- In screenalytics, env fallback helpers like `_env_first()` are used to support multiple operator variable names, as in `screenalytics/apps/api/services/storage.py` and `screenalytics/apps/api/services/validation.py`.
-
-**Startup validation and fail-fast checks:**
-- Entrypoints validate critical config during startup rather than deferring failures to request time.
-- `TRR-Backend/api/main.py` validates DB resolution and auth envs in `_validate_startup_config()`.
-- `screenalytics/apps/api/main.py` installs error handlers, applies CPU limits before heavy imports, and conditionally mounts optional routers.
-
-**Server and client boundaries in TRR-APP:**
-- Keep backend and secret-aware code under `TRR-APP/apps/web/src/lib/server/`.
-- Prefer Server Components and server route handlers; add client boundaries only when stateful interaction is required, per `TRR-APP/AGENTS.md`.
-- Use `import "server-only";` in modules that must never cross into the client bundle.
-
-**Streamlit page initialization:**
-- Streamlit pages add import paths, import `ui_helpers`, then call `helpers.init_page(...)` before the first `st.*` UI call.
-- Follow the pattern in `screenalytics/apps/workspace-ui/pages/0_Shows.py`.
-
-**Status-rich naming for tests and routes:**
-- New admin, proxy, and wiring tests should keep the current descriptive naming style used in `TRR-APP/apps/web/tests/`.
-- New backend repository or router tests should use `test_<behavior>.py` under the relevant category directory in `TRR-Backend/tests/`.
+**Path Aliases:**
+- Use `@/*` -> `./src/*` in `TRR-APP/apps/web/tsconfig.json`.
+- Use `@/*` -> project root in `screenalytics/web/tsconfig.json`.
+- Vitest mirrors the app alias and remaps `server-only` for tests in `TRR-APP/apps/web/vitest.config.ts`.
 
 ## Error Handling
 
-**TRR-Backend:**
-- Raise `fastapi.HTTPException` for request-level failures, with explicit status codes and short client-safe messages, as in `TRR-Backend/api/auth.py` and `TRR-Backend/api/deps.py`.
-- Use `headers={"x-error-code": ...}` when callers need a machine-readable failure code, as in `TRR-Backend/api/auth.py`.
-- Log detailed context server-side before raising sanitized errors.
-- Wrap external or DB errors in repo-local helpers instead of leaking raw response objects.
-
-**screenalytics:**
-- All API errors are normalized through `screenalytics/apps/api/errors.py` into `{code, message, details}` envelopes.
-- Preserve trace IDs in error details when present.
-- Use safety-net exception handlers to avoid exposing stack traces to clients.
-- Storage and pipeline validation functions return typed result objects and log warnings or fallback reasons rather than crashing immediately when degraded local behavior is acceptable.
-
-**TRR-APP:**
-- Normalize env and backend URL issues early in helper modules instead of scattering ad hoc checks.
-- For server routes and server-side data access, follow backend contracts rather than inventing local response shapes, per `TRR-APP/AGENTS.md`.
-- In tests, assert user-visible outcomes rather than internal implementation details; examples are throughout `TRR-APP/apps/web/tests/`.
+**Patterns:**
+- Use `HTTPException` for request-contract and router-level failures in FastAPI handlers: `TRR-Backend/api/routers/admin_recent_people.py`, `TRR-Backend/api/auth.py`, `screenalytics/apps/api/main.py`.
+- Use `RuntimeError` for startup validation, dependency availability, and lower-layer operational failures that should fail fast or be translated at the boundary: `TRR-Backend/api/main.py`, `TRR-Backend/trr_backend/media/s3_mirror.py`, `screenalytics/apps/api/services/trr_metadata_db.py`.
+- `screenalytics` installs a consistent error envelope `{code, message, details}` for all unhandled API errors via `screenalytics/apps/api/errors.py`; prefer that pattern for new Screenalytics API surfaces.
+- `TRR-APP` server/client utilities commonly normalize errors into application-specific objects instead of throwing raw values: `screenalytics/web/api/client.ts` shows the pattern explicitly; `TRR-APP` client components more often catch, log, and preserve optimistic UI fallback state in `TRR-APP/apps/web/src/components/GlobalHeader.tsx`.
 
 ## Logging
 
-**Framework:** `logging` in Python, `console.warn` only for local dev diagnostics in narrow TypeScript helpers.
+**Framework:** Python `logging`; browser/server `console` in TypeScript.
 
 **Patterns:**
-- Initialize module loggers with `logging.getLogger(__name__)` or `LOGGER = logging.getLogger(__name__)`.
-- Prefer structured-ish log messages with stable prefixes, for example `[startup-config]`, `[db-resolution]`, `[storage-config]`, and `[cast-screentime]`.
-- Use `logger.exception(...)` or `LOGGER.exception(...)` when preserving stack traces matters.
-- Avoid logging secret values. Workspace policy in `AGENTS.md` explicitly prohibits printing shared secrets.
-- TypeScript logging is intentionally sparse. `TRR-APP/apps/web/src/lib/server/trr-api/backend.ts` warns only in local dev when `TRR_API_URL` resolves to a remote host.
+- Use module-scoped Python loggers as `logger = logging.getLogger(__name__)` or `LOGGER = logging.getLogger(__name__)`: `TRR-Backend/api/main.py`, `TRR-Backend/trr_backend/services/retained_cast_screentime_runtime.py`, `screenalytics/apps/api/main.py`, `screenalytics/apps/api/services/trr_metadata_db.py`.
+- Prefer structured or tagged log messages rather than prose-only strings, especially for startup and worker flows: `"[startup-config]"` in `TRR-Backend/api/main.py`, `"[startup-schema-contract]"` in `screenalytics/apps/api/main.py`.
+- `TRR-APP` permits `console.log`, `console.warn`, and `console.error` in production code; examples exist in `TRR-APP/apps/web/src/app/hub/layout.tsx`, `TRR-APP/apps/web/src/app/api/session/login/route.ts`, and many client components. Preserve this only when the log has operational value.
 
 ## Comments
 
-**When to comment:**
-- Use comments for policy, runtime ordering, or non-obvious operational constraints.
-- Good examples:
-  - `TRR-APP/apps/web/eslint.config.mjs` documents the no-`<img>` policy and test overrides.
-  - `screenalytics/apps/api/main.py` explains why `.env` loading and CPU limits happen before heavy imports.
-  - `TRR-Backend/api/main.py` uses short comments to separate startup validation branches.
+**When to Comment:**
+- Use module docstrings and high-value function docstrings in Python to explain service ownership or non-obvious runtime behavior: `TRR-Backend/api/main.py`, `TRR-Backend/trr_backend/services/retained_cast_screentime_runtime.py`, `screenalytics/apps/api/services/trr_metadata_db.py`.
+- Use short targeted comments in TypeScript for policy or testing setup, not line-by-line narration: `TRR-APP/apps/web/eslint.config.mjs`, `TRR-APP/apps/web/tests/setup.ts`.
 
 **JSDoc/TSDoc:**
-- Minimal in TypeScript. Most documentation is inline comments or descriptive names.
-- Python docstrings are the dominant form of in-file documentation for functions, tests, and modules.
+- TSDoc is selective, usually at file level or for exported helpers rather than every symbol: `TRR-APP/apps/web/src/components/survey/index.ts`.
+- Python docstrings are more common than JS docblocks across the workspace.
 
 ## Function Design
 
-**Size:**
-- Utility functions stay small and focused.
-- Large files still decompose behavior into private helpers, especially in Python services and startup modules.
+**Size:** Keep routers thin and delegate heavier work to repositories/services. Current examples: `TRR-Backend/api/routers/admin_recent_people.py` delegates to `trr_backend.repositories.recent_people`; `screenalytics/apps/api/main.py` composes routers and lifecycle helpers rather than embedding business logic.
 
 **Parameters:**
-- Python APIs prefer keyword-only or clearly named parameters in complex helpers, seen in `TRR-Backend/trr_backend/db/connection.py` and `screenalytics/apps/api/services/storage.py`.
-- TypeScript helpers prefer explicit parameter typing and narrow return types, seen in `TRR-APP/apps/web/src/lib/firebase-client-config.ts`.
+- Prefer typed scalar parameters plus FastAPI `Query`, `Header`, or `Field` metadata at boundaries: `TRR-Backend/api/routers/admin_recent_people.py`.
+- Prefer typed object payloads or discriminated unions in TypeScript state/reducer code: `screenalytics/web/lib/state/uploadMachine.ts`.
 
-**Return values:**
-- Python helpers often return typed dicts, dataclasses, or tuples of structured metadata instead of raw positional data.
-- TypeScript helpers frequently return `string | null`, typed objects, or literal-backed booleans rather than truthy/falsy mixed values.
+**Return Values:**
+- Backend and Screenalytics router helpers return plain dictionaries/lists or Pydantic-backed payloads, not ORM objects: `TRR-Backend/api/routers/admin_recent_people.py`, `screenalytics/apps/api/services/trr_metadata_db.py`.
+- TypeScript utility modules return explicit domain types or `null` instead of implicit falsy values where the caller needs clarity: `TRR-APP/apps/web/src/lib/server/trr-api/backend.ts`, `TRR-APP/apps/web/src/lib/validation/user.ts`.
 
 ## Module Design
 
 **Exports:**
-- Python modules export top-level functions and classes directly; occasional `__all__` appears for narrow security helpers such as `TRR-Backend/trr_backend/security/internal_admin.py`.
-- In Next.js, page modules default-export the page component, route modules named-export `GET`/`POST`, and utility modules prefer named exports.
+- Use default exports for React components and named exports for related types/helpers: `TRR-APP/apps/web/src/components/GlobalHeader.tsx`, `TRR-APP/apps/web/src/components/survey/index.ts`.
+- Use barrel files selectively for cohesive UI families, not as a workspace-wide rule: `TRR-APP/apps/web/src/components/survey/index.ts`.
+- Python packages are standard package directories with `__init__.py`; imports remain explicit rather than wildcard-based: `TRR-Backend/api/__init__.py`, `TRR-Backend/api/routers/__init__.py`, `screenalytics/apps/api/services/__init__.py`.
 
-**Barrel files:**
-- Not a dominant pattern.
-- Narrow index modules exist where a domain benefits from aggregation, for example `TRR-APP/apps/web/src/lib/design-system/index.ts`.
+**Barrel Files:** Present in focused TypeScript areas only. Use them when a folder is a stable public surface, as in `TRR-APP/apps/web/src/components/survey/index.ts`. Do not add barrels for one-off directories.
 
 ## Configuration Patterns
 
-**Workspace-wide:**
-- Shared quality commands live in `docs/workspace/dev-commands.md`.
-- Cross-repo validation commands are documented in `AGENTS.md`.
-- Environment contract checks run in CI via `scripts/check_env_example.py` in all three repos.
+**Environment-First Runtime Config:**
+- Validate critical environment before serving traffic. `TRR-Backend/api/main.py` validates DB lane selection and auth envs. `screenalytics/apps/api/main.py` validates runtime DB and schema expectations during startup.
+- Never hardcode backend origins or shared service endpoints in app code. `TRR-APP/apps/web/src/lib/server/trr-api/backend.ts` derives the backend base from `TRR_API_URL` and appends `/api/v1`.
 
-**Repo-local:**
-- Keep repo-specific quality settings near the repo root:
-  - `TRR-Backend/ruff.toml`
-  - `TRR-Backend/pytest.ini`
-  - `TRR-APP/apps/web/eslint.config.mjs`
-  - `TRR-APP/apps/web/vitest.config.ts`
-  - `TRR-APP/apps/web/playwright.config.ts`
-  - `screenalytics/pyproject.toml`
+**TypeScript Compiler Settings:**
+- Keep strict TypeScript enabled in both Next.js frontends: `TRR-APP/apps/web/tsconfig.json`, `screenalytics/web/tsconfig.json`.
+- `TRR-APP` allows `.js` files in the compiler pipeline (`allowJs: true`), but the dominant convention is still `.ts` and `.tsx`.
 
-**Current rule of thumb:**
-- Add new config to the repo that owns the runtime.
-- Add shared command or workflow guidance to workspace docs only when more than one repo depends on it.
+**Repo Validation Hooks:**
+- Backend quality gate is `ruff check .`, `ruff format --check .`, and `pytest` per `TRR-Backend/AGENTS.md`.
+- App quality gate is `pnpm -C apps/web run lint`, `pnpm -C apps/web exec next build --webpack`, and `pnpm -C apps/web run test:ci` per `TRR-APP/AGENTS.md`.
+- Screenalytics quality gate is `python -m py_compile <touched_files>`, `pytest tests/unit/ -v`, and `RUN_ML_TESTS=1 pytest tests/ml/ -v` when relevant per `screenalytics/AGENTS.md`.
+
+## Repo and Workspace Conventions
+
+**Cross-Repo Order:**
+- For shared contracts, land backend changes before `screenalytics`, then `TRR-APP`, per `/Users/thomashulihan/Projects/TRR/AGENTS.md`, `TRR-Backend/AGENTS.md`, and `screenalytics/AGENTS.md`.
+
+**Runtime Baseline:**
+- Node targets `24.x` in `TRR-APP/package.json`, `TRR-APP/apps/web/package.json`, and `screenalytics/web/package.json`.
+- Python targets `3.11` in `TRR-Backend/ruff.toml`, `TRR-APP/ruff.toml`, and `screenalytics/packages/py-screenalytics/pyproject.toml`.
+
+**Workspace Entry Points:**
+- Use workspace `make dev`, `make test-fast`, `make test-full`, and `make smoke` from `/Users/thomashulihan/Projects/TRR/Makefile`.
+- Repo `Makefile`s mostly delegate dev/log/stop behavior back to the workspace root: `TRR-Backend/Makefile`, `TRR-APP/Makefile`, `screenalytics/Makefile`.
+
+**Server/Client Boundaries:**
+- In `TRR-APP`, keep server-only utilities under `TRR-APP/apps/web/src/lib/server/` and explicitly mark them with `import "server-only"` when needed: `TRR-APP/apps/web/src/lib/server/trr-api/backend.ts`.
+- Use `"use client"` only on interactive React entrypoints. The app follows that boundary heavily in `TRR-APP/apps/web/src/components/*.tsx` and `TRR-APP/apps/web/src/app/**/page.tsx`.
 
 ---
 
