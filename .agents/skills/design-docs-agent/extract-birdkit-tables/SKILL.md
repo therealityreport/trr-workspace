@@ -25,7 +25,8 @@ components so downstream generation can recreate them with working TRR renderers
 - `sourceHtml`
 - optional page-structure hints for Birdkit block positions
 
-See `references/rendering-contracts.md` and `references/lessons-learned.md`.
+See `references/rendering-contracts.md`, `references/lessons-learned.md`, and
+`references/birdkit-component-taxonomy.md`.
 
 ## Outputs
 
@@ -36,16 +37,25 @@ See `references/rendering-contracts.md` and `references/lessons-learned.md`.
 ## Procedure
 
 1. Detect Birdkit table containers and identify the component family.
-2. Extract the full SSR dataset rather than only the initially visible rows.
-3. Capture dropdown or variant states for interactive tables.
-4. Preserve semantics needed for headers, medal circles, or other specialized table UI.
-5. Return normalized table records and renderer hints.
+2. Filter `svelte-*` class hashes during structure recovery. Treat `g-*`
+   classes as the semantic structure. See
+   `references/birdkit-component-taxonomy.md`.
+3. Extract the full SSR dataset rather than only the initially visible rows.
+4. Capture dropdown or variant states for interactive tables.
+5. When `.g-screenreader-only` content exists near the table, extract its text
+   as a validation source and compare counts and values against the SSR table
+   rows.
+6. Preserve semantics needed for headers, medal circles, or other specialized
+   table UI.
+7. Return normalized table records and renderer hints.
 
 ## Validation
 
 1. Keep the full SSR dataset when it is present in HTML.
 2. Preserve stable row-count expectations for interactive variants.
 3. Do not fabricate missing variants that are not present in source.
+4. If screen-reader content is present, use it as a cross-check rather than
+   ignoring it.
 
 ## Stop And Escalate If
 

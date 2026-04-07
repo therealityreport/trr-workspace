@@ -82,6 +82,11 @@ skillset:
       phases: [extraction]
       wave: 2
       status: active
+    - skill: extract-birdkit-arrow-charts
+      action: create
+      phases: [extraction]
+      wave: 2
+      status: active
     - skill: generate-article-page
       action: upgrade
       phases: [generation]

@@ -137,6 +137,26 @@ if [[ "${1:-}" == "health" ]]; then
   exit 0
 fi
 
+# ── wait subcommand ──────────────────────────────────────────────────
+# Block until the CDP endpoint on the given port is responsive.
+# Usage: chrome-agent.sh wait [port] [timeout_seconds]
+if [[ "${1:-}" == "wait" ]]; then
+  shift
+  wait_port="${1:-$DEBUG_PORT}"
+  wait_timeout="${2:-15}"
+  elapsed=0
+  while (( elapsed < wait_timeout )); do
+    if endpoint_ready "$wait_port"; then
+      echo "[chrome-agent] CDP endpoint ready on port ${wait_port} (${elapsed}s)."
+      exit 0
+    fi
+    sleep 0.5
+    elapsed=$(( elapsed + 1 ))
+  done
+  echo "[chrome-agent] ERROR: CDP endpoint on port ${wait_port} not ready after ${wait_timeout}s." >&2
+  exit 1
+fi
+
 # --- Resolve Chrome binary (macOS / Linux) ---
 find_chrome() {
   if [[ "$(uname)" == "Darwin" ]]; then
@@ -215,11 +235,12 @@ CHROME_FLAGS=(
   "--no-default-browser-check"
   "--disable-background-networking"
   "--disable-sync"
-  "--disable-extensions"
   "--disable-crash-reporter"
   "--disable-background-timer-throttling"
   "--disable-backgrounding-occluded-windows"
   "--disable-renderer-backgrounding"
+  "--disable-popup-blocking"
+  "--enable-features=NetworkService,NetworkServiceInProcess"
 )
 
 if [[ "$HEADLESS" == "1" ]]; then
@@ -256,6 +277,11 @@ else
     CHROME_PID="$listening_pid"
   fi
   echo "[chrome-agent] Chrome agent ready."
+  # Emit the WebSocket debugger URL for test harness integration
+  ws_url="$(curl -sf "http://localhost:${DEBUG_PORT}/json/version" | sed -n 's/.*"webSocketDebuggerUrl" *: *"\([^"]*\)".*/\1/p')"
+  if [[ -n "${ws_url:-}" ]]; then
+    echo "[chrome-agent]   WS:      ${ws_url}"
+  fi
 fi
 
 if [[ "$HEADLESS" != "1" ]]; then

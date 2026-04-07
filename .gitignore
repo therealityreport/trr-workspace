@@ -11,6 +11,7 @@
 /.codex-tmp/
 /.tmp/
 /.artifacts/
+.tmp-codex-bootstrap.*/
 
 # Output artifacts (screenshots, IAM policies, etc.)
 /output/

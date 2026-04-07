@@ -9,10 +9,10 @@
 	workspace-pr-agent \
 	getty-server getty-tunnel getty-remote
 
-# Daily default: `make dev` runs the canonical cloud-backed workspace profile.
-# It starts TRR-APP + TRR-Backend locally, keeps the screenalytics API on, and bypasses local Docker infra.
-# screenalytics Streamlit/Web UIs are disabled in the default profile unless explicitly re-enabled.
-# Use `make dev-local` only when you intentionally want Docker-backed local Redis + MinIO.
+# Daily default: `make dev` runs the canonical cloud-first workspace profile.
+# It starts TRR-APP + TRR-Backend locally, keeps the screenalytics API on, and avoids local Docker infra.
+# screenalytics Streamlit/Web UIs are disabled in the canonical profile unless explicitly re-enabled.
+# Use `make dev-local` only when you intentionally need the Screenalytics-only Docker fallback (local Redis + MinIO).
 # To override the default profile explicitly:
 # PROFILE=default make dev
 # PROFILE=local-cloud make dev        # deprecated compatibility profile
@@ -42,12 +42,12 @@ dev-cloud:
 	@echo "[workspace] NOTE: 'make dev-cloud' is deprecated; running 'make dev'."
 	@$(MAKE) --no-print-directory dev PROFILE="$${PROFILE:-default}"
 
-# Docker-backed local screenalytics mode (local Redis + MinIO).
+# Explicit Screenalytics-only Docker fallback (local Redis + MinIO).
 dev-local:
 	@$(MAKE) --no-print-directory preflight-local
 	@PROFILE="$${PROFILE:-local-docker}" WORKSPACE_DEV_MODE=local_docker WORKSPACE_SCREENALYTICS=1 WORKSPACE_SCREENALYTICS_SKIP_DOCKER=0 bash scripts/dev-workspace.sh
 
-# Compatibility alias for the Docker-backed local path.
+# Deprecated compatibility alias for the explicit Docker fallback.
 dev-full:
 	@echo "[workspace] NOTE: 'make dev-full' is deprecated; running 'make dev-local'."
 	@$(MAKE) --no-print-directory dev-local PROFILE="$${PROFILE:-local-docker}"
@@ -161,19 +161,19 @@ cast-screentime-gap-check:
 cast-screentime-live-check:
 	@bash scripts/cast-screentime-live-check.sh
 
-# Tears down the local Docker infra used by make dev-local (Redis + MinIO).
+# Tears down the explicit Docker fallback infra used by make dev-local (Redis + MinIO).
 # Use "make stop && make down" for a full cleanup.
 down:
 	@bash scripts/down-screenalytics-infra.sh
 
 help:
 	@echo "Workspace commands:"
-	@echo "  make dev          - recommended default; cloud-backed screenalytics API, no local Docker infra"
-	@echo "  make dev-local    - local Docker mode; starts Redis + MinIO for screenalytics"
-	@echo "  make preflight    - validates the default no-Docker dev path"
-	@echo "  make preflight-local - validates the Docker-backed local path"
+	@echo "  make dev          - canonical default; cloud-first backend/app path with no local Docker infra"
+	@echo "  make dev-local    - explicit Screenalytics fallback; starts local Redis + MinIO via Docker"
+	@echo "  make preflight    - validates the canonical no-Docker workspace path"
+	@echo "  make preflight-local - validates the explicit Docker fallback path"
 	@echo "  make codex-check  - validates tracked Codex config, rules, and user bootstrap state"
-	@echo "  make down         - tears down local Docker infra used by make dev-local"
+	@echo "  make down         - tears down the explicit Docker fallback infra used by make dev-local"
 	@echo "Legacy aliases:"
 	@echo "  make dev-cloud    - deprecated alias for make dev"
 	@echo "  make dev-full     - deprecated alias for make dev-local"

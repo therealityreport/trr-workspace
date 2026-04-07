@@ -133,14 +133,18 @@ WORKSPACE_DEV_MODE="${WORKSPACE_DEV_MODE:-cloud}"
 case "$WORKSPACE_DEV_MODE" in
   cloud|local_docker) ;;
   *)
-    echo "[preflight] ERROR: invalid WORKSPACE_DEV_MODE='${WORKSPACE_DEV_MODE}' (expected cloud or local_docker)." >&2
+    echo "[preflight] ERROR: invalid WORKSPACE_DEV_MODE='${WORKSPACE_DEV_MODE}' (expected cloud for the preferred no-Docker path or local_docker for the explicit Docker fallback)." >&2
     exit 1
     ;;
 esac
 
 WORKSPACE_PREFLIGHT_STRICT="${WORKSPACE_PREFLIGHT_STRICT:-0}"
 
-echo "[preflight] Mode: ${WORKSPACE_DEV_MODE}"
+if [[ "$WORKSPACE_DEV_MODE" == "local_docker" ]]; then
+  echo "[preflight] Mode: local_docker (explicit Docker fallback)"
+else
+  echo "[preflight] Mode: cloud (preferred no-Docker path)"
+fi
 
 if ! trr_runtime_db_require_local_app_url "$ROOT" "preflight"; then
   exit 1

@@ -59,6 +59,7 @@ The orchestrator may also use:
 
 - discovered stylesheet URLs from `sourceBundle`
 - discovered Datawrapper embeds, ai2html assets, and Birdkit containers
+- discovered Birdkit arrow-chart containers
 - optional screenshot-backed or source-map-backed component inventory evidence
 - repo-local Design Docs config and pipeline types in `TRR-APP/apps/web`
 
@@ -165,9 +166,11 @@ them sequentially with the same contracts:
 4. `extract-ai2html-artboards` when ai2html assets exist
 5. `extract-quote-components` when quote/status sections exist
 6. `extract-birdkit-tables` when Birdkit markup exists
-7. `extract-icons-and-media`
-8. `extract-navigation`
-9. `extract-source-component-inventory` when source-tree evidence exists
+7. `extract-birdkit-arrow-charts` when `.g-arrow-chart` or equivalent Birdkit
+   arrow-comparison markup exists
+8. `extract-icons-and-media`
+9. `extract-navigation`
+10. `extract-source-component-inventory` when source-tree evidence exists
 
 ### 5. Merge Extraction Outputs
 
@@ -242,7 +245,7 @@ Use `references/preflight-checklist.md` for the detailed closeout checklist.
 10. Required interactive or overlay content is absent from the supplied saved
    bundle and cannot be recovered from companion sources.
 
-## 21-Skill Structured Skillset
+## 22-Skill Structured Skillset
 
 | # | Skill | Section | Notes |
 |---|---|---|---|
@@ -259,19 +262,21 @@ Use `references/preflight-checklist.md` for the detailed closeout checklist.
 | 11 | `audit-generated-config-integrity` | owned | execution contract in `audit-generated-config-integrity/SKILL.md` |
 | 12 | `extract-datawrapper-charts` | owned | execution contract in `extract-datawrapper-charts/SKILL.md` |
 | 13 | `extract-birdkit-tables` | owned | execution contract in `extract-birdkit-tables/SKILL.md` |
-| 14 | `generate-article-page` | owned | execution contract in `generate-article-page/SKILL.md` |
-| 15 | `sync-brand-page` | owned | execution contract in `sync-brand-page/SKILL.md` |
-| 16 | `extract-ai2html-artboards` | owned | execution contract in `extract-ai2html-artboards/SKILL.md` |
-| 17 | `extract-quote-components` | owned | execution contract in `extract-quote-components/SKILL.md` |
-| 18 | `wire-config-and-routing` | owned | execution contract in `wire-config-and-routing/SKILL.md` |
-| 19 | `generate-brand-section` | owned | execution contract in `generate-brand-section/SKILL.md` |
-| 20 | `audit-responsive-accessibility` | owned | execution contract in `audit-responsive-accessibility/SKILL.md` |
-| 21 | `integration-test-runner` | owned | execution contract in `integration-test-runner/SKILL.md` |
+| 14 | `extract-birdkit-arrow-charts` | owned | execution contract in `extract-birdkit-arrow-charts/SKILL.md` |
+| 15 | `generate-article-page` | owned | execution contract in `generate-article-page/SKILL.md` |
+| 16 | `sync-brand-page` | owned | execution contract in `sync-brand-page/SKILL.md` |
+| 17 | `extract-ai2html-artboards` | owned | execution contract in `extract-ai2html-artboards/SKILL.md` |
+| 18 | `extract-quote-components` | owned | execution contract in `extract-quote-components/SKILL.md` |
+| 19 | `wire-config-and-routing` | owned | execution contract in `wire-config-and-routing/SKILL.md` |
+| 20 | `generate-brand-section` | owned | execution contract in `generate-brand-section/SKILL.md` |
+| 21 | `audit-responsive-accessibility` | owned | execution contract in `audit-responsive-accessibility/SKILL.md` |
+| 22 | `integration-test-runner` | owned | execution contract in `integration-test-runner/SKILL.md` |
 
 ## References
 
 - `references/README.md`
 - `references/taxonomy.md`
+- `references/birdkit-component-taxonomy.md`
 - `references/rendering-contracts.md`
 - `references/component-inventory-provenance.md`
 - `references/reference-implementations.md`

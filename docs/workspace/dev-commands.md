@@ -2,8 +2,13 @@
 
 Use these commands from `/Users/thomashulihan/Projects/TRR`.
 
+## Preferred Contract
+- `make dev` is the recommended cloud-first path. Normal `TRR-Backend` and `TRR-APP` development should not require Docker in this workspace.
+- Use `make dev-local` only when you intentionally need local Screenalytics-side Docker infrastructure that the normal cloud-first path does not provide.
+- `PROFILE=default` is the canonical profile behind `make dev`. `local-cloud`, `local-lite`, and `local-full` remain compatibility profiles only.
+
 ## Daily Commands
-- `make dev` — recommended default workspace startup
+- `make dev` — recommended default workspace startup (cloud-first; no Docker required for normal backend/app work)
 - `make status` — workspace health and PID snapshot
 - `make stop` — stop workspace-managed processes
 - `make test-fast`
@@ -13,11 +18,19 @@ Use these commands from `/Users/thomashulihan/Projects/TRR`.
 - `make mcp-clean`
 - `make help`
 
-## Additional Commands
-- `make dev-local` — local Docker-backed screenalytics mode
+## Fallback / Specialized Commands
+- `make dev-local` — explicit Docker-backed fallback for local Screenalytics, Redis, and MinIO work
 - `make down` — tear down local Docker infra used by `make dev-local`
 - `make bootstrap` — one-time dependency setup
 - `bash scripts/codex-config-sync.sh bootstrap` — bootstrap minimal user-level `~/.codex` files without reapplying TRR project config there
+
+## Remaining Docker-Only Cases
+- `make dev-local` — local Screenalytics Redis + MinIO fallback when you specifically need local infra parity
+- `make down` — teardown companion for that explicit fallback lane
+- `TRR-Backend make schema-docs-reset-check` — backend-local replay fallback when an isolated remote validation target does not answer the reset/replay question
+- `TRR-Backend make ci-local` — Docker-backed local replay parity lane for intentionally local-only backend verification
+
+If your task is ordinary backend/app development or milestone verification, start with the cloud-first path and only drop to these Docker-backed cases when the question itself is about local infra behavior.
 
 ## Quick URLs
 - TRR-APP: `http://127.0.0.1:3000`
@@ -27,5 +40,7 @@ Use these commands from `/Users/thomashulihan/Projects/TRR`.
 The default `make dev` profile keeps the screenalytics API on but leaves the Streamlit and Web UIs disabled. Re-enable them with `WORKSPACE_SCREENALYTICS_STREAMLIT_ENABLED=1` and/or `WORKSPACE_SCREENALYTICS_WEB_ENABLED=1`.
 
 The same default profile now runs TRR long jobs on the remote Modal executor by default. Shared-account Instagram `Sync Recent`, `Resume Tail`, and `Backfill Posts` should use Modal-owned dispatch unless you explicitly override the workspace profile for rollback/debug.
+
+For migration or schema validation, prefer an isolated Supabase branch or disposable database target and point `TRR_DB_URL` there before running backend verification commands. Do not aim destructive replay or reset flows at shared persistent databases.
 
 For startup tuning and env overrides, see `/Users/thomashulihan/Projects/TRR/docs/workspace/env-contract.md`.

@@ -19,9 +19,9 @@ No occurrences in this category.
 | Deprecated name | Location | Rationale |
 |---|---|---|
 | `DATABASE_URL` | `TRR-APP/apps/web/POSTGRES_SETUP.md:28:`TRR_DB_URL` is the app runtime contract. `DATABASE_URL` is still used by the migration scripts only, so invoke those commands as `DATABASE_URL="$TRR_DB_URL" pnpm run db:migrate` instead of storing `DATABASE_URL` as the app runtime source of truth.` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
-| `DATABASE_URL` | `TRR-APP/apps/web/POSTGRES_SETUP.md:110:DATABASE_URL="${TRR_DB_URL}" pnpm run db:migrate` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
-| `DATABASE_URL` | `TRR-APP/apps/web/POSTGRES_SETUP.md:320:DATABASE_URL="${TRR_DB_URL}" pnpm run db:migrate` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
-| `DATABASE_URL` | `TRR-APP/apps/web/POSTGRES_SETUP.md:391:DATABASE_URL="${TRR_DB_URL}" pnpm run db:migrate` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
+| `DATABASE_URL` | `TRR-APP/apps/web/POSTGRES_SETUP.md:112:DATABASE_URL="${TRR_DB_URL}" pnpm run db:migrate` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
+| `DATABASE_URL` | `TRR-APP/apps/web/POSTGRES_SETUP.md:322:DATABASE_URL="${TRR_DB_URL}" pnpm run db:migrate` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
+| `DATABASE_URL` | `TRR-APP/apps/web/POSTGRES_SETUP.md:393:DATABASE_URL="${TRR_DB_URL}" pnpm run db:migrate` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
 | `DATABASE_URL` | `TRR-APP/apps/web/scripts/check-survey-x.mjs:14:const connectionString = process.env.DATABASE_URL;` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
 | `DATABASE_URL` | `TRR-APP/apps/web/scripts/check-surveys.mjs:13:const connectionString = process.env.DATABASE_URL;` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
 | `DATABASE_URL` | `TRR-APP/apps/web/scripts/delete-web-scrape-imports.mjs:52:const connectionString = process.env.DATABASE_URL;` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |

@@ -15,6 +15,7 @@ This directory holds non-executable guidance for the shared Design Docs package.
 ## Reference Files
 
 - `taxonomy.md` — the 15-section brand taxonomy and cross-population rules
+- `birdkit-component-taxonomy.md` — NYT Birdkit wrapper, token, and component-pattern reference
 - `source-html-modes.md` — saved-bundle modes, paywall policy, and authority split rules
 - `rendering-contracts.md` — rendering, `contentBlocks`, and component fidelity rules
 - `component-inventory-provenance.md` — source-component inventory recovery and provenance rules

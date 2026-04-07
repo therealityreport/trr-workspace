@@ -119,10 +119,18 @@ screenalytics_mode_label() {
     return 0
   fi
   if [[ "$(workspace_dev_mode_value)" == "local_docker" ]]; then
-    echo "local Docker (Redis + MinIO)"
+    echo "explicit local Docker fallback (Redis + MinIO)"
     return 0
   fi
-  echo "cloud-backed (no Docker)"
+  echo "preferred cloud-first path (no local Docker infra)"
+}
+
+workspace_dev_mode_label() {
+  if [[ "$(workspace_dev_mode_value)" == "local_docker" ]]; then
+    echo "local_docker (explicit Docker fallback)"
+    return 0
+  fi
+  echo "cloud (preferred no-Docker path)"
 }
 
 watchdog_value_or_na() {
@@ -534,6 +542,7 @@ if [[ "$OUTPUT_FORMAT" == "json" ]]; then
     "workspace_social_worker_interval_sec": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_SOCIAL_WORKER_INTERVAL_SEC:-}")")",
     "workspace_trr_job_plane_mode": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_JOB_PLANE_MODE:-}")")",
     "workspace_trr_long_job_enforce_remote": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE:-}")")",
+    "trr_allow_local_admin_operation_override": "$(json_escape "$(runtime_value_or_na "${TRR_ALLOW_LOCAL_ADMIN_OPERATION_OVERRIDE:-}")")",
     "workspace_trr_remote_executor": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_EXECUTOR:-}")")",
     "workspace_trr_modal_enabled": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_MODAL_ENABLED:-}")")",
     "workspace_trr_remote_workers_enabled": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_WORKERS_ENABLED:-}")")",
@@ -611,7 +620,7 @@ fi
 echo ""
 
 echo "[status] Workspace modes:"
-echo "  WORKSPACE_DEV_MODE: $(workspace_dev_mode_value)"
+echo "  WORKSPACE_DEV_MODE: $(workspace_dev_mode_label)"
 echo "  screenalytics mode: $(screenalytics_mode_label)"
 echo "  WORKSPACE_SCREENALYTICS: $(runtime_value_or_na "${WORKSPACE_SCREENALYTICS:-}")"
 echo "  WORKSPACE_SCREENALYTICS_SKIP_DOCKER: $(runtime_value_or_na "${WORKSPACE_SCREENALYTICS_SKIP_DOCKER:-}")"
@@ -634,6 +643,7 @@ echo "  WORKSPACE_SOCIAL_WORKER_COMMENT_MEDIA_MIRROR: $(runtime_value_or_na "${W
 echo "  WORKSPACE_SOCIAL_WORKER_INTERVAL_SEC: $(runtime_value_or_na "${WORKSPACE_SOCIAL_WORKER_INTERVAL_SEC:-}")"
 echo "  WORKSPACE_TRR_JOB_PLANE_MODE: $(runtime_value_or_na "${WORKSPACE_TRR_JOB_PLANE_MODE:-}")"
 echo "  WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE: $(runtime_value_or_na "${WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE:-}")"
+echo "  TRR_ALLOW_LOCAL_ADMIN_OPERATION_OVERRIDE: $(runtime_value_or_na "${TRR_ALLOW_LOCAL_ADMIN_OPERATION_OVERRIDE:-}")"
 echo "  WORKSPACE_TRR_REMOTE_EXECUTOR: $(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_EXECUTOR:-}")"
 echo "  WORKSPACE_TRR_MODAL_ENABLED: $(runtime_value_or_na "${WORKSPACE_TRR_MODAL_ENABLED:-}")"
 echo "  WORKSPACE_TRR_REMOTE_WORKERS_ENABLED: $(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_WORKERS_ENABLED:-}")"
