@@ -1,166 +1,141 @@
-# TRR Workspace Integrations Map
+# External Integrations
 
-Updated from workspace scan on 2026-04-07.
+**Analysis Date:** 2026-04-07
 
-## Cross-Repo Contracts
+## APIs & External Services
 
-### TRR-APP -> TRR-Backend
+**Cross-repo internal APIs:**
+- `TRR-Backend` - Primary application API consumed by `TRR-APP`.
+  - SDK/Client: direct `fetch` wrapper in `TRR-APP/apps/web/src/lib/server/trr-api/backend.ts`
+  - Auth: `TRR_API_URL`, `TRR_INTERNAL_ADMIN_SHARED_SECRET`
+- `screenalytics` - Legacy outbound image-analysis / screentime HTTP target from `TRR-Backend`.
+  - SDK/Client: `TRR-Backend/trr_backend/clients/screenalytics.py`
+  - Auth: `SCREENALYTICS_API_URL`, `SCREENALYTICS_SERVICE_TOKEN`
 
-- Canonical base URL env: `TRR_API_URL`
-- Normalization layer: `TRR-APP/apps/web/src/lib/server/trr-api/backend.ts`
-- Internal admin bridge: `TRR-APP/apps/web/src/lib/server/trr-api/internal-admin-auth.ts`
-- App-side server proxies and repositories live under `TRR-APP/apps/web/src/lib/server/trr-api/`
+**Identity & auth providers:**
+- Firebase Auth / Firestore - Primary user auth and admin SDK lane for `TRR-APP`.
+  - SDK/Client: `firebase`, `firebase-admin`
+  - Auth: `NEXT_PUBLIC_FIREBASE_*`, `FIREBASE_SERVICE_ACCOUNT`, `NEXT_PUBLIC_USE_FIREBASE_EMULATORS`
+- Supabase Auth - Secondary or cutover auth lane for `TRR-APP` server verification.
+  - SDK/Client: `@supabase/supabase-js`
+  - Auth: `TRR_CORE_SUPABASE_URL`, `TRR_CORE_SUPABASE_SERVICE_ROLE_KEY`, `TRR_AUTH_PROVIDER`, `TRR_AUTH_SHADOW_MODE`
 
-### TRR-Backend <-> screenalytics
+**Metadata and content APIs:**
+- TMDb - Show, season, person, and external-id enrichment in `TRR-Backend/trr_backend/integrations/tmdb/client.py`, `TRR-Backend/trr_backend/integrations/tmdb_person.py`, and sync scripts under `TRR-Backend/scripts/sync/`.
+  - SDK/Client: `requests`
+  - Auth: `TMDB_API_KEY`, `TMDB_BEARER_TOKEN`, `TMDB_BEARER`
+- Google News RSS - News ingestion and canonical URL / featured image resolution in `TRR-Backend/trr_backend/scraping/google_news_parser.py`.
+  - SDK/Client: `requests`, `beautifulsoup4`
+  - Auth: none detected
+- Fandom / IMDb media sources - Media normalization and mirroring paths in `TRR-Backend/trr_backend/media/s3_mirror.py` and scripts under `TRR-Backend/scripts/media/`.
+  - SDK/Client: `requests`, optional `yt-dlp` for Twitter/X video resolution paths
+  - Auth: none detected for read-side access
 
-- Shared DB contract: `TRR_DB_URL` first, `TRR_DB_FALLBACK_URL` second
-- screenalytics DB resolver: `screenalytics/apps/api/services/supabase_db.py`
-- screenalytics ingest adapter: `screenalytics/apps/api/services/trr_ingest.py`
-- backend-facing worker/service token contract:
-  - `SCREENALYTICS_SERVICE_TOKEN`
-  - code path: `screenalytics/apps/api/services/cast_screentime.py`
-- backend legacy outbound Screenalytics URL contract:
-  - `SCREENALYTICS_API_URL`
-  - startup validation in `TRR-Backend/api/main.py`
+**AI providers:**
+- Google Gemini - Image generation in `TRR-APP/apps/web/src/app/api/design-docs/generate-image/route.ts`, text overlay / enrichment in `TRR-Backend/trr_backend/vision/text_overlay.py`, and audio/diagnostic paths in `screenalytics/packages/py-screenalytics/src/py_screenalytics/audio/asr_gemini.py`.
+  - SDK/Client: direct HTTP in `TRR-APP`; `google-genai` in Python repos
+  - Auth: `GEMINI_API_KEY`, `GOOGLE_GEMINI_API_KEY`, `GOOGLE_API_KEY`
+- OpenAI - Design-doc image generation in `TRR-APP/apps/web/src/app/api/design-docs/generate-image/route.ts`, backend cleanup / analytics tasks, and Screenalytics diagnostics and ASR.
+  - SDK/Client: direct HTTP in `TRR-APP`; `openai` in Python repos
+  - Auth: `OPENAI_API_KEY`
+- Anthropic - Computer-use and diagnostics flows in `screenalytics/apps/api/routers/computer_use.py`, `screenalytics/apps/api/services/openai_diagnostics.py`, and backend client helpers under `TRR-Backend/trr_backend/clients/computer_use.py`.
+  - SDK/Client: `anthropic`, `claude-computer-use`
+  - Auth: `ANTHROPIC_API_KEY`
 
-## Authentication and Identity Providers
+**Remote execution and social ingestion:**
+- Modal - Remote TRR long jobs and social workers from `TRR-Backend/trr_backend/modal_jobs.py` and `TRR-Backend/trr_backend/modal_dispatch.py`.
+  - SDK/Client: `modal`
+  - Auth: `TRR_MODAL_*`, `MODAL_ENVIRONMENT`, named secrets prepared by `TRR-Backend/scripts/modal/prepare_named_secrets.py`
+- Social platform scraping - Instagram, Reddit, Twitter/X, YouTube, and SocialBlade oriented ingestion lives under `TRR-Backend/trr_backend/socials/` and `TRR-Backend/trr_backend/media/s3_mirror.py`.
+  - SDK/Client: `requests`, Playwright/browser helpers, Apify adapter paths
+  - Auth: workspace-managed Modal secrets and platform-specific cookie/runtime secrets; do not store raw values in docs
 
-### Firebase
+## Data Storage
 
-- Client auth and session flows in:
-  - `TRR-APP/apps/web/src/lib/firebase.ts`
-  - `TRR-APP/apps/web/src/lib/firebase-db.ts`
-  - `TRR-APP/apps/web/src/lib/server/auth.ts`
-- Firebase Admin integration in `TRR-APP/apps/web/src/lib/firebaseAdmin.ts`
-- Firestore rules CI/deploy workflow in `TRR-APP/.github/workflows/firebase-rules.yml`
+**Databases:**
+- Shared Supabase/Postgres database for all three repos.
+  - Connection: `TRR_DB_URL`, `TRR_DB_FALLBACK_URL`
+  - Client: TRR backend DB session layer in `TRR-Backend/trr_backend/db/connection.py`; Screenalytics Postgres helper in `screenalytics/apps/api/services/supabase_db.py`; frontend admin Supabase auth bridge in `TRR-APP/apps/web/src/lib/server/supabase-trr-admin.ts`
+- Frontend server-side Supabase admin surface for auth and admin data access.
+  - Connection: `TRR_CORE_SUPABASE_URL`
+  - Client: `@supabase/supabase-js` in `TRR-APP/apps/web/src/lib/server/auth.ts`
 
-### Supabase
+**File Storage:**
+- S3-compatible object storage, with Cloudflare R2 recognized as a provider option in `TRR-Backend/trr_backend/object_storage.py`.
+- TRR backend media mirroring, user uploads, and hosted asset variants use `TRR-Backend/trr_backend/media/s3_mirror.py`, `TRR-Backend/trr_backend/media/user_uploads.py`, and `TRR-Backend/trr_backend/object_storage.py`.
+- Screenalytics artifacts, exports, and facebank storage use `screenalytics/apps/api/services/storage.py`, `screenalytics/apps/shared/storage.py`, and `screenalytics/apps/api/services/run_artifact_store.py`.
+- Local MinIO fallback exists in `screenalytics/infra/docker/compose.yaml`.
 
-- Backend JWT verification in `TRR-Backend/trr_backend/security/jwt.py`
-- App-side admin access via:
-  - `TRR-APP/apps/web/src/lib/server/supabase-trr-admin.ts`
-  - `TRR-APP/apps/web/src/lib/server/auth.ts`
-- screenalytics shared Postgres/Supabase runtime adapter in `screenalytics/apps/api/services/supabase_db.py`
-- Migrations and schema docs in `TRR-Backend/supabase/`
+**Caching:**
+- Redis-backed realtime broker in `TRR-Backend/api/realtime/broker.py`.
+- Redis-backed Screenalytics Celery and screentime cache in `screenalytics/apps/api/config/__init__.py` and `screenalytics/apps/api/services/screentime_cache.py`.
 
-### Internal Admin Shared Secret
+## Authentication & Identity
 
-- Shared secret contract from workspace policy: `TRR_INTERNAL_ADMIN_SHARED_SECRET`
-- Token creation in `TRR-APP/apps/web/src/lib/server/trr-api/internal-admin-auth.ts`
-- Token verification in `TRR-Backend/trr_backend/security/internal_admin.py`
+**Auth Provider:**
+- Primary app auth is Firebase, implemented in `TRR-APP/apps/web/src/lib/firebaseAdmin.ts`, `TRR-APP/apps/web/src/app/api/session/login/route.ts`, and `TRR-APP/apps/web/src/lib/server/auth.ts`.
+  - Implementation: Firebase ID token or session cookie verification, with emulator support in development.
+- Secondary app auth is Supabase, implemented in `TRR-APP/apps/web/src/lib/server/auth.ts` and `TRR-APP/apps/web/src/lib/server/supabase-trr-admin.ts`.
+  - Implementation: dual-provider verification with shadow diagnostics and cutover counters.
+- Internal service auth uses shared bearer secrets.
+  - Implementation: `TRR_INTERNAL_ADMIN_SHARED_SECRET` for app-to-backend admin calls, `SCREENALYTICS_SERVICE_TOKEN` for backend-to-screenalytics or internal Screenalytics routes such as `screenalytics/apps/api/routers/cast_screentime.py` and `screenalytics/apps/api/routers/computer_use.py`.
+- Backend runtime also requires Supabase JWT verification material.
+  - Implementation: `SUPABASE_JWT_SECRET` is validated in `TRR-Backend/api/main.py`.
 
-## Data Stores and Queues
+## Monitoring & Observability
 
-### Postgres / Supabase
+**Error Tracking:**
+- Not detected as a dedicated third-party service. No Sentry, Bugsnag, or Rollbar integration was found in active runtime code.
 
-- TRR canonical schema changes live in `TRR-Backend/supabase/migrations/`
-- Backend DB code in `TRR-Backend/trr_backend/db/`
-- screenalytics runtime DB access in `screenalytics/apps/api/services/supabase_db.py`
-- App direct DB reads exist for selected admin/survey surfaces in `TRR-APP/apps/web/src/lib/server/postgres.ts`
+**Logs:**
+- Structured application logs and request metrics are initialized in `TRR-Backend/api/main.py` and `screenalytics/apps/api/main.py`.
+- Workspace process and watchdog logs are written under `.logs/workspace/` by `scripts/dev-workspace.sh`.
+- CI artifacts and generated maps are uploaded from GitHub Actions workflows under each repo’s `.github/workflows/`.
 
-### Redis
+## CI/CD & Deployment
 
-- Backend realtime broker references Redis in `TRR-Backend/api/realtime/broker.py`
-- screenalytics readiness and cache checks in `screenalytics/apps/api/main.py`
-- screenalytics runtime key management in `screenalytics/apps/api/services/redis_keys.py`
-- Celery broker integration is optional but expected around `screenalytics/apps/api/celery_app.py`
+**Hosting:**
+- `TRR-APP` - Vercel deployment, documented in `TRR-APP/apps/web/DEPLOY.md` and linked in `TRR-APP/.vercel/project.json`.
+- `TRR-Backend` - Containerized API runtime for Cloud Run / Render style deployment via `TRR-Backend/Dockerfile`, plus Modal-hosted long jobs via `TRR-Backend/trr_backend/modal_jobs.py`.
+- `screenalytics` - API/UI + worker deployment with Render-oriented docs at `screenalytics/docs/ops/deployment/DEPLOYMENT_RENDER.md`, and Docker-backed local fallback via `screenalytics/infra/docker/compose.yaml`.
 
-### Object Storage
+**CI Pipeline:**
+- GitHub Actions for all repos.
+- `TRR-APP/.github/workflows/web-tests.yml` runs Node 24/22 web CI; `TRR-APP/.github/workflows/firebase-rules.yml` validates and deploys Firestore rules.
+- `TRR-Backend/.github/workflows/ci.yml` runs Python CI; `TRR-Backend/.github/workflows/mirror-media-assets.yml` runs manual S3 mirroring; `TRR-Backend/.github/workflows/secret-scan.yml` runs Gitleaks.
+- `screenalytics/.github/workflows/ci.yml` runs Python CI; `screenalytics/.github/workflows/codex-review.yml`, `screenalytics/.github/workflows/codex-manual.yml`, and `screenalytics/.github/workflows/on-push-doc-sync.yml` add AI-assisted automation.
 
-- Backend media/object storage paths:
-  - `TRR-Backend/trr_backend/object_storage.py`
-  - `TRR-Backend/trr_backend/media/s3_mirror.py`
-  - `TRR-Backend/trr_backend/media/user_uploads.py`
-- screenalytics storage paths:
-  - `screenalytics/apps/api/services/storage.py`
-  - `screenalytics/apps/api/services/storage_v2.py`
-  - `screenalytics/apps/api/services/validation.py`
-- frontend operational scripts for hosted fonts:
-  - `TRR-APP/scripts/upload-fonts-to-s3.py`
-  - `TRR-APP/scripts/collect-and-upload-monotype-fonts.sh`
+## Environment Configuration
 
-## External Content and Metadata Providers
+**Required env vars:**
+- Shared DB: `TRR_DB_URL`, optional `TRR_DB_FALLBACK_URL`
+- Shared secrets: `TRR_INTERNAL_ADMIN_SHARED_SECRET`, `SCREENALYTICS_SERVICE_TOKEN`
+- TRR app auth: `NEXT_PUBLIC_FIREBASE_*`, `FIREBASE_SERVICE_ACCOUNT`, `TRR_AUTH_PROVIDER`, `TRR_AUTH_SHADOW_MODE`
+- Frontend direct Supabase admin lane: `TRR_CORE_SUPABASE_URL`, `TRR_CORE_SUPABASE_SERVICE_ROLE_KEY`
+- Backend auth/runtime: `SUPABASE_JWT_SECRET`, `SCREENALYTICS_API_URL` for legacy HTTP flows
+- Object storage: `OBJECT_STORAGE_BUCKET`, `OBJECT_STORAGE_REGION`, `OBJECT_STORAGE_PUBLIC_BASE_URL`, `OBJECT_STORAGE_ENDPOINT_URL`, `OBJECT_STORAGE_ACCESS_KEY_ID`, `OBJECT_STORAGE_SECRET_ACCESS_KEY`, optional `OBJECT_STORAGE_PROFILE`
+- Screenalytics storage aliases: `SCREENALYTICS_OBJECT_STORE_*`, `SCREENALYTICS_S3_BUCKET`, `STORAGE_BACKEND`
+- Queue / cache: `REDIS_URL`, `CELERY_BROKER_URL`
+- AI and metadata APIs: `TMDB_API_KEY`, `TMDB_BEARER_TOKEN`, `OPENAI_API_KEY`, `GEMINI_API_KEY`, `ANTHROPIC_API_KEY`
+- Modal: `TRR_MODAL_ENABLED`, `TRR_MODAL_APP_NAME`, `TRR_MODAL_ADMIN_OPERATION_FUNCTION`, `TRR_MODAL_GOOGLE_NEWS_FUNCTION`, `TRR_MODAL_SOCIAL_JOB_FUNCTION`, `TRR_MODAL_RUNTIME_SECRET_NAME`, `TRR_MODAL_SOCIAL_SECRET_NAME`
 
-### Entertainment / Metadata Sources
+**Secrets location:**
+- Local repo env files exist at `TRR-Backend/.env` and `screenalytics/.env`; examples exist alongside them.
+- Vercel environment variables back `TRR-APP` per `TRR-APP/apps/web/DEPLOY.md`.
+- GitHub Actions secrets are referenced in `.github/workflows/` across all repos.
+- Modal uses named secrets prepared by scripts under `TRR-Backend/scripts/modal/`.
 
-- TMDB integrations:
-  - `TRR-Backend/trr_backend/integrations/tmdb_person.py`
-  - `TRR-Backend/trr_backend/ingestion/tmdb_person_images.py`
-  - `TRR-Backend/trr_backend/ingestion/tmdb_show_backfill.py`
-- IMDb ingestion and metadata:
-  - `TRR-Backend/trr_backend/ingestion/imdb_images.py`
-  - `TRR-Backend/trr_backend/ingestion/imdb_show_mediaindex.py`
-- Bravo / NBCUniversal:
-  - `TRR-Backend/trr_backend/integrations/bravo_jsonapi.py`
-  - `TRR-Backend/trr_backend/integrations/nbcumv.py`
-  - `TRR-Backend/trr_backend/bravotv/`
-- Fandom:
-  - `TRR-Backend/trr_backend/integrations/fandom.py`
-  - `TRR-Backend/trr_backend/integrations/fandom_discovery.py`
-  - `TRR-Backend/trr_backend/ingestion/fandom_person_scraper.py`
-  - `TRR-Backend/trr_backend/ingestion/fandom_season_scraper.py`
+## Webhooks & Callbacks
 
-### Media and Logo Sources
+**Incoming:**
+- Third-party webhook receivers were not detected in active runtime code.
+- Internal authenticated routes exist for service-to-service calls, for example `screenalytics/apps/api/routers/cast_screentime.py` and `screenalytics/apps/api/routers/computer_use.py`, but they are not public webhook integrations.
 
-- Getty integration files:
-  - `TRR-Backend/trr_backend/integrations/getty.py`
-  - `TRR-Backend/trr_backend/integrations/getty_local_prefetch.py`
-  - `TRR-Backend/trr_backend/media/getty_replacement.py`
-- Brand/logo discovery:
-  - `TRR-Backend/trr_backend/integrations/brandfetch.py`
-  - `TRR-Backend/trr_backend/integrations/free_logo_sources.py`
-  - `TRR-Backend/trr_backend/integrations/logopedia.py`
-  - `TRR-Backend/trr_backend/integrations/picdetective.py`
+**Outgoing:**
+- `TRR-APP` sends server-side requests to `TRR-Backend` through `TRR-APP/apps/web/src/lib/server/trr-api/backend.ts`.
+- `TRR-Backend` calls TMDb, Google News, object storage, Modal, and social-source endpoints via modules under `TRR-Backend/trr_backend/integrations/`, `TRR-Backend/trr_backend/scraping/`, `TRR-Backend/trr_backend/media/`, and `TRR-Backend/trr_backend/socials/`.
+- `screenalytics` calls shared Postgres, S3-compatible storage, Redis/Celery infrastructure, and AI providers through `screenalytics/apps/api/services/` and `screenalytics/packages/py-screenalytics/src/`.
 
-### News, Social, and Community Sources
+---
 
-- Google News parsing in `TRR-Backend/trr_backend/scraping/google_news_parser.py`
-- Reddit data and reads in:
-  - `TRR-Backend/api/routers/admin_reddit_reads.py`
-  - `TRR-Backend/trr_backend/repositories/admin_reddit_reads.py`
-  - `TRR-APP/apps/web/src/lib/server/admin/reddit-*`
-- Social growth and analytics in:
-  - `TRR-Backend/api/routers/admin_socialblade.py`
-  - `TRR-Backend/trr_backend/repositories/socialblade_growth.py`
-  - `TRR-Backend/trr_backend/repositories/social_posts.py`
-  - `TRR-Backend/trr_backend/repositories/social_sync_orchestrator.py`
-
-## ML and AI Service Touchpoints
-
-- screenalytics OpenAI diagnostics path: `screenalytics/apps/api/services/openai_diagnostics.py`
-- backend OpenAI cleanup helper: `TRR-Backend/trr_backend/integrations/openai_fandom_cleanup.py`
-- Gemini model references appear in screenalytics tests and env validation lanes
-- Computer-use client exists in `TRR-Backend/trr_backend/clients/computer_use.py`
-
-## Webhooks and Async Delivery
-
-- screenalytics webhook/suggestions code:
-  - `screenalytics/apps/api/services/suggestions_webhook.py`
-  - `screenalytics/web/openapi.json` includes a PyannoteAI webhook surface
-- frontend scheduled jobs are configured as Vercel crons in `TRR-APP/apps/web/vercel.json`
-
-## Infrastructure and Dev Tooling Integrations
-
-- Supabase CLI/config: `TRR-Backend/supabase/config.toml`
-- Vercel deployment helper scripts from root app package:
-  - `TRR-APP/scripts/vercel.sh`
-  - scripts exposed by `TRR-APP/package.json`
-- Managed browser/devtools workspace scripts live under root `scripts/` per workspace `AGENTS.md`
-
-## Key Environment Contracts
-
-- `TRR_API_URL`
-- `SCREENALYTICS_API_URL`
-- `TRR_DB_URL`
-- `TRR_DB_FALLBACK_URL`
-- `TRR_INTERNAL_ADMIN_SHARED_SECRET`
-- `SCREENALYTICS_SERVICE_TOKEN`
-- `SUPABASE_JWT_SECRET`
-- `TRR_CORE_SUPABASE_URL`
-- `TRR_CORE_SUPABASE_SERVICE_ROLE_KEY`
-
-## Integration Risk Notes
-
-- The same business domain spans three repos, but schema ownership is centralized in `TRR-Backend/supabase/migrations/`
-- screenalytics mixes direct DB access and backend HTTP callbacks; both must stay aligned
-- TRR-APP uses both Firebase and Supabase-backed admin/server flows, so auth-cutover work must preserve both paths until explicitly retired
+*Integration audit: 2026-04-07*
