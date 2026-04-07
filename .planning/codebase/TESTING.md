@@ -1,136 +1,155 @@
-# Testing Patterns
+# TRR Workspace Testing
 
-**Analysis Date:** 2026-04-07
+## Scope
 
-## Test Frameworks
+This document maps the current testing setup across the three primary repos and the validation commands that are expected before handoff.
 
-**Primary runners:**
-- `pytest` for `TRR-Backend/tests/`
-- `vitest` for `TRR-APP/apps/web/tests/`
-- `@playwright/test` for `TRR-APP/apps/web/tests/e2e/`
-- `pytest` for `screenalytics/tests/`
-- Shell aggregators at the workspace root in `scripts/test*.sh`
+## Workspace-Level Validation Contract
 
-**Assertions and helpers:**
-- Python repos use plain `pytest` assertions with `patch`, `MagicMock`, and `monkeypatch`
-- App tests use Vitest, Testing Library, and `vitest-axe`
-- Browser tests use Playwright expectations plus route/network stubbing
+Per `AGENTS.md`, the default fast checks for touched repos are:
 
-## Canonical Commands
+- `TRR-Backend`: `ruff check . && ruff format --check . && pytest -q`
+- `screenalytics`: `pytest -q`
+- `TRR-APP`: `pnpm -C apps/web run lint && pnpm -C apps/web exec next build --webpack && pnpm -C apps/web run test:ci`
 
-```bash
-make test-fast
-make test-full
-make test-changed
-make test-env-sensitive
+For cross-repo work, validation is repo-specific rather than a single top-level test runner.
 
-cd TRR-Backend && ruff check . && ruff format --check . && pytest -q
-cd TRR-APP/apps/web && pnpm run lint && pnpm exec next build --webpack && pnpm run test:ci
-cd TRR-APP/apps/web && pnpm run test:e2e
-cd screenalytics && pytest -q
-cd screenalytics && RUN_ML_TESTS=1 pytest tests/ml/ -v
-```
+## `TRR-APP` Testing
 
-## Test File Organization
+### Frameworks
 
-**TRR-Backend:**
-- Tests live in a dedicated top-level tree under `TRR-Backend/tests/`
-- Major areas include `api/`, `db/`, `repositories/`, `services/`, `pipeline/`, `integrations/`, `media/`, and `socials/`
+- Unit/component/server tests: Vitest from `TRR-APP/apps/web/vitest.config.ts`
+- Browser/e2e tests: Playwright from `TRR-APP/apps/web/playwright.config.ts`
+- DOM environment: `jsdom`
+- React/component assertions: `@testing-library/react`, `@testing-library/jest-dom`
 
-**TRR-APP:**
-- Unit/component/route tests live under `TRR-APP/apps/web/tests/`
-- Browser specs live under `TRR-APP/apps/web/tests/e2e/`
+### Config
 
-**screenalytics:**
-- Tests are split across `tests/api/`, `tests/unit/`, `tests/ui/`, `tests/ml/`, `tests/integration/`, `tests/audio/`, and feature-specific trees
+- Vitest config: `TRR-APP/apps/web/vitest.config.ts`
+- Playwright config: `TRR-APP/apps/web/playwright.config.ts`
+- Test setup file: `TRR-APP/apps/web/tests/setup.ts`
 
-**Workspace scripts:**
-- Root-level orchestration and policy checks also have Python/shell tests such as `scripts/test_runtime_db_env.py` and `scripts/test_sync_handoffs.py`
+### Test Organization
 
-## Common Structure
+- Main test tree: `TRR-APP/apps/web/tests/`
+- E2E tests: `TRR-APP/apps/web/tests/e2e/`
+- Test fixtures: `TRR-APP/apps/web/tests/fixtures/`
+- Mocks: `TRR-APP/apps/web/tests/mocks/`
 
-**Python pattern:**
-- Autouse fixtures are used heavily for env resets, cache clearing, and dependency isolation
-- Route tests often use `TestClient(app)` plus targeted patching of dependencies or DB/storage helpers
+### Coverage Shape
 
-**Vitest pattern:**
-- Modules are mocked with `vi.mock(...)`
-- `beforeEach` resets mocks and test state
-- Route handlers are called directly with `NextRequest`
+Observed emphasis:
 
-**Playwright pattern:**
-- Single-worker Chromium execution
-- Trace/screenshots/videos retained on failure
-- Can run against either a managed local dev server or an externally supplied base URL
+- route proxy behavior
+- admin auth and access boundaries
+- route alias and rewrite stability
+- UI components and admin wiring
+- integration points with backend admin endpoints
+- design-docs tooling and font/media pipelines
 
-## Mocking Patterns
+The test tree is broad and behavior-oriented, with many route-specific tests protecting URL shape and server-side mediation logic.
 
-**What gets mocked:**
-- Auth checks
-- External HTTP calls
-- Database probes or admin clients
-- Heavy ML/runtime dependencies
-- Browser/network routes for app E2E
+## `TRR-Backend` Testing
 
-**What stays real when practical:**
-- Pure normalization/formatting helpers
-- Checked-in generated artifacts that are compared against regeneration
-- Source-file compilation checks for Streamlit or page modules
+### Frameworks
 
-## Fixtures and Factories
+- Test runner: pytest via `TRR-Backend/pytest.ini`
+- Python import root: `pythonpath = .`
+- Test discovery root: `TRR-Backend/tests/`
 
-- Backend keeps static payloads under `TRR-Backend/tests/fixtures/`
-- App uses `TRR-APP/apps/web/tests/fixtures/` and E2E factory helpers like `admin-fixtures.ts`
-- Screenalytics keeps reusable helpers in `screenalytics/tests/helpers/`
+### Config
 
-## Coverage and Gating
+- Pytest config: `TRR-Backend/pytest.ini`
+- Lint/format config: `TRR-Backend/ruff.toml`
 
-- `TRR-APP/apps/web/vitest.config.ts` emits `text`, `html`, and `lcov` coverage under `coverage/`
-- No hard global coverage threshold is obvious from the inspected configs
-- CI gating is more command- and lane-based than percentage-based
+### Test Organization
 
-## CI Patterns
+Representative directories:
 
-**TRR-Backend CI highlights:**
-- Env contract validation
-- Lockfile freshness
-- Import gate
-- API-focused pytest lanes
-- Secret scanning and repo map automation
+- API smoke and contract tests in `TRR-Backend/tests/`
+- Media and storage tests in `TRR-Backend/tests/media/`
+- Ingestion tests in `TRR-Backend/tests/ingestion/`
+- Vision-related tests in `TRR-Backend/tests/vision/`
 
-**TRR-APP CI highlights:**
-- Node 24 full lane plus Node 22 compatibility lane
-- Lint, targeted typecheck, Vitest CI, and build
-- Separate Firestore rules CI
+### Coverage Shape
 
-**screenalytics CI highlights:**
-- Lockfile freshness for multiple requirements files
-- Ruff policy enforcement
-- Compile gates for critical modules
-- Split unit, smoke, and py312 canary lanes
-- Repo-map and Codex review workflows
+Observed emphasis:
 
-## Test Types
+- media storage and mirroring
+- upload/session validation
+- ingestion enrichment logic
+- API smoke coverage
+- fallback and error-path behavior
 
-**Unit tests:**
-- Helper normalization, config resolution, parser logic, and isolated service behavior
+The backend test strategy looks pragmatic: protect high-risk integration-heavy paths rather than trying to exhaustively unit test every router line.
 
-**API / integration tests:**
-- FastAPI route behavior, auth enforcement, storage and DB interactions, queue/job semantics
+## `screenalytics` Testing
 
-**UI/component tests:**
-- React component rendering and route handler tests in the app
-- Streamlit-related source/behavior checks in screenalytics
+### Frameworks
 
-**Browser E2E:**
-- Present primarily in `TRR-APP`
+- Primary runner: pytest configured in `screenalytics/pyproject.toml`
+- Formatting/lint gates: Ruff and Black via `screenalytics/pyproject.toml` and `.pre-commit-config.yaml`
 
-## Gaps Worth Remembering
+### Config
 
-- Workspace shell orchestration has lighter direct automated coverage than the product repos
-- The largest app admin pages are more lightly covered at the full-page orchestration level than their helper modules
-- Screenalytics UI and long pipeline/tool flows still depend heavily on targeted, selective testing rather than exhaustive end-to-end automation
+- Pytest settings: `screenalytics/pyproject.toml`
+- Pre-commit hooks: `screenalytics/.pre-commit-config.yaml`
+- Optional ML/test gating through env markers such as `RUN_ML_TESTS=1`
 
----
+### Test Organization
 
-*Testing analysis refreshed: 2026-04-07*
+Main trees:
+
+- API tests: `screenalytics/tests/api/`
+- Audio tests: `screenalytics/tests/audio/`
+- ML tests: `screenalytics/tests/ml/`
+- Integration tests: `screenalytics/tests/integration/`
+- Feature tests: `screenalytics/tests/FEATURES/`
+- Facebank tests: `screenalytics/tests/facebank/`
+- MCP/tooling tests: `screenalytics/tests/mcps/`
+- Tool/helper tests: `screenalytics/tests/tools/`
+- Workspace UI tests: `screenalytics/apps/workspace-ui/tests/`
+
+### Coverage Shape
+
+Observed emphasis:
+
+- run and job state
+- artifact storage and recovery
+- screentime math and QA
+- Celery behavior and controls
+- API regressions around episodes, cast, facebank, and grouping
+- ML pipeline stage behavior, often behind optional dependencies
+
+This repo has the deepest and most partitioned test surface in the workspace.
+
+## Test Design Patterns
+
+Across repos, several patterns repeat:
+
+- route or endpoint tests for transport boundaries
+- regression tests named after the exact feature or failure mode
+- explicit skip/feature gating for heavyweight ML or integration dependencies
+- mocks and fixtures for server-only or subprocess-heavy code
+- emphasis on idempotency, locking, streaming, and recovery for job systems
+
+## What Gets Validated Outside Pure Tests
+
+Not all quality gates are test-runner based:
+
+- Next.js build in `TRR-APP` is part of the required validation path
+- Ruff/format checks are part of backend validation
+- Streamlit and authenticated browser checks are expected for UI-heavy changes
+- managed workspace startup and health scripts provide operational verification at the root level
+
+## Testing Read
+
+The workspace testing posture is strongest around:
+
+- contract and route stability
+- media/storage correctness
+- long-running job safety
+- pipeline and artifact recovery
+- admin UI regressions
+
+The weakest areas are likely the places where validation depends on full environment setup, remote services, or manual browser confirmation rather than a fast deterministic local test.

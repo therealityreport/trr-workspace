@@ -1,107 +1,179 @@
-# Codebase Concerns
+# TRR Workspace Concerns
 
-**Analysis Date:** 2026-04-07
+## Scope
 
-## Tech Debt
+This document captures notable technical debt, fragility, and operational risk visible in the current workspace state.
 
-**Planning-state drift at the workspace root:**
-- `.planning/active-workstream` exists, but there is no root `.planning/STATE.md`, and some older workflow assumptions still reference that missing file
-- Relevant paths: `.planning/active-workstream`, `.planning/workstreams/`, `.planning/PROJECT.md`
-- Impact: resume or scaffolding flows can target archived or missing state shapes
+The focus is not stylistic preference. These are the areas most likely to create regressions, slowdowns, or coordination failures during future work.
 
-**Workspace automation is concentrated in a small number of large scripts:**
-- `scripts/dev-workspace.sh`, `scripts/preflight.sh`, `scripts/status-workspace.sh`, and browser wrappers carry a lot of branching logic
-- Impact: runtime/debugging regressions are operationally expensive to localize
+## Concern 1: Cross-Repo Contract Coupling Is High
 
-**Cross-repo env compatibility remains partially standardized and partially quarantined:**
-- Runtime policy is clearly `TRR_DB_URL` then `TRR_DB_FALLBACK_URL`
-- Tooling and compatibility paths still create room for confusion during incident or migration work
+The workspace has clear ownership rules, but the repos are tightly coupled through shared env names, backend route shapes, DB schema, and trusted-service auth.
 
-## Known Incomplete / Partial Areas
+Evidence:
 
-**screenalytics cast sync remains partial:**
-- `screenalytics/apps/api/routers/episodes.py` still contains an explicit TODO for full sync wiring to TRR cast tables
+- Shared contracts are explicitly documented in `AGENTS.md`
+- `TRR-APP` proxies backend admin routes from `TRR-APP/apps/web/src/app/api/admin/trr-api/`
+- `screenalytics` shares DB lane resolution and service-token contracts via `screenalytics/apps/api/services/supabase_db.py` and `screenalytics/apps/api/services/trr_ingest.py`
 
-**Audio queue/smart-split paths are not fully realized:**
-- `screenalytics/apps/api/routers/audio.py` still carries TODOs for NeMo/TitaNet-based embedding extraction and a Celery `diarize_only` task path
+Risk:
 
-**MCP surface in screenalytics is still skeletal:**
-- `screenalytics/mcps/screenalytics/server.py` contains TODO-backed placeholder behavior rather than a production-grade DB-backed tool surface
+- a backend schema or route change can silently break both downstream repos
+- cross-repo work requires disciplined sequencing every time
 
-**Backend pipeline sync stub remains open:**
-- `TRR-Backend/trr_backend/pipeline/stages/sync_screenalytics.py` is still explicitly marked TODO
+## Concern 2: Large Feature Modules Create Review and Regression Risk
 
-## Security Considerations
+Several high-value modules are very large and appear to centralize a lot of behavior.
 
-**Managed browser sessions are shared operational infrastructure:**
-- State leakage or stale ownership bugs in the Chrome wrapper/reaper scripts would affect multiple workflows at once
-- Relevant paths: `scripts/codex-chrome-devtools-mcp.sh`, related Chrome helpers, and `docs/workspace/chrome-devtools.md`
+Examples:
 
-**Local shared-secret generation is convenient but easy to misunderstand:**
-- Workspace startup can derive local dev secrets when envs are unset
-- Relevant contract: `AGENTS.md` and `docs/workspace/env-contract.md`
-- Risk: those values must never be mistaken for deployable secrets
+- `TRR-Backend/api/routers/admin_show_links.py`
+- `TRR-Backend/api/routers/admin_brands.py`
+- `TRR-Backend/api/routers/admin_show_sync.py`
+- `screenalytics/apps/api/routers/episodes.py`
+- `TRR-APP/apps/web/src/components/admin/social-week/WeekDetailPageView.tsx`
 
-## Performance Hotspots
+Risk:
 
-**Screenalytics pipeline monolith:**
-- `screenalytics/tools/episode_run.py` remains extremely large and is imported by other runtime paths
-- Impact: heavy import surface, slower reasoning/debugging, and more side-effect risk across API and tooling boundaries
+- changes are harder to isolate
+- tests may miss edge combinations inside broad files
+- onboarding and code review cost rises as files accumulate unrelated logic
 
-**Large Next.js admin pages:**
-- `TRR-APP/apps/web/src/app/admin/trr-shows/...` contains expansive page-level orchestration and state
-- Impact: harder reviewability and more client-side orchestration concentrated in single files
+## Concern 3: Operational Complexity Is Distributed Across Code and Scripts
 
-**Backend large-domain modules:**
-- Backend still has oversized repository and social pipeline areas that combine dispatch, caching, and domain logic
-- Impact: higher regression risk for seemingly local changes
+The workspace runtime behavior is governed by:
 
-## Fragile Boundaries
+- root `Makefile`
+- `scripts/dev-workspace.sh`
+- `docs/workspace/env-contract.md`
+- repo-local startup code
+- Modal/Celery/Vercel specific config
 
-**Cross-repo API and env seams:**
-- `TRR_API_URL` normalization in the app, backend auth/DB lane rules, and screenalytics service-token flows must stay aligned
-- Changes here require the documented repo order from `AGENTS.md`
+Risk:
 
-**Legacy compatibility inside screenalytics routers:**
-- `screenalytics/apps/api/routers/episodes.py` and related router surfaces preserve old aliases and fallback behaviors in large modules
-- Impact: removing one fallback can break an untested downstream caller
+- behavior can drift between docs, scripts, and repo-local startup assumptions
+- debugging startup issues often requires checking multiple layers before reaching product logic
 
-**Workspace handoff/doc sync depends on exact document shape:**
-- `scripts/handoff-lifecycle.sh` and related docs/sync tooling depend on strict formatting contracts
-- Impact: scaffolding drift creates operational failures rather than graceful degradation
+## Concern 4: Multiple Job Planes Increase Failure Modes
 
-## Scaling Limits
+There is not one background-execution model.
 
-**Deliberately small session-pool posture:**
-- Backend and app server DB access are intentionally conservative for shared session-pool safety
-- Impact: admin fan-out or job bursts can hit contention before raw DB capacity is reached
+Current execution surfaces include:
 
-**screenalytics direct DB connections:**
-- Screenalytics still leans on direct `psycopg2` connection behavior rather than a visibly shared pool abstraction
-- Impact: higher connection churn under sustained API throughput
+- Modal in `TRR-Backend/trr_backend/modal_jobs.py`
+- backend-side dispatch/recovery in `TRR-Backend/trr_backend/modal_dispatch.py`
+- optional Celery/Redis in `screenalytics/apps/api/celery_app.py`
+- Vercel cron in `TRR-APP/apps/web/vercel.json`
 
-## Test Coverage Gaps
+Risk:
 
-**Workspace shell flows:**
-- Startup, browser ownership, and handoff lifecycle scripts are less directly tested than the product repos
+- retry, observability, and ownership semantics vary by subsystem
+- failures can be caused by handoff between planes rather than core business logic
 
-**Largest app admin flows:**
-- Large admin page orchestration is not covered as comprehensively as smaller helpers and route handlers
+## Concern 5: Environment and Secret Contracts Are Safety-Critical
 
-**Screenalytics Streamlit/operator flows:**
-- Stateful review/run-control behavior remains comparatively under-tested relative to the size of `screenalytics/apps/workspace-ui/`
+The system relies on a small set of high-impact env vars for database safety and trusted service access.
 
-**MCP behavior:**
-- The screenalytics MCP path lacks meaningful production-like behavioral coverage
+Examples:
 
-## Overall Risk Summary
+- `TRR_DB_URL`
+- `TRR_DB_FALLBACK_URL`
+- `TRR_INTERNAL_ADMIN_SHARED_SECRET`
+- `SCREENALYTICS_SERVICE_TOKEN`
+- `SUPABASE_JWT_SECRET`
 
-- The workspace is structurally coherent and policy-rich, but operational complexity is concentrated in a few places:
-  - root orchestration scripts
-  - cross-repo env/auth seams
-  - large screenalytics and admin modules
-- The most important practical rule remains the repo order from `AGENTS.md`: backend first, screenalytics second, app last.
+Risk:
 
----
+- misconfiguration can break auth, route access, or runtime database safety
+- local and deployed environments can diverge in hard-to-debug ways
 
-*Concerns analysis refreshed: 2026-04-07*
+Mitigation already present:
+
+- startup validation in `TRR-Backend/api/main.py`
+- startup validation in `screenalytics/apps/api/main.py`
+- documented env contract in `docs/workspace/env-contract.md`
+
+## Concern 6: Frontend Admin Surface Is Broad and Proxy-Heavy
+
+`TRR-APP` contains a large admin feature set with many app-local proxy routes and server-only helpers.
+
+Examples:
+
+- `TRR-APP/apps/web/src/app/admin/`
+- `TRR-APP/apps/web/src/app/api/admin/trr-api/`
+- `TRR-APP/apps/web/src/lib/server/trr-api/`
+
+Risk:
+
+- route drift between app-local proxy paths and backend paths
+- duplicated translation logic across many route handlers
+- permission or trust-boundary mistakes can surface in subtle ways
+
+The repo has strong tests here, but the sheer surface area remains a maintenance burden.
+
+## Concern 7: Screenalytics Carries Heavy Runtime Variability
+
+`screenalytics` supports:
+
+- FastAPI API
+- Streamlit UI
+- optional Celery workers
+- local or S3-compatible storage
+- ML-heavy optional dependencies
+- v2 APIs behind feature flags
+
+Risk:
+
+- not every combination is exercised equally often
+- environment-specific bugs are likely around storage, heavy ML deps, and queue presence
+- startup order and optional imports remain a recurring source of fragility
+
+## Concern 8: Migration History Is Extensive
+
+`TRR-Backend/supabase/migrations/` contains a long sequence of historical migrations.
+
+Risk:
+
+- understanding current schema intent requires archaeology
+- new contributors can misread deprecated compatibility layers as active design
+- drift between migration history, current views, and downstream assumptions can accumulate
+
+This is a normal outcome for a long-lived schema, but it increases planning cost for DB-touching work.
+
+## Concern 9: Browser and Runtime Verification Still Matter for Key Flows
+
+Some important workflows are hard to certify with unit tests alone:
+
+- authenticated admin flows
+- route rewrites and deep links
+- managed Chrome/browser policy
+- Streamlit workspace behavior
+- long-running job visibility and progress streaming
+
+Risk:
+
+- a green test run does not fully prove the workspace behaves correctly end to end
+- release confidence still depends on targeted manual or browser-tool validation
+
+## Concern 10: Workspace Is Already Changing Frequently
+
+The current root worktree is not clean and includes active changes in scripts, docs, and workspace env tooling.
+
+Risk:
+
+- planning artifacts can become stale quickly
+- concurrent workspace-level changes increase merge and coordination cost
+- debugging can be confounded by unrelated local modifications
+
+This does not block work, but it means any codebase map should be treated as a point-in-time reference rather than a permanent truth.
+
+## Concern Read
+
+The main risks are not a lack of structure. The workspace is structured, but it is:
+
+- highly integrated across repos
+- operationally rich
+- dependent on runtime contracts
+- heavy on admin/proxy surfaces and background jobs
+
+Future refactors are safest when they preserve the existing boundary model and treat contract drift as the primary failure mode.
