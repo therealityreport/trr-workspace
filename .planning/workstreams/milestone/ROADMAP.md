@@ -12,11 +12,11 @@ This roadmap delivers the screentime reset as a backend-first migration rather t
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Contract Freeze & Asset Foundation** - Lock the canonical asset, schema, and artifact contracts that the migration will preserve.
-- [ ] **Phase 2: Identity Reset & Embedding Governance** - Move face-reference ownership and DeepFace-backed identity flows into backend-owned, versioned governance.
-- [ ] **Phase 3: Backend Execution Port** - Replace the standalone execution dependency with a backend-owned screentime runtime behind the existing dispatch seam.
-- [ ] **Phase 4: Canonical Review, Publication & Admin Cutover** - Make backend-owned review, publication, and operator workflows the source of truth in TRR-APP.
-- [ ] **Phase 5: Runtime Retirement & Cutover Cleanup** - Remove the remaining production dependency on the split `screenalytics` runtime and finalize backend-only operation.
+- [x] **Phase 1: Contract Freeze & Asset Foundation** - Lock the canonical asset, schema, and artifact contracts that the migration will preserve. (completed 2026-04-03)
+- [x] **Phase 2: Identity Reset & Embedding Governance** - Move face-reference ownership and DeepFace-backed identity flows into backend-owned, versioned governance. (completed 2026-04-03)
+- [x] **Phase 3: Backend Execution Port** - Replace the standalone execution dependency with a backend-owned screentime runtime behind the existing dispatch seam. (completed 2026-04-03)
+- [x] **Phase 4: Canonical Review, Publication & Admin Cutover** - Make backend-owned review, publication, and operator workflows the source of truth in TRR-APP. (completed 2026-04-03)
+- [x] **Phase 5: Runtime Retirement & Cutover Cleanup** - Remove the remaining production dependency on the split `screenalytics` runtime and finalize backend-only operation. (completed 2026-04-03)
 
 ## Phase Details
 
@@ -29,7 +29,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. Asset records preserve episode-versus-supplementary classification together with show, season, episode, and source provenance metadata.
   3. Every promoted screentime asset exposes probe metadata, integrity checks, and source provenance from backend-owned storage and schema.
   4. Downstream runtime and review paths can rely on `ml.*` and stable artifact payload contracts without depending on donor-only storage shapes.
-**Plans**: TBD
+**Plans**: `01-01-PLAN.md`
 
 ### Phase 2: Identity Reset & Embedding Governance
 **Goal**: Operators can manage trusted face references through backend-owned DeepFace registration, search, and verification flows without changing the v1 ArcFace-class matching contract.
@@ -40,7 +40,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. Every active face reference stores versioned DeepFace embeddings with provider, model, detector, and normalization provenance.
   3. Backend register, search, and verify flows operate against one explicit ArcFace-class embedding contract for v1.
   4. Unreviewed or duplicate face-reference material cannot become active matching seeds.
-**Plans**: TBD
+**Plans**: `02-01-PLAN.md`
 
 ### Phase 3: Backend Execution Port
 **Goal**: Operators can run screentime analysis from the backend-owned control plane while preserving reproducibility, artifact parity, and reversible cutover control.
@@ -52,7 +52,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Completed runs persist per-person totals, unknown or unassigned detections, and reviewable scenes, shots, segments, exclusions, evidence frames, and generated clips.
   4. Historical runs remain interpretable because thresholds, embedding contract, and run configuration are versioned with each run.
   5. The executor can cut over from the donor adapter to backend-owned execution behind reversible flags with parity validation.
-**Plans**: TBD
+**Plans**: `03-01-PLAN.md`
 
 ### Phase 4: Canonical Review, Publication & Admin Cutover
 **Goal**: Operators can review, approve, publish, and inspect screentime results entirely through TRR-APP against backend-owned canonical review and publication state.
@@ -64,7 +64,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Admin can publish approved episode-class runs as canonical episode screentime while keeping supplementary-video publications out of canonical episode rollups.
   4. Backend can regenerate approved totals and rollups from review and publication state without reprocessing artifacts.
   5. Operators can complete intake, run inspection, review, and publication workflows from TRR-APP, including evidence-linked totals, segments, exclusions, and generated clips.
-**Plans**: TBD
+**Plans**: `04-01-PLAN.md`
 **UI hint**: yes
 
 ### Phase 5: Runtime Retirement & Cutover Cleanup
@@ -75,7 +75,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   1. TRR-APP preserves working screentime admin flows while consuming backend-owned contracts rather than a permanent `screenalytics` runtime dependency.
   2. Production screentime flows no longer require `SCREENALYTICS_API_URL` or `SCREENALYTICS_SERVICE_TOKEN`.
   3. The remaining production service boundary to the standalone `screenalytics` runtime is retired without breaking operator-facing screentime workflows.
-**Plans**: TBD
+**Plans**: `05-01-PLAN.md`
 **UI hint**: yes
 
 ## Progress
@@ -85,8 +85,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Contract Freeze & Asset Foundation | 0/TBD | Not started | - |
-| 2. Identity Reset & Embedding Governance | 0/TBD | Not started | - |
-| 3. Backend Execution Port | 0/TBD | Not started | - |
-| 4. Canonical Review, Publication & Admin Cutover | 0/TBD | Not started | - |
-| 5. Runtime Retirement & Cutover Cleanup | 0/TBD | Not started | - |
+| 1. Contract Freeze & Asset Foundation | 1/1 | Complete    | 2026-04-03 |
+| 2. Identity Reset & Embedding Governance | 1/1 | Complete | 2026-04-03 |
+| 3. Backend Execution Port | 1/1 | Complete | 2026-04-03 |
+| 4. Canonical Review, Publication & Admin Cutover | 1/1 | Complete | 2026-04-03 |
+| 5. Runtime Retirement & Cutover Cleanup | 1/1 | Complete | 2026-04-03 |

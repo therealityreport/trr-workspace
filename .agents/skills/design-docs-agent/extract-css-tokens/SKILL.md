@@ -28,7 +28,8 @@ from source CSS and source HTML. This skill owns the per-article style payload.
 - `sourceHtml`
 
 See `references/rendering-contracts.md`, `references/lessons-learned.md`, and
-`references/preflight-checklist.md`.
+`references/preflight-checklist.md`. For Birdkit-specific variable recovery, see
+`references/birdkit-component-taxonomy.md`.
 
 ## Outputs
 
@@ -44,12 +45,24 @@ See `references/rendering-contracts.md`, `references/lessons-learned.md`, and
 3. Extract actual article typography specimens for headline, subheads, body text, and chart or table labels.
 4. Capture article-specific chart or interactive palettes rather than copying prior article values.
 5. When trusted computed-style evidence is available, cross-check key elements against the extracted payload.
+6. When Birdkit `g-*` structures are present, extract `--g-*` custom properties
+   from `:root`, article wrapper scope, or Birdkit body scope and map them into
+   token groups:
+   - typography
+   - colors
+   - layout
+   - body text system
+   - article-specific variables
+   Use `references/birdkit-component-taxonomy.md` for the variable dictionary
+   and article-specific extension pattern.
 
 ## Validation
 
 1. Fonts and colors must come from the current article, not an existing article.
 2. `usedIn` values must be parseable and grounded in extracted values.
 3. Treat identical `h2` and `h3` results as suspicious and re-check the source when evidence suggests they differ.
+4. When Birdkit `--g-*` variables are present, capture them as tokens rather
+   than leaving them implicit in inline styles only.
 
 ## Stop And Escalate If
 

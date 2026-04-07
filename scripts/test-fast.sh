@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "$ROOT/scripts/lib/node-baseline.sh"
+source "$ROOT/scripts/lib/python-venv.sh"
 RUN_BACKEND=1
 RUN_APP=1
 RUN_SCREENALYTICS=1
@@ -33,10 +34,7 @@ done
 
 if [[ "$RUN_BACKEND" == "1" ]]; then
   echo "[test-fast] TRR-Backend..."
-  if [[ ! -x "$ROOT/TRR-Backend/.venv/bin/python" ]]; then
-    echo "[test-fast] ERROR: TRR-Backend/.venv missing. Run: make bootstrap" >&2
-    exit 1
-  fi
+  trr_ensure_repo_runtime "$ROOT/TRR-Backend" "$ROOT/TRR-Backend/requirements.txt"
   "$ROOT/TRR-Backend/.venv/bin/ruff" check "$ROOT/TRR-Backend"
   "$ROOT/TRR-Backend/.venv/bin/ruff" format --check "$ROOT/TRR-Backend"
   if [[ -f "$ROOT/TRR-Backend/tests/api/test_health.py" ]]; then
