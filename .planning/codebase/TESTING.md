@@ -1,171 +1,144 @@
 # Testing Patterns
 
-**Analysis Date:** 2026-04-04
+**Analysis Date:** 2026-04-06
 
 ## Test Framework
 
 **Runner:**
-- `TRR-Backend` uses `pytest` with `pythonpath = .`, `testpaths = tests`, and `python_files = test_*.py` in `TRR-Backend/pytest.ini`.
-- `TRR-APP/apps/web` uses `Vitest` for unit/component/route tests in `TRR-APP/apps/web/vitest.config.ts`.
-- `TRR-APP/apps/web` uses `Playwright` for browser smoke and admin flows in `TRR-APP/apps/web/playwright.config.ts`.
-- `screenalytics` uses `pytest` configured in `screenalytics/pyproject.toml`, including markers for `slow` and `timeout` plus `--import-mode=importlib`.
+- `TRR-Backend`: `pytest` with config in `TRR-Backend/pytest.ini`.
+- `TRR-APP`: `vitest` for unit/component/route tests in `TRR-APP/apps/web/vitest.config.ts`.
+- `TRR-APP` browser coverage: `@playwright/test` in `TRR-APP/apps/web/playwright.config.ts`.
+- `screenalytics`: `pytest` configured in `screenalytics/pyproject.toml`.
+- Workspace orchestration: shell wrappers in `scripts/test-fast.sh`, `scripts/test.sh`, `scripts/test-full.sh`, `scripts/test-changed.sh`, and `scripts/test-env-sensitive.sh`.
 
 **Assertion Library:**
-- Python tests use plain `assert`, `pytest`, and `fastapi.testclient.TestClient`: `TRR-Backend/tests/api/test_health.py`, `screenalytics/tests/api/test_trr_health.py`.
-- App tests use `expect` from Vitest and DOM assertions from `@testing-library/jest-dom/vitest`: `TRR-APP/apps/web/tests/setup.ts`, `TRR-APP/apps/web/tests/admin-global-header.test.tsx`.
-- E2E tests use Playwright `expect` and route interception helpers: `TRR-APP/apps/web/tests/e2e/admin-fixtures.ts`.
+- Python repos use plain `pytest` assertions plus `unittest.mock.patch` / `monkeypatch`.
+- `TRR-APP` uses Vitest assertions and Testing Library through `TRR-APP/apps/web/tests/setup.ts`.
+- Playwright specs use Playwright `expect(...)`.
 
 **Run Commands:**
 ```bash
-make test-fast                       # Workspace fast lane from `/Users/thomashulihan/Projects/TRR/Makefile`
-make test-full                       # Workspace full lane from `/Users/thomashulihan/Projects/TRR/Makefile`
-make smoke                           # Workspace runtime smoke checks from `/Users/thomashulihan/Projects/TRR/Makefile`
-cd TRR-Backend && pytest             # Backend full suite per `TRR-Backend/AGENTS.md`
-pnpm -C TRR-APP/apps/web run test:ci # App CI Vitest lane from `TRR-APP/apps/web/package.json`
-pnpm -C TRR-APP/apps/web run test:e2e # App Playwright lane from `TRR-APP/apps/web/package.json`
-cd screenalytics && pytest tests/unit/ -v   # Screenalytics unit lane per `screenalytics/AGENTS.md`
-cd screenalytics && RUN_ML_TESTS=1 pytest tests/ml/ -v  # Screenalytics ML lane per `screenalytics/AGENTS.md`
+make test-fast                     # Workspace smoke checks across all three repos
+make test-full                     # Workspace full wrapper; currently dispatches scripts/test.sh
+make test-changed                  # Scope-aware test routing based on git changes
+make test-env-sensitive            # Cross-repo env/runtime-sensitive regression gate
+
+cd TRR-Backend && ruff check . && ruff format --check . && pytest -q
+cd TRR-APP/apps/web && pnpm run lint && pnpm exec next build --webpack && pnpm run test:ci
+cd TRR-APP/apps/web && pnpm run test:e2e
+cd screenalytics && pytest -q
+cd screenalytics && RUN_ML_TESTS=1 pytest tests/ml/ -v
 ```
 
 ## Test File Organization
 
 **Location:**
-- `TRR-Backend` keeps tests in a dedicated top-level `tests/` tree grouped by subsystem: `TRR-Backend/tests/api`, `TRR-Backend/tests/repositories`, `TRR-Backend/tests/services`, `TRR-Backend/tests/socials`, `TRR-Backend/tests/vision`.
-- `TRR-APP` keeps tests under `TRR-APP/apps/web/tests`, separate from `src`, with `tests/e2e`, `tests/fixtures`, and `tests/mocks`.
-- `screenalytics` keeps most tests under `screenalytics/tests` and also has app-local tests under `screenalytics/apps/workspace-ui/tests`.
+- `TRR-Backend` keeps tests in a dedicated top-level `TRR-Backend/tests/` tree grouped by subsystem: `api/`, `repositories/`, `db/`, `ingestion/`, `integrations/`, `media/`, `pipeline/`, `scripts/`, `services/`, and more.
+- `TRR-APP` keeps all unit/component/route tests under `TRR-APP/apps/web/tests/` and browser tests under `TRR-APP/apps/web/tests/e2e/`.
+- `screenalytics` keeps tests under `screenalytics/tests/` with explicit layers such as `api/`, `unit/`, `ui/`, `ml/`, `integration/`, `audio/`, `mcps/`, and `FEATURES/`.
+- Workspace policy and script tests live at the root in files like `scripts/test_runtime_db_env.py` and `scripts/test_sync_handoffs.py`.
 
 **Naming:**
-- Python tests follow `test_*.py`: `TRR-Backend/tests/test_api_smoke.py`, `screenalytics/tests/api/test_trr_health.py`.
-- Vitest files use `*.test.ts` and `*.test.tsx`: `TRR-APP/apps/web/tests/admin-global-header.test.tsx`, `TRR-APP/apps/web/tests/backend-base.test.ts`.
-- Playwright files use `*.spec.ts`: `TRR-APP/apps/web/tests/e2e/admin-modal-keyboard.spec.ts`.
+- Python test files use `test_*.py` and sometimes class-based grouping inside the file. Examples: `TRR-Backend/tests/db/test_connection_resolution.py`, `screenalytics/tests/unit/test_defaults_format.py`.
+- Vitest files use `*.test.ts` and `*.test.tsx`. Examples: `TRR-APP/apps/web/tests/admin-fetch.test.ts`, `TRR-APP/apps/web/tests/profile-page.test.tsx`.
+- Playwright files use `*.spec.ts`. Examples: `TRR-APP/apps/web/tests/e2e/admin-cast-tabs-smoke.spec.ts`.
 
 **Structure:**
 ```text
-TRR-Backend/tests/
-  api/
-  repositories/
-  services/
-  socials/
-  vision/
-
-TRR-APP/apps/web/tests/
-  *.test.ts[x]
-  e2e/*.spec.ts
-  fixtures/
-  mocks/
-
-screenalytics/tests/
-  api/
-  unit/
-  integration/
-  ml/
-  ui/
-  mcps/
-  FEATURES/
+TRR-Backend/tests/{api,repositories,db,integrations,...}/test_*.py
+TRR-APP/apps/web/tests/**/*.test.ts(x)
+TRR-APP/apps/web/tests/e2e/**/*.spec.ts
+screenalytics/tests/{api,unit,ui,ml,integration,...}/test_*.py
+scripts/test_*.py
 ```
 
 ## Test Structure
 
 **Suite Organization:**
 ```python
-# `TRR-Backend/tests/test_api_smoke.py`
-@pytest.fixture
-def client(mock_supabase):
-    app.dependency_overrides[...] = lambda: mock_supabase
-    yield TestClient(app)
-    app.dependency_overrides.clear()
+# Python pattern from TRR-Backend/tests/db/test_connection_resolution.py
+@pytest.fixture(autouse=True)
+def _clear_resolution_cache() -> None:
+    ...
 
-class TestHealthEndpoints:
-    def test_root_returns_ok(self, client: TestClient):
-        response = client.get("/")
-        assert response.status_code == 200
+def test_resolve_database_url_candidates_prefers_trr_runtime_envs(...) -> None:
+    ...
 ```
 
-```tsx
-// `TRR-APP/apps/web/tests/admin-global-header.test.tsx`
-describe("AdminGlobalHeader", () => {
+```typescript
+// Vitest pattern from TRR-APP/apps/web/tests/people-home-route.test.ts
+describe("/api/admin/trr-api/people/home", () => {
   beforeEach(() => {
-    usePathnameMock.mockReset();
+    ...
   });
 
-  it("shows expected menu items", async () => {
-    render(<AdminGlobalHeader />);
-    fireEvent.click(screen.getByRole("button", { name: "Open admin navigation menu" }));
-    await waitFor(() => expect(screen.getByRole("navigation")).toBeInTheDocument());
+  it("returns all five sections from the backend-owned contract", async () => {
+    ...
   });
 });
 ```
 
-```python
-# `screenalytics/tests/api/test_trr_health.py`
-def test_trr_health_returns_connected_when_ping_succeeds(client, monkeypatch):
-    monkeypatch.setenv("TRR_DB_URL", "postgresql://test:test@localhost:5432/test")
-    with patch("apps.api.routers.metadata.ping", return_value=True):
-        response = client.get("/metadata/trr/health")
-    assert response.status_code == 200
+```typescript
+// Playwright pattern from TRR-APP/apps/web/tests/e2e/admin-cast-tabs-smoke.spec.ts
+test.describe("cast + season tabs smoke (mocked)", () => {
+  test("season cast sync enters running state and cancels cleanly", async ({ page }) => {
+    ...
+  });
+});
 ```
 
 **Patterns:**
-- Backend tests often create one focused fixture per file rather than relying on a large shared `conftest.py`: `TRR-Backend/tests/api/test_health.py`, `TRR-Backend/tests/api/test_admin_recent_people.py`.
-- App tests are interaction-driven and use Testing Library primitives (`render`, `screen`, `fireEvent`, `waitFor`) from `TRR-APP/apps/web/tests/admin-global-header.test.tsx`.
-- Screenalytics tests commonly use `monkeypatch` plus temporary directories and environment variables to simulate pipeline modes without full external services: `screenalytics/tests/api/test_presign_matrix.py`, `screenalytics/tests/api/test_screentime_math.py`.
+- Use autouse fixtures aggressively for cache clearing and environment cleanup in Python. Examples: `TRR-Backend/tests/db/test_connection_resolution.py`, `TRR-Backend/tests/api/routers/conftest.py`.
+- Prefer scenario-specific helpers over huge global factories.
+  - Backend: in-memory operation store fixture in `TRR-Backend/tests/api/routers/conftest.py`.
+  - App e2e: fixture builders in `TRR-APP/apps/web/tests/e2e/admin-fixtures.ts`.
+  - Screenalytics: helper modules in `screenalytics/tests/helpers/`.
+- Keep route tests near contract expectations rather than full-stack boot. `TRR-Backend/tests/api/test_health.py` mounts a tiny FastAPI app just for the route under test.
 
 ## Mocking
 
-**Framework:** `unittest.mock` and `pytest.monkeypatch` in Python; `vi.mock`, `vi.stubGlobal`, and Playwright `page.route` in TypeScript.
+**Framework:** `pytest` fixtures with `patch` / `patch.object` / `monkeypatch`, Vitest `vi.mock` / `vi.stubGlobal`, and Playwright `page.route`.
 
 **Patterns:**
 ```python
-# `TRR-Backend/tests/api/test_health.py`
-with patch.object(_real_pg, "db_connection", _fake_db_connection_ok):
-    resp = client.get("/health")
+# Python route/service mocking from screenalytics/tests/api/test_trr_health.py
+with patch("apps.api.routers.metadata.ping", return_value=True):
+    response = client.get("/metadata/trr/health")
 ```
 
-```ts
-// `TRR-APP/apps/web/tests/setup.ts`
-vi.mock("next/image", () => ({ default: (...) => React.createElement("img", rest) }));
-vi.mock("server-only", () => ({}));
+```typescript
+// Vitest module mocking from TRR-APP/apps/web/tests/people-home-route.test.ts
+vi.mock("@/lib/server/auth", () => ({
+  requireAdmin: requireAdminMock,
+}));
 ```
 
-```ts
-// `TRR-APP/apps/web/tests/e2e/admin-fixtures.ts`
+```typescript
+// Playwright network mocking from TRR-APP/apps/web/tests/e2e/admin-fixtures.ts
 await page.route("**/api/admin/**", async (route) => {
-  return json(route, { ...mockBody });
+  await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(body) });
 });
 ```
 
-```python
-# `screenalytics/tests/conftest.py`
-celery_app.conf.update(
-    task_always_eager=True,
-    task_eager_propagates=True,
-    result_backend="cache+memory://",
-    broker_url="memory://",
-)
-```
-
 **What to Mock:**
-- Mock network and database boundaries aggressively: Supabase/PG connections in `TRR-Backend/tests/test_api_smoke.py`, metadata DB calls in `screenalytics/tests/api/test_trr_health.py`, admin API responses in `TRR-APP/apps/web/tests/e2e/admin-fixtures.ts`.
-- Mock framework-only modules needed for rendering in jsdom: `next/image`, `server-only`, Firebase bindings in `TRR-APP/apps/web/tests/setup.ts`.
-- Mock optional heavy ML/runtime dependencies centrally in Screenalytics when the test target is orchestration rather than model quality: lazy NumPy and `cv2` stubs in `screenalytics/tests/conftest.py`.
+- External services, remote HTTP calls, database probes, and auth checks.
+  - `TRR-Backend/tests/api/test_health.py` patches DB connection helpers.
+  - `screenalytics/tests/api/test_trr_health.py` patches metadata DB probes.
+  - `TRR-APP/apps/web/tests/setup.ts` mocks `next/image`, `server-only`, Firebase, and browser APIs.
+- Heavy or optional runtime dependencies in `screenalytics`.
+  - `screenalytics/tests/conftest.py` puts Celery into eager mode, lazily imports NumPy, and installs a `cv2` stub when OpenCV is absent.
 
 **What NOT to Mock:**
-- Do not mock pure parsing, normalization, or reducer logic when fixture data is cheap to load. Those tests are written against real helper output in `TRR-Backend/tests/ingestion/*`, `TRR-APP/apps/web/tests/person-photo-utils.test.ts`, and `screenalytics/tests/unit/*`.
-- Do not bypass the React DOM for user-facing component behavior; `TRR-APP` tests generally render components and interact through accessible roles rather than calling internals directly.
+- Pure formatting, normalization, and contract logic when it can run locally.
+  - Examples: `TRR-Backend/tests/db/test_connection_resolution.py`, `TRR-APP/apps/web/tests/postgres-connection-string-resolution.test.ts`, `screenalytics/tests/unit/test_defaults_format.py`.
+- Streamlit source compilation checks do not mock the source text itself; `screenalytics/tests/ui/test_streamlit_pages_compile.py` reads real page files through `screenalytics/tests/helpers/workspace_ui_source.py`.
 
 ## Fixtures and Factories
 
 **Test Data:**
-```python
-# `TRR-Backend/tests/ingestion/test_fandom_person_scraper.py`
-def _read_fixture(name: str) -> str:
-    return (FIXTURES_DIR / name).read_text(encoding="utf-8")
-```
-
-```ts
-// `TRR-APP/apps/web/tests/e2e/admin-fixtures.ts`
+```typescript
+// Factory pattern from TRR-APP/apps/web/tests/e2e/admin-fixtures.ts
 export const buildShowCastMember = (personId: string, name: string, overrides = {}) => ({
-  id: `credit-${personId}`,
   person_id: personId,
   full_name: name,
   ...overrides,
@@ -173,102 +146,112 @@ export const buildShowCastMember = (personId: string, name: string, overrides = 
 ```
 
 ```python
-# `screenalytics/tests/conftest.py`
-os.environ.setdefault("STORAGE_BACKEND", "local")
+# Autouse fixture pattern from TRR-Backend/tests/api/routers/conftest.py
+@pytest.fixture(autouse=True)
+def _in_memory_admin_operation_store(monkeypatch: pytest.MonkeyPatch) -> None:
+    ...
 ```
 
 **Location:**
-- Backend HTML/JSON fixture inputs live under `TRR-Backend/tests/fixtures/*`.
-- App fixture inputs live under `TRR-APP/apps/web/tests/fixtures` and Playwright scenario builders in `TRR-APP/apps/web/tests/e2e/admin-fixtures.ts`.
-- Screenalytics shared helpers live in `screenalytics/tests/helpers`, central session fixtures in `screenalytics/tests/conftest.py`, and Streamlit test stubs in `screenalytics/tests/ui/streamlit_stub.py`.
+- Static backend fixture payloads live in `TRR-Backend/tests/fixtures/`.
+- App fixture files live in `TRR-APP/apps/web/tests/fixtures/` and `TRR-APP/apps/web/tests/e2e/admin-fixtures.ts`.
+- Screenalytics helpers live in `screenalytics/tests/helpers/`.
 
 ## Coverage
 
-**Requirements:** No cross-repo coverage threshold is enforced in the detected configs.
+**Requirements:** No enforced global percentage threshold detected.
+- `TRR-APP/apps/web/vitest.config.ts` generates `text`, `html`, and `lcov` reports under `TRR-APP/apps/web/coverage`, but no threshold gate is configured.
+- `screenalytics/requirements-ci.txt` includes `pytest-cov`, but no repository-level coverage threshold or report command is wired in the files inspected.
+- `TRR-Backend` has no repo-level coverage config in `pytest.ini` or `ruff.toml`.
 
 **View Coverage:**
 ```bash
-pnpm -C TRR-APP/apps/web exec vitest -c vitest.config.ts --coverage
+cd TRR-APP/apps/web && pnpm run test
+open TRR-APP/apps/web/coverage/index.html
 ```
-
-- `TRR-APP/apps/web/vitest.config.ts` is configured for V8 coverage output (`text`, `html`, `lcov`), but no dedicated `coverage` script is wired in `TRR-APP/apps/web/package.json`.
-- No pytest coverage configuration or threshold is detected in `TRR-Backend` or `screenalytics`.
 
 ## Test Types
 
 **Unit Tests:**
-- `TRR-Backend` uses unit-style tests for parser, repository, and utility logic with heavy dependency patching: `TRR-Backend/tests/ingestion/*`, `TRR-Backend/tests/repositories/*`, `TRR-Backend/tests/db/*`.
-- `TRR-APP` uses Vitest for components, server helpers, route utilities, and runtime boundary checks: `TRR-APP/apps/web/tests/*.test.ts[x]`.
-- `screenalytics` has explicit `tests/unit`, plus many logic-focused tests in `tests/api` where the HTTP layer is thin.
+- `TRR-Backend` unit-style tests focus on repository helpers, DB resolution, and parser logic. Examples: `TRR-Backend/tests/db/test_connection_resolution.py`, `TRR-Backend/tests/repositories/test_admin_operations.py`.
+- `screenalytics/tests/unit/` is the main pure-logic layer for config resolution, runtime defaults, artifact contracts, and runner behavior.
+- `TRR-APP/apps/web/tests/` mixes pure helper tests, route-handler tests, and isolated component tests under Vitest.
 
 **Integration Tests:**
-- Backend integration-style suites exist under `TRR-Backend/tests/integrations` and some repository tests with more realistic payloads.
-- Screenalytics keeps dedicated `tests/integration` and `tests/FEATURES` suites for pipeline contract and artifact behavior.
-- Workspace fast/full scripts do not run these integration suites by default.
+- `TRR-Backend/tests/integrations/` and parts of `tests/repositories/` exercise parsing and persistence semantics with realistic payloads and fixtures.
+- `screenalytics/tests/integration/`, `tests/api/`, `tests/audio/`, and `tests/ml/` cover cross-module behavior. ML tests are intentionally segregated and sometimes gated by `RUN_ML_TESTS=1`.
+- Workspace integration and policy checks live in `scripts/test_sync_handoffs.py`, `scripts/test_runtime_db_env.py`, `scripts/check-policy.sh`, and `scripts/check-workspace-contract.sh`.
 
 **E2E Tests:**
-- `TRR-APP` is the only repo with first-class browser E2E coverage, using Playwright in `TRR-APP/apps/web/tests/e2e`.
-- `screenalytics` UI testing is compile/state oriented via pytest, not browser automation: `screenalytics/tests/ui/*`, `screenalytics/apps/workspace-ui/tests/*`.
-- No browser E2E runner is detected for `screenalytics/web`.
+- `TRR-APP` is the only repo with browser E2E in the inspected workspace, using Playwright from `TRR-APP/apps/web/playwright.config.ts`.
+- The Playwright config runs a single Chromium worker, records traces/screenshots/videos on failure, and can either boot a local webpack dev server or hit an externally supplied base URL.
+- `screenalytics` and `TRR-Backend` rely on API and script-level integration tests rather than browser E2E.
 
-## Smoke Checks
+## Verification Commands
 
-**Workspace Smoke:**
-- `make smoke` runs process, health, and port checks for the workspace in `/Users/thomashulihan/Projects/TRR/scripts/smoke.sh`.
-- Required checks currently cover `TRR-Backend` `/health` and `TRR-APP` root, with `screenalytics` API treated as optional in the workspace smoke script.
-
-**Repo Smoke:**
-- Backend has route-smoke tests such as `TRR-Backend/tests/test_api_smoke.py`, `TRR-Backend/tests/test_discussions_smoke.py`, and `TRR-Backend/tests/test_dms_smoke.py`.
-- App has targeted smoke commands and Playwright smoke specs such as `TRR-APP/apps/web/package.json` `smoke:cast:preflight` and `TRR-APP/apps/web/tests/e2e/homepage-visual-smoke.spec.ts`.
-- Screenalytics relies on API health tests and compile checks in workspace scripts more than separate shell smoke scripts.
+- Workspace-wide fast lane:
+  - `make test-fast`
+  - Runs `ruff` plus a backend health test, app lint only, and screenalytics `py_compile` plus `tests/api/test_trr_health.py` via `scripts/test-fast.sh`.
+- Workspace-wide full lane:
+  - `make test-full`
+  - Dispatches `scripts/test.sh`, which is still intentionally lighter than each repo’s deepest suite. It runs the full backend pytest suite, app lint/build/Vitest CI, and only a narrow screenalytics smoke lane.
+- Change-scoped lane:
+  - `make test-changed`
+  - Uses git diff to decide between per-repo `test-fast` lanes and workspace policy checks.
+- Env-sensitive lane:
+  - `make test-env-sensitive`
+  - Exercises one backend env-sensitive regression, the full `screenalytics/tests/unit` suite, and app lint/typecheck/Vitest CI.
+- Repo-local fast checks required by policy:
+  - `TRR-Backend/AGENTS.md`
+  - `TRR-APP/AGENTS.md`
+  - `screenalytics/AGENTS.md`
+  - `docs/cross-collab/WORKFLOW.md`
+- UI verification after admin or route changes should include targeted managed-Chrome or `chrome-devtools` validation per `AGENTS.md` and `TRR-APP/AGENTS.md`, even when automated tests pass.
 
 ## Common Patterns
 
 **Async Testing:**
-```ts
-// `TRR-APP/apps/web/tests/admin-global-header.test.tsx`
-await waitFor(() => {
-  expect(screen.getByRole("navigation", { name: "Admin navigation" })).toBeInTheDocument();
+```typescript
+// TRR-APP async pattern from TRR-APP/apps/web/tests/admin-fetch.test.ts
+await expect(fetchWithTimeout("/api/test", {}, 5)).rejects.toMatchObject({
+  name: "AbortError",
 });
 ```
 
-```ts
-// `TRR-APP/apps/web/tests/e2e/admin-fixtures.ts`
-await page.route("**/api/admin/**", async (route) => {
-  await sleep(options.castRoleMembersDelayMs ?? 0);
-  return json(route, options.castRoleMembers ?? []);
-});
+```python
+# Screenalytics service test pattern from screenalytics/tests/api/test_trr_health.py
+with patch("apps.api.routers.metadata.ping", return_value=False):
+    response = client.get("/metadata/trr/health")
 ```
 
 **Error Testing:**
 ```python
-# `TRR-Backend/tests/api/test_health.py`
-with patch.object(_real_pg, "db_connection", _fake_db_connection_fail):
-    resp = client.get("/health")
+# Backend error-path assertion from TRR-Backend/tests/api/test_health.py
 assert resp.status_code == 503
+assert body["status"] == "degraded"
 ```
 
-```python
-# `screenalytics/tests/api/test_trr_health.py`
-with patch("apps.api.routers.metadata.ping", return_value=False):
-    response = client.get("/metadata/trr/health")
-assert response.json()["trr_db"] == "error"
+```typescript
+// Runtime contract assertion from TRR-APP/apps/web/tests/postgres-connection-string-resolution.test.ts
+expect(() => resolvePostgresConnectionString({})).toThrow(
+  "No database connection string is set. Configure TRR_DB_URL ..."
+);
 ```
 
-## Notable Gaps
+## Practical Boundaries
 
-**`screenalytics/web` test runner gap:**
-- No Vitest, Jest, or Playwright config is detected under `screenalytics/web`; the Next.js frontend has `package.json` and `tsconfig.json` but no first-class automated JS test suite.
-
-**Workspace coverage gap for Screenalytics:**
-- `/Users/thomashulihan/Projects/TRR/scripts/test-fast.sh` and `/Users/thomashulihan/Projects/TRR/scripts/test.sh` only compile key Screenalytics entrypoints and run `screenalytics/tests/api/test_trr_health.py`. They do not exercise the broader `tests/unit`, `tests/integration`, `tests/ml`, or `tests/ui` trees by default.
-
-**App coverage visibility gap:**
-- `TRR-APP/apps/web/vitest.config.ts` defines coverage reporters, but `TRR-APP/apps/web/package.json` does not expose a `coverage` script or enforce a threshold.
-
-**Backend shared-fixture gap:**
-- `TRR-Backend` has only a local shared conftest at `TRR-Backend/tests/api/routers/conftest.py`; most other setup is duplicated per file. New backend tests should prefer extracting reusable fixtures when a pattern repeats.
+- Put new backend tests beside the layer they protect in `TRR-Backend/tests/`.
+  - Router contract or status-code behavior: `tests/api/`
+  - DB/runtime env contract: `tests/db/`
+  - repository semantics: `tests/repositories/`
+- Put new app tests in `TRR-APP/apps/web/tests/` unless the behavior truly requires a browser; then use `TRR-APP/apps/web/tests/e2e/`.
+- Put new screenalytics tests in the narrowest existing bucket:
+  - pure logic in `screenalytics/tests/unit/`
+  - API route behavior in `screenalytics/tests/api/`
+  - Streamlit compilation and UI helpers in `screenalytics/tests/ui/`
+  - ML/runtime-heavy behavior in `screenalytics/tests/ml/`
+- If a change touches workspace scripts, policy, or handoff generation, add or update focused root-level tests under `scripts/` instead of hiding that behavior in a repo-local suite.
 
 ---
 
-*Testing analysis: 2026-04-04*
+*Testing analysis: 2026-04-06*
