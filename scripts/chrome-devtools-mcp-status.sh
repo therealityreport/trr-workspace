@@ -106,8 +106,9 @@ extract_chrome_section() {
   [[ -f "$file" ]] || return 0
   awk '
     BEGIN { in_section = 0 }
-    /^\[mcp_servers\.chrome-devtools\]/ { in_section = 1; print; next }
-    /^\[mcp_servers\./ { if (in_section) exit; next }
+    /^\[mcp_servers\.chrome-devtools\]$/ { in_section = 1; print; next }
+    /^\[mcp_servers\.chrome-devtools\.env\]$/ { if (in_section) print; next }
+    /^\[/ { if (in_section) exit; next }
     { if (in_section) print }
   ' "$file"
 }
@@ -439,13 +440,7 @@ shared_profile_value() {
 }
 
 configured_mode() {
-  local env_line
-  env_line="$(printf '%s\n' "$chrome_section" | awk '/^env = / {print; exit}')"
-  if [[ -n "$env_line" ]]; then
-    printf '%s\n' "$env_line" | sed -n 's/.*CODEX_CHROME_MODE *= *"\([^"]*\)".*/\1/p'
-    return 0
-  fi
-  printf '%s\n' "${CODEX_CHROME_MODE:-isolated}"
+  configured_env_value "CODEX_CHROME_MODE" "${CODEX_CHROME_MODE:-isolated}"
 }
 
 default_shared_port_for_command() {
@@ -460,7 +455,15 @@ default_shared_port_for_command() {
 configured_env_value() {
   local key="$1"
   local default_value="$2"
+  local table_value
   local env_line
+
+  table_value="$(printf '%s\n' "$chrome_section" | awk -F' = ' -v key="$key" '$1 == key {gsub(/^"|"$/, "", $2); print $2; exit}')"
+  if [[ -n "$table_value" ]]; then
+    printf '%s\n' "$table_value"
+    return 0
+  fi
+
   env_line="$(printf '%s\n' "$chrome_section" | awk '/^env = / {print; exit}')"
   if [[ -n "$env_line" ]]; then
     local value

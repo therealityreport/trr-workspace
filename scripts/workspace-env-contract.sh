@@ -180,6 +180,8 @@ generate_contract() {
     echo
     echo 'Defaults reflect the effective `make dev` baseline (`PROFILE=default`) when that profile overrides the raw script fallback.'
     echo
+    echo 'Preferred contract: `make dev` is the cloud-first baseline for normal workspace development. Docker-backed `make dev-local` remains an explicit fallback for local-only Screenalytics / Redis / MinIO cases.'
+    echo
     echo "Visibility tiers:"
     echo '- `common`: frequently used day-to-day toggles'
     echo '- `advanced`: less common tuning and troubleshooting controls'

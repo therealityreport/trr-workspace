@@ -104,17 +104,10 @@ if trusted_project != "trusted":
 servers = data.get("mcp_servers") or {}
 global_chrome_wrapper = str(path.parent / "bin" / "codex-chrome-devtools-mcp-global.sh")
 required_disabled_skill_names = {
-    "api-gateway",
-    "aws-solution-architect",
-    "cloudwatch",
     "code-reviewer",
     "context7-cli",
-    "ec2",
-    "eventbridge",
-    "figma-frontend-design-engineer",
-    "iam",
-    "lambda",
-    "secrets-manager",
+    "figma-designer",
+    "modal-platform",
     "senior-architect",
     "senior-backend",
     "senior-devops",
@@ -123,8 +116,6 @@ required_disabled_skill_names = {
     "senior-qa",
     "skillcreator",
     "social-ingestion-reliability",
-    "sqs",
-    "step-functions",
 }
 required_disabled_skill_paths = {
     str(path.parent / "skills" / skill_name) for skill_name in required_disabled_skill_names
@@ -336,15 +327,8 @@ for name, required in required_servers.items():
     server.update(required)
 
 required_disabled_skill_names = [
-    "api-gateway",
-    "aws-solution-architect",
-    "cloudwatch",
     "context7-cli",
-    "ec2",
-    "eventbridge",
-    "iam",
-    "lambda",
-    "secrets-manager",
+    "modal-platform",
     "senior-architect",
     "senior-devops",
     "senior-fullstack",
@@ -354,9 +338,7 @@ required_disabled_skill_names = [
     "code-reviewer",
     "skillcreator",
     "social-ingestion-reliability",
-    "figma-frontend-design-engineer",
-    "sqs",
-    "step-functions",
+    "figma-designer",
 ]
 required_disabled_skill_paths = {
     str(pathlib.Path.home() / ".codex" / "skills" / skill_name): False
@@ -552,15 +534,8 @@ required_agents = {
 required_disabled_skill_paths = {
     str(pathlib.Path.home() / ".codex" / "skills" / skill_name)
     for skill_name in (
-        "api-gateway",
-        "aws-solution-architect",
-        "cloudwatch",
         "context7-cli",
-        "ec2",
-        "eventbridge",
-        "iam",
-        "lambda",
-        "secrets-manager",
+        "modal-platform",
         "senior-architect",
         "senior-devops",
         "senior-fullstack",
@@ -570,9 +545,7 @@ required_disabled_skill_paths = {
         "code-reviewer",
         "skillcreator",
         "social-ingestion-reliability",
-        "figma-frontend-design-engineer",
-        "sqs",
-        "step-functions",
+        "figma-designer",
     )
 }
 required_disabled_skill_paths.update(
