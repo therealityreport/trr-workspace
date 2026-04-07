@@ -1,159 +1,114 @@
-# TRR Workspace Conventions
+# TRR Workspace Conventions Map
 
-## Scope
-
-This document captures recurring coding, naming, and operational conventions that are visible in the current workspace and reinforced by the checked-in `AGENTS.md` files.
+Updated from workspace scan on 2026-04-07.
 
 ## Cross-Repo Conventions
 
-### Backend-First Shared Contracts
+- Read root `AGENTS.md` first, then repo-local `AGENTS.md`
+- Backend-first ordering is required for shared schema/API/auth changes
+- Shared env contracts are named explicitly and reused across repos instead of aliasing ad hoc
+- Secret values are never meant to be logged or embedded in code; workspace policy calls out `TRR_INTERNAL_ADMIN_SHARED_SECRET` and `SCREENALYTICS_SERVICE_TOKEN`
 
-- Shared API, auth, DB, and schema changes land in `TRR-Backend/` first
-- `screenalytics/` adapts second
-- `TRR-APP/` updates consumers last
+## Python Style Conventions
 
-This is an explicit workspace rule in `AGENTS.md`, not just a habit.
+### TRR-Backend
 
-### Canonical Environment Names
+- Ruff config is in `TRR-Backend/ruff.toml`
+- Target version: Python `3.11`
+- Line length: `120`
+- Enabled rule families include `E`, `F`, `I`, `N`, `UP`, `B`, `C4`
+- Formatting preferences in Ruff:
+  - double quotes
+  - spaces for indentation
+- pytest discovery config is in `TRR-Backend/pytest.ini`
 
-Important shared env names are stable and reused across repos:
+Observed code patterns:
 
-- `TRR_DB_URL`
-- `TRR_DB_FALLBACK_URL`
-- `TRR_API_URL`
-- `TRR_INTERNAL_ADMIN_SHARED_SECRET`
-- `SCREENALYTICS_SERVICE_TOKEN`
+- `from __future__ import annotations` is common in Python modules such as `TRR-Backend/api/main.py`
+- routers and services favor typed helper functions and explicit env parsing
+- UTC timestamps are commonly generated inline with `datetime.now(UTC).isoformat()`
+- environment lookups are wrapped in helper functions rather than scattered raw reads
 
-The codebase consistently prefers canonical names over ad hoc aliases and validates them early in startup paths.
+### screenalytics
 
-### Secret Handling
+- `screenalytics/pyproject.toml` defines Ruff, Black, and pytest options
+- Line length: `120`
+- Ruff ignore policy explicitly allows some pragmatic legacy patterns:
+  - `E402`
+  - `F841`
+  - `E731`
+- pytest uses markers like `slow` and `timeout`
+- imports often front-load env/bootstrap logic before heavier runtime imports, especially in `apps/api/main.py` and `apps/workspace-ui/streamlit_app.py`
 
-- Secret contracts are referenced by name, not value
-- Service auth is enforced through shared headers or tokens rather than inline credentials
-- Workspace policy explicitly forbids printing or committing secret values
+Observed code patterns:
 
-### File Ownership
+- dotenv loading happens before other imports when runtime configuration matters
+- large services sit in `apps/api/services/*.py`
+- feature comments are used to explain runtime constraints, especially for tests and optional dependencies
+- test environments heavily use `monkeypatch`, `TestClient`, and module stubs
 
-- Shared policy and workflow live at the workspace root
-- Repo-specific implementation rules live in each repo’s `AGENTS.md`
-- `CLAUDE.md` files are intentionally pointer-only
+## TypeScript / React Conventions
 
-## `TRR-Backend` Conventions
+### TRR-APP
 
-### Python Style
+- ESLint config lives in `TRR-APP/apps/web/eslint.config.mjs`
+- TypeScript config is strict in `TRR-APP/apps/web/tsconfig.json`
+- path alias `@/*` maps to `src/*`
+- Next/React conventions:
+  - `import "server-only";` for privileged modules such as `TRR-APP/apps/web/src/lib/server/auth.ts`
+  - `"use client"` for interactive components and hooks-heavy files
+- tests are granted slightly looser TS rules in ESLint for pragmatism
 
-- Ruff is the main linting/formatting contract in `TRR-Backend/ruff.toml`
-- Target Python is `py311`
-- Line length is `120`
-- Double quotes are preferred
-- Imports are sorted with Ruff/isort
+Observed code patterns:
 
-### Router Patterns
+- server adapters are named by role: `*-repository.ts`, `*-service.ts`, `*-cache.ts`, `*-proxy.ts`
+- route helpers and repositories are colocated under `src/lib/server/`
+- App Router pages often compose with imported shells rather than embedding all logic inline
+- auth and admin concerns are explicit modules rather than ambient middleware magic
 
-- Admin APIs mostly use `APIRouter` prefixes such as `/admin`, `/admin/shows`, `/admin/brands`, or `/admin/trr-api`
-- Public APIs sit under domain-oriented routers like `shows`, `surveys`, `dms`, and `discussions`
-- Router modules are feature-heavy and often include validation, orchestration, and response-shaping together
+## Error Handling Conventions
 
-### Startup and Runtime Guardrails
+### Backend
 
-- Startup performs explicit env validation in `TRR-Backend/api/main.py`
-- Database connection lanes are validated centrally, not at arbitrary query sites
-- Internal admin auth and Screenalytics auth have dedicated modules in `TRR-Backend/api/auth.py` and `TRR-Backend/api/screenalytics_auth.py`
+- startup validation fails fast for invalid runtime config in `TRR-Backend/api/main.py`
+- backend-specific exception types exist, for example DB service availability types from `trr_backend.db.pg`
+- service-to-service auth helpers raise explicit runtime errors on missing secrets
 
-### Migration Discipline
+### screenalytics
 
-- Existing migrations are additive and sequential in `TRR-Backend/supabase/migrations/`
-- Repo policy says not to edit old migrations; add new ones instead
+- optional dependencies are guarded with soft-fail imports in `screenalytics/apps/api/main.py`
+- readiness endpoints convert dependency failures into structured status instead of hard crashes where possible
+- storage validation code in `screenalytics/apps/api/services/validation.py` classifies transient vs configuration problems
 
-## `TRR-APP` Conventions
+### App
 
-### Server vs Client Separation
+- auth code falls back between provider paths in `TRR-APP/apps/web/src/lib/server/auth.ts`
+- backend-base normalization emits development warnings when `TRR_API_URL` points to a remote host
+- route caches and admin wrappers suggest an emphasis on stable route responses for complex admin pages
 
-- Server-only logic is intentionally placed under `TRR-APP/apps/web/src/lib/server/`
-- `"use client"` is added only when interaction requires it
-- `import "server-only";` is used in sensitive server modules such as `TRR-APP/apps/web/src/lib/server/trr-api/backend.ts`
+## Naming and Module Organization
 
-### App Router Structure
+- Python tests follow `test_*.py`
+- TypeScript tests follow `*.test.ts` or `*.test.tsx`
+- admin-heavy frontend modules are grouped under `admin/` prefixes
+- router names in backend and screenalytics are feature-first, not generic REST-controller names
+- generated files are usually called out explicitly with `generated/` in their path
 
-- Route files follow App Router naming with `page.tsx`, `layout.tsx`, and `route.ts`
-- Dynamic segments are heavily used for public and admin navigation
-- Proxy/API routes live under `src/app/api/`
+## Configuration Conventions
 
-### Auth and Proxy Boundaries
+- env contracts are validated in CI, not just assumed at runtime
+- backend and screenalytics both prefer canonical env names and preserve fallback aliases only where documented
+- screenalytics tracking and pipeline configuration resolves with a clear precedence model tested in `screenalytics/apps/workspace-ui/tests/config/test_tracking_defaults.py`
+- app build behavior is environment-aware in `TRR-APP/apps/web/next.config.ts`
 
-- App code does not invent backend contracts; it follows `TRR_API_URL` and backend admin proxy helpers
-- Admin trust is established via `TRR_INTERNAL_ADMIN_SHARED_SECRET` and server-side token/header helpers
-- Firebase config is split into client and admin paths
+## Testing-by-Design Conventions
 
-### Frontend Testing and Naming
+- test helpers use dependency injection and monkeypatching instead of requiring live infra for most unit tests
+- app Playwright config runs single-worker, deterministic browser checks
+- screenalytics `tests/conftest.py` sets Celery eager mode and lazy dependency stubs to keep local/CI tests deterministic
 
-- Test names are descriptive and concern-focused, for example `admin-route-aliases.test.ts` and `person-refresh-progress.test.ts`
-- Route and wiring tests are common, indicating a convention of validating URL shape and server-proxy behavior directly
+## Practical Planning Rules
 
-## `screenalytics` Conventions
-
-### Python Formatting
-
-- Ruff and Black are both configured in `screenalytics/pyproject.toml`
-- Line length is `120`
-- Some common Python lint rules are intentionally relaxed to accommodate runtime setup and pipeline code
-
-### Runtime Initialization
-
-- `.env` loading happens early in entrypoints such as `screenalytics/apps/api/main.py` and `screenalytics/apps/workspace-ui/streamlit_app.py`
-- Global CPU limits are applied before heavy ML imports via `apps.common.cpu_limits`
-- Streamlit page config must be the first Streamlit call, and repo policy reinforces that
-
-### Service Layering
-
-- Routers are relatively thin compared with the service layer in `screenalytics/apps/api/services/`
-- Storage, observability, locking, pipeline state, and run persistence each have dedicated service modules
-- Optional features such as v2 APIs and Celery are feature-gated at startup
-
-### Artifact Safety
-
-- Repo policy discourages silent overwrite of artifacts, embeddings, and facebank data
-- Many tests focus on idempotency, locking, progress reporting, and recovery behavior
-
-## Testing Conventions
-
-Observed testing conventions:
-
-- Python repos use pytest
-- Frontend/unit tests use Vitest
-- Browser flows use Playwright
-- Test names describe the route, behavior, or regression being protected
-- Specialized tests are separated by concern, for example `tests/api/`, `tests/ml/`, `tests/audio/`, `tests/integration/`
-
-## Operational Conventions
-
-### Validation Commands
-
-Workspace policy standardizes fast checks:
-
-- `TRR-Backend`: `ruff check . && ruff format --check . && pytest -q`
-- `screenalytics`: `pytest -q`
-- `TRR-APP`: `pnpm -C apps/web run lint && pnpm -C apps/web exec next build --webpack && pnpm -C apps/web run test:ci`
-
-### Browser Validation
-
-- Authenticated UI verification is expected through managed Chrome tooling and `chrome-devtools`
-- Browser defaults are centralized in workspace scripts rather than duplicated per repo
-
-### Documentation and Status
-
-- Handoff/status docs belong in workspace-managed docs locations, not ad hoc scratch files
-- `.planning/` is used for agent-readable planning state and maps
-
-## Convention Read
-
-The workspace favors explicit guardrails over implicit team norms:
-
-- canonical env names
-- strict server/client boundaries
-- backend-first contract ownership
-- startup validation
-- feature-oriented route organization
-- testing by user-visible or contract-visible behavior
-
-Those conventions make the codebase easier to reason about, but they also mean changes that bypass the established boundaries usually create drift quickly.
+- If changing auth, inspect both Firebase and Supabase code paths in `TRR-APP/apps/web/src/lib/server/auth.ts`
+- If changing DB contracts, expect updates in all three repos
+- If changing object-storage behavior, check backend media paths, screenalytics storage paths, and any frontend operational scripts

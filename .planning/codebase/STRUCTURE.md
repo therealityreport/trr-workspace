@@ -1,188 +1,145 @@
-# TRR Workspace Structure
+# TRR Workspace Structure Map
 
-## Scope
+Updated from workspace scan on 2026-04-07.
 
-This document maps the visible directory layout and the main places where work tends to land across the TRR workspace.
+## Workspace Root
 
-Primary roots:
+Key root locations:
 
-- `TRR-Backend/`
-- `TRR-APP/`
-- `screenalytics/`
-- `docs/`
-- `scripts/`
-- `.planning/`
-
-## Workspace Root Layout
-
-### Coordination and Policy
-
-- Cross-repo policy: `AGENTS.md`
-- Workspace orchestration: `Makefile`
-- Shared docs: `docs/workspace/`, `docs/cross-collab/`, `docs/ai/`
-- Shared scripts: `scripts/`
+- Policy and workspace guidance: `AGENTS.md`, `docs/workspace/`, `docs/cross-collab/`
 - Planning artifacts: `.planning/`
+- Shared scripts: `scripts/`
+- Primary repos:
+  - `TRR-Backend/`
+  - `TRR-APP/`
+  - `screenalytics/`
 
-The root is not just a container directory. It carries shared workflow, environment, browser, and handoff behavior that the child repos depend on.
+The root is a coordination workspace, not a single-product source tree.
 
-## `TRR-Backend/` Layout
+## TRR-Backend Layout
 
-### Top-Level Purpose
+Top-level structure:
 
-- `api/` - FastAPI app, auth, dependencies, realtime support, route modules
-- `trr_backend/` - domain logic, repositories, integrations, jobs, media/storage helpers
-- `supabase/` - config and migration history
-- `tests/` - pytest suites
-- `scripts/` - repo-local operational helpers
+- `TRR-Backend/api/` - FastAPI entrypoints, routers, realtime broker
+- `TRR-Backend/trr_backend/` - reusable backend package code
+- `TRR-Backend/supabase/` - config, migrations, generated schema docs
+- `TRR-Backend/tests/` - Python test suites organized by domain
+- `TRR-Backend/scripts/` - operational scripts grouped by concern
+- `TRR-Backend/docs/` - backend-specific docs, runbooks, architecture references
 
-### Key Subtrees
+Important subtrees in `trr_backend/`:
 
-- API entrypoint: `TRR-Backend/api/main.py`
-- Dependency/auth helpers: `TRR-Backend/api/deps.py`, `TRR-Backend/api/auth.py`
-- Router directory: `TRR-Backend/api/routers/`
-- Realtime support: `TRR-Backend/api/realtime/`
-- DB code: `TRR-Backend/trr_backend/db/`
-- Media/storage code: `TRR-Backend/trr_backend/media/`
-- External integrations: `TRR-Backend/trr_backend/integrations/`
-- Social ingestion and refresh code: `TRR-Backend/trr_backend/socials/`
-- Modal job plane: `TRR-Backend/trr_backend/modal_jobs.py`, `TRR-Backend/trr_backend/modal_dispatch.py`
-- Supabase migrations: `TRR-Backend/supabase/migrations/`
+- `trr_backend/db/`
+- `trr_backend/repositories/`
+- `trr_backend/services/`
+- `trr_backend/integrations/`
+- `trr_backend/media/`
+- `trr_backend/ingestion/`
+- `trr_backend/socials/`
+- `trr_backend/security/`
+- `trr_backend/pipeline/`
 
-### Structure Observations
+Naming pattern:
 
-- Feature modules are long-lived and colocate route handlers with domain-specific behavior
-- `api/routers/` contains both public and admin surfaces
-- `trr_backend/` is the real application core; `api/` is mostly boundary and transport
-- Migration history is extensive and sequential, indicating schema-first evolution over time
+- routers are feature-named, often `admin_*`
+- repository modules are noun or capability oriented
+- ingestion/integration modules are provider-oriented
 
-## `TRR-APP/` Layout
+## TRR-APP Layout
 
-### Top-Level Purpose
+Top-level structure:
 
-- `apps/web/` - primary Next.js web app
-- `apps/vue-wordle/` - smaller Vue/Vite app
-- `docs/` - repo-local plans and documentation
-- `scripts/` - repo-local helper commands
-- `.github/workflows/` - CI and validation
+- `TRR-APP/apps/web/` - main Next.js app
+- `TRR-APP/apps/vue-wordle/` - secondary Vue/Vite app
+- `TRR-APP/scripts/` - deployment and operational scripts
+- `TRR-APP/docs/` - app docs and epics
 
-### `apps/web/` Key Layout
+Important Next app subtrees:
 
-- Route tree: `TRR-APP/apps/web/src/app/`
-- Shared components: `TRR-APP/apps/web/src/components/`
-- Server-only logic: `TRR-APP/apps/web/src/lib/server/`
-- General client/shared logic: `TRR-APP/apps/web/src/lib/`
-- Tests: `TRR-APP/apps/web/tests/`
-- Build/runtime config: `TRR-APP/apps/web/next.config.ts`, `TRR-APP/apps/web/vitest.config.ts`, `TRR-APP/apps/web/playwright.config.ts`
+- `TRR-APP/apps/web/src/app/` - route tree
+- `TRR-APP/apps/web/src/components/` - React components
+- `TRR-APP/apps/web/src/hooks/` - custom hooks
+- `TRR-APP/apps/web/src/lib/` - shared utilities and domain logic
+- `TRR-APP/apps/web/src/lib/server/` - privileged server-only modules
+- `TRR-APP/apps/web/src/types/` - shared types
+- `TRR-APP/apps/web/tests/` - Vitest and Playwright tests
 
-### Important Route Clusters
+Notable route clusters under `src/app/`:
 
-- Admin UI: `TRR-APP/apps/web/src/app/admin/`
-- App-side admin proxy routes: `TRR-APP/apps/web/src/app/api/admin/trr-api/`
-- Public show routes: `TRR-APP/apps/web/src/app/[showId]/`, `TRR-APP/apps/web/src/app/shows/`
-- Survey routes: `TRR-APP/apps/web/src/app/surveys/`
-- Design docs/admin reference surfaces: `TRR-APP/apps/web/src/app/admin/design-docs/`, `TRR-APP/apps/web/src/app/design-system/`
+- `src/app/admin/` - large admin surface
+- `src/app/api/` - Next route handlers
+- `src/app/[showId]/` and `src/app/shows/` - public show pages
+- `src/app/brands/`, `src/app/design-system/`, `src/app/fonts/` - editorial/design system surfaces
+- `src/app/bravodle/`, `src/app/flashback/`, `src/app/realitease/` - games/features
 
-### Structure Observations
+Naming pattern:
 
-- `src/app/` is very large and route-oriented
-- Admin and public surfaces coexist in one App Router tree
-- Server logic is intentionally separated under `src/lib/server/`
-- Tests sit close to app concerns but live in a dedicated `tests/` root rather than colocated next to source files
+- app route segments are descriptive and often mirror product tabs
+- server modules use suffixes such as `-repository.ts`, `-service.ts`, `-cache.ts`, `-proxy.ts`
+- alias imports use `@/*` from `tsconfig.json`
 
-## `screenalytics/` Layout
+## screenalytics Layout
 
-### Top-Level Purpose
+Top-level structure:
 
-- `apps/api/` - FastAPI API
-- `apps/workspace-ui/` - Streamlit operator UI
-- `packages/py-screenalytics/` - reusable package code
-- `config/pipeline/` - pipeline stage and performance configs
-- `tests/` - extensive pytest coverage across API, ML, audio, integration, and tooling
-- `tools/` - helper scripts and standalone commands
+- `screenalytics/apps/api/` - FastAPI API service
+- `screenalytics/apps/workspace-ui/` - Streamlit UI
+- `screenalytics/packages/py-screenalytics/` - reusable Python package
+- `screenalytics/tests/` - broad Python test suite
+- `screenalytics/config/` - pipeline configs
+- `screenalytics/tools/` - CLI and batch jobs
+- `screenalytics/docs/` - architecture, reference, ops docs
 
-### `apps/api/` Key Layout
+Important `apps/api/` subtrees:
 
-- API entrypoint: `screenalytics/apps/api/main.py`
-- Routers: `screenalytics/apps/api/routers/`
-- Schemas: `screenalytics/apps/api/schemas/`
-- Services: `screenalytics/apps/api/services/`
-- Optional Celery worker: `screenalytics/apps/api/celery_app.py`
+- `apps/api/routers/`
+- `apps/api/services/`
+- `apps/api/config/`
+- `apps/api/schemas/`
 
-### `apps/workspace-ui/` Key Layout
+Important `apps/workspace-ui/` subtrees:
 
-- Streamlit shell: `screenalytics/apps/workspace-ui/streamlit_app.py`
-- Multipage screens: `screenalytics/apps/workspace-ui/pages/`
-- Shared UI helpers/components: `screenalytics/apps/workspace-ui/components/`
-- UI-specific tests: `screenalytics/apps/workspace-ui/tests/`
+- `apps/workspace-ui/pages/`
+- `apps/workspace-ui/components/`
+- `apps/workspace-ui/tests/`
 
-### Package and Config Layout
+Important reusable package location:
 
-- Installable package source: `screenalytics/packages/py-screenalytics/src/py_screenalytics/`
-- Pipeline configs: `screenalytics/config/pipeline/`
-- Infra compose fallback: `screenalytics/infra/docker/compose.yaml`
+- `screenalytics/packages/py-screenalytics/src/py_screenalytics/`
 
-### Structure Observations
+## Documentation and Generated Assets
 
-- This repo is a mixed API + ML + operator-UI codebase
-- `apps/api/services/` is the main coordination layer
-- Package code under `packages/py-screenalytics/` appears to hold reusable pipeline primitives
-- Tests are partitioned by concern rather than only by source directory
+- Backend schema reference is generated under `TRR-Backend/supabase/schema_docs/`
+- Backend repo-map output appears under `TRR-Backend/docs/Repository/generated/`
+- screenalytics also carries repository/architecture docs under `screenalytics/docs/`
+- TRR-APP has design-docs and design-system-related generated artifacts under:
+  - `TRR-APP/apps/web/src/lib/fonts/generated/`
+  - `TRR-APP/apps/web/src/lib/admin/api-references/generated/`
 
-## Shared Docs and Script Structure
+## Test Tree Shape
 
-### `docs/`
+- Backend test domains: `tests/api/`, `tests/repositories/`, `tests/integrations/`, `tests/media/`, `tests/scripts/`, `tests/pipeline/`
+- App tests are mostly flat under `TRR-APP/apps/web/tests/` with `tests/e2e/` for Playwright
+- screenalytics tests span:
+  - `tests/api/`
+  - `tests/audio/`
+  - `tests/facebank/`
+  - `tests/tools/`
+  - `tests/mcps/`
+  - `apps/workspace-ui/tests/`
 
-Useful workspace anchors:
+## Operational Script Conventions
 
-- Env contract: `docs/workspace/env-contract.md`
-- Workspace commands: `docs/workspace/dev-commands.md`
-- Chrome/browser policy: `docs/workspace/chrome-devtools.md`
-- Shared workflow: `docs/cross-collab/WORKFLOW.md`
-- Handoff guidance: `docs/ai/HANDOFF_WORKFLOW.md`
+- Backend script buckets by concern:
+  - `TRR-Backend/scripts/socials/`
+  - `TRR-Backend/scripts/media/`
+  - `TRR-Backend/scripts/supabase/`
+  - `TRR-Backend/scripts/workers/`
+- screenalytics uses `tools/` for heavy operational flows and `scripts/` for setup/utility work
+- workspace root `scripts/` holds cross-repo and browser tooling referenced by root policy
 
-### `scripts/`
+## Structural Takeaways
 
-The workspace script directory centralizes cross-repo operations such as:
-
-- dev startup and health checks
-- environment synthesis and contract checking
-- browser orchestration and managed Chrome wrappers
-- MCP session helpers
-
-Examples:
-
-- `scripts/dev-workspace.sh`
-- `scripts/preflight.sh`
-- `scripts/status-workspace.sh`
-- `scripts/check-workspace-contract.sh`
-- `scripts/codex-chrome-devtools-mcp.sh`
-
-## Naming and Layout Patterns
-
-Observed patterns:
-
-- Python repos prefer explicit domain folders like `routers/`, `services/`, `repositories/`, `integrations/`
-- Next.js routes follow App Router naming with `page.tsx`, `layout.tsx`, and nested dynamic segments
-- Admin surfaces are grouped under `/admin` consistently in both route names and backend API prefixes
-- Test file names are descriptive and end with `.test.ts`, `.test.tsx`, or `test_*.py`
-- Generated or machine-oriented artifacts are often kept under `docs/`, `artifacts/`, or `.planning/` rather than mixed into source trees
-
-## Where To Look First
-
-For common task types:
-
-- Shared contract or schema issue: `TRR-Backend/api/`, `TRR-Backend/trr_backend/`, `TRR-Backend/supabase/migrations/`
-- Admin UI or route issue: `TRR-APP/apps/web/src/app/admin/`, `TRR-APP/apps/web/src/app/api/admin/trr-api/`, `TRR-APP/apps/web/src/lib/server/`
-- Screenalytics API or pipeline issue: `screenalytics/apps/api/routers/`, `screenalytics/apps/api/services/`, `screenalytics/packages/py-screenalytics/src/py_screenalytics/`
-- Workspace startup/env/browser issue: `Makefile`, `scripts/`, `docs/workspace/`
-
-## Structure Read
-
-The workspace structure is organized around operational ownership more than strict layering:
-
-- backend core behavior in `TRR-Backend`
-- UI and app-server mediation in `TRR-APP`
-- heavy pipeline and review tooling in `screenalytics`
-- shared coordination at the workspace root
-
-That structure makes repo ownership clear, but it also means cross-repo changes require careful navigation of root-level docs and scripts in addition to repo-local code.
+- The workspace is intentionally organized by repo ownership first, not by shared packages
+- Shared contracts are documented centrally, but code is not centralized into one monorepo package graph
+- The heaviest growth zones are `TRR-APP/apps/web/src/app/admin/`, `TRR-Backend/api/routers/`, and `screenalytics/apps/api/services/`
