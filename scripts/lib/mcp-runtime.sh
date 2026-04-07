@@ -1,5 +1,16 @@
 #!/usr/bin/env bash
 
+# ── PATH bootstrap ──────────────────────────────────────────────────────
+# Claude Code ships a minimal PATH (/usr/bin:/bin:/usr/sbin:/sbin) that
+# excludes Homebrew and nvm.  Add well-known tool directories so that
+# python3, node, npm, and npx are discoverable in every script that
+# sources this library.
+for _mcp_dir in /opt/homebrew/bin /usr/local/bin; do
+  [[ -d "$_mcp_dir" ]] && [[ ":$PATH:" != *":$_mcp_dir:"* ]] && export PATH="$_mcp_dir:$PATH"
+done
+unset _mcp_dir
+# ────────────────────────────────────────────────────────────────────────
+
 ROOT="${ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
 CODEX_HOME_DIR="${CODEX_HOME:-$HOME/.codex}"
 CODEX_CONFIG_FILE="${CODEX_CONFIG_FILE:-${CODEX_HOME_DIR}/config.toml}"
@@ -8,7 +19,17 @@ resolve_mcp_runtime_python() {
   local configured="${PYTHON_BIN:-}"
   local candidate path
 
-  for candidate in "$configured" python3.11 python3 python; do
+  # Include well-known Homebrew paths so resolution works even in minimal
+  # PATH environments (e.g. Claude Code ships PATH=/usr/bin:/bin:/usr/sbin:/sbin).
+  for candidate in \
+    "$configured" \
+    /opt/homebrew/bin/python3.11 \
+    /opt/homebrew/bin/python3 \
+    /usr/local/bin/python3.11 \
+    /usr/local/bin/python3 \
+    python3.11 \
+    python3 \
+    python; do
     [[ -n "$candidate" ]] || continue
     if [[ -x "$candidate" ]]; then
       path="$candidate"
@@ -28,7 +49,7 @@ PY
     fi
   done
 
-  echo "[mcp-runtime] ERROR: Python 3.11+ is required (tried: PYTHON_BIN, python3.11, python3, python)." >&2
+  echo "[mcp-runtime] ERROR: Python 3.11+ is required (tried: PYTHON_BIN, python3.11, python3, python, /opt/homebrew/bin/python3*)." >&2
   return 1
 }
 

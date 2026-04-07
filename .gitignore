@@ -13,6 +13,9 @@
 /.artifacts/
 .tmp-codex-bootstrap.*/
 
+# Git worktrees
+/.worktrees/
+
 # Output artifacts (screenshots, IAM policies, etc.)
 /output/
 
