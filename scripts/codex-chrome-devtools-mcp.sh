@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Ensure Homebrew paths are available — Claude Code ships a minimal PATH
+# (/usr/bin:/bin:/usr/sbin:/sbin) that excludes Homebrew.
+for _dir in /opt/homebrew/bin /usr/local/bin; do
+  [[ -d "$_dir" ]] && [[ ":$PATH:" != *":$_dir:"* ]] && export PATH="$_dir:$PATH"
+done
+unset _dir
+
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "${ROOT}/scripts/lib/node-baseline.sh"
 if [[ -f "${ROOT}/scripts/lib/codex-session-identity.sh" ]]; then

@@ -7,15 +7,98 @@ cd "$ROOT"
 source "$ROOT/scripts/lib/node-baseline.sh"
 source "$ROOT/scripts/lib/preflight-diagnostics.sh"
 source "$ROOT/scripts/lib/runtime-db-env.sh"
+source "$ROOT/scripts/lib/workspace-terminal.sh"
 
 preflight_diag_init "preflight.sh" "$ROOT" "preflight"
+
+ATTENTION_FILE="$(workspace_attention_file "$ROOT")"
+workspace_attention_reset "$ATTENTION_FILE"
+
+record_browser_attention() {
+  local output="$1"
+  local pressure=""
+  local port=""
+
+  pressure="$(printf '%s\n' "$output" | sed -n 's/.*local browser pressure is \([^ .][^.]*\)\(.|\)*$/\1/p' | head -n 1)"
+  if [[ -n "$pressure" ]]; then
+    workspace_attention_add \
+      "$ATTENTION_FILE" \
+      "Browser automation pressure is ${pressure}." \
+      "Impact: chrome-devtools is available, but local browser pressure is elevated." \
+      "Remediation: run 'make mcp-clean' if stale Chrome runtime artifacts or external MCP leftovers are not expected."
+    return 0
+  fi
+
+  if printf '%s\n' "$output" | grep -q "shared Chrome is not responding on port"; then
+    port="$(printf '%s\n' "$output" | sed -n 's/.*shared Chrome is not responding on port \([0-9][0-9]*\).*/\1/p' | head -n 1)"
+    workspace_attention_add \
+      "$ATTENTION_FILE" \
+      "Browser automation shared Chrome is not responding${port:+ on port ${port}}." \
+      "Impact: chrome-devtools registration is present, but the shared browser runtime is unavailable." \
+      "Remediation: run 'make mcp-clean' and retry the workspace startup."
+  fi
+}
+
+emit_preflight_phase_output() {
+  local phase="$1"
+  local rc="$2"
+  local output="$3"
+
+  [[ -n "$output" ]] || return 0
+
+  if [[ "$rc" != "0" ]]; then
+    printf '%s\n' "$output"
+    return 0
+  fi
+
+  case "$phase" in
+    doctor)
+      printf '%s\n' "$output"
+      ;;
+    env-contract)
+      echo "[preflight] Env contract OK"
+      ;;
+    env-contract-generate)
+      echo "[preflight] Env contract regenerated"
+      ;;
+    env-contract-verify)
+      echo "[preflight] Env contract re-validated"
+      ;;
+    env-contract-report)
+      echo "[preflight] Env contract reports OK"
+      ;;
+    env-contract-report-write)
+      echo "[preflight] Env contract reports regenerated"
+      ;;
+    env-contract-report-verify)
+      echo "[preflight] Env contract reports re-validated"
+      ;;
+    handoff-sync)
+      echo "[preflight] Handoffs synced"
+      ;;
+    check-policy)
+      echo "[preflight] Policy checks OK"
+      ;;
+    chrome-devtools-mcp-status)
+      record_browser_attention "$output"
+      if [[ -s "$ATTENTION_FILE" ]]; then
+        echo "[preflight] Browser automation checked (startup attention recorded)"
+      else
+        echo "[preflight] Browser automation checked"
+      fi
+      ;;
+    *)
+      printf '%s\n' "$output"
+      ;;
+  esac
+}
 
 run_preflight_phase() {
   local phase="$1"
   local message="$2"
   shift 2
 
-  local command_display start_ms end_ms elapsed_ms child_pid rc child_script=""
+  local command_display start_ms end_ms elapsed_ms child_pid rc child_script="" phase_output=""
 
   echo "$message"
   command_display="$(preflight_diag_render_command "$@")"
@@ -23,9 +106,10 @@ run_preflight_phase() {
 
   if ! preflight_diag_is_enabled; then
     set +e
-    "$@"
+    phase_output="$("$@" 2>&1)"
     rc="$?"
     set -e
+    emit_preflight_phase_output "$phase" "$rc" "$phase_output"
     preflight_diag_set_phase "idle"
     return "$rc"
   fi

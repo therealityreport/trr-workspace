@@ -5,6 +5,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
 source "$ROOT/scripts/lib/runtime-db-env.sh"
+source "$ROOT/scripts/lib/workspace-terminal.sh"
 
 # Optional profile defaults.
 # Usage: PROFILE=default make dev
@@ -58,6 +59,10 @@ LOG_DIR="${ROOT}/.logs/workspace"
 PIDFILE="${LOG_DIR}/pids.env"
 WORKSPACE_MANAGER_PID="$$"
 mkdir -p "$LOG_DIR"
+ATTENTION_FILE="$(workspace_attention_file "$ROOT")"
+if [[ ! -f "$ATTENTION_FILE" ]]; then
+  workspace_attention_reset "$ATTENTION_FILE"
+fi
 
 # Clean stale Chrome/MCP processes from prior sessions.
 if [[ -x "$ROOT/scripts/codex-mcp-session-reaper.sh" ]]; then
@@ -123,6 +128,7 @@ WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR="${WORKSPACE_TRR_REMOTE_SOCIAL_
 WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS="${WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS:-2}"
 WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_LEASE_SECONDS="${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_LEASE_SECONDS:-300}"
 TRR_BACKEND_RELOAD="${TRR_BACKEND_RELOAD:-1}"
+TRR_ADMIN_ROUTE_CACHE_DISABLED="${TRR_ADMIN_ROUTE_CACHE_DISABLED:-1}"
 TRR_BACKEND_WORKERS="${TRR_BACKEND_WORKERS:-1}"
 TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER="${TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER:-0}"
 TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS="${TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS:-10000}"
@@ -347,6 +353,10 @@ fi
 if ! [[ "$TRR_BACKEND_RELOAD" =~ ^[01]$ ]]; then
   echo "[workspace] WARNING: invalid TRR_BACKEND_RELOAD='${TRR_BACKEND_RELOAD}', using 1." >&2
   TRR_BACKEND_RELOAD="1"
+fi
+if ! [[ "$TRR_ADMIN_ROUTE_CACHE_DISABLED" =~ ^[01]$ ]]; then
+  echo "[workspace] WARNING: invalid TRR_ADMIN_ROUTE_CACHE_DISABLED='${TRR_ADMIN_ROUTE_CACHE_DISABLED}', using 1." >&2
+  TRR_ADMIN_ROUTE_CACHE_DISABLED="1"
 fi
 if ! [[ "$TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS" =~ ^[1-9][0-9]*$ ]]; then
   echo "[workspace] WARNING: invalid TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS='${TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS}', using 10000." >&2
@@ -637,9 +647,11 @@ fi
 # Flashback browser-env guard (warning-only)
 # ---------------------------------------------------------------------------
 if [ -z "${NEXT_PUBLIC_SUPABASE_URL:-}" ] || [ -z "${NEXT_PUBLIC_SUPABASE_ANON_KEY:-}" ]; then
-  echo "[workspace] WARNING: NEXT_PUBLIC_SUPABASE_URL and/or NEXT_PUBLIC_SUPABASE_ANON_KEY not set." >&2
-  echo "   Flashback (/flashback/cover, /flashback/play) requires these browser-side Supabase envs." >&2
-  echo "   Set them in apps/web/.env.local — they should point to the same project as TRR_CORE_SUPABASE_URL." >&2
+  workspace_attention_add \
+    "$ATTENTION_FILE" \
+    "Flashback browser envs are missing." \
+    "Impact: /flashback/cover and /flashback/play stay unavailable; normal startup is unaffected." \
+    "Remediation: set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in apps/web/.env.local so they point at the same project as TRR_CORE_SUPABASE_URL."
 fi
 
 # ---------------------------------------------------------------------------
@@ -686,8 +698,6 @@ if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
     else
       echo "[workspace] Docker daemon is running for the explicit dev-local fallback."
     fi
-  else
-    echo "[workspace] screenalytics mode is cloud-backed; skipping local Docker fallback preflight and compose startup."
   fi
 
   if [[ "$WORKSPACE_SCREENALYTICS" == "1" && "$HAVE_LSOF" -eq 1 ]]; then
@@ -808,6 +818,29 @@ start_bg() {
   echo "[workspace] ${name} started (pid=${pid})"
 }
 
+start_bg_with_label() {
+  local name="$1"
+  local display_name="$2"
+  local log="$3"
+  shift 3
+
+  if [[ "$USE_SETSID" -eq 1 ]]; then
+    setsid "$@" >>"$log" 2>&1 &
+  elif [[ -n "$PY_SETSID" ]]; then
+    "$PY_SETSID" -c 'import os, sys; os.setsid(); os.execvp(sys.argv[1], sys.argv[1:])' "$@" >>"$log" 2>&1 &
+  else
+    echo "[workspace] WARNING: cannot create new process group (no setsid/python). Stop may leave orphans." >&2
+    "$@" >>"$log" 2>&1 &
+  fi
+
+  local pid=$!
+  PIDS+=("$pid")
+  NAMES+=("$name")
+  LAST_STARTED_PID="$pid"
+  write_pidfile_runtime_value "${name}_PID" "$pid"
+  echo "[workspace] ${display_name} started (pid=${pid})"
+}
+
 start_bg_no_setsid() {
   local name="$1"
   local log="$2"
@@ -821,6 +854,22 @@ start_bg_no_setsid() {
   LAST_STARTED_PID="$pid"
   write_pidfile_runtime_value "${name}_PID" "$pid"
   echo "[workspace] ${name} started (pid=${pid})"
+}
+
+start_bg_no_setsid_with_label() {
+  local name="$1"
+  local display_name="$2"
+  local log="$3"
+  shift 3
+
+  "$@" >>"$log" 2>&1 &
+
+  local pid=$!
+  PIDS+=("$pid")
+  NAMES+=("$name")
+  LAST_STARTED_PID="$pid"
+  write_pidfile_runtime_value "${name}_PID" "$pid"
+  echo "[workspace] ${display_name} started (pid=${pid})"
 }
 
 write_pidfile_runtime_value() {
@@ -907,6 +956,115 @@ workspace_modal_social_tuning_summary() {
   echo "lane=$(workspace_modal_social_lane_label), dispatch_limit=${WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT}, max_concurrency=${WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT}, stage_caps=$(workspace_modal_social_stage_caps)"
 }
 
+workspace_local_social_worker_active() {
+  [[ "$WORKSPACE_SOCIAL_WORKER_ENABLED" == "1" && ! ( "$WORKSPACE_SOCIAL_WORKER_POSTS" -eq 0 && "$WORKSPACE_SOCIAL_WORKER_COMMENTS" -eq 0 && "$WORKSPACE_SOCIAL_WORKER_MEDIA_MIRROR" -eq 0 && "$WORKSPACE_SOCIAL_WORKER_COMMENT_MEDIA_MIRROR" -eq 0 ) ]]
+}
+
+workspace_local_remote_workers_active() {
+  [[ "$WORKSPACE_TRR_REMOTE_WORKERS_ENABLED" == "1" && ! ( "$WORKSPACE_TRR_REMOTE_EXECUTOR" == "modal" && "$WORKSPACE_TRR_MODAL_ENABLED" == "1" ) ]]
+}
+
+print_workspace_ready_summary() {
+  local local_admin_override_label="disabled"
+
+  if [[ "${TRR_ALLOW_LOCAL_ADMIN_OPERATION_OVERRIDE:-1}" == "1" ]]; then
+    local_admin_override_label="enabled (header-gated)"
+  fi
+
+  echo ""
+  echo "[workspace] Ready:"
+  echo "  URLs:"
+  echo "    TRR-APP:             http://${TRR_APP_HOST}:${TRR_APP_PORT}"
+  echo "    TRR-APP Admin:       ${ADMIN_APP_ORIGIN}"
+  echo "    TRR-Backend:         ${TRR_API_URL}"
+  if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
+    echo "    screenalytics API:   ${SCREENALYTICS_API_URL}"
+    if workspace_screenalytics_streamlit_enabled; then
+      echo "    screenalytics Streamlit: http://127.0.0.1:${SCREENALYTICS_STREAMLIT_PORT}"
+    fi
+    if workspace_screenalytics_web_enabled; then
+      echo "    screenalytics Web:   http://127.0.0.1:${SCREENALYTICS_WEB_PORT}"
+    fi
+  fi
+
+  echo "  Runtime:"
+  if [[ -n "$PROFILE" ]]; then
+    echo "    Workspace profile:   ${PROFILE}"
+  fi
+  echo "    Workspace dev mode:  $(workspace_dev_mode_label)"
+  if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
+    echo "    Local services:      TRR-APP, TRR-Backend, screenalytics API"
+  else
+    echo "    Local services:      TRR-APP, TRR-Backend"
+  fi
+  if [[ "$TRR_BACKEND_RELOAD" == "1" ]]; then
+    echo "    TRR-Backend mode:    reload"
+  else
+    echo "    TRR-Backend mode:    non-reload"
+  fi
+  if [[ "$WORKSPACE_TRR_APP_DEV_BUNDLER" == "webpack" ]]; then
+    echo "    TRR-APP bundler:     webpack"
+  else
+    echo "    TRR-APP bundler:     ${WORKSPACE_TRR_APP_DEV_BUNDLER} (fallback: pnpm -C TRR-APP/apps/web run dev:stable)"
+  fi
+  echo "    Local admin override: ${local_admin_override_label}"
+  if [[ "$WORKSPACE_OPEN_BROWSER" == "1" ]]; then
+    echo "    Browser sync:        enabled (mode=${WORKSPACE_BROWSER_TAB_SYNC_MODE})"
+  else
+    echo "    Browser sync:        disabled"
+  fi
+  if [[ "$WORKSPACE_BACKEND_AUTO_RESTART" == "1" ]]; then
+    echo "    Backend watchdog:    enabled (interval=${WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS}s, threshold=${WORKSPACE_BACKEND_HEALTH_FAILURE_THRESHOLD})"
+  else
+    echo "    Backend watchdog:    disabled"
+  fi
+  echo "    Job plane mode:      ${WORKSPACE_TRR_JOB_PLANE_MODE} (enforce_remote=${WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE}, executor=${WORKSPACE_TRR_REMOTE_EXECUTOR}, modal_enabled=${WORKSPACE_TRR_MODAL_ENABLED})"
+  if workspace_local_social_worker_active; then
+    echo "    Social worker pool:  posts=${WORKSPACE_SOCIAL_WORKER_POSTS}, comments=${WORKSPACE_SOCIAL_WORKER_COMMENTS}, media_mirror=${WORKSPACE_SOCIAL_WORKER_MEDIA_MIRROR}, comment_media_mirror=${WORKSPACE_SOCIAL_WORKER_COMMENT_MEDIA_MIRROR}"
+  elif [[ "$WORKSPACE_TRR_REMOTE_EXECUTOR" == "modal" && "$WORKSPACE_TRR_MODAL_ENABLED" == "1" ]]; then
+    echo "    Social worker pool:  disabled (Modal-owned background execution)"
+  else
+    echo "    Social worker pool:  disabled"
+  fi
+  if [[ "$WORKSPACE_TRR_REMOTE_WORKERS_ENABLED" == "1" ]]; then
+    if [[ "$WORKSPACE_TRR_REMOTE_EXECUTOR" == "modal" && "$WORKSPACE_TRR_MODAL_ENABLED" == "1" ]]; then
+      echo "    Remote execution:    Modal dispatch active (admin=${WORKSPACE_TRR_REMOTE_ADMIN_WORKERS}, reddit=${WORKSPACE_TRR_REMOTE_REDDIT_WORKERS}, google-news=${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS}; local claim loops skipped)"
+      echo "    Modal social tuning: $(workspace_modal_social_tuning_summary)"
+      echo "    Modal target:        ${WORKSPACE_TRR_MODAL_APP_NAME}.${WORKSPACE_TRR_MODAL_SOCIAL_JOB_FUNCTION}"
+      echo "    Modal readiness:     cd TRR-Backend && python3.11 scripts/modal/verify_modal_readiness.py --json"
+    else
+      echo "    Remote job workers:  enabled (admin=${WORKSPACE_TRR_REMOTE_ADMIN_WORKERS}, reddit=${WORKSPACE_TRR_REMOTE_REDDIT_WORKERS}, google-news=${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS}, social=${WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS}, poll=${WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS}s)"
+    fi
+  else
+    echo "    Remote execution:    disabled"
+  fi
+  if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
+    echo "    screenalytics mode:  $(workspace_screenalytics_mode_label)"
+    if [[ "$WORKSPACE_SCREENALYTICS_SKIP_DOCKER" == "1" ]]; then
+      echo "    screenalytics infra: cloud-first path active; no local Docker fallback infra"
+    else
+      echo "    screenalytics infra: explicit local Redis + MinIO fallback via Docker"
+    fi
+  else
+    echo "    screenalytics:       disabled"
+  fi
+
+  echo "  Logs:"
+  echo "    ${TRR_APP_LOG}"
+  echo "    ${TRR_BACKEND_LOG}"
+  if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
+    echo "    ${SCREENALYTICS_LOG}"
+  fi
+  if workspace_local_social_worker_active; then
+    echo "    ${SOCIAL_WORKER_LOG}"
+  fi
+  if workspace_local_remote_workers_active; then
+    echo "    ${REMOTE_WORKER_LOG}"
+  fi
+
+  echo "  Stop: Ctrl+C"
+}
+
 start_trr_backend() {
   local social_dispatch_limit="$WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT"
   local social_job_concurrency_limit="$WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT"
@@ -922,7 +1080,7 @@ start_trr_backend() {
     social_stage_comment_media_mirror="$WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR"
   fi
 
-  start_bg "TRR_BACKEND" "$TRR_BACKEND_LOG" "$BASH_BIN" -lc "cd \"$ROOT/TRR-Backend\" && \
+  start_bg_with_label "TRR_BACKEND" "TRR-Backend" "$TRR_BACKEND_LOG" "$BASH_BIN" -lc "cd \"$ROOT/TRR-Backend\" && \
     PYTHONUNBUFFERED=1 \
     TRR_LOCAL_DEV=1 \
     TRR_DB_URL=\"$TRR_DB_URL\" \
@@ -1014,17 +1172,13 @@ start_trr_app() {
   prepare_trr_app_next_cache
 
   local trr_app_dev_flag="--turbopack"
-  local trr_app_fallback_command="pnpm -C TRR-APP/apps/web run dev:stable"
   if [[ "$WORKSPACE_TRR_APP_DEV_BUNDLER" == "webpack" ]]; then
     trr_app_dev_flag="--webpack"
-    echo "[workspace] TRR-APP dev bundler: webpack."
-  else
-    echo "[workspace] TRR-APP dev bundler: ${WORKSPACE_TRR_APP_DEV_BUNDLER}. If you hit Turbopack issues: ${trr_app_fallback_command}"
   fi
 
   # Keep TRR_APP attached to its parent shell process; with setsid wrappers,
   # Next.js can re-parent and make PID tracking flaky.
-  start_bg_no_setsid "TRR_APP" "$TRR_APP_LOG" "$BASH_BIN" -c "cd \"$ROOT/TRR-APP\" && \
+  start_bg_no_setsid_with_label "TRR_APP" "TRR-APP" "$TRR_APP_LOG" "$BASH_BIN" -c "cd \"$ROOT/TRR-APP\" && \
     if [[ -s \"${HOME}/.nvm/nvm.sh\" ]]; then \
       source \"${HOME}/.nvm/nvm.sh\"; \
       nvm use --silent >/dev/null 2>&1 || echo \"[workspace] WARNING: nvm use failed; continuing with current node.\" >&2; \
@@ -1036,6 +1190,7 @@ start_trr_app() {
     TRR_API_URL=\"$TRR_API_URL\" \
     SCREENALYTICS_API_URL=\"$SCREENALYTICS_API_URL\" \
     TRR_INTERNAL_ADMIN_SHARED_SECRET=\"$WORKSPACE_TRR_INTERNAL_ADMIN_SHARED_SECRET\" \
+    TRR_ADMIN_ROUTE_CACHE_DISABLED=\"$TRR_ADMIN_ROUTE_CACHE_DISABLED\" \
     TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS=\"$TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS\" \
     TRR_SOCIAL_PROXY_DEFAULT_TIMEOUT_MS=\"$TRR_SOCIAL_PROXY_DEFAULT_TIMEOUT_MS\" \
     TRR_SOCIAL_PROXY_LONG_TIMEOUT_MS=\"$TRR_SOCIAL_PROXY_LONG_TIMEOUT_MS\" \
@@ -1053,16 +1208,14 @@ start_trr_app() {
 
 start_trr_social_worker() {
   if [[ "$WORKSPACE_SOCIAL_WORKER_ENABLED" != "1" ]]; then
-    echo "[workspace] Social ingest worker disabled (WORKSPACE_SOCIAL_WORKER_ENABLED=0)."
     return 0
   fi
 
   if [[ "$WORKSPACE_SOCIAL_WORKER_POSTS" -eq 0 && "$WORKSPACE_SOCIAL_WORKER_COMMENTS" -eq 0 && "$WORKSPACE_SOCIAL_WORKER_MEDIA_MIRROR" -eq 0 && "$WORKSPACE_SOCIAL_WORKER_COMMENT_MEDIA_MIRROR" -eq 0 ]]; then
-    echo "[workspace] Social ingest worker disabled (all worker pools are 0)."
     return 0
   fi
 
-  start_bg "TRR_SOCIAL_WORKER" "$SOCIAL_WORKER_LOG" "$BASH_BIN" -lc "cd \"$ROOT/TRR-Backend\" && \
+  start_bg_with_label "TRR_SOCIAL_WORKER" "Social ingest worker" "$SOCIAL_WORKER_LOG" "$BASH_BIN" -lc "cd \"$ROOT/TRR-Backend\" && \
     if [[ ! -f .venv/bin/activate ]]; then \
       echo \"[workspace] ERROR: missing TRR-Backend .venv for social worker.\" >&2; \
       exit 1; \
@@ -1084,13 +1237,10 @@ start_trr_remote_workers() {
   fi
 
   if [[ "$WORKSPACE_TRR_REMOTE_EXECUTOR" == "modal" && "$WORKSPACE_TRR_MODAL_ENABLED" == "1" ]]; then
-    echo "[workspace] Remote job execution is Modal-owned; skipping local claim-loop workers."
-    echo "[workspace] Modal dispatch covers admin=${WORKSPACE_TRR_REMOTE_ADMIN_WORKERS}, reddit=${WORKSPACE_TRR_REMOTE_REDDIT_WORKERS}, google-news=${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS}, social_lane=$(workspace_modal_social_lane_label)."
-    echo "[workspace] Modal social tuning: $(workspace_modal_social_tuning_summary)."
     return 0
   fi
 
-  start_bg "TRR_REMOTE_WORKERS" "$REMOTE_WORKER_LOG" "$BASH_BIN" -lc "cd \"$ROOT/TRR-Backend\" && \
+  start_bg_with_label "TRR_REMOTE_WORKERS" "Remote job workers" "$REMOTE_WORKER_LOG" "$BASH_BIN" -lc "cd \"$ROOT/TRR-Backend\" && \
     if [[ ! -f .venv/bin/activate ]]; then \
       echo \"[workspace] ERROR: missing TRR-Backend .venv for remote workers.\" >&2; \
       exit 1; \
@@ -1247,6 +1397,7 @@ write_backend_watchdog_state
   echo "TRR_BACKEND_WORKERS=${TRR_BACKEND_WORKERS}"
   echo "TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER=${TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER}"
   echo "TRR_BACKEND_RELOAD=${TRR_BACKEND_RELOAD}"
+  echo "TRR_ADMIN_ROUTE_CACHE_DISABLED=${TRR_ADMIN_ROUTE_CACHE_DISABLED}"
   echo "TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS=${TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS}"
   echo "TRR_SOCIAL_PROXY_DEFAULT_TIMEOUT_MS=${TRR_SOCIAL_PROXY_DEFAULT_TIMEOUT_MS}"
   echo "TRR_SOCIAL_PROXY_LONG_TIMEOUT_MS=${TRR_SOCIAL_PROXY_LONG_TIMEOUT_MS}"
@@ -1261,7 +1412,7 @@ write_backend_watchdog_state
 echo "[workspace] Starting services..."
 
 if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
-  start_bg "SCREENALYTICS" "$SCREENALYTICS_LOG" "$BASH_BIN" -lc "cd \"$ROOT/screenalytics\" && \
+  start_bg_with_label "SCREENALYTICS" "screenalytics API" "$SCREENALYTICS_LOG" "$BASH_BIN" -lc "cd \"$ROOT/screenalytics\" && \
     PYTHONUNBUFFERED=1 \
     TRR_LOCAL_DEV=1 \
     SCREENALYTICS_ENV=dev \
@@ -1287,92 +1438,6 @@ start_trr_backend
 start_trr_social_worker
 start_trr_remote_workers
 start_trr_app
-
-local_admin_override_label="disabled"
-if [[ "${TRR_ALLOW_LOCAL_ADMIN_OPERATION_OVERRIDE:-1}" == "1" ]]; then
-  local_admin_override_label="enabled (header-gated)"
-fi
-
-echo ""
-echo "[workspace] URLs:"
-echo "  TRR-APP:               http://${TRR_APP_HOST}:${TRR_APP_PORT}"
-echo "  TRR-APP Admin:         ${ADMIN_APP_ORIGIN}"
-echo "  TRR-Backend:           ${TRR_API_URL}"
-echo "  Local services:        TRR-APP, TRR-Backend"
-if [[ -n "$PROFILE" ]]; then
-  echo "  Workspace profile:     ${PROFILE}"
-fi
-echo "  TRR-Backend mode:      $([[ \"$TRR_BACKEND_RELOAD\" == \"1\" ]] && echo \"reload\" || echo \"non-reload\")"
-echo "  Job plane mode:        ${WORKSPACE_TRR_JOB_PLANE_MODE} (enforce_remote=${WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE}, executor=${WORKSPACE_TRR_REMOTE_EXECUTOR}, modal_enabled=${WORKSPACE_TRR_MODAL_ENABLED})"
-echo "  Local admin override:  ${local_admin_override_label}"
-echo "  Workspace dev mode:    $(workspace_dev_mode_label)"
-if [[ "$WORKSPACE_TRR_APP_DEV_BUNDLER" == "webpack" ]]; then
-  echo "  TRR-APP dev bundler:   webpack"
-else
-  echo "  TRR-APP dev bundler:   ${WORKSPACE_TRR_APP_DEV_BUNDLER} (fallback: pnpm -C TRR-APP/apps/web run dev:stable)"
-fi
-if [[ "$WORKSPACE_OPEN_BROWSER" == "1" ]]; then
-  echo "  Browser sync:          enabled (mode=${WORKSPACE_BROWSER_TAB_SYNC_MODE})"
-else
-  echo "  Browser sync:          disabled"
-fi
-if [[ "$WORKSPACE_BACKEND_AUTO_RESTART" == "1" ]]; then
-  echo "  Backend watchdog:      enabled (interval=${WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS}s, threshold=${WORKSPACE_BACKEND_HEALTH_FAILURE_THRESHOLD})"
-else
-  echo "  Backend watchdog:      disabled"
-fi
-if [[ "$WORKSPACE_SOCIAL_WORKER_ENABLED" == "1" ]]; then
-  echo "  Social worker pool:    posts=${WORKSPACE_SOCIAL_WORKER_POSTS}, comments=${WORKSPACE_SOCIAL_WORKER_COMMENTS}, media_mirror=${WORKSPACE_SOCIAL_WORKER_MEDIA_MIRROR}, comment_media_mirror=${WORKSPACE_SOCIAL_WORKER_COMMENT_MEDIA_MIRROR}"
-elif [[ "$WORKSPACE_TRR_REMOTE_EXECUTOR" == "modal" && "$WORKSPACE_TRR_MODAL_ENABLED" == "1" ]]; then
-  echo "  Social worker pool:    disabled (Modal-owned background execution)"
-else
-  echo "  Social worker pool:    disabled"
-fi
-if [[ "$WORKSPACE_TRR_REMOTE_WORKERS_ENABLED" == "1" ]]; then
-  if [[ "$WORKSPACE_TRR_REMOTE_EXECUTOR" == "modal" && "$WORKSPACE_TRR_MODAL_ENABLED" == "1" ]]; then
-    echo "  Remote execution:      Modal dispatch active (admin=${WORKSPACE_TRR_REMOTE_ADMIN_WORKERS}, reddit=${WORKSPACE_TRR_REMOTE_REDDIT_WORKERS}, google-news=${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS}; local claim loops skipped)"
-    echo "  Modal social tuning:  $(workspace_modal_social_tuning_summary)"
-    echo "  Modal target:          ${WORKSPACE_TRR_MODAL_APP_NAME}.${WORKSPACE_TRR_MODAL_SOCIAL_JOB_FUNCTION}"
-    echo "  Modal readiness:       cd TRR-Backend && python3.11 scripts/modal/verify_modal_readiness.py --json"
-  else
-    echo "  Remote job workers:    enabled (admin=${WORKSPACE_TRR_REMOTE_ADMIN_WORKERS}, reddit=${WORKSPACE_TRR_REMOTE_REDDIT_WORKERS}, google-news=${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS}, social=${WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS}, poll=${WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS}s)"
-  fi
-else
-  echo "  Remote execution:      disabled"
-fi
-if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
-  echo "  screenalytics mode:    $(workspace_screenalytics_mode_label)"
-  echo "  screenalytics API target: ${SCREENALYTICS_API_URL}"
-  if [[ "$SCREENALYTICS_API_URL" != "$SCREENALYTICS_LOCAL_API_URL" ]]; then
-    echo "  screenalytics API local:  ${SCREENALYTICS_LOCAL_API_URL}"
-  fi
-  if workspace_screenalytics_streamlit_enabled; then
-    echo "  screenalytics Streamlit: http://127.0.0.1:${SCREENALYTICS_STREAMLIT_PORT}"
-  else
-    echo "  screenalytics Streamlit: disabled"
-  fi
-  if workspace_screenalytics_web_enabled; then
-    echo "  screenalytics Web:     http://127.0.0.1:${SCREENALYTICS_WEB_PORT}"
-  else
-    echo "  screenalytics Web:     disabled"
-  fi
-  if [[ "$WORKSPACE_SCREENALYTICS_SKIP_DOCKER" == "1" ]]; then
-    echo "  screenalytics infra:   cloud-first path active; no local Docker fallback infra"
-  else
-    echo "  screenalytics infra:   explicit local Redis + MinIO fallback via Docker"
-  fi
-else
-  echo "  screenalytics:         (disabled)"
-fi
-echo ""
-echo "[workspace] Logs:"
-echo "  ${TRR_APP_LOG}"
-echo "  ${TRR_BACKEND_LOG}"
-echo "  ${SOCIAL_WORKER_LOG}"
-echo "  ${REMOTE_WORKER_LOG}"
-echo "  ${SCREENALYTICS_LOG}"
-echo ""
-echo "[workspace] Ctrl+C to stop all."
 
 # ---------------------------------------------------------------------------
 # Startup health checks (so printed URLs reflect actual readiness)
@@ -1465,6 +1530,9 @@ if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
 
 fi
 
+print_workspace_ready_summary
+workspace_attention_render "$ATTENTION_FILE" "[workspace]"
+
 # Keep running until one of the processes exits.
 APP_DEV_URL="http://${TRR_APP_HOST}:${TRR_APP_PORT}"
 SCREENALYTICS_STREAMLIT_DEV_URL=""
@@ -1488,8 +1556,6 @@ if [[ "$WORKSPACE_OPEN_BROWSER" == "1" ]]; then
   echo "[workspace] Syncing workspace browser tabs..."
   echo "[workspace] Browser tab sync mode: ${WORKSPACE_BROWSER_TAB_SYNC_MODE}"
   bash "$ROOT/scripts/open-workspace-dev-window.sh" "$APP_DEV_URL" "$BROWSER_SCREENALYTICS_STREAMLIT_URL" "$BROWSER_SCREENALYTICS_WEB_URL"
-else
-  echo "[workspace] Skipping browser sync (WORKSPACE_OPEN_BROWSER=0)."
 fi
 
 # Delay the runtime health watchdog to avoid false-positive warnings during

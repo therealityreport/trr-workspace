@@ -1,0 +1,69 @@
+{
+  "version": "2026-04-07",
+  "canonical": {
+    "TRR_API_URL": {
+      "description": "Canonical backend base URL consumed by TRR-APP and Screenalytics.",
+      "owner": "TRR-Backend"
+    },
+    "TRR_DB_URL": {
+      "description": "Primary runtime Postgres connection string for TRR-compatible reads and writes.",
+      "owner": "workspace"
+    },
+    "TRR_DB_FALLBACK_URL": {
+      "description": "Only intentional runtime fallback for the TRR Postgres lane.",
+      "owner": "workspace"
+    },
+    "TRR_INTERNAL_ADMIN_SHARED_SECRET": {
+      "description": "Shared internal-admin JWT signing secret across backend, app, and Screenalytics.",
+      "owner": "workspace"
+    }
+  },
+  "transitional": {
+    "SCREENALYTICS_SERVICE_TOKEN": {
+      "description": "Compatibility fallback token for Screenalytics-to-backend auth during JWT migration.",
+      "owner": "screenalytics"
+    },
+    "SCREENALYTICS_API_URL": {
+      "description": "Legacy Screenalytics HTTP base URL kept for non-admin or legacy flows.",
+      "owner": "screenalytics"
+    }
+  },
+  "repo_validation": {
+    "TRR-APP": {
+      "env_example": "TRR-APP/apps/web/.env.example",
+      "required_env_example_keys": [
+        "TRR_API_URL",
+        "TRR_DB_URL",
+        "TRR_DB_FALLBACK_URL",
+        "TRR_INTERNAL_ADMIN_SHARED_SECRET",
+        "SCREENALYTICS_API_URL"
+      ]
+    },
+    "TRR-Backend": {
+      "db_any_of": [
+        "TRR_DB_URL",
+        "TRR_DB_FALLBACK_URL"
+      ],
+      "required_in_deployed": [
+        "TRR_INTERNAL_ADMIN_SHARED_SECRET"
+      ],
+      "transitional_compat": [
+        "SCREENALYTICS_API_URL",
+        "SCREENALYTICS_SERVICE_TOKEN"
+      ]
+    },
+    "screenalytics": {
+      "db_any_of": [
+        "TRR_DB_URL",
+        "TRR_DB_FALLBACK_URL"
+      ],
+      "auth_any_of": [
+        "TRR_INTERNAL_ADMIN_SHARED_SECRET",
+        "SCREENALYTICS_SERVICE_TOKEN"
+      ],
+      "recommended": [
+        "TRR_API_URL"
+      ]
+    }
+  }
+}

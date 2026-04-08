@@ -53,7 +53,8 @@ WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR="${WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MI
 WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR="${WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR:-1}"
 WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS="${WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS:-2}"
 WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_LEASE_SECONDS="${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_LEASE_SECONDS:-300}"
-TRR_BACKEND_RELOAD="${TRR_BACKEND_RELOAD:-0}"
+TRR_BACKEND_RELOAD="${TRR_BACKEND_RELOAD:-1}"
+TRR_ADMIN_ROUTE_CACHE_DISABLED="${TRR_ADMIN_ROUTE_CACHE_DISABLED:-1}"
 PROFILE="${PROFILE:-}"
 WORKSPACE_DEV_MODE="${WORKSPACE_DEV_MODE:-cloud}"
 WORKSPACE_BACKEND_RESTART_COUNT="${WORKSPACE_BACKEND_RESTART_COUNT:-0}"
@@ -375,7 +376,7 @@ backend_reload_mode() {
     echo "n/a"
     return 0
   fi
-  if [[ "${TRR_BACKEND_RELOAD:-0}" == "1" ]]; then
+  if [[ "${TRR_BACKEND_RELOAD:-1}" == "1" ]]; then
     echo "reload"
     return 0
   fi
@@ -559,6 +560,7 @@ if [[ "$OUTPUT_FORMAT" == "json" ]]; then
     "workspace_trr_remote_worker_poll_seconds": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS:-}")")",
     "workspace_trr_remote_google_news_lease_seconds": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_LEASE_SECONDS:-}")")",
     "trr_backend_reload": "$(json_escape "$(runtime_value_or_na "${TRR_BACKEND_RELOAD:-}")")",
+    "trr_admin_route_cache_disabled": "$(json_escape "$(runtime_value_or_na "${TRR_ADMIN_ROUTE_CACHE_DISABLED:-}")")",
     "profile": "$(json_escape "$(runtime_value_or_na "${PROFILE:-}")")"
   },
   "processes": {
@@ -660,6 +662,7 @@ echo "  WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR: $(runtime_value_or_na 
 echo "  WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS: $(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS:-}")"
 echo "  WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_LEASE_SECONDS: $(runtime_value_or_na "${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_LEASE_SECONDS:-}")"
 echo "  TRR_BACKEND_RELOAD: $(runtime_value_or_na "${TRR_BACKEND_RELOAD:-}") ($(backend_reload_mode))"
+echo "  TRR_ADMIN_ROUTE_CACHE_DISABLED: $(runtime_value_or_na "${TRR_ADMIN_ROUTE_CACHE_DISABLED:-}")"
 echo "  PROFILE: $(runtime_value_or_na "${PROFILE:-}")"
 echo ""
 
@@ -725,7 +728,7 @@ if [[ "${BACKEND_HEALTH_STATUS}" == "hung/unresponsive" ]]; then
   fi
 fi
 
-if [[ "${TRR_BACKEND_RELOAD:-0}" == "1" ]]; then
+if [[ "${TRR_BACKEND_RELOAD:-1}" == "1" ]]; then
   backend_reload_events="$(count_backend_reload_events)"
   if [[ "$backend_reload_events" =~ ^[0-9]+$ ]] && (( backend_reload_events > 3 )); then
     echo "[status] Warning: recent backend reload churn detected (${backend_reload_events} reload markers). Consider TRR_BACKEND_RELOAD=0 for stream stability."
