@@ -1,196 +1,194 @@
 # Codebase Concerns
 
-**Analysis Date:** 2026-04-04
+**Analysis Date:** 2026-04-07
 
 ## Tech Debt
 
-**Workspace Orchestration Script:**
-- Issue: `scripts/dev-workspace.sh` centralizes profile loading, DB lane selection, local secret derivation, process supervision, watchdog state, Modal dispatch wiring, browser sync, and Screenalytics startup in one `1619`-line shell script.
-- Files: `scripts/dev-workspace.sh`, `docs/workspace/env-contract.md`
-- Impact: Small startup or env-contract changes can break all three repos at once. The script is difficult to review, hard to test, and easy to regress because one file owns the entire local runtime matrix.
-- Fix approach: Split the script into sourced modules for env resolution, process lifecycle, health/watchdog logic, and browser automation. Add shell smoke tests around profile parsing, pidfile updates, watchdog restart behavior, and per-repo startup contracts.
+**Cross-repo Screenalytics result ingestion contract:**
+- Issue: the backend pipeline owns a `06_sync_screenalytics` stage, but the stage is still a stub and always returns `SKIPPED`; the adjacent Screenalytics cast-sync surface is also still a placeholder contract.
+- Files: `TRR-Backend/trr_backend/pipeline/stages/sync_screenalytics.py`, `TRR-Backend/trr_backend/pipeline/registry.py`, `screenalytics/apps/api/routers/episodes.py`, `screenalytics/web/api/schema.ts`
+- Impact: backend runs can complete without ingesting Screenalytics outputs, and downstream callers must special-case partial or absent Screenalytics data.
+- Fix approach: define one canonical run-manifest/result contract, implement backend stage ingestion against that contract, and remove placeholder responses once TRR cast data is available.
 
-**Cross-Repo Auth Contract Overlap:**
-- Issue: Screenalytics-to-backend auth accepts either the legacy `SCREENALYTICS_SERVICE_TOKEN` or an internal-admin JWT, while Screenalytics service clients still build bearer auth from `SCREENALYTICS_SERVICE_TOKEN` and the app keeps separate client and server admin allowlists.
-- Files: `TRR-Backend/api/screenalytics_auth.py`, `screenalytics/apps/api/services/trr_ingest.py`, `screenalytics/apps/api/services/cast_screentime.py`, `TRR-APP/apps/web/src/lib/server/auth.ts`, `TRR-APP/apps/web/src/lib/admin/client-access.ts`
-- Impact: Secret rotation, debugging, and permission analysis stay harder than necessary because there is no single service-to-service auth path. Cross-repo behavior can drift when one caller migrates and another stays on the legacy token contract.
-- Fix approach: Pick one service auth contract for cross-repo calls, retire the other, and keep admin allowlists authoritative on the server only.
+**Backend admin and social monoliths:**
+- Issue: large backend modules mix HTTP transport, SQL composition, caching, dispatch logic, and response shaping in single files.
+- Files: `TRR-Backend/trr_backend/repositories/social_season_analytics.py`, `TRR-Backend/api/routers/admin_person_images.py`
+- Impact: small feature edits touch large regression surfaces and require expensive test runs to gain confidence.
+- Fix approach: extract queue health, social analytics reads, media/image orchestration, and source-specific refresh flows into separately owned service modules.
 
-**Monolithic Domain Files:**
-- Issue: Several core files combine routing, data access, orchestration, and UI composition at very large sizes.
-- Files: `TRR-Backend/trr_backend/repositories/social_season_analytics.py` (`49353` lines), `TRR-Backend/api/routers/admin_person_images.py` (`17224` lines), `TRR-APP/apps/web/src/app/admin/trr-shows/[showId]/page.tsx` (`17279` lines), `TRR-APP/apps/web/src/components/admin/social-week/WeekDetailPageView.tsx` (`9213` lines), `TRR-APP/apps/web/src/lib/server/trr-api/trr-shows-repository.ts` (`5896` lines), `screenalytics/tools/episode_run.py` (`23480` lines), `screenalytics/apps/api/routers/episodes.py` (`11059` lines), `screenalytics/apps/api/services/grouping.py` (`5149` lines)
-- Impact: Review time, onboarding time, and change blast radius are all high. Localized fixes become risky because unrelated logic shares the same file and import graph.
-- Fix approach: Extract domain slices behind stable façades. Preserve existing route/function signatures, but move storage access, orchestration, and view helpers into narrower modules.
+**Screenalytics pipeline and export monoliths:**
+- Issue: the pipeline CLI and report/export logic centralize configuration bootstrapping, artifact contracts, ML orchestration, and presentation/reporting in a few huge modules.
+- Files: `screenalytics/tools/episode_run.py`, `screenalytics/apps/api/services/run_export.py`, `screenalytics/apps/api/services/jobs.py`, `screenalytics/apps/api/services/locks.py`
+- Impact: refactors are expensive, implicit coupling between stages is hard to see, and defects are more likely to spread across unrelated concerns.
+- Fix approach: separate bootstrap/config resolution, stage execution, artifact persistence, and report generation into import-safe modules with narrower tests.
 
-**Tracked Generated Surface Area:**
-- Issue: Generated API artifacts are committed and large, but the refresh path is manual.
-- Files: `screenalytics/web/openapi.json`, `screenalytics/web/api/schema.ts`, `screenalytics/docs/plans/in_progress/web_app/MIGRATION_ROADMAP.md`
-- Impact: Client types and API docs can drift from the running FastAPI surface without an automatic CI failure. Large generated diffs also make review noisier.
-- Fix approach: Add a CI check that regenerates the OpenAPI artifacts and fails on drift.
+**TRR-APP admin client monoliths:**
+- Issue: large client components own route parsing, auth-aware fetches, progress orchestration, timers, and rendering in the same files.
+- Files: `TRR-APP/apps/web/src/app/admin/trr-shows/[showId]/page.tsx`, `TRR-APP/apps/web/src/app/admin/trr-shows/people/[personId]/PersonPageClient.tsx`, `TRR-APP/apps/web/src/components/admin/season-social-analytics-section.tsx`, `TRR-APP/apps/web/src/components/admin/social-week/WeekDetailPageView.tsx`, `TRR-APP/apps/web/src/components/admin/SystemHealthModal.tsx`
+- Impact: UI work is difficult to isolate, client-state bugs are harder to reason about, and a single edit can affect routing, loading, and live-update behavior simultaneously.
+- Fix approach: move polling/session logic and route-state helpers into smaller hooks/modules, leaving page files mostly compositional.
 
 ## Known Bugs
 
-**Screenalytics Sync Stage Is Intentionally Skipped:**
-- Symptoms: The TRR pipeline never ingests Screenalytics results in stage 6.
-- Files: `TRR-Backend/trr_backend/pipeline/stages/sync_screenalytics.py`
-- Trigger: Any pipeline run that expects Screenalytics output to flow back into TRR state.
-- Workaround: None in code. The stage returns `SKIPPED` and prints that it is a stub when verbose mode is enabled.
+**Backend Stage 6 never syncs Screenalytics outputs:**
+- Symptoms: pipeline stage `06_sync_screenalytics` logs that it is a stub and returns `StageStatus.SKIPPED`.
+- Files: `TRR-Backend/trr_backend/pipeline/stages/sync_screenalytics.py`, `TRR-Backend/trr_backend/pipeline/repository.py`
+- Trigger: any backend run that expects Screenalytics outputs to become part of the TRR pipeline.
+- Workaround: rely on direct Screenalytics v2 persistence flows or manual downstream reconciliation instead of pipeline Stage 6.
 
-**TRR Cast Sync Returns Partial Results Only:**
-- Symptoms: The Screenalytics cast sync endpoint reports `status="partial"` and `total_trr_cast=0`, with an error message stating that TRR cast tables are not yet populated.
-- Files: `screenalytics/apps/api/routers/episodes.py`
-- Trigger: Calling the cast sync flow for an episode or trailer.
-- Workaround: Facebank image import side effects still run for eligible inputs, but cast record creation and updates do not happen.
+**TRR cast sync is intentionally partial and does not populate cast data:**
+- Symptoms: `/episodes/{ep_id}/sync_cast_from_trr` returns `status="partial"`, `total_trr_cast=0`, and an error explaining that TRR cast tables are not yet populated.
+- Files: `screenalytics/apps/api/routers/episodes.py`, `screenalytics/web/api/schema.ts`
+- Trigger: any show or episode cast sync call that expects real TRR cast rows to create or update Screenalytics cast state.
+- Workaround: use the endpoint only for facebank import side effects; do not treat it as a complete cast-sync success.
 
-**Audio Smart Split Auto-Assign Is Disabled:**
-- Symptoms: Smart Split falls back to basic splitting and logs that auto-assign is temporarily unavailable.
-- Files: `screenalytics/apps/api/routers/audio.py`
-- Trigger: Calling Smart Split with `auto_assign=true`.
-- Workaround: Manual follow-up assignment after the split.
+**Audio queue mode can still execute synchronously in-process:**
+- Symptoms: queue-shaped audio endpoints fall back to local synchronous work, including explicit TODO comments for missing Celery coverage such as `diarize_only`.
+- Files: `screenalytics/apps/api/routers/audio.py`, `screenalytics/apps/api/main.py`, `screenalytics/web/api/schema.ts`
+- Trigger: queue-mode requests when the route does not have a real Celery implementation or when queue dependencies are absent.
+- Workaround: assume local synchronous execution unless Celery/Redis is verified for the specific operation.
 
-**Queued `diarize_only` Mode Falls Back To Sync Execution:**
-- Symptoms: Queue mode advertises a Celery path, but the code still executes locally with progress streaming semantics.
-- Files: `screenalytics/apps/api/routers/audio.py`
-- Trigger: Running the `diarize_only` flow in queue mode.
-- Workaround: Use the synchronous path and treat queue mode as not yet implemented.
-
-**Survey Creation UI Is Placeholder-Only:**
-- Symptoms: The admin surveys page shows a “coming soon” alert instead of a create flow.
-- Files: `TRR-APP/apps/web/src/app/admin/surveys/page.tsx`
-- Trigger: Clicking `+ New Survey`.
-- Workaround: None in the UI.
+**Screenalytics MCP server remains a demo skeleton:**
+- Symptoms: MCP tools return empty lists, demo rows, or success acknowledgements without reading or writing the real DB.
+- Files: `screenalytics/mcps/screenalytics/server.py`, `screenalytics/tests/mcps/test_screenalytics_cli.py`
+- Trigger: any MCP-based low-confidence review, identity assignment, or screentime export flow.
+- Workaround: use the FastAPI surfaces or direct DB-backed tools instead of the skeleton MCP server.
 
 ## Security Considerations
 
-**Client-Visible Admin Allowlists:**
-- Risk: Admin emails, UIDs, and display names can be distributed to the browser through `NEXT_PUBLIC_*` variables and then mirrored into client-side allowlist helpers.
-- Files: `TRR-APP/apps/web/src/lib/admin/client-access.ts`, `TRR-APP/apps/web/src/lib/server/auth.ts`
-- Current mitigation: Server-side auth still exists and host enforcement is on by default.
-- Recommendations: Keep allowlists server-only, reduce client-visible admin identity data, and use server responses to indicate admin capability instead of shipping allowlist entries to the browser.
+**Internal-admin shared secret remains a broad fallback auth lane:**
+- Risk: the app sends both a signed internal JWT and the raw `TRR_INTERNAL_ADMIN_SHARED_SECRET`, while the backend accepts the header secret as a standalone path in `require_internal_admin`.
+- Files: `TRR-APP/apps/web/src/lib/server/trr-api/internal-admin-auth.ts`, `TRR-Backend/api/auth.py`, `TRR-Backend/trr_backend/security/internal_admin.py`
+- Current mitigation: JWTs are short-lived and compared with a shared signing secret; header secrets use `hmac.compare_digest`.
+- Recommendations: remove header-only auth, split JWT-signing material from any break-glass secret, and require scoped JWT validation for all app-to-backend internal admin traffic.
 
-**Deterministic Local Shared Secrets:**
-- Risk: Local fallback secrets are derived from `ROOT`, `USER`, and a label rather than generated randomly per session.
-- Files: `scripts/dev-workspace.sh`, `docs/workspace/env-contract.md`
-- Current mitigation: The derived secrets are meant for local development only.
-- Recommendations: Ensure these values never cross into shared environments, rotate to random local secrets when feasible, and document that they are convenience defaults rather than hard security boundaries.
+**Static service-token auth is still active across backend and Screenalytics internals:**
+- Risk: long-lived bearer service tokens protect privileged internal routes and coexist with the newer internal-admin JWT lane.
+- Files: `TRR-Backend/api/screenalytics_auth.py`, `TRR-Backend/api/routers/screenalytics.py`, `TRR-Backend/api/routers/screenalytics_runs_v2.py`, `screenalytics/apps/api/routers/cast_screentime.py`, `screenalytics/apps/api/routers/computer_use.py`, `screenalytics/apps/api/routers/celery_jobs.py`
+- Current mitigation: token compares use constant-time comparison and startup checks warn when envs are missing.
+- Recommendations: replace static service-token access with scoped JWTs or mTLS, rotate secrets per integration boundary, and narrow audiences per route family.
 
-**Local Credential Footprint In Workspace Tree:**
-- Risk: Local secret-bearing files exist in common workspace locations, which raises accidental disclosure risk through tooling, screenshots, or ad-hoc scripts.
-- Files: `TRR-Backend/keys/`, `TRR-Backend/.env`, `screenalytics/.env`, `.logs/workspace/`
-- Current mitigation: `TRR-Backend/.gitignore` ignores `keys/`, and repo `.gitignore` files ignore `.env` files.
-- Recommendations: Keep credential files outside repo trees when possible, periodically sweep `.logs/workspace/` and other generated state, and add a secret-scanning check to local verification flows.
+**Runtime behavior depends heavily on env wiring across three repos:**
+- Risk: auth mode, DB target, queue availability, and generated routing behavior can change more from env drift than from code drift.
+- Files: `TRR-Backend/api/main.py`, `TRR-APP/apps/web/src/lib/server/postgres.ts`, `screenalytics/apps/api/main.py`, `screenalytics/apps/api/services/supabase_db.py`
+- Current mitigation: each repo validates part of its own env surface at startup.
+- Recommendations: add a workspace-level contract check that validates the combined backend/app/screenalytics env graph before deployment or shared local runs.
 
 ## Performance Bottlenecks
 
-**Backend Social Analytics Repository Is Too Large For Fast Iteration:**
-- Problem: A single repository module plus a single matching test file absorb a large share of the backend social stack.
+**Backend social analytics is a single hot path for queue, worker, and reporting state:**
+- Problem: one repository module handles queue snapshots, worker health, scraper reuse, dispatch decisions, caching, and analytics aggregation.
 - Files: `TRR-Backend/trr_backend/repositories/social_season_analytics.py`, `TRR-Backend/tests/repositories/test_social_season_analytics.py`
-- Cause: Query logic, queue orchestration, dispatch accounting, provider logic, and status derivation live together.
-- Improvement path: Split provider-specific behavior, queue accounting, and analytics read models into separate modules with narrower tests.
+- Cause: one large ownership boundary encourages shared mutable caches and broad SQL fan-out rather than smaller bounded services.
+- Improvement path: split queue/worker health, ingest orchestration, and reporting queries into separate services with explicit cache invalidation and narrower APIs.
 
-**Admin TRR Shows Surface Concentrates Too Much UI State:**
-- Problem: The admin show pages and social-week view are large enough that small UI changes carry a high render and regression-review cost.
-- Files: `TRR-APP/apps/web/src/app/admin/trr-shows/[showId]/page.tsx`, `TRR-APP/apps/web/src/app/admin/trr-shows/people/[personId]/PersonPageClient.tsx`, `TRR-APP/apps/web/src/components/admin/social-week/WeekDetailPageView.tsx`
-- Cause: Route loading, tab composition, state coordination, and action wiring are mixed inside giant page components.
-- Improvement path: Extract server loaders, route action handlers, and tab/view components into smaller entry points and keep page files thin.
+**Screenalytics API still executes heavy work in request-serving processes:**
+- Problem: API routes and services can spawn subprocesses or perform long-running synchronous work when queue support is absent or not implemented.
+- Files: `screenalytics/apps/api/routers/audio.py`, `screenalytics/apps/api/services/jobs.py`, `screenalytics/apps/api/services/run_export.py`
+- Cause: fallback-to-sync behavior keeps endpoints available, but it also moves latency spikes and CPU pressure onto API workers.
+- Improvement path: make async capability explicit per route, fail closed when the worker plane is unavailable, and reserve local sync mode for clearly dev-only execution paths.
 
-**Screenalytics Episode Pipeline Work Remains CPU-Heavy And Highly Coupled:**
-- Problem: Detection, grouping, export, and run orchestration remain concentrated in a few large Python modules.
-- Files: `screenalytics/tools/episode_run.py`, `screenalytics/apps/api/routers/episodes.py`, `screenalytics/apps/api/services/grouping.py`, `screenalytics/apps/api/services/run_export.py`
-- Cause: Pipeline stages, file I/O, clustering, and API response shaping are still tightly coupled.
-- Improvement path: Isolate stage executors, data loaders, and persistence adapters so hot-path optimizations do not require touching the full pipeline file.
+**Admin polling density can multiply backend load:**
+- Problem: large admin client components use many `useEffect`, `setTimeout`, and `setInterval` loops for stream monitoring, health checks, and status refreshes.
+- Files: `TRR-APP/apps/web/src/app/admin/trr-shows/[showId]/page.tsx`, `TRR-APP/apps/web/src/app/admin/trr-shows/people/[personId]/PersonPageClient.tsx`, `TRR-APP/apps/web/src/components/admin/season-social-analytics-section.tsx`, `TRR-APP/apps/web/src/components/admin/social-week/WeekDetailPageView.tsx`, `TRR-APP/apps/web/src/components/admin/SystemHealthModal.tsx`
+- Cause: data orchestration and rendering are colocated, so each screen implements its own live-update lifecycle.
+- Improvement path: centralize live-session polling/SSE hooks, dedupe timers, and prefer server-rendered cached reads for non-live data.
 
 ## Fragile Areas
 
-**Modal Dispatch And Remote Job Plane:**
-- Files: `TRR-Backend/api/main.py`, `TRR-Backend/trr_backend/modal_dispatch.py`, `TRR-Backend/trr_backend/modal_jobs.py`, `scripts/dev-workspace.sh`
-- Why fragile: Runtime behavior depends on many env gates and lane checks across backend and workspace startup. Local, remote, and Modal-owned execution are all valid modes.
-- Safe modification: Change one execution mode at a time and verify startup config, dispatch selection, and recovery behavior together.
-- Test coverage: `TRR-Backend/tests/test_modal_dispatch.py`, `TRR-Backend/tests/test_modal_jobs.py`, and repository tests cover portions of dispatch logic, but there is no direct automated coverage for the workspace script that wires the env matrix together.
+**Screenalytics lock and crash-recovery flow assumes local filesystem ownership:**
+- Files: `screenalytics/apps/api/services/locks.py`, `screenalytics/apps/api/services/jobs.py`
+- Why fragile: lock ownership uses PID and hostname heuristics, remote hosts are assumed alive, and state lives under `SCREENALYTICS_DATA_ROOT`.
+- Safe modification: treat lock metadata, heartbeat cadence, and stale-steal rules as a contract; change job runners and recovery logic together.
+- Test coverage: API and unit tests cover local job semantics, but there is no distributed or multi-host integration suite.
 
-**Admin Host/Auth Enforcement Path:**
-- Files: `TRR-APP/apps/web/src/lib/server/auth.ts`, `TRR-APP/apps/web/src/proxy.ts`, `TRR-APP/apps/web/src/lib/admin/client-access.ts`
-- Why fragile: Admin host routing, local bypass behavior, server allowlists, and client allowlists all participate in access decisions.
-- Safe modification: Treat auth and host-routing changes as cross-cutting changes and verify both browser-facing routes and server route guards.
-- Test coverage: `TRR-APP/apps/web/tests/server-auth-adapter.test.ts`, `TRR-APP/apps/web/tests/admin-host-middleware.test.ts`, and `TRR-APP/apps/web/tests/client-admin-access.test.ts` cover parts of the surface, but the duplication itself remains a drift risk.
+**Generated contract artifacts can drift from real routes and runtime behavior:**
+- Files: `screenalytics/web/api/schema.ts`, `TRR-APP/apps/web/src/lib/admin/api-references/generated/inventory.ts`
+- Why fragile: both files are generated, committed, and used as reference surfaces; stale generation produces convincing but outdated type and inventory data.
+- Safe modification: change source routes/spec generators first, regenerate in the same commit, and verify embedded metadata such as `generatedAt` and source commit fields change.
+- Test coverage: consumers are tested indirectly, but there is no workspace-wide freshness gate covering both generated artifacts.
 
-**Screenalytics Grouping Logic:**
-- Files: `screenalytics/apps/api/services/grouping.py`, `screenalytics/tests/api/test_single_track_suggestions.py`, `screenalytics/tests/api/test_cluster_cleanup_progress.py`, `screenalytics/tests/api/test_grouping_legacy_format.py`
-- Why fragile: Several tests assert source text or regex patterns in `grouping.py` instead of exercising runtime behavior, which makes refactors fail even when behavior is preserved.
-- Safe modification: Replace text-inspection tests with behavior-level fixtures before large refactors.
-- Test coverage: There are many grouping tests, but a meaningful slice is structure-based rather than behavior-based.
+**Legacy and v2 Screenalytics APIs remain live at the same time:**
+- Files: `screenalytics/apps/api/main.py`, `screenalytics/apps/api/routers/episodes.py`, `screenalytics/apps/api/routers/jobs.py`, `screenalytics/apps/api/routers/celery_jobs.py`, `screenalytics/web/api/schema.ts`
+- Why fragile: v2 routers are env-gated, many legacy endpoints remain deprecated-but-available, and the generated schema documents both behaviors.
+- Safe modification: remove one compatibility lane at a time and update routes, docs, generated schema, and consumers together.
+- Test coverage: deprecated endpoints are covered, but there is no enforcement that active consumers fully migrate away from them.
+
+**Backend Screenalytics availability state is per-process, not shared:**
+- Files: `TRR-Backend/trr_backend/clients/screenalytics.py`
+- Why fragile: unavailability cooldown and reason state live in process memory, so multiple backend replicas can disagree about Screenalytics health.
+- Safe modification: keep the logic stateless or move the state to shared infrastructure before scaling backend replicas.
+- Test coverage: client logic is unit-tested; no multi-replica consistency test exists.
 
 ## Scaling Limits
 
-**Realtime Broker Defaults To In-Memory:**
-- Current capacity: One-process or single-instance semantics when `REDIS_URL` is unset.
-- Limit: Multi-instance realtime delivery and ephemeral presence state do not scale safely on `InMemoryBroker`.
-- Scaling path: Require Redis for any multi-worker or multi-instance realtime deployment and verify the fallback is local-dev-only.
-- Files: `TRR-Backend/api/realtime/broker.py`, `TRR-Backend/start-api.sh`
+**Screenalytics local lock/checkpoint design limits horizontal scale:**
+- Current capacity: one host or tightly coupled host set can coordinate through `SCREENALYTICS_DATA_ROOT` plus PID/heartbeat heuristics.
+- Limit: multi-host worker pools without shared filesystem semantics cannot safely rely on `screenalytics/apps/api/services/locks.py`.
+- Scaling path: move locks, heartbeats, and checkpoints to Redis or Postgres and make job ownership node-agnostic.
 
-**Screenalytics DB-Backed Features Hard-Fail Without TRR-Compatible Postgres:**
-- Current capacity: DB-backed metadata and persistence work only when `TRR_DB_URL` or `TRR_DB_FALLBACK_URL` resolve to a supported lane and `psycopg2` is installed.
-- Limit: Startup and feature availability diverge across local and deployed environments; local/dev can boot in a degraded mode where DB-backed features remain unavailable.
-- Scaling path: Make DB availability a first-class readiness contract for the features that require it, and reduce the number of mixed degraded/fully-wired runtime modes.
-- Files: `screenalytics/apps/api/main.py`, `screenalytics/apps/api/services/supabase_db.py`, `screenalytics/apps/api/services/run_persistence.py`
+**Backend admin/social state uses in-memory caches and cooldowns:**
+- Current capacity: hot admin reads are faster in a single-process deployment because queue and analytics snapshots stay in memory.
+- Limit: `TRR-Backend/trr_backend/repositories/social_season_analytics.py` and `TRR-Backend/trr_backend/clients/screenalytics.py` do not share state across replicas, which can increase duplicate work and inconsistent health views.
+- Scaling path: externalize shared status snapshots and caches to Redis/Postgres with explicit invalidation.
+
+**TRR-APP admin pages scale linearly with open tabs and operators:**
+- Current capacity: a few open admin tabs are manageable because each client runs its own timers locally.
+- Limit: many simultaneous admin sessions multiply status and health fetches from `page.tsx`, `PersonPageClient.tsx`, `season-social-analytics-section.tsx`, and `WeekDetailPageView.tsx`.
+- Scaling path: consolidate live status into shared SSE/WebSocket streams or a single fan-in status endpoint per admin surface.
 
 ## Dependencies at Risk
 
-**`psycopg2` As Optional Runtime Dependency In Screenalytics:**
-- Risk: Core DB services compile and import without `psycopg2`, but meaningful DB-backed features then fail at runtime.
-- Impact: The same codebase behaves differently across developer machines, CI contexts, and deployed environments.
-- Migration plan: Make the dependency explicit for runtimes that need Postgres features, or isolate fake/in-memory persistence behind clearer test-only entry points.
-- Files: `screenalytics/apps/api/services/supabase_db.py`, `screenalytics/apps/api/services/run_persistence.py`, `screenalytics/apps/api/services/trr_ingest.py`
+**Optional Celery/Redis installation changes screenalytics behavior materially:**
+- Risk: `screenalytics/apps/api/main.py` mounts 503 stubs when Celery dependencies are missing, and some async-shaped routes fall back to synchronous local execution.
+- Impact: local, CI, and deployed environments can behave differently even when the application code is identical.
+- Migration plan: make worker capability part of hard startup validation and stop advertising async queue behavior when the worker plane is unavailable.
 
-**Optional Media Conversion Stack In Backend Asset Mirroring:**
-- Risk: SVG/PNG conversion silently degrades when `cairosvg` or Pillow are missing or erroring.
-- Impact: Media mirroring can succeed partially without guaranteed raster conversion, which makes asset behavior less predictable.
-- Migration plan: Promote conversion dependencies to explicit install requirements for the relevant jobs, or log structured failure modes instead of returning `None`.
-- Files: `TRR-Backend/trr_backend/media/s3_mirror.py`
+**Deprecated transitive npm packages remain in the app lockfile:**
+- Risk: `glob@10.5.0`, `json-ptr@3.1.1`, and `node-domexception@1.0.0` are flagged as deprecated in `TRR-APP/pnpm-lock.yaml`.
+- Impact: dependency audit gates and future install policy changes can fail unexpectedly, especially on clean CI or new developer machines.
+- Migration plan: refresh top-level dependencies that pull these packages and re-lock under the workspace Node `24.x` baseline.
 
 ## Missing Critical Features
 
-**TRR Ingestion Of Screenalytics Manifests:**
-- Problem: The pipeline stage responsible for ingesting Screenalytics output back into TRR is a stub.
-- Blocks: End-to-end Screenalytics result synchronization from completed runs into TRR-owned state.
-- Files: `TRR-Backend/trr_backend/pipeline/stages/sync_screenalytics.py`
+**No canonical end-to-end Screenalytics result ingestion path in the backend pipeline:**
+- Problem: backend run persistence and Screenalytics v2 routes exist, but the pipeline stage that should ingest final Screenalytics outputs is still a stub.
+- Blocks: reliable automatic promotion of Screenalytics results into TRR pipeline completion semantics.
 
-**TRR Cast Table-Backed Sync:**
-- Problem: Screenalytics expects TRR cast tables that are not populated, so full cast sync stays unavailable.
-- Blocks: Reliable episode/season cast synchronization and downstream cast-aware automation.
-- Files: `screenalytics/apps/api/routers/episodes.py`
+**No real TRR cast sync into Screenalytics identity/cast state:**
+- Problem: Screenalytics exposes a cast-sync endpoint, but it explicitly reports that required TRR cast tables are not populated for the real flow.
+- Blocks: deterministic cast-aware identity reconciliation and complete TRR-to-Screenalytics cast bootstrap.
 
-**Audio Queue Completion Paths:**
-- Problem: Smart Split auto-assignment and queued `diarize_only` execution both remain unimplemented.
-- Blocks: Stable async audio workflows and full parity between synchronous and queued paths.
-- Files: `screenalytics/apps/api/routers/audio.py`
+**No production-ready Screenalytics MCP surface for operator workflows:**
+- Problem: `screenalytics/mcps/screenalytics/server.py` is still a skeleton rather than a DB-backed tool surface.
+- Blocks: agent-native review and identity-assignment workflows that should not require direct API or DB handling.
 
 ## Test Coverage Gaps
 
-**Workspace Runtime Scripts:**
-- What's not tested: Direct automation coverage for workspace startup, pidfile/state writing, browser sync state, and watchdog restart behavior.
-- Files: `scripts/dev-workspace.sh`, `scripts/status-workspace.sh`, `scripts/stop-workspace.sh`
-- Risk: Cross-repo local runtime regressions surface only during manual startup.
-- Priority: High
-
-**Screenalytics Service Auth Dependency:**
-- What's not tested: Direct tests for `require_screenalytics_service_token` and its dual-mode token/JWT behavior.
-- Files: `TRR-Backend/api/screenalytics_auth.py`
-- Risk: Auth regressions can slip through while startup config tests continue to pass.
-- Priority: High
-
-**Unimplemented Sync Stage:**
-- What's not tested: There is no meaningful behavior-level coverage for a completed Screenalytics-to-TRR sync path because the path is still a stub.
+**Backend Stage 6 has no direct regression coverage:**
+- What's not tested: actual end-to-end behavior for `TRR-Backend/trr_backend/pipeline/stages/sync_screenalytics.py`
 - Files: `TRR-Backend/trr_backend/pipeline/stages/sync_screenalytics.py`
-- Risk: The eventual implementation starts from an uncovered integration boundary.
+- Risk: the stage can remain permanently skipped without a failing test.
 - Priority: High
 
-**Structure-Based Tests In Place Of Behavior Tests:**
-- What's not tested: Runtime behavior for parts of Screenalytics grouping and cleanup logic; several tests instead inspect source strings and regex matches.
-- Files: `screenalytics/tests/api/test_single_track_suggestions.py`, `screenalytics/tests/api/test_cluster_cleanup_progress.py`, `screenalytics/tests/api/test_grouping_legacy_format.py`, `screenalytics/apps/api/services/grouping.py`
-- Risk: Refactors remain expensive while true behavioral regressions can still hide behind source-shape assertions.
+**Cross-repo internal auth chain lacks a workspace e2e contract test:**
+- What's not tested: `TRR-APP` internal proxy -> `TRR-Backend` internal admin verification -> Screenalytics/internal worker auth as one flow.
+- Files: `TRR-APP/apps/web/src/lib/server/trr-api/internal-admin-auth.ts`, `TRR-Backend/api/auth.py`, `TRR-Backend/api/screenalytics_auth.py`, `screenalytics/apps/api/routers/cast_screentime.py`
+- Risk: one repo can change headers or token semantics and only runtime integration reveals the break.
+- Priority: High
+
+**Screenalytics has no browser or end-to-end suite for operator UI flows:**
+- What's not tested: operator behavior across `screenalytics/apps/workspace-ui/` and its interaction with the FastAPI surface.
+- Files: `screenalytics/apps/workspace-ui/`, `screenalytics/tests/ui/`, `screenalytics/tests/api/`
+- Risk: orchestration and operator experience regressions can pass API and helper tests.
+- Priority: Medium
+
+**Coverage reporting is present or partial, but threshold enforcement is weak across repos:**
+- What's not tested: a minimum coverage floor for backend, Screenalytics, and app-critical admin code.
+- Files: `TRR-Backend/pytest.ini`, `screenalytics/pyproject.toml`, `TRR-APP/apps/web/vitest.config.ts`
+- Risk: large modules can continue to accrete behavior faster than meaningful coverage grows.
 - Priority: Medium
 
 ---
 
-*Concerns audit: 2026-04-04*
+*Concerns audit: 2026-04-07*

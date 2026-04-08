@@ -22,10 +22,11 @@ Visibility tiers:
 | `SCREENALYTICS_DEV_AUTO_ALLOW_DB_ERROR` | `$SCREENALYTICS_DEV_AUTO_ALLOW_DB_ERROR_DEFAULT` | string | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `SCREENALYTICS_STREAMLIT_PORT` | `8501` | integer port | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `SCREENALYTICS_WEB_PORT` | `8080` | integer port | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
+| `TRR_ADMIN_ROUTE_CACHE_DISABLED` | `1` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Disable Next.js in-memory admin route caching during managed local workspace runs. |
 | `TRR_APP_HOST` | `127.0.0.1` | string | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `TRR_APP_PORT` | `3000` | integer port | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `TRR_BACKEND_PORT` | `8000` | integer port | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
-| `TRR_BACKEND_RELOAD` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable backend reload mode (1) instead of non-reload server mode (0). |
+| `TRR_BACKEND_RELOAD` | `1` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable backend reload mode (1) instead of non-reload server mode (0). |
 | `TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `TRR_BACKEND_WORKERS` | `1` | integer | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `TRR_REDDIT_CACHE_LOOKUP_RETRIES` | `1` | integer | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |

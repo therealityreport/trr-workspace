@@ -57,7 +57,8 @@ warn() {
 }
 
 codex_cli_available() {
-  command -v codex >/dev/null 2>&1
+  # Accept either Codex or Claude Code CLI as the host environment.
+  command -v codex >/dev/null 2>&1 || command -v claude >/dev/null 2>&1
 }
 
 current_shell_chrome_command() {

@@ -81,10 +81,11 @@ Expected: FAIL with `Cannot find module '../src/config/paths.cjs'` or `ENOENT` b
   "private": true,
   "type": "commonjs",
   "scripts": {
-    "test": "node --test test/**/*.test.cjs",
-    "build:v1": "node src/v1/build-all.cjs",
-    "build:v2": "node src/v2/build-all.cjs",
-    "sync": "node src/install/sync-to-codex.cjs"
+    "test": "node --test test/*.test.cjs",
+    "build:v1": "node -e \"require('./src/v1/build-all.cjs').buildAllV1({ codexHome: process.env.CODEX_HOME || process.env.HOME + '/.codex', outputRoot: './dist/v1' })\"",
+    "build:v2": "node -e \"require('./src/v2/build-all.cjs').buildAllV2({ outputRoot: './dist/v2' })\"",
+    "sync:v1": "node -e \"require('./src/install/sync-to-codex.cjs').syncTrackToCodex({ projectRoot: process.cwd(), codexHome: process.env.CODEX_HOME || process.env.HOME + '/.codex', track: 'v1' })\"",
+    "sync:v2": "node -e \"require('./src/install/sync-to-codex.cjs').syncTrackToCodex({ projectRoot: process.cwd(), codexHome: process.env.CODEX_HOME || process.env.HOME + '/.codex', track: 'v2' })\""
   }
 }
 ```
@@ -919,31 +920,25 @@ Expected: FAIL until all previous tasks are complete and the project can fully b
 
 ## Build `v1`
 
-```bash
-cd /Users/thomashulihan/Projects/gsd-codex
-node src/v1/build-all.cjs
-node src/install/sync-to-codex.cjs --track v1 --codex-home /Users/thomashulihan/.codex
-```
+- `cd /Users/thomashulihan/Projects/gsd-codex`
+- `npm run build:v1`
+- `npm run sync:v1`
 
 ## Build `v2`
 
-```bash
-cd /Users/thomashulihan/Projects/gsd-codex
-node src/v2/build-all.cjs
-node src/install/sync-to-codex.cjs --track v2 --codex-home /Users/thomashulihan/.codex
-```
+- `cd /Users/thomashulihan/Projects/gsd-codex`
+- `npm run build:v2`
+- `npm run sync:v2`
 
 ## Validate
 
-```bash
-cd /Users/thomashulihan/Projects/gsd-codex
-node --test
-cat /Users/thomashulihan/.codex/gsd-file-manifest.json
-```
+- `cd /Users/thomashulihan/Projects/gsd-codex`
+- `npm test`
+- `cat /Users/thomashulihan/.codex/gsd-file-manifest.json`
 
 ## Roll back
 
-Reinstall the previous track with the same sync command and the desired `--track`.
+Reinstall the previous track with the matching `npm run sync:v1` or `npm run sync:v2` command.
 ```
 
 ```md
@@ -954,13 +949,13 @@ Reinstall the previous track with the same sync command and the desired `--track
 - `npm test` — run all unit and smoke coverage
 - `npm run build:v1` — generate compatibility artifacts
 - `npm run build:v2` — generate native Codex artifacts
-- `npm run sync -- --track v1` — install compatibility artifacts into `~/.codex`
-- `npm run sync -- --track v2` — install native Codex artifacts into `~/.codex`
+- `npm run sync:v1` — install compatibility artifacts into `~/.codex`
+- `npm run sync:v2` — install native Codex artifacts into `~/.codex`
 ```
 
 - [ ] **Step 4: Run the full test suite and one real dry-run install**
 
-Run: `cd /Users/thomashulihan/Projects/gsd-codex && npm test && node src/install/sync-to-codex.cjs --track v2 --codex-home /tmp/gsd-codex-dry-run`
+Run: `cd /Users/thomashulihan/Projects/gsd-codex && npm test && node -e "require('./src/install/sync-to-codex.cjs').syncTrackToCodex({ projectRoot: process.cwd(), codexHome: '/tmp/gsd-codex-dry-run', track: 'v2' })"`
 
 Expected: PASS, then `/tmp/gsd-codex-dry-run/skills/` and `/tmp/gsd-codex-dry-run/agents/` exist with a new manifest file.
 

@@ -22,6 +22,7 @@ for lib in mcp-runtime.sh chrome-runtime.sh; do
 done
 source "${ROOT}/scripts/lib/mcp-runtime.sh"
 source "${ROOT}/scripts/lib/chrome-runtime.sh"
+source "${ROOT}/scripts/lib/workspace-terminal.sh"
 
 shopt -s nullglob
 
@@ -253,6 +254,88 @@ process_is_diagnostic_helper() {
   [[ "$cmd" == *"chrome-devtools-mcp-status.sh"* || "$cmd" == *"chrome-devtools-mcp-stop-conflicts.sh"* || "$cmd" == *"codex-mcp-session-reaper.sh"* ]]
 }
 
+# ── Generic MCP plugin process detection ──────────────────────────────────
+# MCP plugin processes (context7-mcp, playwright-mcp, figma-console-mcp, etc.)
+# are spawned via `npm exec @pkg/*-mcp` by Claude Code / Codex sessions.
+# When a conversation ends the parent claude/codex binary should die, but
+# the npm exec + node children often survive as orphans under the app-server
+# or get reparented to launchd (PID 1).
+#
+# Detection: walk the ancestor chain looking for a live claude/codex binary.
+# If none is found, the process is orphaned.
+
+# Matches known Claude Code / Codex session binary patterns.
+CLAUDE_SESSION_REGEX='claude.app/Contents/MacOS/claude|/Resources/codex[[:space:]]|codex-chrome-devtools-mcp\.sh|codex-figma-console-mcp\.sh'
+
+process_has_live_session_ancestor() {
+  local pid="$1"
+  local current="$pid"
+  local depth=0
+  local cmd
+
+  while [[ -n "$current" && "$current" =~ ^[0-9]+$ && "$current" != "0" && "$current" != "1" && "$depth" -lt 20 ]]; do
+    cmd="$(process_command "$current" 2>/dev/null || true)"
+    # Skip the npm exec / node layers; look for the session owner.
+    if [[ "$cmd" =~ (claude\.app/Contents/MacOS/claude|/Resources/codex[[:space:]]|codex-chrome-devtools-mcp\.sh|codex-figma-console-mcp\.sh) ]] && pid_alive "$current"; then
+      return 0
+    fi
+    # App-server is a long-lived host — NOT proof of a live session.
+    if [[ "$cmd" == *"app-server"* ]]; then
+      return 1
+    fi
+    current="$(process_parent_pid "$current")"
+    depth=$((depth + 1))
+  done
+
+  return 1
+}
+
+# List orphaned generic MCP plugin processes (npm exec *-mcp or node *-mcp).
+# Returns lines: PID CMD
+list_orphaned_generic_mcp_processes() {
+  local pid cmd
+
+  # Catch npm exec @*/...-mcp and node .../*-mcp processes
+  while IFS= read -r pid; do
+    [[ -n "$pid" ]] || continue
+    pid_alive "$pid" || continue
+    [[ "$pid" != "$$" ]] || continue
+
+    cmd="$(process_command "$pid" 2>/dev/null || true)"
+
+    # Skip our own scripts / diagnostic helpers
+    if process_is_diagnostic_helper "$pid"; then
+      continue
+    fi
+
+    # Skip chrome-devtools-mcp global shared processes (handled separately)
+    if [[ "$cmd" == *".codex/tmp/chrome-devtools-global/"* || "$cmd" == *"--browserUrl http://127.0.0.1:9422"* ]]; then
+      continue
+    fi
+    if is_global_shared_keeper_process "$pid"; then
+      continue
+    fi
+
+    # Skip processes whose command line contains "plugin-dir" (these are Claude
+    # Code session binaries that happen to match *-mcp in their plugin paths)
+    if [[ "$cmd" == *"--plugin-dir"* ]]; then
+      continue
+    fi
+
+    # The core check: does this process have a live session ancestor?
+    if process_has_live_session_ancestor "$pid"; then
+      continue
+    fi
+
+    printf '%s\t%s\n' "$pid" "$(printf '%s' "$cmd" | head -c 150)"
+  done < <(
+    # npm exec processes running MCP servers
+    pgrep -f 'npm exec.*-mcp' 2>/dev/null || true
+    # node processes running MCP binaries directly
+    pgrep -f 'node.*/node_modules/\.bin/.*-mcp' 2>/dev/null || true
+  )
+}
+
 # ============================================================================
 # DIAGNOSE
 # ============================================================================
@@ -318,7 +401,19 @@ diagnose_sessions() {
   [[ $total_figma_sessions -eq 0 ]] && echo "(none)"
 
   echo ""
-  echo "=== ORPHANED PROCESSES ==="
+  echo "=== ORPHANED GENERIC MCP PLUGIN PROCESSES ==="
+  local total_generic_orphans=0
+  while IFS=$'\t' read -r pid cmd; do
+    [[ -n "$pid" ]] || continue
+    local ppid_val
+    ppid_val="$(process_parent_pid "$pid")"
+    echo "ORPHAN type=generic-mcp pid=${pid} ppid=${ppid_val:-?} cmd=${cmd}"
+    total_generic_orphans=$((total_generic_orphans + 1))
+  done < <(list_orphaned_generic_mcp_processes)
+  [[ $total_generic_orphans -gt 0 ]] || echo "(none)"
+
+  echo ""
+  echo "=== ORPHANED PROCESSES (chrome-devtools / figma specific) ==="
 
   # Live wrapper scripts
   local pid
@@ -432,6 +527,7 @@ diagnose_sessions() {
   echo "TOTAL_AGENTS=${total_agents} STALE_AGENTS=${stale_agents}"
   echo "TOTAL_RESERVES=${total_reserves} STALE_RESERVES=${stale_reserves}"
   echo "TOTAL_FIGMA_SESSIONS=${total_figma_sessions} STALE_FIGMA_SESSIONS=${stale_figma_sessions}"
+  echo "ORPHANED_GENERIC_MCP=${total_generic_orphans}"
   echo "ORPHANED_PROCESSES=${orphan_count}"
 }
 
@@ -442,8 +538,22 @@ diagnose_sessions() {
 reap_sessions() {
   local killed=0 rm_sessions=0 rm_pages=0 rm_reserves=0 rm_agents=0 stopped_chrome=0 broken_live_sessions=0 rm_figma_sessions=0 stopped_shared_headful=0
 
+  # --- 0. Kill orphaned generic MCP plugin processes ---
+  # (context7-mcp, playwright-mcp, etc. that outlive their session)
+  log "Phase 0: killing orphaned generic MCP plugin processes"
+
+  local pid cmd
+  while IFS=$'\t' read -r pid cmd; do
+    [[ -n "$pid" ]] || continue
+    safe_to_kill "$pid" || continue
+    pid_alive "$pid" || continue
+    log "Killing orphaned generic MCP process pid=${pid} cmd=${cmd}"
+    log_file "REAP generic-mcp pid=${pid} cmd=${cmd}"
+    kill_pid_tree "$pid" "orphan-generic-mcp" 2>/dev/null && killed=$((killed + 1))
+  done < <(list_orphaned_generic_mcp_processes)
+
   # --- 1. Kill orphaned process trees ---
-  log "Phase 1: killing orphaned process trees"
+  log "Phase 1: killing orphaned chrome-devtools process trees"
 
   while IFS= read -r pid; do
     [[ -n "$pid" ]] || continue
@@ -648,16 +758,17 @@ reap_sessions() {
     fi
   fi
 
-  echo "=== REAP SUMMARY ==="
-  echo "KILLED_PROCESSES=${killed}"
-  echo "REMOVED_SESSION_FILES=${rm_sessions}"
-  echo "REMOVED_PAGES_FILES=${rm_pages}"
-  echo "REMOVED_RESERVE_FILES=${rm_reserves}"
-  echo "REMOVED_AGENT_PIDFILES=${rm_agents}"
-  echo "REMOVED_FIGMA_SESSION_FILES=${rm_figma_sessions}"
-  echo "STOPPED_CHROME_AGENTS=${stopped_chrome}"
-  echo "STOPPED_SHARED_HEADFUL=${stopped_shared_headful}"
-  echo "BROKEN_LIVE_SESSIONS=${broken_live_sessions}"
+  workspace_reaper_render_summary \
+    "[mcp-session-reaper]" \
+    "$killed" \
+    "$rm_sessions" \
+    "$rm_pages" \
+    "$rm_reserves" \
+    "$rm_agents" \
+    "$rm_figma_sessions" \
+    "$stopped_chrome" \
+    "$stopped_shared_headful" \
+    "$broken_live_sessions"
   log "Reap complete: killed=${killed} sessions=${rm_sessions} pages=${rm_pages} reserves=${rm_reserves} agents=${rm_agents} figma_sessions=${rm_figma_sessions} chrome=${stopped_chrome} shared_headful=${stopped_shared_headful} broken=${broken_live_sessions}"
 }
 
