@@ -79,6 +79,53 @@ class SyncHandoffsTests(unittest.TestCase):
         with self.assertRaises(MODULE.InvalidSourceError):
             MODULE.parse_source_file(source, MODULE.dt.date(2026, 3, 16))
 
+    def test_missing_snapshot_error_mentions_source_and_required_heading(self) -> None:
+        source = self.write_file(
+            "docs/ai/local-status/example.md",
+            """
+            # Example
+
+            Missing the required snapshot block.
+            """,
+        )
+
+        with self.assertRaises(MODULE.InvalidSourceError) as ctx:
+            MODULE.parse_source_file(source, MODULE.dt.date(2026, 3, 16))
+
+        self.assertIn("docs/ai/local-status/example.md", str(ctx.exception))
+        self.assertIn("missing '## Handoff Snapshot' section.", str(ctx.exception))
+
+    def test_workspace_scope_renders_local_status_item(self) -> None:
+        original_root = MODULE.ROOT
+        MODULE.ROOT = self.root
+        try:
+            self.write_file(
+                "docs/ai/local-status/workspace-closeout.md",
+                """
+                # Workspace Closeout
+
+                ## Handoff Snapshot
+                ```yaml
+                handoff:
+                  include: true
+                  state: recent
+                  last_updated: 2026-04-09
+                  current_phase: "closeout validated"
+                  next_action: "monitor future workspace-wide handoff sync runs"
+                  detail: self
+                ```
+                """,
+            )
+
+            scope = MODULE.build_scopes(self.root)["workspace"]
+            rendered = MODULE.render_scope(scope, MODULE.dt.date(2026, 4, 9))
+
+            recent_completions = self.extract_section(rendered, "Recent Completions", "Older Plans")
+            self.assertIn("Workspace Closeout", recent_completions)
+            self.assertIn("docs/ai/local-status/workspace-closeout.md", recent_completions)
+        finally:
+            MODULE.ROOT = original_root
+
     def test_invalid_detail_path_is_rejected(self) -> None:
         source = self.write_file(
             "docs/ai/local-status/example.md",

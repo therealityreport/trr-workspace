@@ -12,6 +12,7 @@ Purpose: active-work index for multi-turn AI agent sessions affecting workspace-
 - None.
 
 ## Recent Completions
+- `Workspace Handoff Closeout Reliability — 2026-04-09` | last updated `2026-04-09` | current phase `workspace-wide handoff closeout revalidated` | next action `treat workspace local-status files as the canonical handoff source set and rerun closeout normally on future multi-repo sessions` | details `local-status/workspace-handoff-closeout-reliability-2026-04-09.md`
 - `Workspace health-dot summary-only hardening` | last updated `2026-04-08` | current phase `health-dot summary-only hardening landed and the original oversized-pool regression is closed` | next action `monitor for renewed watchdog or pool-contention warnings and only reopen this lane if those symptoms recur under active admin traffic` | details `local-status/workspace-health-dot-summary-only-hardening-2026-04-08.md`
 - `Workspace Defaults Script Alignment Phase 7` | last updated `2026-04-03` | current phase `phase 7 defaults and profile alignment implemented` | next action `Execute Phase 8 to verify the no-Docker path end-to-end and document the remaining Docker-only fallback cases.` | details `local-status/workspace-defaults-script-alignment-phase7.md`
 - `Workspace Cloud-First Validation Contract Phase 6` | last updated `2026-04-03` | current phase `phase 6 contract freeze implemented` | next action `Execute Phase 7 to align default scripts and profiles to the frozen cloud-first contract.` | details `local-status/workspace-cloud-first-validation-contract-phase6.md`
