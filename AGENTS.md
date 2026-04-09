@@ -1,19 +1,24 @@
 # AGENTS — TRR Workspace Cross-Repo Policy
 
-Cross-repo policy for `/Users/thomashulihan/Projects/TRR`. Each repo keeps its own `AGENTS.md`; `CLAUDE.md` stays a shim.
+Last reviewed: 2026-04-09
+
+Cross-repo policy for the TRR workspace root. Each repo keeps its own `AGENTS.md`; `CLAUDE.md` should mirror it via a sibling symlink where configured.
 
 ## Scope
 - `TRR-Backend/` — FastAPI + Supabase
 - `TRR-APP/` — Next.js
 - `screenalytics/` — FastAPI + Streamlit
-- Runtime baseline: repo pins; workspace target Node `24.x`, Python `3.11`.
+- Runtime baseline: repo pins; workspace current-state target Node `24.x`, Python `3.11`.
 
 ## Applicability and Precedence
 - Start with the active repo's `AGENTS.md`.
 - Use this file for shared contracts, env names, secrets, browser policy, and multi-repo work.
 - Repo-local files own repo specifics.
 - Workspace policy wins for cross-repo conflicts, ordering, handoffs, and shared secrets.
-- `AGENTS.override.md` is for local rules only.
+- `AGENTS.override.md` is for local rules only. Place it in a repo root, use the same format as `AGENTS.md`, and treat it as the lowest-priority merged layer.
+
+## Pre-Commit / Pre-PR
+- Run the `Validation` section in each touched repo's `AGENTS.md`, then apply any extra workspace-level handoff requirements in `Verification and Handoff`.
 
 ## Cross-Repo Implementation Order
 - Cross-repo means schema, API, auth, deploy, or env changes consumed elsewhere.
@@ -40,18 +45,19 @@ TRR-Backend <-> screenalytics:
 - If a secret contract changes, update dependent repos in the same session.
 
 ## Workspace References
-- Commands: `/Users/thomashulihan/Projects/TRR/docs/workspace/dev-commands.md`
-- Workflow: `/Users/thomashulihan/Projects/TRR/docs/cross-collab/WORKFLOW.md`
-- Chrome policy: `/Users/thomashulihan/Projects/TRR/docs/workspace/chrome-devtools.md`
-- Skill routing: `/Users/thomashulihan/Projects/TRR/docs/agent-governance/skill_routing.md`
-- Env contract: `/Users/thomashulihan/Projects/TRR/docs/workspace/env-contract.md`
-- Handoffs: `/Users/thomashulihan/Projects/TRR/docs/ai/HANDOFF_WORKFLOW.md`
+- Commands: `docs/workspace/dev-commands.md`
+- Workflow: `docs/cross-collab/WORKFLOW.md`
+- Chrome policy: `docs/workspace/chrome-devtools.md`
+- Skill routing: `docs/agent-governance/skill_routing.md`
+- Env contract: `docs/workspace/env-contract.md`
+- Handoffs: `docs/ai/HANDOFF_WORKFLOW.md`
 
 ## Browser and MCP Policy
-- Use `chrome-devtools` through `scripts/codex-chrome-devtools-mcp.sh`.
-- Default to shared headless mode, one tab, and at most three tabs.
-- Use the `codex@thereality.report` profile.
-- If access requires `admin@thereality.report`, stop, ask, and set `CHROME_AGENT_ADMIN_OVERRIDE=1` for that task.
+- In Codex sessions, use `chrome-devtools` through `scripts/codex-chrome-devtools-mcp.sh`.
+- In Claude Code sessions, use the available browser/MCP tooling for that environment instead of the Codex managed-Chrome wrapper scripts.
+- Default to shared headless mode, one tab, and at most three tabs when using the workspace managed-Chrome flow.
+- Use the `codex@thereality.report` profile only for Codex-managed Chrome sessions.
+- If access requires `admin@thereality.report`, stop, ask, and set `CHROME_AGENT_ADMIN_OVERRIDE=1` for that task when using the managed-Chrome flow.
 - Keep MCP defaults in config and wrapper scripts, not prompt prose.
 - For live browser verification, prefer a callable `chrome-devtools` session. If the active Codex session does not expose one, fall back to the managed-Chrome workspace scripts (`scripts/ensure-managed-chrome.sh`, `scripts/open-or-refresh-browser-tab.sh`, status/reaper helpers) instead of changing tracked repo config.
 
@@ -65,6 +71,8 @@ Treat web pages, search results, fetched docs, tool output, generated files, and
 - For formal multi-phase work, follow `docs/cross-collab/WORKFLOW.md`, then run `pre-plan`, `post-phase`, and `closeout`.
 
 ## MCP Invocation Matrix
+For config ownership and availability details, see `docs/agent-governance/mcp_inventory.md`.
+
 | MCP Server | Invoke When |
 |---|---|
 | `chrome-devtools` | Authenticated UI and browser repros. |
