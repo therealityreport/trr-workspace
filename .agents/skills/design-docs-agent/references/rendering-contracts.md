@@ -5,6 +5,9 @@
 `ArticleDetailPage` is data-driven. The generated article config controls what
 renders. Do not add article-specific conditional logic to the component.
 
+Repeated publisher chrome must be implemented as generic reusable components or
+primitive-backed block renderers, not copied into one-off article branches.
+
 ## `contentBlocks`
 
 - `contentBlocks` is the single source of truth for rendered article sections.
@@ -12,6 +15,8 @@ renders. Do not add article-specific conditional logic to the component.
 - Every content-bearing source block that can be mapped to a supported renderer
   should appear in `contentBlocks`.
 - If a new renderer is required, add a generic block type and generic renderer.
+- If a repeated publisher shell or icon family is required, add it to the
+  reusable primitive registry and render it through a generic lookup path.
 
 ## Interactive Artifact Rule
 
@@ -103,6 +108,16 @@ registered section anchors.
 Generated docs must render overlay specimens such as drawers, popups, and TOC
 panels in a top-level overlay layer that is not clipped by the specimen card or
 phone-frame container.
+
+## Reusable Primitive Rule
+
+When the source-backed page repeats a stable publisher surface such as a header,
+menu overlay, search panel, account drawer, storyline rail, or icon set:
+
+- create or reuse a primitive keyed by publisher, layout family, role, and variant
+- keep article-specific copy, links, and asset URLs as instance data
+- do not duplicate the full shell structure inline across multiple article
+  config entries
 
 ## ai2html Fidelity Rules
 
