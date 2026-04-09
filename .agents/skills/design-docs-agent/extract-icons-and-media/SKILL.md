@@ -45,7 +45,9 @@ system can document brand assets and media usage without relying on a live DOM.
    distinct usage classes into one record.
 5. Record source URLs, embedded payloads, or CSS provenance needed for
    follow-up hosted-media mirroring.
-6. Return a normalized asset manifest and typed source inventory for downstream
+6. Feed reusable SVG and icon findings into the reusable-primitive layer rather
+   than leaving header, search, close, account, or menu icons as loose assets only.
+7. Return a normalized asset manifest and typed source inventory for downstream
    documentation.
 
 ## Validation
@@ -57,6 +59,8 @@ system can document brand assets and media usage without relying on a live DOM.
    source asset.
 4. Preserve enough provenance for downstream hosted-media mirroring and docs
    display metadata.
+5. Distinguish loose media assets from reusable shell/icon primitives so future
+   article generations can reuse source-backed UI chrome.
 
 ## Missing Asset Recovery
 

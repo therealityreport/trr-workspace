@@ -1,17 +1,26 @@
 ---
 name: frontend-skill
-description: GPT-5.4 frontend execution guide for TRR. Use when building or polishing landing pages, app surfaces, or admin interfaces with a composition-first, delight-focused workflow.
+description: Canonical TRR frontend execution skill. Use when building, redesigning, or polishing landing pages, app surfaces, or admin interfaces with a composition-first workflow, strong visual direction, and explicit anti-generic design rules.
 ---
 
 # Frontend Skill
 
-This skill adapts the OpenAI guidance from "Designing delightful frontends with GPT-5.4" into TRR-ready execution rules. Use it for new surface work and major visual polish passes. Keep `redesign-existing-projects` focused on retrofit audits; use this skill when you want a decisive visual direction and an implementation workflow that is already structured.
+This is the canonical TRR frontend owner for new surfaces, redesigns, and premium polish passes. It absorbs the previous redesign, taste, soft, output, and style-preset skills into one workflow so frontend direction is chosen here instead of through multiple competing skills.
 
 ## Working Model
 
 - Default to `gpt-5.4` with low reasoning for initial layout and direction.
 - Raise to medium reasoning only for ambitious interaction systems, difficult responsive behavior, or unusually dense information architecture.
 - Do not spend extra reasoning tokens on ornamental exploration. Lock the direction quickly, then execute.
+
+## Supported modes
+
+- `default`: clean, high-signal TRR execution with composition-first layout.
+- `redesign`: retrofit an existing surface without rewriting the product from scratch.
+- `soft`: atmospheric, premium, softer visual language for editorial or showcase surfaces.
+- `taste-led`: stronger aesthetic point of view, but still grounded in product clarity.
+
+The deleted `minimalist`, `brutalist`, and `stitch` skills do not survive as public entry points. If their language is useful, borrow it as internal inspiration only when the user explicitly asks for that aesthetic.
 
 ## Inputs Required Before Coding
 
@@ -22,6 +31,7 @@ This skill adapts the OpenAI guidance from "Designing delightful frontends with 
 - Real content context: product purpose, audience, workflow, or editorial angle.
 - Visual references: attached screenshots, mood boards, or approved local reference assets.
 - Design constraints: one H1, section cap, two typefaces max, one accent color, one primary CTA above the fold.
+- If this is a redesign, capture the current surface weaknesses before making changes.
 
 ## Beautiful Defaults
 
@@ -36,6 +46,7 @@ This skill adapts the OpenAI guidance from "Designing delightful frontends with 
 - Default text is black.
 - Do not use drop shadows or decorative blurs as baseline styling.
 - Do not introduce colors outside TRR-approved palette values; default to black, white, and one approved TRR accent.
+- Default to one clear visual thesis and remove conflicting stylistic ideas instead of layering them.
 
 ## Landing Page Rules
 
@@ -80,14 +91,16 @@ This skill adapts the OpenAI guidance from "Designing delightful frontends with 
 ## Build Sequence
 
 1. Classify the surface type.
-2. Write the visual thesis, content plan, and interaction thesis.
-3. Lock tokens and typography roles before composing sections.
-4. Gather or generate the visual references and choose one direction.
-5. Build the layout composition-first.
-6. Apply landing or app rules based on surface type.
-7. Add only the few motions that materially help.
-8. Verify at desktop and mobile widths with Playwright and screenshots.
-9. Run the litmus checks before declaring the surface done.
+2. Pick the mode: `default`, `redesign`, `soft`, or `taste-led`.
+3. Write the visual thesis, content plan, and interaction thesis.
+4. Lock tokens and typography roles before composing sections.
+5. Gather or generate the visual references and choose one direction.
+6. For redesign work, audit the current surface first and keep the strongest existing structure.
+7. Build the layout composition-first.
+8. Apply landing or app rules based on surface type.
+9. Add only the few motions that materially help.
+10. Verify at desktop and mobile widths with Playwright and screenshots.
+11. Run the litmus checks before declaring the surface done.
 
 ## Litmus Checks
 
@@ -107,6 +120,8 @@ This skill adapts the OpenAI guidance from "Designing delightful frontends with 
 - Repeated sections with the same visual rhythm
 - Carousels without narrative value
 - App shells that are just stacked bordered panels
+- Parallel aesthetic systems fighting each other on the same page
+- Adding design direction through deleted style skills instead of using this skill directly
 
 ## TRR Notes
 

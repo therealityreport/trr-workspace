@@ -50,10 +50,16 @@ See `references/rendering-contracts.md`, `references/taxonomy.md`, and
 1. Derive stable article identifiers, slug fields, and mode-specific update targets.
 2. Build the article config entry from the merged extraction payload.
 3. Populate `contentBlocks` from extracted source order and supported renderers.
-4. Emit chart and table metadata plus renderer-ready constant bindings for interactive artifacts.
-5. When source evidence requires page-level anchors, TOC controls, or viewport
+4. Populate `architecture.publicAssets.socialImages` whenever multiple
+   source-backed share variants are recoverable.
+5. Emit `site-header-shell`, `storyline`, and related interactive chrome blocks
+   from extracted shell evidence when the saved bundle is complete enough.
+6. Reuse known publisher primitives by `primitiveId` when a matching shell,
+   icon set, popup, drawer, or storyline already exists.
+7. Emit chart and table metadata plus renderer-ready constant bindings for interactive artifacts.
+8. When source evidence requires page-level anchors, TOC controls, or viewport
    toggles, emit the supporting metadata rather than page-specific JSX hacks.
-6. Emit `crossPopulationCandidates` describing which brand taxonomy sections should update.
+9. Emit `crossPopulationCandidates` describing which brand taxonomy sections should update.
 
 ### Export Naming (mandatory)
 
@@ -104,12 +110,14 @@ When the article contains a `filter-card-tracker`, wide data table, or any
 2. Every interactive artifact must have both metadata and a renderer-ready data path.
 3. Fonts, colors, and URL fields must be grounded in the current article data.
 4. Do not introduce article-specific rendering logic outside data config.
-5. Export name in the data file matches the import in `ArticleDetailPage.tsx`.
-6. First and last entries in any data file are verified against the source.
-7. SVG shape elements are replicated from actual source `points` attributes —
+5. Prefer primitive references over inline repeated publisher chrome when a
+   matching primitive already exists.
+6. Export name in the data file matches the import in `ArticleDetailPage.tsx`.
+7. First and last entries in any data file are verified against the source.
+8. SVG shape elements are replicated from actual source `points` attributes —
    not approximated with CSS.
-8. Page container `maxWidth` is `"100%"` when any wide component is present.
-9. Page-level anchors or TOC metadata, when emitted, are stable and grounded in
+9. Page container `maxWidth` is `"100%"` when any wide component is present.
+10. Page-level anchors or TOC metadata, when emitted, are stable and grounded in
    the extracted source structure.
 
 ## Stop And Escalate If

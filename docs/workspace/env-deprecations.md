@@ -7,7 +7,7 @@ This report enumerates remaining deprecated-name occurrences across active repo 
 ## Summary
 
 - `active drift`: 0
-- `compatibility-only`: 79
+- `compatibility-only`: 81
 - `historical/docs`: 165
 
 ## Active Drift
@@ -97,6 +97,8 @@ No occurrences in this category.
 | `SUPABASE_DB_URL` | `scripts/lib/runtime-db-env.sh:61:[[ -n "${SUPABASE_DB_URL:-}" ]] && return 0` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `SUPABASE_DB_URL` | `scripts/lib/runtime-db-env.sh:64:trr_read_env_file_value "$env_file" "SUPABASE_DB_URL" >/dev/null 2>&1 && return 0` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `SUPABASE_DB_URL` | `scripts/lib/runtime-db-env.sh:107:echo "[${prefix}] Legacy-only app DB envs found in ${app_env}. SUPABASE_DB_URL and DATABASE_URL no longer satisfy TRR-APP runtime startup." >&2` | Explicit compatibility layer or regression coverage for deprecated env handling. |
+| `SUPABASE_SERVICE_ROLE_KEY` | `TRR-APP/apps/web/README.md:66:canonical server-side Supabase auth inputs for TRR-APP. The app does not use legacy `SUPABASE_URL` or `SUPABASE_SERVICE_ROLE_KEY` for this surface.` | The deprecated name is referenced only to document or enforce non-preferred fallback behavior. |
+| `SUPABASE_SERVICE_ROLE_KEY` | `TRR-APP/apps/web/tests/server-auth-adapter.test.ts:120:process.env.SUPABASE_SERVICE_ROLE_KEY = "legacy-service-role";` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 
 ## Historical/Docs
 

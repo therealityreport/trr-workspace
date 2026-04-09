@@ -105,7 +105,6 @@ servers = data.get("mcp_servers") or {}
 global_chrome_wrapper = str(path.parent / "bin" / "codex-chrome-devtools-mcp-global.sh")
 required_disabled_skill_names = {
     "code-reviewer",
-    "context7-cli",
     "figma-designer",
     "modal-platform",
     "senior-architect",
@@ -122,10 +121,8 @@ required_disabled_skill_paths = {
 }
 required_disabled_skill_paths.update(
     {
-        str(pathlib.Path.home() / ".agents" / "skills" / "frontend-design" / "SKILL.md"),
         str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "angular-architect" / "SKILL.md"),
         str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "architecture-designer" / "SKILL.md"),
-        str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "atlassian-mcp" / "SKILL.md"),
         str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "chromedevtools-expert" / "SKILL.md"),
         str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "cloud-architect" / "SKILL.md"),
         str(path.parent / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "cpp-pro" / "SKILL.md"),
@@ -327,7 +324,6 @@ for name, required in required_servers.items():
     server.update(required)
 
 required_disabled_skill_names = [
-    "context7-cli",
     "modal-platform",
     "senior-architect",
     "senior-devops",
@@ -346,10 +342,8 @@ required_disabled_skill_paths = {
 }
 required_disabled_skill_paths.update(
     {
-        str(pathlib.Path.home() / ".agents" / "skills" / "frontend-design" / "SKILL.md"): False,
         str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "angular-architect" / "SKILL.md"): False,
         str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "architecture-designer" / "SKILL.md"): False,
-        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "atlassian-mcp" / "SKILL.md"): False,
         str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "chromedevtools-expert" / "SKILL.md"): False,
         str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "cloud-architect" / "SKILL.md"): False,
         str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "cpp-pro" / "SKILL.md"): False,
@@ -534,7 +528,6 @@ required_agents = {
 required_disabled_skill_paths = {
     str(pathlib.Path.home() / ".codex" / "skills" / skill_name)
     for skill_name in (
-        "context7-cli",
         "modal-platform",
         "senior-architect",
         "senior-devops",
@@ -550,10 +543,8 @@ required_disabled_skill_paths = {
 }
 required_disabled_skill_paths.update(
     {
-        str(pathlib.Path.home() / ".agents" / "skills" / "frontend-design" / "SKILL.md"),
         str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "angular-architect" / "SKILL.md"),
         str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "architecture-designer" / "SKILL.md"),
-        str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "atlassian-mcp" / "SKILL.md"),
         str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "chromedevtools-expert" / "SKILL.md"),
         str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "cloud-architect" / "SKILL.md"),
         str(pathlib.Path.home() / ".codex" / "skills" / "fullstack-dev-skills" / "fullstack-dev-skills" / "0.4.9" / "skills" / "cpp-pro" / "SKILL.md"),
