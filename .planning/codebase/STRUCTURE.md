@@ -1,165 +1,197 @@
 # Codebase Structure
 
-**Analysis Date:** 2026-04-07
+**Analysis Date:** 2026-04-08
 
 ## Directory Layout
 
 ```text
-TRR/
-├── TRR-Backend/        # Canonical FastAPI API, domain services, SQL migrations, backend scripts
-├── TRR-APP/            # Next.js public/admin app plus secondary Vue app
-├── screenalytics/      # Analytics API, Streamlit workspace, ML package, CLI tooling
-├── scripts/            # Workspace-only orchestration, preflight, MCP/browser, handoff helpers
-├── docs/               # Workspace workflow, env contracts, governance, diagrams
-├── .planning/          # Planning artifacts consumed by GSD workflows
-└── apps/               # Workspace-level leftover directory; not an active product repo
+[project-root]/
+├── TRR-Backend/         # Canonical API, schema, sync scripts, and shared backend library
+├── TRR-APP/             # Next.js product and admin UI workspace
+├── screenalytics/       # ML pipelines, Screenalytics API, Streamlit UI, optional web app
+├── docs/                # Workspace-level policy, handoff, and cross-repo workflow docs
+├── scripts/             # Workspace launch, contract, browser, and handoff scripts
+├── profiles/            # Workspace startup profiles consumed by `scripts/dev-workspace.sh`
+├── .planning/           # GSD planning artifacts, including this codebase map
+└── Makefile             # Canonical workspace command surface
 ```
 
 ## Directory Purposes
 
 **`TRR-Backend/`:**
-- Purpose: Own the system-of-record API, canonical SQL schema, and shared contracts.
-- Contains: `api/` FastAPI entry and routers, `trr_backend/` domain code, `supabase/` migrations and schema docs, `scripts/` operational/backfill tooling, `tests/`.
-- Key files: `TRR-Backend/api/main.py`, `TRR-Backend/trr_backend/db/connection.py`, `TRR-Backend/trr_backend/clients/screenalytics.py`, `TRR-Backend/supabase/migrations/`.
+- Purpose: Own the canonical data model, HTTP API, shared backend logic, and schema evolution.
+- Contains: `api/`, `trr_backend/`, `supabase/`, `scripts/`, `tests/`, and backend-specific docs under `docs/`
+- Key files: `TRR-Backend/api/main.py`, `TRR-Backend/start-api.sh`, `TRR-Backend/trr_backend/cli/__main__.py`, `TRR-Backend/supabase/migrations/`, `TRR-Backend/AGENTS.md`
 
 **`TRR-APP/`:**
-- Purpose: Own the user-facing site, admin UI, and Next.js server boundary around backend access.
-- Contains: `apps/web/` main Next.js app, `apps/vue-wordle/` secondary Vue app, repo-local scripts, docs, and tests.
-- Key files: `TRR-APP/package.json`, `TRR-APP/apps/web/src/app/layout.tsx`, `TRR-APP/apps/web/src/lib/server/trr-api/backend.ts`, `TRR-APP/apps/web/src/lib/server/auth.ts`.
+- Purpose: Own the Next.js user/admin frontend and its server-side integration layer.
+- Contains: monorepo root config, `apps/web/` for the main app, `apps/vue-wordle/` for the secondary Vue app, repo docs, and helper scripts.
+- Key files: `TRR-APP/package.json`, `TRR-APP/apps/web/package.json`, `TRR-APP/apps/web/src/app/`, `TRR-APP/apps/web/src/lib/server/`, `TRR-APP/AGENTS.md`
 
 **`screenalytics/`:**
-- Purpose: Own analytics operators’ tooling, episode-processing runtime, and analytics-facing APIs.
-- Contains: `apps/api/` FastAPI service, `apps/workspace-ui/` Streamlit UI, `packages/py-screenalytics/` reusable package, `tools/` CLI runners, `config/pipeline/` YAML stage config, `tests/`.
-- Key files: `screenalytics/apps/api/main.py`, `screenalytics/apps/workspace-ui/streamlit_app.py`, `screenalytics/tools/episode_run.py`, `screenalytics/packages/py-screenalytics/src/py_screenalytics/pipeline/episode_engine.py`.
-
-**`scripts/`:**
-- Purpose: Coordinate the workspace itself rather than any single repo.
-- Contains: dev shell wrappers, env checks, Chrome/MCP wrappers, handoff lifecycle helpers, smoke/test runners.
-- Key files: `scripts/dev-workspace.sh`, `scripts/preflight.sh`, `scripts/handoff-lifecycle.sh`, `scripts/codex-chrome-devtools-mcp.sh`.
+- Purpose: Own the Screenalytics processing stack, API, workspace UI, and optional web prototype.
+- Contains: `apps/api/`, `apps/workspace-ui/`, `tools/`, `packages/py-screenalytics/`, `config/pipeline/`, `tests/`, `web/`, and extensive repo docs.
+- Key files: `screenalytics/apps/api/main.py`, `screenalytics/apps/workspace-ui/streamlit_app.py`, `screenalytics/tools/episode_run.py`, `screenalytics/packages/py-screenalytics/src/py_screenalytics/`, `screenalytics/AGENTS.md`
 
 **`docs/`:**
-- Purpose: Centralize workspace contracts and process docs.
-- Contains: workflow docs, env-contract docs, governance docs, diagrams, planning writeups.
-- Key files: `docs/cross-collab/WORKFLOW.md`, `docs/workspace/env-contract.md`, `docs/workspace/dev-commands.md`, `docs/ai/HANDOFF_WORKFLOW.md`.
+- Purpose: Hold workspace-shared operating contracts that apply across repos.
+- Contains: handoff docs in `docs/ai/`, policy docs in `docs/agent-governance/`, workflow docs in `docs/cross-collab/`, and workspace runtime docs in `docs/workspace/`
+- Key files: `docs/cross-collab/WORKFLOW.md`, `docs/workspace/dev-commands.md`, `docs/workspace/env-contract.md`, `docs/ai/HANDOFF_WORKFLOW.md`
+
+**`scripts/`:**
+- Purpose: Implement the workspace’s executable orchestration layer.
+- Contains: startup/stop wrappers, managed Chrome helpers, policy checks, env-contract tools, tests, and handoff sync automation.
+- Key files: `scripts/dev-workspace.sh`, `scripts/bootstrap.sh`, `scripts/handoff-lifecycle.sh`, `scripts/check-workspace-contract.sh`, `scripts/sync-handoffs.py`
+
+**`profiles/`:**
+- Purpose: Store checked-in workspace startup defaults.
+- Contains: environment profiles consumed by `scripts/dev-workspace.sh`
+- Key files: `profiles/default.env`
 
 **`.planning/`:**
-- Purpose: Hold planning and mapping artifacts consumed by the GSD flow.
-- Contains: `codebase/`, `milestones/`, `research/`, `workstreams/`, seeds and plans.
-- Key files: `.planning/codebase/ARCHITECTURE.md`, `.planning/codebase/STRUCTURE.md`.
+- Purpose: Store planning-system state and generated workspace maps.
+- Contains: milestone state, workstreams, research notes, and codebase docs in `.planning/codebase/`
+- Key files: `.planning/PROJECT.md`, `.planning/MILESTONES.md`, `.planning/codebase/ARCHITECTURE.md`, `.planning/codebase/STRUCTURE.md`
 
 ## Key File Locations
 
 **Entry Points:**
-- `TRR-Backend/api/main.py`: FastAPI bootstrap for the canonical TRR backend.
-- `screenalytics/apps/api/main.py`: FastAPI bootstrap for analytics operations.
-- `screenalytics/apps/workspace-ui/streamlit_app.py`: Streamlit multipage workspace entry.
-- `screenalytics/tools/episode_run.py`: CLI entry for single-episode pipeline runs.
-- `TRR-APP/package.json`: repo-level dev/build entry for the Next.js app and local backend co-start.
-- `TRR-APP/apps/web/src/app/layout.tsx`: root App Router layout for the primary web app.
-- `screenalytics/web/app/layout.tsx`: root layout for the optional Screenalytics Next.js frontend.
+- `Makefile`: Workspace command entry point for startup, testing, policy, and handoff actions.
+- `scripts/dev-workspace.sh`: Shared local runtime launcher for `TRR-Backend`, `TRR-APP`, and optional `screenalytics` services.
+- `TRR-Backend/start-api.sh`: Backend runtime launcher that wraps `uvicorn api.main:app`.
+- `TRR-Backend/api/main.py`: Backend `FastAPI` application composition root.
+- `TRR-Backend/trr_backend/cli/__main__.py`: Backend CLI entry point.
+- `TRR-APP/apps/web/src/app/layout.tsx`: Next.js App Router root layout.
+- `TRR-APP/apps/web/src/app/page.tsx`: Main web landing route.
+- `TRR-APP/apps/web/src/app/api/`: App-owned API route tree.
+- `screenalytics/apps/api/main.py`: Screenalytics `FastAPI` application composition root.
+- `screenalytics/apps/workspace-ui/streamlit_app.py`: Screenalytics Streamlit UI entry point.
+- `screenalytics/tools/episode_run.py`: Screenalytics CLI pipeline entry point.
 
 **Configuration:**
-- `TRR-Backend/supabase/config.toml`: backend Supabase project config.
-- `TRR-Backend/supabase/migrations/*.sql`: canonical schema evolution.
-- `screenalytics/config/pipeline/*.yaml`: pipeline stage tuning and execution defaults.
-- `TRR-APP/apps/web/next.config.ts`: Next.js routing/runtime config for the main app.
-- `screenalytics/web/next.config.mjs`: rewrite config for the optional Screenalytics web frontend.
-- `TRR-APP/pnpm-workspace.yaml`: repo-local workspace package layout for frontend apps.
+- `profiles/default.env`: Canonical `make dev` workspace profile.
+- `docs/workspace/env-contract.md`: Generated workspace env contract.
+- `TRR-Backend/requirements.txt`: Backend Python dependency lock surface.
+- `TRR-APP/package.json`: App workspace root scripts and Node baseline.
+- `TRR-APP/apps/web/package.json`: Main Next.js app scripts and dependencies.
+- `screenalytics/pyproject.toml`: Screenalytics Python tooling configuration.
+- `screenalytics/config/pipeline/`: Pipeline stage YAML configuration.
 
 **Core Logic:**
-- `TRR-Backend/trr_backend/repositories/`: backend read/write repositories by feature area.
-- `TRR-Backend/trr_backend/services/`: backend service modules that coordinate repositories or external systems.
-- `TRR-Backend/trr_backend/integrations/`: third-party ingestion and API integrations.
-- `screenalytics/apps/api/services/`: analytics API orchestration, persistence, and storage logic.
-- `screenalytics/packages/py-screenalytics/src/py_screenalytics/`: reusable ML/audio/pipeline package code.
-- `TRR-APP/apps/web/src/lib/server/`: server-only auth, DB, proxy, and repository code for Next.js.
-- `TRR-APP/apps/web/src/components/`: reusable React components, including the admin surface.
+- `TRR-Backend/trr_backend/`: Shared backend services, repositories, DB code, integrations, and pipeline orchestration.
+- `TRR-Backend/api/routers/`: Backend HTTP route modules.
+- `TRR-APP/apps/web/src/lib/server/`: Server-only integration logic, DB access, and backend proxy helpers.
+- `TRR-APP/apps/web/src/components/`: Shared React component library for public and admin UI.
+- `screenalytics/apps/api/services/`: Screenalytics business logic behind HTTP routes.
+- `screenalytics/packages/py-screenalytics/src/py_screenalytics/`: Reusable pipeline and artifact library.
+- `screenalytics/apps/workspace-ui/pages/`: Streamlit page-level workflows.
+- `screenalytics/tools/`: CLI and operational tooling for runs, exports, and diagnostics.
 
 **Testing:**
-- `TRR-Backend/tests/`: backend tests by layer (`api/`, `repositories/`, `services/`, `migrations/`, `socials/`, `vision/`).
-- `screenalytics/tests/`: analytics tests by domain (`unit/`, `integration/`, `ml/`, `ui/`, `audio/`, `api/`).
-- `TRR-APP/apps/web/tests/`: Next.js tests, E2E specs, fixtures, and mocks.
+- `TRR-Backend/tests/`: Backend test tree organized by API, DB, scripts, repositories, services, socials, and security.
+- `TRR-APP/apps/web/tests/`: Vitest, Playwright, fixtures, mocks, and survey-specific test assets.
+- `screenalytics/tests/`: API, ML, UI, MCP, tools, and unit test coverage.
+- `scripts/test-fast.sh`: Workspace-wide fast regression entry point.
+- `scripts/test-full.sh`: Workspace-wide full regression entry point.
 
 ## Naming Conventions
 
 **Files:**
-- Backend and Screenalytics Python modules use snake_case feature names such as `TRR-Backend/api/routers/admin_show_reads.py` and `screenalytics/apps/api/services/pipeline_orchestration.py`.
-- Next.js route segments use App Router folder names, including dynamic folders such as `TRR-APP/apps/web/src/app/[showId]/s[seasonNumber]/social/w[weekIndex]`.
-- React component files use PascalCase for component-oriented modules such as `TRR-APP/apps/web/src/components/admin/UnifiedBrandsWorkspace.tsx`, while low-level utility or route-cache modules stay kebab/snake/camel mixed based on purpose.
-- SQL migrations use monotonically increasing numeric prefixes in `TRR-Backend/supabase/migrations/`.
+- Backend Python modules use `snake_case.py`: `TRR-Backend/api/routers/admin_show_sync.py`, `TRR-Backend/trr_backend/clients/screenalytics.py`
+- Next.js route modules use framework-reserved names: `page.tsx`, `layout.tsx`, `route.ts`
+- Next.js server utilities often use `kebab-case.ts`: `TRR-APP/apps/web/src/lib/server/trr-api/admin-read-proxy.ts`
+- React component files use `PascalCase.tsx` when they export components: `TRR-APP/apps/web/src/components/admin/UnifiedBrandsWorkspace.tsx`
+- Streamlit pages use ordered numeric prefixes to control navigation: `screenalytics/apps/workspace-ui/pages/0_Shows.py`, `screenalytics/apps/workspace-ui/pages/2_Episode_Run.py`
+- Workspace scripts use `kebab-case.sh` or `snake_case.py`: `scripts/dev-workspace.sh`, `scripts/sync-handoffs.py`
 
 **Directories:**
-- Backend routers and repositories are feature-grouped, not layered by HTTP verb. Add new backend features beside adjacent domain files under `TRR-Backend/api/routers/` and `TRR-Backend/trr_backend/repositories/`.
-- Screenalytics keeps runtime interfaces separated: `apps/api/` for HTTP, `apps/workspace-ui/` for Streamlit, `packages/py-screenalytics/` for reusable code, `tools/` for operator CLIs.
-- TRR app separates route trees (`src/app/`), reusable UI (`src/components/`), client/shared helpers (`src/lib/`), and server-only modules (`src/lib/server/`).
+- Repo roots are product names with stable casing: `TRR-Backend/`, `TRR-APP/`, `screenalytics/`
+- Backend and screenalytics Python package directories use lower-case names: `trr_backend/`, `py_screenalytics/`, `apps/api/services/`
+- Next.js feature directories mirror route segments: `TRR-APP/apps/web/src/app/admin/social/`, `TRR-APP/apps/web/src/app/api/admin/trr-api/`
+- Cross-repo work folders use `TASK{N}` numbering under each repo’s `docs/cross-collab/`
 
 ## Where to Add New Code
 
-**New Backend API Feature:**
-- Primary code: `TRR-Backend/api/routers/<feature>.py`
-- Domain logic: `TRR-Backend/trr_backend/repositories/<feature>.py` and `TRR-Backend/trr_backend/services/<feature>.py`
-- Schema changes: `TRR-Backend/supabase/migrations/<next_number>_<feature>.sql`
-- Tests: `TRR-Backend/tests/api/` for route coverage and `TRR-Backend/tests/repositories/` or `TRR-Backend/tests/services/` for domain logic
-- Rule: update backend first when the change affects `screenalytics/` or `TRR-APP/`.
+**New Backend API surface:**
+- Primary code: add the router in `TRR-Backend/api/routers/` and register it in `TRR-Backend/api/main.py`
+- Domain logic: place shared service, repository, or client code under `TRR-Backend/trr_backend/services/`, `TRR-Backend/trr_backend/repositories/`, or `TRR-Backend/trr_backend/clients/`
+- Tests: mirror the area in `TRR-Backend/tests/`
 
-**New Screenalytics Pipeline Capability:**
-- Package implementation: `screenalytics/packages/py-screenalytics/src/py_screenalytics/`
-- API wiring: `screenalytics/apps/api/routers/` plus `screenalytics/apps/api/services/`
-- CLI integration: `screenalytics/tools/episode_run.py` or a sibling file in `screenalytics/tools/`
-- Config: `screenalytics/config/pipeline/`
-- Tests: `screenalytics/tests/unit/`, `screenalytics/tests/ml/`, or `screenalytics/tests/integration/` depending scope
-- Rule: keep reusable stage logic in the package, not directly inside Streamlit pages or route handlers.
+**New Backend schema or exposed SQL:**
+- Primary code: add a migration under `TRR-Backend/supabase/migrations/`
+- Documentation: keep generated or checked schema docs aligned in `TRR-Backend/supabase/schema_docs/` and repo docs under `TRR-Backend/docs/db/`
+- Downstream follow-through: update `screenalytics/` readers and `TRR-APP/` consumers in the same session when contracts change
 
-**New Screenalytics Workspace Page:**
-- Implementation: `screenalytics/apps/workspace-ui/pages/`
-- Shared UI helpers: `screenalytics/apps/workspace-ui/components/` and `screenalytics/apps/workspace-ui/ui_helpers.py`
-- Rule: keep `st.set_page_config(...)` only in `screenalytics/apps/workspace-ui/streamlit_app.py`.
+**New TRR-APP page or route:**
+- Public page: add to `TRR-APP/apps/web/src/app/`
+- Admin page: add to `TRR-APP/apps/web/src/app/admin/`
+- API handler: add to `TRR-APP/apps/web/src/app/api/` or `TRR-APP/apps/web/src/app/api/admin/`
+- Shared UI: place reusable components in `TRR-APP/apps/web/src/components/`
 
-**New TRR Web Route or Admin Tool:**
-- Page or route tree: `TRR-APP/apps/web/src/app/`
-- Browser UI: `TRR-APP/apps/web/src/components/`
-- Server-only data access: `TRR-APP/apps/web/src/lib/server/`
-- Next route handler: `TRR-APP/apps/web/src/app/api/`
-- Tests: `TRR-APP/apps/web/tests/`
-- Rule: if the browser needs backend data, put the fetch/proxy logic in `src/lib/server/` or `src/app/api/`, not in client components.
+**New TRR-APP backend-backed admin proxy:**
+- Route file: add the HTTP-facing handler under `TRR-APP/apps/web/src/app/api/admin/trr-api/` or another `api/admin/` subtree
+- Proxy/helper code: centralize fetch logic in `TRR-APP/apps/web/src/lib/server/trr-api/`
+- Server reads: if the feature is read-only and app-owned, prefer `TRR-APP/apps/web/src/lib/server/admin/` or `TRR-APP/apps/web/src/lib/server/surveys/`
 
-**New Workspace Automation or Shared Docs:**
-- Scripts: `/Users/thomashulihan/Projects/TRR/scripts/`
-- Shared documentation: `/Users/thomashulihan/Projects/TRR/docs/`
-- Planning artifacts: `/Users/thomashulihan/Projects/TRR/.planning/`
-- Rule: do not place workspace scripts inside one repo unless the workflow is repo-specific.
+**New screenalytics API or metadata read:**
+- HTTP route: add under `screenalytics/apps/api/routers/`
+- Business logic: add under `screenalytics/apps/api/services/`
+- Shared DB reads: keep canonical metadata readers under `screenalytics/apps/api/services/trr_metadata_db.py` or adjacent metadata services
 
-**What Not to Use For New Product Code:**
-- `apps/web/`: current workspace-level directory is not an active application root.
-- Generated output directories such as `TRR-APP/apps/web/.next/` or `screenalytics/web/.next/`.
+**New screenalytics pipeline stage or tooling:**
+- Reusable pipeline logic: add under `screenalytics/packages/py-screenalytics/src/py_screenalytics/`
+- CLI or operator tool: add under `screenalytics/tools/`
+- Config: add or extend YAML under `screenalytics/config/pipeline/`
+- UI exposure: wire the workflow into `screenalytics/apps/workspace-ui/pages/` or `screenalytics/apps/api/routers/`
+
+**New shared workspace automation:**
+- Executable behavior: add under `scripts/`
+- Human-facing contract docs: add under `docs/workspace/` or `docs/cross-collab/`
+- Profile defaults: add to `profiles/`
+- Avoid placing shared workflow logic inside a single repo when it coordinates multiple repos.
 
 ## Special Directories
 
-**`TRR-Backend/supabase/`:**
-- Purpose: schema ownership, migration history, schema docs, and local Supabase config
-- Generated: mixed
-- Committed: yes
+**`docs/ai/HANDOFF.md`:**
+- Purpose: Generated workspace handoff index.
+- Generated: Yes
+- Committed: Yes
+
+**`docs/ai/local-status/`:**
+- Purpose: Canonical per-task status snapshots outside repo-specific `TASK*` folders.
+- Generated: No
+- Committed: Yes
+
+**`TRR-Backend/docs/cross-collab/`, `TRR-APP/docs/cross-collab/`, `screenalytics/docs/cross-collab/`:**
+- Purpose: Repo-local task folders for synchronized multi-repo work.
+- Generated: No
+- Committed: Yes
+
+**`TRR-Backend/supabase/migrations/`:**
+- Purpose: Canonical schema evolution history.
+- Generated: No
+- Committed: Yes
 
 **`screenalytics/packages/py-screenalytics/`:**
-- Purpose: reusable package shared by API, CLI, and UI runtimes
-- Generated: no
-- Committed: yes
+- Purpose: Editable install package used by CLI, API, and tests.
+- Generated: No
+- Committed: Yes
 
-**`screenalytics/config/pipeline/`:**
-- Purpose: YAML defaults and tunables for analytics pipeline stages
-- Generated: no
-- Committed: yes
+**`screenalytics/data/`:**
+- Purpose: Local artifacts, manifests, embeddings, jobs, and videos for pipeline runs.
+- Generated: Yes
+- Committed: Mixed; treat as runtime data, not a normal source directory
 
-**`TRR-APP/apps/web/tests/fixtures/`:**
-- Purpose: frontend fixtures and recorded test inputs
-- Generated: no
-- Committed: yes
+**`.logs/workspace/`:**
+- Purpose: Workspace runtime and handoff logs.
+- Generated: Yes
+- Committed: No
 
 **`.planning/codebase/`:**
-- Purpose: generated-but-committed codebase reference docs for GSD planners/executors
-- Generated: yes
-- Committed: yes
+- Purpose: Generated workspace reference docs consumed by later planning and execution steps.
+- Generated: Yes
+- Committed: Yes
 
 ---
 
-*Structure analysis: 2026-04-07*
+*Structure analysis: 2026-04-08*

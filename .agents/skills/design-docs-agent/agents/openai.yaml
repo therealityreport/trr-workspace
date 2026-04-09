@@ -57,6 +57,21 @@ skillset:
       phases: [extraction]
       wave: 1
       status: active
+    - skill: extract-social-share-assets
+      action: create
+      phases: [extraction]
+      wave: 1
+      status: active
+    - skill: extract-site-shell-interactions
+      action: create
+      phases: [extraction]
+      wave: 1
+      status: active
+    - skill: extract-reusable-ui-primitives
+      action: create
+      phases: [extraction]
+      wave: 1
+      status: active
     - skill: extract-source-component-inventory
       action: create
       phases: [extraction]

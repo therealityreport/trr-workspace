@@ -115,3 +115,23 @@
   stop being useful.
 - When the saved bundle lacks the hydrated popup or drawer body, stop and ask
   for a better source capture instead of inventing the missing content.
+
+## Reusable Publisher Primitives
+
+- Once a source-backed publisher primitive exists, future article generations
+  should instantiate it rather than rebuilding the same shell or icon cluster.
+- NYT interactive headers, storyline rails, menu overlays, search panels,
+  account drawers, and shell icons are stable enough to treat as reusable
+  primitives when the saved bundle confirms the structure.
+- Article-specific links, copy, and asset URLs should stay instance data layered
+  onto the reused primitive, not fork the primitive definition.
+
+## Social Share Image Completeness
+
+- NYT interactive articles often expose multiple slot-specific social images in
+  meta tags, JSON-LD, manifests, or saved bundle text.
+- If a multi-slot set is recoverable, populate `architecture.publicAssets.socialImages`
+  instead of falling back to a single `ogImage`.
+- Missing share-slot coverage should be treated as a regression, not a cosmetic
+  omission, because it changes both the Images section and the preferred docs
+  preview image.

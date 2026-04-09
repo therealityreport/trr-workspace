@@ -44,8 +44,12 @@ Canonical validators live in:
 2. Validate `contentBlocks` ordering against extracted source order.
 3. Validate article-level font and color uniqueness expectations.
 4. Validate union coverage so every generated block type has a renderer path.
-5. Validate article URL and page background contract expectations.
-6. Validate that any emitted page-section or TOC metadata is internally
+5. Validate reusable primitive coverage for shell/storyline blocks and confirm
+   primitive ids resolve to known registry entries.
+6. Validate recoverable social/share image coverage so multi-slot share sets are
+   not silently dropped back to a single fallback image.
+7. Validate article URL and page background contract expectations.
+8. Validate that any emitted page-section or TOC metadata is internally
    consistent and free of duplicate section ids.
 
 ## Validation
@@ -54,6 +58,8 @@ Canonical validators live in:
 2. Every reported issue must map to a concrete config or renderer problem.
 3. Hosted-media references and section-anchor metadata must remain data-driven
    rather than encoded as ad hoc component logic.
+4. Repeated publisher shell chrome must fail validation if it is inlined instead
+   of backed by reusable primitive references.
 
 ## Stop And Escalate If
 

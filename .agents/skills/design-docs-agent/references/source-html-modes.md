@@ -154,6 +154,19 @@ hydrated markup or state needed to reproduce it safely, record the gap and
 escalate before generation. Do not invent modal bodies, drawer items, or tab
 content.
 
+Treat the following as first-class source authority when present:
+
+- masthead spacers and fixed header chrome
+- storyline rails and local recirculation strips
+- popup, modal, drawer, and search-panel bodies
+- reusable SVG icons and shell glyphs
+- slot-specific social/share image sets recovered from HTML, JSON, manifests,
+  or HAR evidence
+
+These surfaces are not optional extras. If they are recoverable from the saved
+bundle, extraction and generation should preserve them as reusable primitives
+or explicit article config data.
+
 ---
 
 ## Paywall Article Checklist

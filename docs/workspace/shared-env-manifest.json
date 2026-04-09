@@ -1,5 +1,5 @@
 {
-  "version": "2026-04-07",
+  "version": "2026-04-09",
   "canonical": {
     "TRR_API_URL": {
       "description": "Canonical backend base URL consumed by TRR-APP and Screenalytics.",
@@ -57,8 +57,10 @@
         "TRR_DB_URL",
         "TRR_DB_FALLBACK_URL"
       ],
-      "auth_any_of": [
-        "TRR_INTERNAL_ADMIN_SHARED_SECRET",
+      "auth_required": [
+        "TRR_INTERNAL_ADMIN_SHARED_SECRET"
+      ],
+      "auth_transitional": [
         "SCREENALYTICS_SERVICE_TOKEN"
       ],
       "recommended": [
