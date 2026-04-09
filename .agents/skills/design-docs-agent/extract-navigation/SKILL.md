@@ -20,6 +20,8 @@ brand taxonomy can be populated from structured data.
 
 1. Full article content extraction.
 2. Layout-family classification or tech detection.
+3. Publisher-specific shell facsimile ownership when a dedicated shell
+   extraction skill is available.
 
 ## Inputs
 
@@ -45,6 +47,8 @@ Output shapes are defined in:
 4. Capture drawer groups, collapsible items, modal triggers, and anchor or TOC
    candidates when they are visible in source.
 5. Map the extracted navigation patterns to the shared taxonomy surfaces.
+6. Leave reusable page-shell normalization to the dedicated reusable-primitives
+   and site-shell extraction skills; keep `NavigationData` generic.
 
 ## Validation
 

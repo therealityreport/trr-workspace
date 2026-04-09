@@ -42,7 +42,10 @@ Canonical validators live in:
 2. Validate article config integrity, chart/data bindings, and brand-section expectations.
 3. Validate hosted-media usage, source-size fidelity, interactive specimen
    behavior, and TOC anchor integrity when those contracts are present.
-4. Surface any article-specific or cross-article failures with actionable context.
+4. Validate regression fixtures for reusable shell primitives, share-image
+   completeness, interactive overlay generation, and icon reuse when the source
+   bundle contains that evidence.
+5. Surface any article-specific or cross-article failures with actionable context.
 
 ## Validation
 

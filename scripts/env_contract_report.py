@@ -90,6 +90,7 @@ COMPATIBILITY_PATHS = {
 
 COMPATIBILITY_PREFIXES = (
     "TRR-Backend/tests/",
+    "TRR-APP/apps/web/tests/",
     "TRR-Backend/trr_backend/repositories/",
     "screenalytics/tests/",
     "TRR-Backend/scripts/ops/",
