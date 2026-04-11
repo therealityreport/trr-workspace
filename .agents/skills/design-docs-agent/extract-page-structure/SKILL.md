@@ -1,6 +1,8 @@
 ---
 name: extract-page-structure
 description: Extract content blocks and metadata from HTML source
+metadata:
+  version: 1.0.0
 ---
 
 # Extract Page Structure

@@ -5,8 +5,8 @@ Host adapter for invoking the shared `design-docs-agent` package from Codex.
 ## Scope
 
 This file defines Codex capability mapping and discovery assumptions only.
-Workflow policy lives in package `SKILL.md`. The canonical roster lives in
-`agents/openai.yaml`.
+Workflow policy lives in package `SKILL.md`. The canonical runtime roster and
+shared capability list live in `agents/openai.yaml`.
 
 ## Entry Surface
 

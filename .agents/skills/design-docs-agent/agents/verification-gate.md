@@ -11,21 +11,12 @@ Helper agent for the verification phase.
 
 ## Scope
 
-- Follow package `SKILL.md` for ordering.
-- Run:
-  - `audit-generated-config-integrity`
-  - `audit-responsive-accessibility`
-  - `integration-test-runner`
-  - repo typecheck
-
-## Checklist
-
-1. Config integrity passes.
-2. Accessibility and responsive checks are resolved or reported.
-3. Integration checks pass or failures are surfaced clearly.
-4. Any remaining issues are returned as blocking closeout items.
+- Follow package `SKILL.md` and resolve the canonical `verification` sequence
+  from `agents/openai.yaml`.
+- Run the declared verification members in order and return any blocking issues.
 
 ## Rule
 
-Do not redefine the long-form verification policy here. Shared checklist detail
-lives in `references/preflight-checklist.md`.
+Do not redefine verification membership, order, or long-form checklist detail
+here. `agents/openai.yaml` and `references/preflight-checklist.md` own those
+rules.

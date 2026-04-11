@@ -1,6 +1,8 @@
 ---
-name: design-docs-audit-responsive-accessibility
+name: audit-responsive-accessibility
 description: Post-generation quality gate for heading hierarchy, WCAG contrast, keyboard accessibility, responsive overflow, and alt text
+metadata:
+  version: 1.0.0
 ---
 
 # Audit Responsive Accessibility

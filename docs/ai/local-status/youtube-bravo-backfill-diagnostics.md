@@ -2,6 +2,17 @@
 
 Last updated: 2026-04-10
 
+## Handoff Snapshot
+```yaml
+handoff:
+  include: false
+  state: recent
+  last_updated: 2026-04-10
+  current_phase: "diagnostics captured; deploy follow-up pending"
+  next_action: "deploy the youtube scraper fixes and rerun the bounded canary"
+  detail: self
+```
+
 ## Summary
 
 - Platform/account: `youtube` / `bravo`

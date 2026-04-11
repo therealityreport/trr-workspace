@@ -9,6 +9,10 @@ what to do when assets or hydrated states are missing.
 
 Always resolve the source mode before running the extraction wave.
 
+Canonical paywall and live-fetch policy data lives in
+`contracts/publisher-policy.yaml`. This file explains how to apply that policy;
+it is not the canonical domain roster.
+
 Record these fields up front:
 
 - canonical source URL
@@ -82,9 +86,7 @@ Examples of **ALLOWED** live URL targets:
 - Any source that renders fully without authentication
 
 Examples of **PROHIBITED** live URL targets:
-- `nytimes.com` and all NYT properties (paywall)
-- `theathletic.com` (NYT subscription)
-- `wsj.com`, `ft.com`, `theathlantic.com`, `bloomberg.com` (paywalled)
+- any host declared paywalled in `contracts/publisher-policy.yaml`
 - Any site that requires a login or subscription to view the article
 
 **When in doubt, treat as paywall.** Ask the user for a saved file instead.
@@ -171,7 +173,8 @@ or explicit article config data.
 
 ## Paywall Article Checklist
 
-When the article URL is from a paywalled domain:
+When the article URL is from a host declared paywalled in
+`contracts/publisher-policy.yaml`:
 
 1. Require the caller to supply at least one saved HTML file path.
 2. Check whether the file is Mode A or Mode B by inspecting the outer HTML.
