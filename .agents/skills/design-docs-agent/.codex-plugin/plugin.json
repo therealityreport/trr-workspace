@@ -1,23 +1,27 @@
 {
   "name": "design-docs-agent",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Generate or update TRR design-docs pages from saved source bundles, HTML captures, and source inventories.",
   "skills": "./",
   "author": {
     "name": "The Reality Report",
     "email": "dev@therealityreport.com"
   },
+  "homepage": "https://github.com/therealityreport/TRR",
+  "repository": "https://github.com/therealityreport/TRR",
+  "license": "Proprietary",
+  "keywords": ["design-docs", "skills", "documentation", "ingestion", "trr"],
   "interface": {
     "displayName": "Design Docs Agent",
     "shortDescription": "Generate or update TRR design-docs pages from saved source bundles, HTML captures, and source inventories.",
-    "longDescription": "Shared Design Docs package for Claude Code and Codex. Roster, status, and ordering are defined in agents/openai.yaml. Workflow behavior is defined in package SKILL.md, including saved-bundle inputs, component-inventory provenance, hosted-media rules, and interactive coverage.",
+    "longDescription": "Shared Design Docs package for Claude Code and Codex. Runtime roster, phase order, shared capabilities, and per-skill versions are defined in agents/openai.yaml. Package-owned contracts live under contracts/ and drive validation, paywall policy, and external-app compatibility checks.",
     "developerName": "The Reality Report",
     "category": "Productivity",
     "capabilities": ["Read", "Write"],
     "defaultPrompt": [
       "Use design docs to ingest an article plus a saved source bundle.",
       "List the shared Design Docs skill roster.",
-      "Verify shared package skill parity."
+      "Validate the design-docs-agent package contracts and runtime roster."
     ],
     "brandColor": "#1B365D"
   }

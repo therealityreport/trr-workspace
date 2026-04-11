@@ -1,6 +1,8 @@
 ---
 name: generate-brand-section
 description: Generate a complete Brand page component from extracted design tokens.
+metadata:
+  version: 1.0.0
 ---
 
 # Generate Brand Section

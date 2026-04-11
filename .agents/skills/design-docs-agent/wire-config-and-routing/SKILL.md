@@ -1,6 +1,8 @@
 ---
 name: wire-config-and-routing
 description: Register new brand in design docs config, sidebar, and routing.
+metadata:
+  version: 1.0.0
 ---
 
 # Wire Config And Routing

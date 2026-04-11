@@ -1,6 +1,8 @@
 ---
 name: extract-ai2html-artboards
 description: Extract ai2html artboard dimensions, images, and text overlays.
+metadata:
+  version: 1.0.0
 ---
 
 # Extract ai2html Artboards

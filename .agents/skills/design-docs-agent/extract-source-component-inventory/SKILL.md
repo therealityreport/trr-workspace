@@ -1,6 +1,8 @@
 ---
 name: extract-source-component-inventory
 description: Use when Design Docs coverage depends on source maps, webpack trees, DevTools exports, or screenshot-backed module inventories beyond compiled HTML.
+metadata:
+  version: 1.0.0
 ---
 
 # Extract Source Component Inventory

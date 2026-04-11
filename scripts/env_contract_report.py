@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -12,6 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 INVENTORY_PATH = ROOT / "docs/workspace/env-contract-inventory.md"
 DEPRECATIONS_PATH = ROOT / "docs/workspace/env-deprecations.md"
 VERCEL_REVIEW_PATH = ROOT / "docs/workspace/vercel-env-review.md"
+SHARED_ENV_MANIFEST_PATH = ROOT / "docs/workspace/shared-env-manifest.json"
 
 CANONICAL_INVENTORY: tuple[tuple[str, tuple[tuple[str, tuple[str, ...]], ...]], ...] = (
     (
@@ -44,8 +46,8 @@ CANONICAL_INVENTORY: tuple[tuple[str, tuple[tuple[str, tuple[str, ...]], ...]], 
         "TRR-APP",
         (
             ("Backend base", ("TRR_API_URL",)),
-            ("Browser Supabase", ("NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY")),
             ("Server/admin Supabase", ("TRR_CORE_SUPABASE_URL", "TRR_CORE_SUPABASE_SERVICE_ROLE_KEY")),
+            ("Internal admin auth", ("TRR_INTERNAL_ADMIN_SHARED_SECRET",)),
             ("Server Postgres runtime", ("TRR_DB_URL", "TRR_DB_FALLBACK_URL")),
         ),
     ),
@@ -191,14 +193,14 @@ VERCEL_REVIEW_ROWS: tuple[tuple[str, str, str, str, str], ...] = (
         "SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_JWT_SECRET, SUPABASE_PUBLISHABLE_KEY, SUPABASE_SECRET_KEY",
         "env ls + env pull",
         "integration-managed-retained",
-        "Retained as integration-provisioned Supabase helpers; server/runtime code uses TRR_CORE_SUPABASE_* and NEXT_PUBLIC_SUPABASE_* instead.",
+        "Retained as integration-provisioned Supabase helpers; active app runtime uses TRR_CORE_SUPABASE_* server-side instead.",
     ),
     (
         "Production",
         "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
         "env ls + env pull",
         "integration-managed-retained",
-        "Retained as an integration-managed public helper, not a required app runtime contract.",
+        "Retained as an integration-managed public helper, not part of the active app runtime contract.",
     ),
     (
         "Production",
@@ -264,6 +266,10 @@ class DeprecationHit:
 
 def _read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8")
+
+
+def _load_shared_env_manifest() -> dict:
+    return json.loads(_read_text(SHARED_ENV_MANIFEST_PATH))
 
 
 def _env_keys(path: Path) -> set[str]:
@@ -531,7 +537,8 @@ def _build_vercel_review_markdown() -> str:
             "",
             "- App server Postgres reads `TRR_DB_URL` / `TRR_DB_FALLBACK_URL`; it does not use `DATABASE_URL` or legacy server-side Supabase names.",
             "- App server/admin Supabase reads `TRR_CORE_SUPABASE_URL` / `TRR_CORE_SUPABASE_SERVICE_ROLE_KEY` only.",
-            "- Browser Supabase reads `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` only.",
+            "- No browser-side `NEXT_PUBLIC_SUPABASE_*` runtime envs are required for TRR-APP.",
+            "- Internal admin proxy/auth flows require `TRR_INTERNAL_ADMIN_SHARED_SECRET`.",
             "- `FIREBASE_SERVICE_ACCOUNT` remains a canonical app-owned secret and is not part of the deprecated runtime-name cleanup.",
             "",
         ]
@@ -564,8 +571,11 @@ def _validate_contract() -> list[ValidationError]:
     if "SUPABASE_DB_URL" in backend_keys:
         errors.append(ValidationError("backend-deprecated-supabase-db-url", "TRR-Backend/.env.example must not advertise SUPABASE_DB_URL."))
 
+    manifest = _load_shared_env_manifest()
+    app_required_keys = tuple(manifest["repo_validation"]["TRR-APP"]["required_env_example_keys"])
+
     app_keys = _env_keys(ROOT / "TRR-APP/apps/web/.env.example")
-    for required in ("TRR_API_URL", "TRR_DB_URL", "TRR_DB_FALLBACK_URL", "NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY", "TRR_CORE_SUPABASE_URL", "TRR_CORE_SUPABASE_SERVICE_ROLE_KEY"):
+    for required in app_required_keys:
         if required not in app_keys:
             errors.append(ValidationError(f"app-missing-{required.lower()}", f"TRR-APP/apps/web/.env.example must define {required}."))
     for deprecated in ("SUPABASE_DB_URL", "DATABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"):

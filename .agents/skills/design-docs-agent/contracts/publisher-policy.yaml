@@ -1,0 +1,20 @@
+version: 1
+defaults:
+  treat_unknown_domains_as_paywalled: true
+  require_saved_html_for_paywalled_articles: true
+  allow_live_url_for_supporting_sources_only: true
+paywalled_domains:
+  - nytimes.com
+  - theathletic.com
+  - wsj.com
+  - ft.com
+  - theatlantic.com
+  - bloomberg.com
+allowed_live_supporting_domains:
+  - datawrapper.de
+  - dwcdn.net
+  - raw.githubusercontent.com
+  - github.com
+  - githubusercontent.com
+  - census.gov
+  - data.cityofnewyork.us

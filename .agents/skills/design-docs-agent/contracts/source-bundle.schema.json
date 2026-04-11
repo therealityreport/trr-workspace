@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://therealityreport.com/schemas/design-docs-agent/source-bundle.schema.json",
+  "title": "Design Docs Source Bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["canonicalSourceUrl", "html"],
+  "properties": {
+    "canonicalSourceUrl": {
+      "type": "string",
+      "minLength": 1
+    },
+    "html": {
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": false,
+          "properties": {
+            "modeA": { "type": "string", "minLength": 1 },
+            "modeB": { "type": "string", "minLength": 1 },
+            "rendered": { "type": "string", "minLength": 1 }
+          }
+        }
+      ]
+    },
+    "css": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "js": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "manifests": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "har": {
+      "type": "string",
+      "minLength": 1
+    },
+    "screenshots": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "desktop": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "mobile": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "sourceTree": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "exportedPaths": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "sourceMaps": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "screenshots": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "authoritativeViewport": {
+      "type": "string",
+      "enum": ["desktop", "mobile", "both"]
+    }
+  }
+}

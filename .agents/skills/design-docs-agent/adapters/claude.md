@@ -6,8 +6,8 @@ Code or Claude slash-command wrappers.
 ## Scope
 
 This file defines Claude capability mapping and entry surfaces only. Workflow
-policy lives in package `SKILL.md`. The canonical roster lives in
-`agents/openai.yaml`.
+policy lives in package `SKILL.md`. The canonical runtime roster and shared
+capability list live in `agents/openai.yaml`.
 
 ## Entry Surface
 

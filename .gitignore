@@ -1,6 +1,7 @@
 # Workspace meta-repo should not track nested repos (they each have their own git history)
 /TRR-APP/
 /TRR-Backend/
+/TRR-Backend-*/
 /screenalytics/
 
 # Workspace logs/artifacts

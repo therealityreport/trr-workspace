@@ -1,6 +1,8 @@
 ---
 name: audit-generated-config-integrity
 description: Post-generation validation gate — type-checks config, validates block order, enforces uniqueness and union coverage
+metadata:
+  version: 1.0.0
 ---
 
 # Audit Generated Config Integrity

@@ -1,6 +1,8 @@
 ---
 name: extract-birdkit-tables
 description: Extract structured data from Birdkit CTableDouble and CTable Svelte components rendered in NYT article SSR HTML and produce typed constants for interactive table recreation
+metadata:
+  version: 1.0.0
 ---
 
 # Extract Birdkit Tables

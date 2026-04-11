@@ -1,0 +1,28 @@
+version: 1
+top_level_sequence:
+  - validation
+  - pre-extraction
+  - extraction
+  - generation
+  - wiring
+  - verification
+extraction_membership:
+  - extract-page-structure
+  - extract-css-tokens
+  - extract-icons-and-media
+  - extract-navigation
+  - extract-site-shell-interactions
+  - extract-social-share-assets
+  - extract-reusable-ui-primitives
+  - extract-source-component-inventory
+  - extract-datawrapper-charts
+  - extract-birdkit-tables
+  - extract-birdkit-arrow-charts
+  - extract-ai2html-artboards
+  - extract-quote-components
+verification_sequence:
+  - audit-generated-config-integrity
+  - sync-brand-page
+  - audit-responsive-accessibility
+  - integration-test-runner
+  - check.typecheck

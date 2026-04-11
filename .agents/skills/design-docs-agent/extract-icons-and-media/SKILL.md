@@ -1,6 +1,8 @@
 ---
 name: extract-icons-and-media
 description: Extract SVG icons, logos, avatars, and embedded media from saved source bundles for design system documentation
+metadata:
+  version: 1.0.0
 ---
 
 # Extract Icons And Media
