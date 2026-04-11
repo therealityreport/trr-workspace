@@ -2,12 +2,30 @@
 
 Last updated: 2026-04-09
 
+## Handoff Snapshot
+```yaml
+handoff:
+  include: true
+  state: active
+  last_updated: 2026-04-10
+  current_phase: "post-pivot follow-ups queued"
+  next_action: "land handoff repair and bounded html-parser fallback research note"
+  detail: self
+```
+
 ## Summary
 
 - Full run id: `093de71d-4ab4-4116-a7b2-1fc2855c6940`
 - Platform/account: `tiktok` / `bravowwhl`
 - Executor observed in job row: `modal:social:modal:2:165498c0`
 - First broken hop: discovery produced zero partitions, so no `shared_account_posts` jobs were ever created.
+
+## Post-Pivot Snapshot
+
+- Current posts-path default: `ytdlp`.
+- Deprecated alias note: `auto` is a compatibility alias for `ytdlp` and should not be treated as a distinct production path.
+- Reference plan: `/Users/thomashulihan/Projects/TRR/.planning/research/TIKTOK_PATH_REPRIORITIZATION_PLAN.md`.
+- Smoke summary on `@bravotv`: `16` posts via `ytdlp`, `0` via explicit `api`, with structured failure metadata preserved on the direct `api` attempt.
 
 ## Evidence
 
@@ -52,3 +70,4 @@ Last updated: 2026-04-09
 - That result confirms the checked-out backend fixes are not yet what the remote Modal worker is executing.
 - Modal readiness is healthy (`scripts/modal/verify_modal_readiness.py --json` returned `ok: true`), so the remaining gap is rollout, not function resolution.
 - I did not deploy `trr-backend-jobs` from this workspace because `TRR-Backend` already contains unrelated uncommitted changes; deploying from the dirty repo would risk shipping unrelated work along with this fix set.
+- Pre-existing dirty `TRR-Backend` paths at handoff time: `.env.example`, `docs/ai/HANDOFF.md`, `requirements.in`, `requirements.lock.txt`, `scripts/socials/benchmark_bravotv.py`, `scripts/socials/tiktok/scrape.py`, `tests/repositories/test_social_season_analytics.py`, `tests/scripts/test_refresh_social_cookies.py`, `tests/socials/test_comment_scraper_fixes.py`, `trr_backend/repositories/social_season_analytics.py`, `trr_backend/socials/tiktok/scraper.py`, `docs/ai/evidence/tiktok-path-reprioritization-20260410/`, `docs/ai/local-status/tiktok-http-triage-followups.md`, `docs/ai/local-status/tiktok-path-reprioritization-2026-04-10.md`, `docs/known-issues/`, `docs/superpowers/`, `tests/socials/tiktok/test_http_client.py`, `trr_backend/socials/tiktok/http_client.py`.

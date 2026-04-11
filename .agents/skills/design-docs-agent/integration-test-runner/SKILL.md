@@ -1,6 +1,8 @@
 ---
 name: integration-test-runner
 description: Executable validation skill that runs integration test assertions from test/integration-test.md against the actual ARTICLES array and generated files
+metadata:
+  version: 1.0.0
 ---
 
 # Integration Test Runner

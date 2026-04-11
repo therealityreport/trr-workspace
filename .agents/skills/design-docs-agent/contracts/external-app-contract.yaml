@@ -1,0 +1,44 @@
+version: 1
+files:
+  pipeline_types:
+    path: TRR-APP/apps/web/src/lib/admin/design-docs-pipeline-types.ts
+    interfaces:
+      - TechInventory
+      - PublisherClassification
+      - MergedExtractionOutput
+      - AuditResult
+      - A11yAuditResult
+      - IntegrationTestResult
+    interface_field_requirements:
+      PublisherClassification:
+        - techInventory
+        - layoutFamily
+        - taxonomyMapping
+        - extractionPlan
+      MergedExtractionOutput:
+        - articleUrl
+        - sourceHtmlLength
+        - publisherClassification
+        - navigationData
+        - techInventory
+    type_aliases:
+      LayoutFamily:
+        union_literals:
+          - nyt-interactive
+          - nyt-article
+          - athletic-article
+          - generic-publisher
+  design_docs_config:
+    path: TRR-APP/apps/web/src/lib/admin/design-docs-config.ts
+    consts:
+      - DESIGN_DOC_SECTIONS
+    functions:
+      - isDesignDocSectionId
+    type_aliases:
+      DesignDocSectionId:
+        union_literals:
+          - brand-nyt
+          - brand-the-athletic
+          - athletic-articles
+          - nyt-articles
+      DesignDocSection: {}

@@ -1,6 +1,8 @@
 ---
 name: extract-navigation
 description: Extract header, footer, sidebar, breadcrumb, tab, drawer, and overlay navigation patterns from saved source bundles
+metadata:
+  version: 1.0.0
 ---
 
 # Extract Navigation

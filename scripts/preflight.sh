@@ -79,6 +79,9 @@ emit_preflight_phase_output() {
     check-policy)
       echo "[preflight] Policy checks OK"
       ;;
+    design-docs-agent-package)
+      echo "[preflight] Design Docs agent package OK"
+      ;;
     chrome-devtools-mcp-status)
       record_browser_attention "$output"
       if [[ -s "$ATTENTION_FILE" ]]; then
@@ -273,6 +276,8 @@ fi
 run_preflight_phase "handoff-sync" "[preflight] Syncing generated handoffs..." python3 "$ROOT/scripts/sync-handoffs.py" --write
 
 run_preflight_phase "check-policy" "[preflight] Checking policy drift rules..." bash "$ROOT/scripts/check-policy.sh"
+
+run_preflight_phase "design-docs-agent-package" "[preflight] Validating design-docs-agent package..." python3 "$ROOT/.agents/skills/design-docs-agent/test/validate-package.py"
 
 run_preflight_phase "chrome-devtools-mcp-status" "[preflight] Checking browser automation..." env CHROME_DEVTOOLS_MCP_STATUS_MODE=summary bash "$ROOT/scripts/chrome-devtools-mcp-status.sh"
 

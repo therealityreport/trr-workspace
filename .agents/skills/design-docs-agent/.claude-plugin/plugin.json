@@ -1,10 +1,14 @@
 {
   "name": "design-docs-agent",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Generate or update TRR design-docs pages from saved source bundles, HTML captures, and source inventories.",
   "skills": "./",
   "author": {
     "name": "The Reality Report",
     "email": "dev@therealityreport.com"
-  }
+  },
+  "homepage": "https://github.com/therealityreport/TRR",
+  "repository": "https://github.com/therealityreport/TRR",
+  "license": "Proprietary",
+  "keywords": ["design-docs", "skills", "documentation", "ingestion", "trr"]
 }
