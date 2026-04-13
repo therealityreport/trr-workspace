@@ -142,17 +142,17 @@ if [[ "$WORKSPACE_DEV_MODE" == "local_docker" ]]; then
     echo "  docker: $({ docker --version; } 2>/dev/null)"
     if ! docker info >/dev/null 2>&1; then
       if [[ "$WORKSPACE_PREFLIGHT_STRICT" == "1" ]]; then
-        echo "[doctor] ERROR: docker daemon not running (required for the explicit make dev-local fallback / local screenalytics Redis+MinIO)." >&2
+        echo "[doctor] ERROR: docker daemon not running (required for docker-dependent local tooling)." >&2
         exit 1
       fi
-      echo "[doctor] WARNING: docker daemon not running (needed only for the explicit make dev-local fallback / local screenalytics Redis+MinIO)." >&2
+      echo "[doctor] WARNING: docker daemon not running (needed only for docker-dependent local tooling)." >&2
     fi
   else
     if [[ "$WORKSPACE_PREFLIGHT_STRICT" == "1" ]]; then
-      echo "[doctor] ERROR: docker not found (required for the explicit make dev-local fallback / local screenalytics Redis+MinIO)." >&2
+      echo "[doctor] ERROR: docker not found (required for docker-dependent local tooling)." >&2
       exit 1
     fi
-    echo "[doctor] WARNING: docker not found (needed only for the explicit make dev-local fallback / local screenalytics Redis+MinIO)." >&2
+    echo "[doctor] WARNING: docker not found (needed only for docker-dependent local tooling)." >&2
   fi
 fi
 
@@ -204,8 +204,6 @@ check_repo_venv() {
 }
 
 check_repo_venv "TRR-Backend" "$ROOT/TRR-Backend"
-
-check_repo_venv "screenalytics" "$ROOT/screenalytics"
 
 if [[ -f "$ROOT/TRR-APP/pnpm-lock.yaml" ]]; then
   echo "  TRR-APP: pnpm-lock.yaml present"

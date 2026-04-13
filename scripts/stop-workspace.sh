@@ -8,9 +8,6 @@ PIDFILE="${LOG_DIR}/pids.env"
 # Defaults (may be overridden by pidfile)
 TRR_BACKEND_PORT="${TRR_BACKEND_PORT:-8000}"
 TRR_APP_PORT="${TRR_APP_PORT:-3000}"
-SCREENALYTICS_API_PORT="${SCREENALYTICS_API_PORT:-8001}"
-SCREENALYTICS_STREAMLIT_PORT="${SCREENALYTICS_STREAMLIT_PORT:-8501}"
-SCREENALYTICS_WEB_PORT="${SCREENALYTICS_WEB_PORT:-8080}"
 WORKSPACE_FORCE_KILL_PORT_CONFLICTS="${WORKSPACE_FORCE_KILL_PORT_CONFLICTS:-0}"
 
 HAVE_LSOF=0
@@ -76,9 +73,6 @@ is_safe_stale() {
   # Port-specific allowlist for known backends.
   if [[ "$port" == "$TRR_BACKEND_PORT" ]]; then
     [[ "$cmd" == *"uvicorn"* && "$cmd" == *"api.main:app"* ]] && return 0
-  fi
-  if [[ "$port" == "$SCREENALYTICS_API_PORT" ]]; then
-    [[ "$cmd" == *"uvicorn"* && "$cmd" == *"apps.api.main:app"* ]] && return 0
   fi
 
   return 1
@@ -266,15 +260,11 @@ if [[ -f "$PIDFILE" && "$MANAGER_STOP_SUCCEEDED" -ne 1 ]]; then
   stop_one "TRR_REMOTE_WORKERS" "${TRR_REMOTE_WORKERS_PID:-}"
   stop_one "TRR_SOCIAL_WORKER" "${TRR_SOCIAL_WORKER_PID:-}"
   stop_one "TRR_BACKEND" "${TRR_BACKEND_PID:-}"
-  stop_one "SCREENALYTICS" "${SCREENALYTICS_PID:-}"
 fi
 
 # Best-effort cleanup by port (handles stale/orphan listeners even if pidfile is missing).
 cleanup_port "$TRR_APP_PORT" "TRR-APP"
 cleanup_port "$TRR_BACKEND_PORT" "TRR-Backend"
-cleanup_port "$SCREENALYTICS_API_PORT" "screenalytics API"
-cleanup_port "$SCREENALYTICS_STREAMLIT_PORT" "screenalytics Streamlit"
-cleanup_port "$SCREENALYTICS_WEB_PORT" "screenalytics Web"
 
 rm -f "$PIDFILE" >/dev/null 2>&1 || true
 echo "[workspace] Stopped."

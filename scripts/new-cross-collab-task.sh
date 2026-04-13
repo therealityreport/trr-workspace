@@ -6,10 +6,10 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 usage() {
   cat <<USAGE
 Usage:
-  $0 --repos TRR-Backend,TRR-APP,screenalytics --title "Task title" [--date YYYY-MM-DD]
+  $0 --repos TRR-Backend,TRR-APP --title "Task title" [--date YYYY-MM-DD]
 
 Options:
-  --repos  Comma-separated repos from: TRR-Backend, TRR-APP, screenalytics
+  --repos  Comma-separated repos from: TRR-Backend, TRR-APP
   --title  Task title used in generated docs
   --date   Optional date override (default: today)
 USAGE
@@ -54,7 +54,7 @@ DATE_VALUE="${DATE_OVERRIDE:-$(date +%Y-%m-%d)}"
 
 is_valid_repo() {
   case "$1" in
-    TRR-Backend|TRR-APP|screenalytics)
+    TRR-Backend|TRR-APP)
       return 0
       ;;
     *)
@@ -129,20 +129,16 @@ Last updated: ${DATE_VALUE}
 ## Cross-Repo Snapshot
 - TRR-Backend: TODO
 - TRR-APP: TODO
-- screenalytics: TODO
 
 ## Responsibility Alignment
 - TRR-Backend
   - TODO
 - TRR-APP
   - TODO
-- screenalytics
-  - TODO
 
 ## Dependency Order
 1. TRR-Backend
-2. screenalytics
-3. TRR-APP
+2. TRR-APP
 
 ## Locked Contracts (Mirrored)
 - Keep shared contracts aligned with owning repo PLAN.md.

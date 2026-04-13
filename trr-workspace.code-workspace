@@ -11,10 +11,6 @@
     {
       "path": "TRR-APP",
       "name": "App"
-    },
-    {
-      "path": "screenalytics",
-      "name": "Screenalytics"
     }
   ],
   "settings": {

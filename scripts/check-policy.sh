@@ -35,7 +35,6 @@ AGENTS_FILES=(
   "$ROOT/AGENTS.md"
   "$ROOT/TRR-Backend/AGENTS.md"
   "$ROOT/TRR-APP/AGENTS.md"
-  "$ROOT/screenalytics/AGENTS.md"
 )
 
 CLAUDE_FILES=()
@@ -44,8 +43,11 @@ while IFS= read -r relative_file; do
   CLAUDE_FILES+=("$ROOT/$relative_file")
 done < <(
   cd "$ROOT"
+  # screenalytics is a retired nested repo and is out of scope for workspace
+  # make dev / preflight policy enforcement.
   rg --files -uu \
     -g 'CLAUDE.md' \
+    -g '!screenalytics/**' \
     -g '!**/.git/**' \
     -g '!**/.venv/**' \
     -g '!**/node_modules/**' \
@@ -194,7 +196,6 @@ check_repo_agents() {
 check_root_agents
 check_repo_agents "$ROOT/TRR-Backend/AGENTS.md"
 check_repo_agents "$ROOT/TRR-APP/AGENTS.md"
-check_repo_agents "$ROOT/screenalytics/AGENTS.md"
 
 expected_claude_content() {
   local file="$1"
@@ -206,9 +207,6 @@ expected_claude_content() {
       ;;
     "$ROOT/TRR-APP"/*)
       agents_path="$ROOT/TRR-APP/AGENTS.md"
-      ;;
-    "$ROOT/screenalytics"/*)
-      agents_path="$ROOT/screenalytics/AGENTS.md"
       ;;
   esac
 

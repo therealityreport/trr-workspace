@@ -10,14 +10,12 @@
 	getty-server getty-tunnel getty-remote
 
 # Daily default: `make dev` runs the canonical cloud-first workspace profile.
-# It starts TRR-APP + TRR-Backend locally, keeps the screenalytics API on, and avoids local Docker infra.
-# screenalytics Streamlit/Web UIs are disabled in the canonical profile unless explicitly re-enabled.
-# Use `make dev-local` only when you intentionally need the Screenalytics-only Docker fallback (local Redis + MinIO).
+# It starts TRR-APP + TRR-Backend locally and avoids legacy screenalytics runtime wiring.
 # To override the default profile explicitly:
 # PROFILE=default make dev
-# PROFILE=local-cloud make dev        # deprecated compatibility profile
-# PROFILE=local-docker make dev-local
-# PROFILE=local-full make dev-local   # deprecated compatibility profile
+# PROFILE=local-cloud make dev        # deprecated compatibility alias
+# PROFILE=local-docker make dev-local # deprecated compatibility alias
+# PROFILE=local-full make dev-local   # deprecated compatibility alias
 # Startup tuning:
 # WORKSPACE_CLEAN_NEXT_CACHE=1 make dev  # force clean Next.js cache
 # WORKSPACE_TRR_APP_DEV_BUNDLER=webpack make dev  # force the webpack fallback if Turbopack regresses
@@ -26,12 +24,11 @@
 # WORKSPACE_BROWSER_TAB_SYNC_MODE=reuse_no_reload make dev  # browser sync strategy when enabled
 # WORKSPACE_BROWSER_TAB_SYNC_MODE=reload_first make dev     # reload only the first matching tab
 # WORKSPACE_BROWSER_TAB_SYNC_MODE=reload_all make dev       # legacy behavior: reload every matching tab
-# WORKSPACE_OPEN_SCREENALYTICS_TABS=1 make dev  # opt in to screenalytics Streamlit/Web tabs
 # TRR_BACKEND_RELOAD=0 make dev          # opt out of backend hot-reload when you need non-reload stability
 # TRR_ADMIN_ROUTE_CACHE_DISABLED=0 make dev  # re-enable local admin route caching if you want production-like staleness locally
 dev:
 	@$(MAKE) --no-print-directory preflight
-	@PROFILE="$${PROFILE:-default}" WORKSPACE_DEV_MODE=cloud WORKSPACE_SCREENALYTICS=1 WORKSPACE_SCREENALYTICS_SKIP_DOCKER=1 bash scripts/dev-workspace.sh
+	@PROFILE="$${PROFILE:-default}" WORKSPACE_DEV_MODE=cloud bash scripts/dev-workspace.sh
 
 # Compatibility alias for the canonical default path.
 dev-lite:
@@ -43,21 +40,22 @@ dev-cloud:
 	@echo "[workspace] NOTE: 'make dev-cloud' is deprecated; running 'make dev'."
 	@$(MAKE) --no-print-directory dev PROFILE="$${PROFILE:-default}"
 
-# Explicit Screenalytics-only Docker fallback (local Redis + MinIO).
+# Deprecated compatibility alias retained for older local muscle memory.
 dev-local:
-	@$(MAKE) --no-print-directory preflight-local
-	@PROFILE="$${PROFILE:-local-docker}" WORKSPACE_DEV_MODE=local_docker WORKSPACE_SCREENALYTICS=1 WORKSPACE_SCREENALYTICS_SKIP_DOCKER=0 bash scripts/dev-workspace.sh
+	@echo "[workspace] NOTE: 'make dev-local' is deprecated; running 'make dev'."
+	@$(MAKE) --no-print-directory dev PROFILE="$${PROFILE:-default}"
 
-# Deprecated compatibility alias for the explicit Docker fallback.
+# Deprecated compatibility alias retained for older local muscle memory.
 dev-full:
-	@echo "[workspace] NOTE: 'make dev-full' is deprecated; running 'make dev-local'."
-	@$(MAKE) --no-print-directory dev-local PROFILE="$${PROFILE:-local-docker}"
+	@echo "[workspace] NOTE: 'make dev-full' is deprecated; running 'make dev'."
+	@$(MAKE) --no-print-directory dev PROFILE="$${PROFILE:-default}"
 
 preflight:
 	@WORKSPACE_DEV_MODE=cloud bash scripts/preflight.sh
 
 preflight-local:
-	@WORKSPACE_DEV_MODE=local_docker bash scripts/preflight.sh
+	@echo "[workspace] NOTE: 'make preflight-local' is deprecated; running 'make preflight'."
+	@WORKSPACE_DEV_MODE=cloud bash scripts/preflight.sh
 
 preflight-strict:
 	@WORKSPACE_DEV_MODE=cloud WORKSPACE_PREFLIGHT_STRICT=1 bash scripts/preflight.sh
@@ -162,22 +160,21 @@ cast-screentime-gap-check:
 cast-screentime-live-check:
 	@bash scripts/cast-screentime-live-check.sh
 
-# Tears down the explicit Docker fallback infra used by make dev-local (Redis + MinIO).
-# Use "make stop && make down" for a full cleanup.
+# Legacy no-op retained so older cleanup muscle memory does not fail.
 down:
-	@bash scripts/down-screenalytics-infra.sh
+	@echo "[workspace] NOTE: local screenalytics infra is retired; nothing to tear down."
 
 help:
 	@echo "Workspace commands:"
 	@echo "  make dev          - canonical default; cloud-first backend/app path with no local Docker infra"
-	@echo "  make dev-local    - explicit Screenalytics fallback; starts local Redis + MinIO via Docker"
+	@echo "  make dev-local    - deprecated alias for make dev"
 	@echo "  make preflight    - validates the canonical no-Docker workspace path"
-	@echo "  make preflight-local - validates the explicit Docker fallback path"
+	@echo "  make preflight-local - deprecated alias for make preflight"
 	@echo "  make codex-check  - validates tracked Codex config, rules, and user bootstrap state"
-	@echo "  make down         - tears down the explicit Docker fallback infra used by make dev-local"
+	@echo "  make down         - deprecated no-op retained for compatibility"
 	@echo "Legacy aliases:"
 	@echo "  make dev-cloud    - deprecated alias for make dev"
-	@echo "  make dev-full     - deprecated alias for make dev-local"
+	@echo "  make dev-full     - deprecated alias for make dev"
 
 chrome-devtools-mcp-status:
 	@bash scripts/chrome-devtools-mcp-status.sh
@@ -198,6 +195,6 @@ mcp-clean:
 # WORKSPACE_PR_AGENT_REVISION_USE_GITHUB_MCP=0   # default is 1 (MCP-preferred Codex prompt)
 # WORKSPACE_PR_AGENT_REVISION_REQUIRE_GITHUB_MCP=1   # fail revision assist if GitHub MCP auth is missing
 # WORKSPACE_PR_AGENT_DRY_RUN=1
-# WORKSPACE_PR_AGENT_REPOS='TRR-Backend,screenalytics,TRR-APP'
+# WORKSPACE_PR_AGENT_REPOS='TRR-Backend,TRR-APP'
 workspace-pr-agent:
 	@bash scripts/workspace-pr-agent.sh

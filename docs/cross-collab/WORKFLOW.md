@@ -11,12 +11,12 @@ It complements `AGENTS.md` (workspace root) and each repo's `AGENTS.md`.
 |------|-----|--------|
 | 1. Receive plan | Agent | Read plan/spec. Identify which repos are affected. |
 | 2. Create TASK folders | Agent | Create `docs/cross-collab/TASK{N}/` in each affected repo with `PLAN.md` + `OTHER_PROJECTS.md` + `STATUS.md` (use templates in Section 3). Next sequential number per repo. |
-| 3. Implement | Agent | Follow repo order: TRR-Backend → screenalytics → TRR-APP. Run each repo's fast checks after changes. |
+| 3. Implement | Agent | Follow repo order: TRR-Backend → TRR-APP. Run each repo's fast checks after changes. |
 | 4. Update canonical status sources | Agent | Immediately after each completed implementation phase or materially completed plan step, update `STATUS.md` or `docs/ai/local-status/*.md`. These are the only handoff source files; they must carry a `## Handoff Snapshot` block when they should surface in handoff. |
 | 5. Sync generated `HANDOFF.md` | Agent | Run `scripts/handoff-lifecycle.sh post-phase` after each completed implementation phase when current state, blockers, or next action changed. `docs/ai/HANDOFF.md` is generated output only. |
-| 6. Verify | Agent | Per-repo fast checks: TRR-Backend (`ruff check . && ruff format --check . && pytest -q`), screenalytics (`pytest -q`), TRR-APP (`pnpm -C apps/web run lint && pnpm -C apps/web exec next build --webpack && pnpm -C apps/web run test:ci`). |
+| 6. Verify | Agent | Per-repo fast checks: TRR-Backend (`ruff check . && ruff format --check . && pytest -q`), TRR-APP (`pnpm -C apps/web run lint && pnpm -C apps/web exec next build --webpack && pnpm -C apps/web run test:ci`). |
 | 7. Commit + PR | Agent | One PR per repo. Use PR template (Section 3d). Include `docs/cross-collab/` changes in the PR. |
-| 8. Merge | Human/Agent | Merge PRs in implementation order (Backend → screenalytics → APP). |
+| 8. Merge | Human/Agent | Merge PRs in implementation order (Backend → APP). |
 | 9. Sync docs + close out | Agent | Update `OTHER_PROJECTS.md` snapshots, add the final `STATUS.md` Recent Activity entry, and run `scripts/handoff-lifecycle.sh closeout` for final generated handoff + policy verification. |
 
 Before any formal `<proposed_plan>` or documented multi-phase implementation plan, run `scripts/handoff-lifecycle.sh pre-plan`. This is not required for ad-hoc Q&A or one-off comments with no formal plan artifact.
@@ -31,8 +31,8 @@ Use `scripts/codex-formal-plan.sh ...` when you want a launcher that performs th
 - After any renumbering, grep for stale cross-references:
 
 ```bash
-rg -n "TRR-APP TASK{old}|TRR-Backend TASK{old}|screenalytics TASK{old}" \
-  TRR-Backend/docs/cross-collab/ TRR-APP/docs/cross-collab/ screenalytics/docs/cross-collab/
+rg -n "TRR-APP TASK{old}|TRR-Backend TASK{old}" \
+  TRR-Backend/docs/cross-collab/ TRR-APP/docs/cross-collab/
 ```
 
 ### Task Scaffolder (Recommended)
@@ -42,7 +42,7 @@ Use the workspace scaffolder to create new task folders with templates:
 ```bash
 cd /Users/thomashulihan/Projects/TRR
 ./scripts/new-cross-collab-task.sh \
-  --repos TRR-Backend,TRR-APP,screenalytics \
+  --repos TRR-Backend,TRR-APP \
   --title "Your task title"
 ```
 
@@ -97,14 +97,11 @@ Last updated: {DATE}
 ## Cross-Repo Snapshot
 - TRR-Backend: {Status}. See TRR-Backend TASK{X}.
 - TRR-APP: {Status}. See TRR-APP TASK{Y}.
-- screenalytics: {Status}. See screenalytics TASK{Z}.
 
 ## Responsibility Alignment
 - TRR-Backend
   - {What this repo owns}
 - TRR-APP
-  - {What this repo owns}
-- screenalytics
   - {What this repo owns}
 
 ## Dependency Order
@@ -192,14 +189,13 @@ Rules:
 
 ## Test plan
 - [ ] `ruff check . && ruff format --check .` (TRR-Backend)
-- [ ] `pytest -q` (TRR-Backend / screenalytics)
+- [ ] `pytest -q` (TRR-Backend)
 - [ ] `pnpm -C apps/web run lint && pnpm -C apps/web exec next build --webpack && pnpm -C apps/web run test:ci` (TRR-APP)
 - [ ] Cross-repo docs updated (PLAN.md, STATUS.md, OTHER_PROJECTS.md)
 
 ## Cross-collab refs
 - TRR-Backend TASK{N}: `docs/cross-collab/TASK{N}/`
 - TRR-APP TASK{M}: `docs/cross-collab/TASK{M}/`
-- screenalytics TASK{K}: `docs/cross-collab/TASK{K}/`
 ```
 
 ## Section 4 — Common Patterns
@@ -217,19 +213,17 @@ Rules:
 **What's being deployed**: Supabase Data Layer Unification (migrations `0102–0105`) + Schema Cleanup (migrations `0106–0114`) + drift reconciliation (`0115`).
 
 **Pre-deploy checklist**:
-- [ ] All repos merged to `main` (TRR-Backend PR #48, screenalytics `a40943c` + `2cb6f41`, TRR-APP PR #23)
+- [ ] All repos merged to `main` (TRR-Backend PR #48, TRR-APP PR #23)
 - [ ] Staging Supabase migrations `0102–0115` applied (`supabase db push --linked` reports up to date)
 - [ ] Credits backfill verified on staging (see Section 6)
 
 **Deploy order**:
 1. **Supabase (production)**: `supabase db push --linked` against production project. Applies migrations `0102–0115`.
 2. **TRR-Backend (Cloud Run)**: Deploy via Cloud Run continuous deployment from `main` branch, or manually via `gcloud`. See `TRR-Backend/docs/deploy/cloud_run.md` for full instructions. Note: `gcloud auth login` is interactive.
-3. **screenalytics**: Deploy or restart the current hosted service/runtime, then verify `.env` has `TRR_DB_URL` pointing to production Supabase.
-4. **TRR-APP (Vercel)**: Auto-deploys on merge to `main`. Verify Vercel preview before production promotion.
+3. **TRR-APP (Vercel)**: Auto-deploys on merge to `main`. Verify Vercel preview before production promotion.
 
 **Post-deploy verification**:
 - [ ] TRR-Backend: `curl https://<trr-backend-url>/health` returns 200
-- [ ] screenalytics: `curl https://<screenalytics-url>/healthz` returns 200
 - [ ] TRR-APP: Cast pages render correctly using credits-backed views
 - [ ] Credits parity check passes (Section 6)
 

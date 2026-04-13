@@ -104,8 +104,6 @@ source "$PIDFILE"
 TRR_BACKEND_PORT="${TRR_BACKEND_PORT:-8000}"
 TRR_APP_PORT="${TRR_APP_PORT:-3000}"
 TRR_APP_HOST="${TRR_APP_HOST:-127.0.0.1}"
-SCREENALYTICS_API_PORT="${SCREENALYTICS_API_PORT:-8001}"
-WORKSPACE_SCREENALYTICS="${WORKSPACE_SCREENALYTICS:-1}"
 
 failures=0
 
@@ -119,12 +117,6 @@ check_http "TRR-APP" "http://${TRR_APP_HOST}:${TRR_APP_PORT}/" 1 || failures=$((
 
 check_port_listener "TRR-Backend" "$TRR_BACKEND_PORT" 1 || failures=$((failures + 1))
 check_port_listener "TRR-APP" "$TRR_APP_PORT" 1 || failures=$((failures + 1))
-
-if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
-  check_pid_running "SCREENALYTICS" "${SCREENALYTICS_PID:-}" 0 || true
-  check_http "screenalytics API" "http://127.0.0.1:${SCREENALYTICS_API_PORT}/healthz" 0 || true
-  check_port_listener "screenalytics API" "$SCREENALYTICS_API_PORT" 0 || true
-fi
 
 if [[ "$failures" -gt 0 ]]; then
   echo "[smoke] FAILED with ${failures} required check(s) failing." >&2

@@ -2,8 +2,6 @@
 set -euo pipefail
 
 PRIMARY_URL="${1:-}"
-STREAMLIT_URL="${2:-}"
-WEB_URL="${3:-}"
 TAB_SYNC_MODE="${WORKSPACE_BROWSER_TAB_SYNC_MODE:-reuse_no_reload}"
 
 if [[ -z "$PRIMARY_URL" ]]; then
@@ -51,8 +49,6 @@ open_or_refresh() {
 }
 
 open_or_refresh "$PRIMARY_URL" "TRR APP/Admin"
-open_or_refresh "$STREAMLIT_URL" "screenalytics Streamlit"
-open_or_refresh "$WEB_URL" "screenalytics Web"
 
 echo "[open-workspace-dev-window] Browser tab sync complete (mode=${TAB_SYNC_MODE}); reused matching tabs and opened missing URLs."
 exit 0
