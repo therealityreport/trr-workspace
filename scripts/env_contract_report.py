@@ -21,7 +21,6 @@ CANONICAL_INVENTORY: tuple[tuple[str, tuple[tuple[str, tuple[str, ...]], ...]], 
         (
             ("Local workspace sentinel", ("TRR_LOCAL_DEV",)),
             ("Managed local backend base", ("TRR_API_URL",)),
-            ("Managed local Screenalytics base", ("SCREENALYTICS_API_URL",)),
             ("Managed local runtime DB", ("TRR_DB_URL", "TRR_DB_FALLBACK_URL")),
         ),
     ),
@@ -30,16 +29,7 @@ CANONICAL_INVENTORY: tuple[tuple[str, tuple[tuple[str, tuple[str, ...]], ...]], 
         (
             ("Runtime DB", ("TRR_DB_URL", "TRR_DB_FALLBACK_URL")),
             ("Supabase API/auth", ("SUPABASE_URL", "SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY", "SUPABASE_JWT_SECRET")),
-            ("Service auth", ("TRR_INTERNAL_ADMIN_SHARED_SECRET", "SCREENALYTICS_SERVICE_TOKEN")),
-        ),
-    ),
-    (
-        "screenalytics",
-        (
-            ("Runtime DB", ("TRR_DB_URL", "TRR_DB_FALLBACK_URL")),
-            ("Backend base", ("TRR_API_URL",)),
-            ("Local API base", ("SCREENALYTICS_API_URL",)),
-            ("Service auth", ("SCREENALYTICS_SERVICE_TOKEN",)),
+            ("Service auth", ("TRR_INTERNAL_ADMIN_SHARED_SECRET",)),
         ),
     ),
     (
@@ -67,8 +57,6 @@ IN_PROGRESS_PATH_FRAGMENTS = (
 )
 
 GENERATED_NON_ACTIONABLE_PATHS = {
-    "screenalytics/web/openapi.json",
-    "screenalytics/web/api/schema.ts",
     "TRR-APP/apps/web/src/lib/admin/api-references/generated/inventory.ts",
 }
 
@@ -86,7 +74,6 @@ COMPATIBILITY_PATHS = {
     "TRR-APP/apps/web/src/lib/server/postgres.ts",
     "TRR-APP/apps/web/tests/postgres-connection-string-resolution.test.ts",
     "TRR-APP/scripts/auto-categorize-flairs.ts",
-    "screenalytics/scripts/migrate_legacy_db_to_supabase.py",
     "scripts/lib/runtime-db-env.sh",
 }
 
@@ -94,7 +81,6 @@ COMPATIBILITY_PREFIXES = (
     "TRR-Backend/tests/",
     "TRR-APP/apps/web/tests/",
     "TRR-Backend/trr_backend/repositories/",
-    "screenalytics/tests/",
     "TRR-Backend/scripts/ops/",
 )
 
@@ -285,7 +271,7 @@ def _env_keys(path: Path) -> set[str]:
 
 
 def _run_rg(pattern: str) -> list[str]:
-    command = ["rg", "-n", pattern, "TRR-Backend", "TRR-APP", "screenalytics", "scripts", "docs"]
+    command = ["rg", "-n", pattern, "TRR-Backend", "TRR-APP", "scripts", "docs"]
     for glob in EXCLUDE_GLOBS:
         command.extend(["--glob", glob])
     result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, check=False)
@@ -562,8 +548,6 @@ def _validate_contract() -> list[ValidationError]:
         errors.append(ValidationError("launcher-sentinel", "scripts/dev-workspace.sh must export TRR_LOCAL_DEV=1 to managed child processes."))
     if 'TRR_API_URL="http://127.0.0.1:${TRR_BACKEND_PORT}"' not in launcher:
         errors.append(ValidationError("launcher-backend-url", "scripts/dev-workspace.sh must own the managed local TRR_API_URL loopback value."))
-    if 'SCREENALYTICS_API_URL="${SCREENALYTICS_LOCAL_API_URL}"' not in launcher:
-        errors.append(ValidationError("launcher-screenalytics-url", "scripts/dev-workspace.sh must own the managed local SCREENALYTICS_API_URL loopback value."))
 
     backend_keys = _env_keys(ROOT / "TRR-Backend/.env.example")
     if "TRR_DB_URL" not in backend_keys:
@@ -581,14 +565,6 @@ def _validate_contract() -> list[ValidationError]:
     for deprecated in ("SUPABASE_DB_URL", "DATABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"):
         if deprecated in app_keys:
             errors.append(ValidationError(f"app-deprecated-{deprecated.lower()}", f"TRR-APP/apps/web/.env.example must not advertise {deprecated}."))
-
-    screenalytics_keys = _env_keys(ROOT / "screenalytics/.env.example")
-    for required in ("TRR_DB_URL", "TRR_DB_FALLBACK_URL", "TRR_API_URL", "SCREENALYTICS_API_URL"):
-        if required not in screenalytics_keys:
-            errors.append(ValidationError(f"screenalytics-missing-{required.lower()}", f"screenalytics/.env.example must define {required}."))
-    for deprecated in ("SUPABASE_DB_URL", "DATABASE_URL"):
-        if deprecated in screenalytics_keys:
-            errors.append(ValidationError(f"screenalytics-deprecated-{deprecated.lower()}", f"screenalytics/.env.example must not advertise {deprecated}."))
 
     expected_inventory = _build_inventory_markdown()
     expected_deprecations = _build_deprecations_markdown()

@@ -1,4 +1,4 @@
-# Workspace meta-repo should not track nested repos (they each have their own git history)
+# Workspace meta-repo should not track nested repos or local historical archive checkouts
 /TRR-APP/
 /TRR-Backend/
 /TRR-Backend-*/

@@ -2,7 +2,6 @@
 
 This document tracks workspace-level model governance policy across:
 - `TRR-Backend`
-- `screenalytics`
 - `TRR-APP`
 
 ## Wave Policy
@@ -15,8 +14,6 @@ This document tracks workspace-level model governance policy across:
 
 - Backend defaults and promotion rules:
   - `/Users/thomashulihan/Projects/TRR/TRR-Backend/docs/ai/MODEL_GOVERNANCE.md`
-- screenalytics defaults and promotion rules:
-  - `/Users/thomashulihan/Projects/TRR/screenalytics/docs/ai/MODEL_GOVERNANCE.md`
 - TRR-APP integration policy:
   - `/Users/thomashulihan/Projects/TRR/TRR-APP/docs/ai/MODEL_GOVERNANCE.md`
 

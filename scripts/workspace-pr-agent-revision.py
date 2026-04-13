@@ -98,13 +98,6 @@ def deterministic_fix_pass(
         run([ruff, "format", *py_files], cwd=repo_path, check=False)
         return
 
-    if repo_name == "screenalytics":
-        if not py_files:
-            return
-        py = python_bin_for_repo(repo_path)
-        run([py, "-m", "py_compile", *py_files], cwd=repo_path, check=False)
-        return
-
     if repo_name == "TRR-APP":
         if not app_files:
             return
