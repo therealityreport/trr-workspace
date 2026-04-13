@@ -18,10 +18,14 @@ TRR_APP_ROOT = WORKSPACE_ROOT / "TRR-APP"
 SCREENALYTICS_ROOT = WORKSPACE_ROOT / "screenalytics"
 SCREENALYTICS_DATA_ROOT = SCREENALYTICS_ROOT / "data"
 REPO_ROOTS = {
-    "workspace": WORKSPACE_ROOT,
-    "TRR-Backend": TRR_BACKEND_ROOT,
-    "TRR-APP": TRR_APP_ROOT,
-    "screenalytics": SCREENALYTICS_ROOT,
+    name: path
+    for name, path in {
+        "workspace": WORKSPACE_ROOT,
+        "TRR-Backend": TRR_BACKEND_ROOT,
+        "TRR-APP": TRR_APP_ROOT,
+        "screenalytics (legacy)": SCREENALYTICS_ROOT,
+    }.items()
+    if path.exists()
 }
 MEDIA_EXTENSIONS = {
     ".mp4",
@@ -173,6 +177,8 @@ def screenalytics_artifact_candidates(*, keep_days: int) -> tuple[list[CleanupCa
 
 
 def list_repo_subdirs(repo_root: Path) -> list[tuple[Path, int]]:
+    if not repo_root.exists():
+        return []
     entries: list[tuple[Path, int]] = []
     for child in sorted(repo_root.iterdir()):
         if child.name == ".git":
@@ -188,7 +194,7 @@ def list_repo_subdirs(repo_root: Path) -> list[tuple[Path, int]]:
 
 
 def git_tracked_paths(repo_root: Path) -> set[str]:
-    if not (repo_root / ".git").exists():
+    if not repo_root.exists() or not (repo_root / ".git").exists():
         return set()
     proc = subprocess.run(
         ["git", "-C", str(repo_root), "ls-files", "-z"],
@@ -208,6 +214,8 @@ def git_tracked_paths(repo_root: Path) -> set[str]:
 def large_untracked_media_files(*, min_bytes: int) -> list[tuple[Path, int]]:
     offenders: list[tuple[Path, int]] = []
     for repo_root in (TRR_BACKEND_ROOT, TRR_APP_ROOT, SCREENALYTICS_ROOT):
+        if not repo_root.exists():
+            continue
         tracked = git_tracked_paths(repo_root)
         for current_root, dirnames, filenames in os.walk(repo_root):
             root_path = Path(current_root)
@@ -234,6 +242,8 @@ def large_untracked_media_files(*, min_bytes: int) -> list[tuple[Path, int]]:
 
 
 def screenalytics_episode_sizes() -> list[tuple[str, int]]:
+    if not SCREENALYTICS_DATA_ROOT.exists():
+        return []
     episode_sizes: dict[str, int] = {}
     roots = [
         SCREENALYTICS_DATA_ROOT / "audio",
@@ -262,11 +272,11 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Audit and clean workspace disk usage.")
     parser.add_argument("--dry-run", action="store_true", help="Preview cleanup targets (default behavior).")
     parser.add_argument("--apply", action="store_true", help="Delete the selected targets.")
-    parser.add_argument("--keep-days", type=int, default=14, help="Retention window for screenalytics episode artifacts.")
+    parser.add_argument("--keep-days", type=int, default=14, help="Retention window for legacy screenalytics episode artifacts.")
     parser.add_argument(
         "--include-screenalytics-artifacts",
         action="store_true",
-        help="Include old screenalytics episode artifact directories in cleanup targets.",
+        help="Include old legacy screenalytics episode artifact directories in cleanup targets.",
     )
     parser.add_argument(
         "--include-build-caches",
@@ -300,7 +310,7 @@ def main(argv: list[str] | None = None) -> int:
             args.include_download_dumps,
         )
     ):
-        args.include_screenalytics_artifacts = True
+        args.include_screenalytics_artifacts = SCREENALYTICS_ROOT.exists()
         args.include_build_caches = True
         args.include_download_dumps = True
 
@@ -318,7 +328,7 @@ def main(argv: list[str] | None = None) -> int:
     else:
         print("  none")
 
-    print("\n== Screenalytics Episode Artifact Sizes ==")
+    print("\n== Legacy Screenalytics Episode Artifact Sizes ==")
     episode_sizes = screenalytics_episode_sizes()
     if episode_sizes:
         for episode_id, size_bytes in episode_sizes[:10]:
@@ -352,7 +362,7 @@ def main(argv: list[str] | None = None) -> int:
     if preserved:
         preserved_bytes = sum(item.size_bytes for item in preserved)
         print(
-            f"\n== Preserved Recent Screenalytics Episode Artifacts ==\n"
+            f"\n== Preserved Recent Legacy Screenalytics Episode Artifacts ==\n"
             f"  kept={len(preserved)} size={human_bytes(preserved_bytes)}"
         )
         for candidate in sorted(preserved, key=lambda item: item.size_bytes, reverse=True)[:10]:

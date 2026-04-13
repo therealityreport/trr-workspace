@@ -4,10 +4,9 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 echo "[cast-screentime] backend tests"
-(cd "$ROOT_DIR/TRR-Backend" && pytest tests/api/test_admin_cast_screentime.py -q)
+(cd "$ROOT_DIR/TRR-Backend" && pytest tests/api/test_admin_cast_screentime.py tests/services/test_retained_cast_screentime_runtime.py tests/services/test_retained_cast_screentime_dispatch.py tests/services/test_retained_cast_screentime_review.py -q)
 
-echo "[cast-screentime] screenalytics tests"
-(cd "$ROOT_DIR/screenalytics" && pytest tests/api/test_cast_screentime_internal.py tests/tools/test_validate_cast_screentime_golden.py tests/unit/test_cast_screentime_zero_trust_guard.py -q)
+echo "[cast-screentime] retained runtime checks now live in TRR-Backend; no separate screenalytics repo checks are required"
 
 echo "[cast-screentime] app checks"
 (cd "$ROOT_DIR/TRR-APP" && pnpm -C apps/web exec vitest run -c vitest.config.ts tests/cast-screentime-proxy-route.test.ts)
@@ -19,5 +18,4 @@ else
   echo "[cast-screentime] skipping app-wide typecheck by default; set CAST_SCREENTIME_STRICT_APP_TYPECHECK=1 to enforce it"
 fi
 
-echo "[cast-screentime] golden dataset manifest"
-(cd "$ROOT_DIR/screenalytics" && python tools/validate_cast_screentime_golden.py)
+echo "[cast-screentime] no separate screenalytics golden manifest validation is required"
