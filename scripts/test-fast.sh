@@ -6,27 +6,19 @@ source "$ROOT/scripts/lib/node-baseline.sh"
 source "$ROOT/scripts/lib/python-venv.sh"
 RUN_BACKEND=1
 RUN_APP=1
-RUN_SCREENALYTICS=1
 
 for arg in "$@"; do
   case "$arg" in
     --backend-only)
       RUN_BACKEND=1
       RUN_APP=0
-      RUN_SCREENALYTICS=0
       ;;
     --app-only)
       RUN_BACKEND=0
       RUN_APP=1
-      RUN_SCREENALYTICS=0
-      ;;
-    --screenalytics-only)
-      RUN_BACKEND=0
-      RUN_APP=0
-      RUN_SCREENALYTICS=1
       ;;
     *)
-      echo "Usage: $0 [--backend-only|--app-only|--screenalytics-only]" >&2
+      echo "Usage: $0 [--backend-only|--app-only]" >&2
       exit 1
       ;;
   esac
@@ -55,20 +47,6 @@ if [[ "$RUN_APP" == "1" ]]; then
     exit 1
   fi
   (cd "$ROOT/TRR-APP/apps/web" && pnpm run lint)
-fi
-
-if [[ "$RUN_SCREENALYTICS" == "1" ]]; then
-  echo "[test-fast] screenalytics..."
-  if [[ ! -x "$ROOT/screenalytics/.venv/bin/python" ]]; then
-    echo "[test-fast] ERROR: screenalytics/.venv missing. Run: make bootstrap" >&2
-    exit 1
-  fi
-  "$ROOT/screenalytics/.venv/bin/python" -m py_compile \
-    "$ROOT/screenalytics/apps/api/main.py" \
-    "$ROOT/screenalytics/apps/workspace-ui/streamlit_app.py"
-  if [[ -f "$ROOT/screenalytics/tests/api/test_trr_health.py" ]]; then
-    (cd "$ROOT/screenalytics" && "$ROOT/screenalytics/.venv/bin/pytest" -q tests/api/test_trr_health.py)
-  fi
 fi
 
 echo "[test-fast] Done."

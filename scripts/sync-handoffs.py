@@ -109,7 +109,6 @@ def build_scopes(root: Path) -> dict[str, ScopeConfig]:
                 ("Workspace policy", "../../AGENTS.md"),
                 ("TRR-Backend handoff", "../../TRR-Backend/docs/ai/HANDOFF.md"),
                 ("TRR-APP handoff", "../../TRR-APP/docs/ai/HANDOFF.md"),
-                ("screenalytics handoff", "../../screenalytics/docs/ai/HANDOFF.md"),
             ),
         ),
         "backend": ScopeConfig(
@@ -138,19 +137,6 @@ def build_scopes(root: Path) -> dict[str, ScopeConfig]:
                 ("Repo policy", "../../AGENTS.md"),
             ),
         ),
-        "screenalytics": ScopeConfig(
-            key="screenalytics",
-            title="screenalytics",
-            handoff_path=root / "screenalytics/docs/ai/HANDOFF.md",
-            purpose="active-work index for multi-turn AI agent sessions in `screenalytics`. Keep this file short.",
-            task_status_glob="screenalytics/docs/cross-collab/TASK*/STATUS.md",
-            local_status_dir=root / "screenalytics/docs/ai/local-status",
-            static_links=(
-                ("History archive", "archive/HANDOFF-legacy-2026-03-16.md"),
-                ("Canonical workflow", "../../../docs/cross-collab/WORKFLOW.md"),
-                ("Repo policy", "../../AGENTS.md"),
-            ),
-        ),
     }
 
 
@@ -162,7 +148,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--scope",
         action="append",
-        choices=("workspace", "backend", "app", "screenalytics"),
+        choices=("workspace", "backend", "app"),
         help="Limit work to one or more named scopes.",
     )
     parser.add_argument(
