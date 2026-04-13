@@ -6,7 +6,6 @@ DEV_SCRIPT="$ROOT/scripts/dev-workspace.sh"
 PROFILE_FILE="$ROOT/profiles/default.env"
 ENV_CONTRACT_FILE="$ROOT/docs/workspace/env-contract.md"
 TRR_APP_ENV_FILE="$ROOT/TRR-APP/apps/web/.env.example"
-SCREENALYTICS_ENV_FILE="$ROOT/screenalytics/.env.example"
 
 extract_script_default() {
   local key="$1"
@@ -93,14 +92,5 @@ assert_equals "profiles/default.env remote workers enabled" "1" "$remote_workers
 assert_equals "docs/workspace/env-contract.md remote workers enabled" "1" "$remote_workers_doc_default"
 assert_equals "profiles/default.env remote social workers" "1" "$remote_social_profile_default"
 assert_equals "docs/workspace/env-contract.md remote social workers" "1" "$remote_social_doc_default"
-
-screenalytics_port_default="$(extract_script_default "SCREENALYTICS_API_PORT")"
-screenalytics_port_doc="$(extract_env_contract_default "SCREENALYTICS_API_PORT")"
-trr_app_screenalytics_url="$(extract_env_assignment "$TRR_APP_ENV_FILE" "SCREENALYTICS_API_URL")"
-screenalytics_env_url="$(extract_env_assignment "$SCREENALYTICS_ENV_FILE" "SCREENALYTICS_API_URL")"
-assert_equals "scripts/dev-workspace.sh screenalytics API port" "8001" "$screenalytics_port_default"
-assert_equals "docs/workspace/env-contract.md screenalytics API port" "8001" "$screenalytics_port_doc"
-assert_equals "TRR-APP/apps/web/.env.example screenalytics API URL" "http://127.0.0.1:8001" "$trr_app_screenalytics_url"
-assert_equals "screenalytics/.env.example screenalytics API URL" "http://127.0.0.1:8001" "$screenalytics_env_url"
 
 echo "[workspace-contract] OK"

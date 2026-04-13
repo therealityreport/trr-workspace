@@ -19,11 +19,6 @@ fi
 TRR_BACKEND_PORT="${TRR_BACKEND_PORT:-8000}"
 TRR_APP_PORT="${TRR_APP_PORT:-3000}"
 TRR_APP_HOST="${TRR_APP_HOST:-127.0.0.1}"
-SCREENALYTICS_API_PORT="${SCREENALYTICS_API_PORT:-8001}"
-SCREENALYTICS_STREAMLIT_PORT="${SCREENALYTICS_STREAMLIT_PORT:-8501}"
-SCREENALYTICS_WEB_PORT="${SCREENALYTICS_WEB_PORT:-8080}"
-WORKSPACE_SCREENALYTICS_STREAMLIT_ENABLED="${WORKSPACE_SCREENALYTICS_STREAMLIT_ENABLED:-1}"
-WORKSPACE_SCREENALYTICS_WEB_ENABLED="${WORKSPACE_SCREENALYTICS_WEB_ENABLED:-1}"
 WORKSPACE_HEALTH_CURL_MAX_TIME="${WORKSPACE_HEALTH_CURL_MAX_TIME:-2}"
 WORKSPACE_BACKEND_AUTO_RESTART="${WORKSPACE_BACKEND_AUTO_RESTART:-1}"
 WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS="${WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS:-5}"
@@ -107,30 +102,10 @@ workspace_dev_mode_value() {
     echo "${WORKSPACE_DEV_MODE}"
     return 0
   fi
-  if [[ "${WORKSPACE_SCREENALYTICS_SKIP_DOCKER:-}" == "1" ]]; then
-    echo "cloud"
-  else
-    echo "local_docker"
-  fi
-}
-
-screenalytics_mode_label() {
-  if ! screenalytics_enabled; then
-    echo "disabled"
-    return 0
-  fi
-  if [[ "$(workspace_dev_mode_value)" == "local_docker" ]]; then
-    echo "explicit local Docker fallback (Redis + MinIO)"
-    return 0
-  fi
-  echo "preferred cloud-first path (no local Docker infra)"
+  echo "cloud"
 }
 
 workspace_dev_mode_label() {
-  if [[ "$(workspace_dev_mode_value)" == "local_docker" ]]; then
-    echo "local_docker (explicit Docker fallback)"
-    return 0
-  fi
   echo "cloud (preferred no-Docker path)"
 }
 
@@ -347,30 +322,6 @@ backend_health_status() {
   echo "hung/unresponsive"
 }
 
-screenalytics_enabled() {
-  if [[ "$HAVE_PIDFILE" -ne 1 ]]; then
-    return 1
-  fi
-  if [[ "${WORKSPACE_SCREENALYTICS:-}" == "0" ]]; then
-    return 1
-  fi
-  return 0
-}
-
-screenalytics_streamlit_enabled() {
-  if ! screenalytics_enabled; then
-    return 1
-  fi
-  [[ "${WORKSPACE_SCREENALYTICS_STREAMLIT_ENABLED:-1}" == "1" ]]
-}
-
-screenalytics_web_enabled() {
-  if ! screenalytics_enabled; then
-    return 1
-  fi
-  [[ "${WORKSPACE_SCREENALYTICS_WEB_ENABLED:-1}" == "1" ]]
-}
-
 backend_reload_mode() {
   if [[ "$HAVE_PIDFILE" -ne 1 ]]; then
     echo "n/a"
@@ -475,28 +426,11 @@ build_codex_runtime_json() {
 
 BACKEND_HEALTH_URL="http://127.0.0.1:${TRR_BACKEND_PORT}/health"
 APP_HEALTH_URL="http://${TRR_APP_HOST}:${TRR_APP_PORT}/"
-SCREENALYTICS_HEALTH_URL="http://127.0.0.1:${SCREENALYTICS_API_PORT}/healthz"
 BACKEND_HEALTH_STATUS="$(backend_health_status "${BACKEND_HEALTH_URL}" "${TRR_BACKEND_PID:-}")"
 APP_HEALTH_STATUS="$(health_status "${APP_HEALTH_URL}" "${TRR_APP_PID:-}")"
-if screenalytics_enabled; then
-  SCREENALYTICS_HEALTH_STATUS="$(health_status "${SCREENALYTICS_HEALTH_URL}" "${SCREENALYTICS_PID:-}")"
-else
-  SCREENALYTICS_HEALTH_STATUS="disabled"
-fi
 
 TRR_APP_LISTENERS="$(port_listeners "${TRR_APP_PORT}")"
 TRR_BACKEND_LISTENERS="$(port_listeners "${TRR_BACKEND_PORT}")"
-SCREENALYTICS_API_LISTENERS="$(port_listeners "${SCREENALYTICS_API_PORT}")"
-if screenalytics_streamlit_enabled; then
-  SCREENALYTICS_STREAMLIT_LISTENERS="$(port_listeners "${SCREENALYTICS_STREAMLIT_PORT}")"
-else
-  SCREENALYTICS_STREAMLIT_LISTENERS="disabled"
-fi
-if screenalytics_web_enabled; then
-  SCREENALYTICS_WEB_LISTENERS="$(port_listeners "${SCREENALYTICS_WEB_PORT}")"
-else
-  SCREENALYTICS_WEB_LISTENERS="disabled"
-fi
 RUN_STATE="$([[ "$HAVE_PIDFILE" -eq 1 ]] && echo active || echo inactive)"
 BACKEND_WATCHDOG_STATE_LABEL="active"
 CODEX_APP_SERVER_ROWS="$(list_codex_app_servers)"
@@ -521,14 +455,8 @@ if [[ "$OUTPUT_FORMAT" == "json" ]]; then
   },
   "modes": {
     "workspace_dev_mode": "$(json_escape "$(workspace_dev_mode_value)")",
-    "screenalytics_mode": "$(json_escape "$(screenalytics_mode_label)")",
-    "workspace_screenalytics": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_SCREENALYTICS:-}")")",
-    "workspace_screenalytics_skip_docker": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_SCREENALYTICS_SKIP_DOCKER:-}")")",
-    "workspace_screenalytics_streamlit_enabled": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_SCREENALYTICS_STREAMLIT_ENABLED:-}")")",
-    "workspace_screenalytics_web_enabled": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_SCREENALYTICS_WEB_ENABLED:-}")")",
     "workspace_open_browser": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_OPEN_BROWSER:-}")")",
     "workspace_browser_tab_sync_mode": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_BROWSER_TAB_SYNC_MODE:-}")")",
-    "workspace_open_screenalytics_tabs": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_OPEN_SCREENALYTICS_TABS:-}")")",
     "workspace_strict": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_STRICT:-}")")",
     "workspace_backend_auto_restart": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_BACKEND_AUTO_RESTART:-}")")",
     "workspace_backend_health_interval_seconds": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS:-}")")",
@@ -567,23 +495,17 @@ if [[ "$OUTPUT_FORMAT" == "json" ]]; then
     "trr_app": {"pid": "$(json_escape "${TRR_APP_PID:-}")", "running": $(pid_running_json "${TRR_APP_PID:-}")},
     "trr_social_worker": {"pid": "$(json_escape "${TRR_SOCIAL_WORKER_PID:-}")", "running": $(pid_running_json "${TRR_SOCIAL_WORKER_PID:-}")},
     "trr_remote_workers": {"pid": "$(json_escape "${TRR_REMOTE_WORKERS_PID:-}")", "running": $(pid_running_json "${TRR_REMOTE_WORKERS_PID:-}")},
-    "trr_backend": {"pid": "$(json_escape "${TRR_BACKEND_PID:-}")", "running": $(pid_running_json "${TRR_BACKEND_PID:-}")},
-    "screenalytics": {"pid": "$(json_escape "${SCREENALYTICS_PID:-}")", "running": $(pid_running_json "${SCREENALYTICS_PID:-}")}
+    "trr_backend": {"pid": "$(json_escape "${TRR_BACKEND_PID:-}")", "running": $(pid_running_json "${TRR_BACKEND_PID:-}")}
   },
   "ports": {
     "trr_app": {"port": "${TRR_APP_PORT}", "listeners": "$(json_escape "$TRR_APP_LISTENERS")"},
-    "trr_backend": {"port": "${TRR_BACKEND_PORT}", "listeners": "$(json_escape "$TRR_BACKEND_LISTENERS")"},
-    "screenalytics_api": {"port": "${SCREENALYTICS_API_PORT}", "listeners": "$(json_escape "$SCREENALYTICS_API_LISTENERS")"},
-    "screenalytics_streamlit": {"port": "${SCREENALYTICS_STREAMLIT_PORT}", "listeners": "$(json_escape "$SCREENALYTICS_STREAMLIT_LISTENERS")"},
-    "screenalytics_web": {"port": "${SCREENALYTICS_WEB_PORT}", "listeners": "$(json_escape "$SCREENALYTICS_WEB_LISTENERS")"}
+    "trr_backend": {"port": "${TRR_BACKEND_PORT}", "listeners": "$(json_escape "$TRR_BACKEND_LISTENERS")"}
   },
   "health": {
     "trr_backend_url": "$(json_escape "$BACKEND_HEALTH_URL")",
     "trr_backend_status": "$(json_escape "$BACKEND_HEALTH_STATUS")",
     "trr_app_url": "$(json_escape "$APP_HEALTH_URL")",
-    "trr_app_status": "$(json_escape "$APP_HEALTH_STATUS")",
-    "screenalytics_api_url": "$(json_escape "$SCREENALYTICS_HEALTH_URL")",
-    "screenalytics_api_status": "$(json_escape "$SCREENALYTICS_HEALTH_STATUS")"
+    "trr_app_status": "$(json_escape "$APP_HEALTH_STATUS")"
   },
   "backend_watchdog": {
     "state": "$(json_escape "$BACKEND_WATCHDOG_STATE_LABEL")",
@@ -623,14 +545,8 @@ echo ""
 
 echo "[status] Workspace modes:"
 echo "  WORKSPACE_DEV_MODE: $(workspace_dev_mode_label)"
-echo "  screenalytics mode: $(screenalytics_mode_label)"
-echo "  WORKSPACE_SCREENALYTICS: $(runtime_value_or_na "${WORKSPACE_SCREENALYTICS:-}")"
-echo "  WORKSPACE_SCREENALYTICS_SKIP_DOCKER: $(runtime_value_or_na "${WORKSPACE_SCREENALYTICS_SKIP_DOCKER:-}")"
-echo "  WORKSPACE_SCREENALYTICS_STREAMLIT_ENABLED: $(runtime_value_or_na "${WORKSPACE_SCREENALYTICS_STREAMLIT_ENABLED:-}")"
-echo "  WORKSPACE_SCREENALYTICS_WEB_ENABLED: $(runtime_value_or_na "${WORKSPACE_SCREENALYTICS_WEB_ENABLED:-}")"
 echo "  WORKSPACE_OPEN_BROWSER: $(runtime_value_or_na "${WORKSPACE_OPEN_BROWSER:-}")"
 echo "  WORKSPACE_BROWSER_TAB_SYNC_MODE: $(runtime_value_or_na "${WORKSPACE_BROWSER_TAB_SYNC_MODE:-}")"
-echo "  WORKSPACE_OPEN_SCREENALYTICS_TABS: $(runtime_value_or_na "${WORKSPACE_OPEN_SCREENALYTICS_TABS:-}")"
 echo "  WORKSPACE_STRICT: $(runtime_value_or_na "${WORKSPACE_STRICT:-}")"
 echo "  WORKSPACE_BACKEND_AUTO_RESTART: $(runtime_value_or_na "${WORKSPACE_BACKEND_AUTO_RESTART:-}")"
 echo "  WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS: $(runtime_value_or_na "${WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS:-}")"
@@ -671,29 +587,16 @@ echo "  TRR_APP: $(pid_state "${TRR_APP_PID:-}")"
 echo "  TRR_SOCIAL_WORKER: $(pid_state "${TRR_SOCIAL_WORKER_PID:-}")"
 echo "  TRR_REMOTE_WORKERS: $(remote_workers_process_state)"
 echo "  TRR_BACKEND: $(pid_state "${TRR_BACKEND_PID:-}")"
-if screenalytics_enabled; then
-  echo "  SCREENALYTICS: $(pid_state "${SCREENALYTICS_PID:-}")"
-else
-  echo "  SCREENALYTICS: disabled (WORKSPACE_SCREENALYTICS=0)"
-fi
 echo ""
 
 echo "[status] Port listeners:"
 echo "  TRR-APP (:${TRR_APP_PORT}): ${TRR_APP_LISTENERS}"
 echo "  TRR-Backend (:${TRR_BACKEND_PORT}): ${TRR_BACKEND_LISTENERS}"
-echo "  screenalytics API (:${SCREENALYTICS_API_PORT}): ${SCREENALYTICS_API_LISTENERS}"
-echo "  screenalytics Streamlit (:${SCREENALYTICS_STREAMLIT_PORT}): ${SCREENALYTICS_STREAMLIT_LISTENERS}"
-echo "  screenalytics Web (:${SCREENALYTICS_WEB_PORT}): ${SCREENALYTICS_WEB_LISTENERS}"
 echo ""
 
 echo "[status] Health checks (best effort):"
 echo "  TRR-Backend (${BACKEND_HEALTH_URL}): ${BACKEND_HEALTH_STATUS}"
 echo "  TRR-APP (${APP_HEALTH_URL}): ${APP_HEALTH_STATUS}"
-if screenalytics_enabled; then
-  echo "  screenalytics API (${SCREENALYTICS_HEALTH_URL}): ${SCREENALYTICS_HEALTH_STATUS}"
-else
-  echo "  screenalytics API (${SCREENALYTICS_HEALTH_URL}): disabled"
-fi
 echo ""
 
 echo "[status] Backend watchdog:"

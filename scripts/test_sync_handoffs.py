@@ -190,7 +190,7 @@ class SyncHandoffsTests(unittest.TestCase):
         MODULE.ROOT = self.root
         try:
             self.write_file(
-                "screenalytics/docs/ai/local-status/fresh-active.md",
+                "TRR-APP/docs/ai/local-status/fresh-active.md",
                 """
                 # Fresh Active
 
@@ -207,7 +207,7 @@ class SyncHandoffsTests(unittest.TestCase):
                 """,
             )
             self.write_file(
-                "screenalytics/docs/ai/local-status/fresh-blocked.md",
+                "TRR-APP/docs/ai/local-status/fresh-blocked.md",
                 """
                 # Fresh Blocked
 
@@ -224,7 +224,7 @@ class SyncHandoffsTests(unittest.TestCase):
                 """,
             )
             self.write_file(
-                "screenalytics/docs/ai/local-status/fresh-recent.md",
+                "TRR-APP/docs/ai/local-status/fresh-recent.md",
                 """
                 # Fresh Recent
 
@@ -241,7 +241,7 @@ class SyncHandoffsTests(unittest.TestCase):
                 """,
             )
 
-            scope = MODULE.build_scopes(self.root)["screenalytics"]
+            scope = MODULE.build_scopes(self.root)["app"]
             rendered = MODULE.render_scope(scope, MODULE.dt.date(2026, 3, 20))
             self.assertIn("Fresh Active", self.extract_section(rendered, "Current Active Work", "Blocked / Waiting"))
             self.assertIn("Fresh Blocked", self.extract_section(rendered, "Blocked / Waiting", "Recent Completions"))
@@ -257,7 +257,7 @@ class SyncHandoffsTests(unittest.TestCase):
         MODULE.ROOT = self.root
         try:
             self.write_file(
-                "screenalytics/docs/ai/local-status/stale-active.md",
+                "TRR-APP/docs/ai/local-status/stale-active.md",
                 """
                 # Stale Active
 
@@ -274,7 +274,7 @@ class SyncHandoffsTests(unittest.TestCase):
                 """,
             )
             self.write_file(
-                "screenalytics/docs/ai/local-status/stale-blocked.md",
+                "TRR-APP/docs/ai/local-status/stale-blocked.md",
                 """
                 # Stale Blocked
 
@@ -291,7 +291,7 @@ class SyncHandoffsTests(unittest.TestCase):
                 """,
             )
             self.write_file(
-                "screenalytics/docs/ai/local-status/stale-recent.md",
+                "TRR-APP/docs/ai/local-status/stale-recent.md",
                 """
                 # Stale Recent
 
@@ -308,7 +308,7 @@ class SyncHandoffsTests(unittest.TestCase):
                 """,
             )
 
-            scope = MODULE.build_scopes(self.root)["screenalytics"]
+            scope = MODULE.build_scopes(self.root)["app"]
             rendered = MODULE.render_scope(scope, MODULE.dt.date(2026, 3, 20))
             older_plans = self.extract_section(rendered, "Older Plans", "Archives / Canonical Links")
 
