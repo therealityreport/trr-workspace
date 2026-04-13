@@ -7,7 +7,6 @@ Purpose: active-work index for multi-turn AI agent sessions affecting workspace-
 ## Current Active Work
 - `Workspace Test Hygiene Flags — 2026-04-10` | last updated `2026-04-10` | current phase `repo-wide test hygiene tracking` | next action `carry forward flagged non-TikTok test fall-through separately from TikTok path reprioritization` | details `local-status/workspace-test-hygiene-flags-2026-04-10.md`
 - `TikTok `@bravowwhl` Run `093de71d` Diagnostics` | last updated `2026-04-10` | current phase `post-pivot follow-ups queued` | next action `land handoff repair and bounded html-parser fallback research note` | details `local-status/tiktok-bravowwhl-run-093de71d-diagnostics.md`
-- `Multi-Browser Admin Polling Optimization` | last updated `2026-04-08` | current phase `first shared-read rollout landed; broader polling snapshot migration remains open` | next action `finish the remaining snapshot routes, client migrations, and invalidation wiring, then run broader TRR-APP validation once unrelated dirty changes are isolated` | details `local-status/multi-browser-admin-polling-optimization-2026-04-08.md`
 
 ## Blocked / Waiting
 - None.
@@ -17,6 +16,7 @@ Purpose: active-work index for multi-turn AI agent sessions affecting workspace-
 - `Workspace health-dot summary-only hardening` | last updated `2026-04-08` | current phase `health-dot summary-only hardening landed and the original oversized-pool regression is closed` | next action `monitor for renewed watchdog or pool-contention warnings and only reopen this lane if those symptoms recur under active admin traffic` | details `local-status/workspace-health-dot-summary-only-hardening-2026-04-08.md`
 
 ## Older Plans
+- `Multi-Browser Admin Polling Optimization` | last updated `2026-04-08` | current phase `first shared-read rollout landed; broader polling snapshot migration remains open` | next action `finish the remaining snapshot routes, client migrations, and invalidation wiring, then run broader TRR-APP validation once unrelated dirty changes are isolated` | details `local-status/multi-browser-admin-polling-optimization-2026-04-08.md`
 - `Admin Screenalytics Stage 6 And Fan-In Rollout` | last updated `2026-04-07` | current phase `phase closeout completed; remaining remediation in progress` | next action `finish auth cleanup, page decomposition, dependency hygiene, and env/backfill tooling` | details `local-status/admin-screenalytics-stage6-and-fan-in-rollout-2026-04-07.md`
 - `Workspace Defaults Script Alignment Phase 7` | last updated `2026-04-03` | current phase `phase 7 defaults and profile alignment implemented` | next action `Execute Phase 8 to verify the no-Docker path end-to-end and document the remaining Docker-only fallback cases.` | details `local-status/workspace-defaults-script-alignment-phase7.md`
 - `Workspace Cloud-First Validation Contract Phase 6` | last updated `2026-04-03` | current phase `phase 6 contract freeze implemented` | next action `Execute Phase 7 to align default scripts and profiles to the frozen cloud-first contract.` | details `local-status/workspace-cloud-first-validation-contract-phase6.md`
@@ -26,7 +26,6 @@ Purpose: active-work index for multi-turn AI agent sessions affecting workspace-
 - `Instagram remote backfill readiness` | last updated `2026-03-30` | current phase `complete` | next action `Use Sync Recent as the first operator canary, then run Resume Tail if a resumable frontier exists, then launch full-history Backfill Posts with Modal worker-health monitoring.` | details `local-status/instagram-remote-backfill-readiness-2026-03-30.md`
 - `Env contract migration and local startup recovery` | last updated `2026-03-30` | current phase `complete` | next action `Use docs/workspace/vercel-env-review.md as the reviewed live-env source of truth; survey cutover may resume from the Vercel env-governance standpoint because no unknown-blocking entries remain.` | details `local-status/env-contract-migration-and-local-startup-recovery-2026-03-30.md`
 - `Social runtime warning and closeout cleanup` | last updated `2026-03-27` | current phase `complete` | next action `If runtime warnings reappear, start from the social account and auth-bypass test mocks before changing app code.` | details `local-status/social-runtime-warning-and-closeout-cleanup-2026-03-27.md`
-- `Social reliability regression sweep` | last updated `2026-03-27` | current phase `complete` | next action `Continue from broader social backend/app validation if new queue, mirror, or proxy regressions appear.` | details `local-status/social-reliability-regression-sweep-2026-03-27.md`
 
 ## Archives / Canonical Links
 - History archive: `archive/HANDOFF-legacy-2026-03-16.md`
@@ -34,4 +33,3 @@ Purpose: active-work index for multi-turn AI agent sessions affecting workspace-
 - Workspace policy: `../../AGENTS.md`
 - TRR-Backend handoff: `../../TRR-Backend/docs/ai/HANDOFF.md`
 - TRR-APP handoff: `../../TRR-APP/docs/ai/HANDOFF.md`
-- screenalytics handoff: `../../screenalytics/docs/ai/HANDOFF.md`

@@ -13,14 +13,4 @@ trr_ensure_repo_runtime "$ROOT/TRR-Backend" "$ROOT/TRR-Backend/requirements.txt"
 echo "[test] TRR-APP..."
 (cd "$ROOT/TRR-APP/apps/web" && pnpm run lint && pnpm exec next build --webpack && pnpm run test:ci)
 
-echo "[test] screenalytics..."
-if [[ ! -x "$ROOT/screenalytics/.venv/bin/python" ]]; then
-  echo "[test] ERROR: screenalytics/.venv missing. Run: make bootstrap" >&2
-  exit 1
-fi
-"$ROOT/screenalytics/.venv/bin/python" -m py_compile \
-  "$ROOT/screenalytics/apps/api/main.py" \
-  "$ROOT/screenalytics/apps/workspace-ui/streamlit_app.py"
-(cd "$ROOT/screenalytics" && "$ROOT/screenalytics/.venv/bin/pytest" -q tests/api/test_trr_health.py)
-
 echo "[test] Done."

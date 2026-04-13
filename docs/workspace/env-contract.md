@@ -18,10 +18,6 @@ Visibility tiers:
 | `ADMIN_ENFORCE_HOST` | `true` | `true` or `false` | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `ADMIN_STRICT_HOST_ROUTING` | `false` | `true` or `false` | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `PROFILE` | `` | string | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
-| `SCREENALYTICS_API_PORT` | `8001` | integer port | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
-| `SCREENALYTICS_DEV_AUTO_ALLOW_DB_ERROR` | `$SCREENALYTICS_DEV_AUTO_ALLOW_DB_ERROR_DEFAULT` | string | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
-| `SCREENALYTICS_STREAMLIT_PORT` | `8501` | integer port | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
-| `SCREENALYTICS_WEB_PORT` | `8080` | integer port | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `TRR_ADMIN_ROUTE_CACHE_DISABLED` | `1` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Disable Next.js in-memory admin route caching during managed local workspace runs. |
 | `TRR_APP_HOST` | `127.0.0.1` | string | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `TRR_APP_PORT` | `3000` | integer port | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
@@ -48,16 +44,7 @@ Visibility tiers:
 | `WORKSPACE_HEALTH_CURL_MAX_TIME` | `2` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_HEALTH_TIMEOUT_APP` | `60` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_HEALTH_TIMEOUT_BACKEND` | `30` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
-| `WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_API` | `30` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
-| `WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_STREAMLIT` | `90` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
-| `WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_WEB` | `90` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_OPEN_BROWSER` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable automatic browser tab sync/open after startup. |
-| `WORKSPACE_OPEN_SCREENALYTICS_TABS` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Include screenalytics tabs in browser sync flow. |
-| `WORKSPACE_SCREENALYTICS` | `1` | string | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable or disable screenalytics service startup in workspace dev mode. |
-| `WORKSPACE_SCREENALYTICS_SERVICE_TOKEN` | `$(workspace_local_auth_secret screenalytics-service)` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
-| `WORKSPACE_SCREENALYTICS_SKIP_DOCKER` | `1` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Use screenalytics without local Docker infra (Redis/MinIO bypass mode). |
-| `WORKSPACE_SCREENALYTICS_STREAMLIT_ENABLED` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable or disable the screenalytics Streamlit UI during workspace startup. |
-| `WORKSPACE_SCREENALYTICS_WEB_ENABLED` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable or disable the screenalytics Web UI during workspace startup. |
 | `WORKSPACE_SOCIAL_WORKER_COMMENTS` | `1` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_SOCIAL_WORKER_COMMENT_MEDIA_MIRROR` | `0` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_SOCIAL_WORKER_ENABLED` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
