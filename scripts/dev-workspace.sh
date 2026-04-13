@@ -9,8 +9,7 @@ source "$ROOT/scripts/lib/workspace-terminal.sh"
 
 # Optional profile defaults.
 # Usage: PROFILE=default make dev
-# Default workspace contract: `make dev` is cloud-first. `local_docker` is an
-# explicit fallback for local-only Screenalytics / Redis / MinIO cases.
+# Default workspace contract: `make dev` is a cloud-first two-repo workspace.
 PROFILE="${PROFILE:-}"
 if [[ -n "$PROFILE" ]]; then
   PROFILE_FILE="$ROOT/profiles/${PROFILE}.env"
@@ -70,10 +69,6 @@ if [[ -x "$ROOT/scripts/codex-mcp-session-reaper.sh" ]]; then
 fi
 
 # Workspace toggles
-WORKSPACE_SCREENALYTICS="${WORKSPACE_SCREENALYTICS:-1}"
-WORKSPACE_SCREENALYTICS_SKIP_DOCKER="${WORKSPACE_SCREENALYTICS_SKIP_DOCKER:-1}"
-WORKSPACE_SCREENALYTICS_STREAMLIT_ENABLED="${WORKSPACE_SCREENALYTICS_STREAMLIT_ENABLED:-1}"
-WORKSPACE_SCREENALYTICS_WEB_ENABLED="${WORKSPACE_SCREENALYTICS_WEB_ENABLED:-1}"
 WORKSPACE_DEV_MODE="${WORKSPACE_DEV_MODE:-}"
 WORKSPACE_STRICT="${WORKSPACE_STRICT:-0}"
 WORKSPACE_FORCE_KILL_PORT_CONFLICTS="${WORKSPACE_FORCE_KILL_PORT_CONFLICTS:-0}"
@@ -81,13 +76,9 @@ WORKSPACE_CLEAN_NEXT_CACHE="${WORKSPACE_CLEAN_NEXT_CACHE:-0}"
 WORKSPACE_TRR_APP_DEV_BUNDLER="${WORKSPACE_TRR_APP_DEV_BUNDLER:-turbopack}"
 WORKSPACE_OPEN_BROWSER="${WORKSPACE_OPEN_BROWSER:-0}"
 WORKSPACE_BROWSER_TAB_SYNC_MODE="${WORKSPACE_BROWSER_TAB_SYNC_MODE:-reuse_no_reload}"
-WORKSPACE_OPEN_SCREENALYTICS_TABS="${WORKSPACE_OPEN_SCREENALYTICS_TABS:-0}"
 WORKSPACE_HEALTH_CURL_MAX_TIME="${WORKSPACE_HEALTH_CURL_MAX_TIME:-2}"
 WORKSPACE_HEALTH_TIMEOUT_BACKEND="${WORKSPACE_HEALTH_TIMEOUT_BACKEND:-30}"
 WORKSPACE_HEALTH_TIMEOUT_APP="${WORKSPACE_HEALTH_TIMEOUT_APP:-60}"
-WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_API="${WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_API:-30}"
-WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_STREAMLIT="${WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_STREAMLIT:-90}"
-WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_WEB="${WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_WEB:-90}"
 WORKSPACE_BACKEND_AUTO_RESTART="${WORKSPACE_BACKEND_AUTO_RESTART:-0}"
 WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS="${WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS:-5}"
 WORKSPACE_BACKEND_HEALTH_FAILURE_THRESHOLD="${WORKSPACE_BACKEND_HEALTH_FAILURE_THRESHOLD:-6}"
@@ -138,22 +129,17 @@ TRR_REDDIT_CACHE_LOOKUP_TIMEOUT_MS="${TRR_REDDIT_CACHE_LOOKUP_TIMEOUT_MS:-20000}
 TRR_REDDIT_CACHE_LOOKUP_RETRIES="${TRR_REDDIT_CACHE_LOOKUP_RETRIES:-1}"
 
 if [[ -z "$WORKSPACE_DEV_MODE" ]]; then
-  if [[ "$WORKSPACE_SCREENALYTICS_SKIP_DOCKER" == "1" ]]; then
-    WORKSPACE_DEV_MODE="cloud"
-  else
-    WORKSPACE_DEV_MODE="local_docker"
-  fi
+  WORKSPACE_DEV_MODE="cloud"
 fi
 
-if [[ "$WORKSPACE_DEV_MODE" != "cloud" && "$WORKSPACE_DEV_MODE" != "local_docker" ]]; then
-  echo "[workspace] ERROR: invalid WORKSPACE_DEV_MODE='${WORKSPACE_DEV_MODE}' (expected cloud for the preferred no-Docker path or local_docker for the explicit Docker fallback)." >&2
+if [[ "$WORKSPACE_DEV_MODE" == "local_docker" ]]; then
+  echo "[workspace] NOTE: WORKSPACE_DEV_MODE=local_docker is retired; continuing with cloud mode." >&2
+  WORKSPACE_DEV_MODE="cloud"
+fi
+
+if [[ "$WORKSPACE_DEV_MODE" != "cloud" ]]; then
+  echo "[workspace] ERROR: invalid WORKSPACE_DEV_MODE='${WORKSPACE_DEV_MODE}' (expected cloud)." >&2
   exit 1
-fi
-
-if [[ "$WORKSPACE_DEV_MODE" == "cloud" ]]; then
-  WORKSPACE_SCREENALYTICS_SKIP_DOCKER="1"
-elif [[ "$WORKSPACE_DEV_MODE" == "local_docker" ]]; then
-  WORKSPACE_SCREENALYTICS_SKIP_DOCKER="0"
 fi
 
 workspace_local_auth_secret() {
@@ -172,47 +158,14 @@ workspace_local_auth_secret() {
 }
 
 WORKSPACE_TRR_INTERNAL_ADMIN_SHARED_SECRET="${TRR_INTERNAL_ADMIN_SHARED_SECRET:-$(workspace_local_auth_secret internal-admin)}"
-WORKSPACE_SCREENALYTICS_SERVICE_TOKEN="${SCREENALYTICS_SERVICE_TOKEN:-$(workspace_local_auth_secret screenalytics-service)}"
-
-workspace_screenalytics_mode_label() {
-  if [[ "$WORKSPACE_SCREENALYTICS" != "1" ]]; then
-    echo "disabled"
-    return 0
-  fi
-  if [[ "$WORKSPACE_DEV_MODE" == "local_docker" ]]; then
-    echo "explicit local Docker fallback (Redis + MinIO)"
-    return 0
-  fi
-  echo "preferred cloud-backed (no Docker)"
-}
 
 workspace_dev_mode_label() {
-  if [[ "$WORKSPACE_DEV_MODE" == "local_docker" ]]; then
-    echo "local_docker (explicit Docker fallback)"
-    return 0
-  fi
   echo "cloud (preferred no-Docker path)"
-}
-
-workspace_screenalytics_streamlit_enabled() {
-  [[ "$WORKSPACE_SCREENALYTICS" == "1" && "$WORKSPACE_SCREENALYTICS_STREAMLIT_ENABLED" == "1" ]]
-}
-
-workspace_screenalytics_web_enabled() {
-  [[ "$WORKSPACE_SCREENALYTICS" == "1" && "$WORKSPACE_SCREENALYTICS_WEB_ENABLED" == "1" ]]
 }
 
 if ! [[ "$WORKSPACE_BACKEND_AUTO_RESTART" =~ ^[01]$ ]]; then
   echo "[workspace] WARNING: invalid WORKSPACE_BACKEND_AUTO_RESTART='${WORKSPACE_BACKEND_AUTO_RESTART}', using 1." >&2
   WORKSPACE_BACKEND_AUTO_RESTART="1"
-fi
-if ! [[ "$WORKSPACE_SCREENALYTICS_STREAMLIT_ENABLED" =~ ^[01]$ ]]; then
-  echo "[workspace] WARNING: invalid WORKSPACE_SCREENALYTICS_STREAMLIT_ENABLED='${WORKSPACE_SCREENALYTICS_STREAMLIT_ENABLED}', using 1." >&2
-  WORKSPACE_SCREENALYTICS_STREAMLIT_ENABLED="1"
-fi
-if ! [[ "$WORKSPACE_SCREENALYTICS_WEB_ENABLED" =~ ^[01]$ ]]; then
-  echo "[workspace] WARNING: invalid WORKSPACE_SCREENALYTICS_WEB_ENABLED='${WORKSPACE_SCREENALYTICS_WEB_ENABLED}', using 1." >&2
-  WORKSPACE_SCREENALYTICS_WEB_ENABLED="1"
 fi
 if ! [[ "$WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS" =~ ^[1-9][0-9]*$ ]]; then
   echo "[workspace] WARNING: invalid WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS='${WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS}', using 5." >&2
@@ -379,13 +332,6 @@ if ! [[ "$TRR_REDDIT_CACHE_LOOKUP_RETRIES" =~ ^[0-9]+$ ]]; then
   TRR_REDDIT_CACHE_LOOKUP_RETRIES="1"
 fi
 
-# screenalytics dev_auto defaults (may be overridden via env when invoking this script).
-SCREENALYTICS_DEV_AUTO_ALLOW_DB_ERROR_DEFAULT="0"
-if [[ "$WORKSPACE_STRICT" != "1" ]]; then
-  SCREENALYTICS_DEV_AUTO_ALLOW_DB_ERROR_DEFAULT="1"
-fi
-SCREENALYTICS_DEV_AUTO_ALLOW_DB_ERROR="${DEV_AUTO_ALLOW_DB_ERROR:-$SCREENALYTICS_DEV_AUTO_ALLOW_DB_ERROR_DEFAULT}"
-
 # Avoid relying on `#!/usr/bin/env bash` (or the `env` command) in sub-scripts.
 # If PATH contains a slow/unavailable entry, `/usr/bin/env` can hang while
 # searching for `bash`, leaving services "started" but with no listeners.
@@ -405,18 +351,10 @@ ADMIN_APP_HOSTS="${ADMIN_APP_HOSTS:-admin.localhost,localhost,127.0.0.1,[::1]}"
 ADMIN_ENFORCE_HOST="${ADMIN_ENFORCE_HOST:-true}"
 ADMIN_STRICT_HOST_ROUTING="${ADMIN_STRICT_HOST_ROUTING:-false}"
 
-# Default to :8001 to avoid clashing with TRR-Backend (:8000).
-SCREENALYTICS_API_PORT="${SCREENALYTICS_API_PORT:-8001}"
-SCREENALYTICS_STREAMLIT_PORT="${SCREENALYTICS_STREAMLIT_PORT:-8501}"
-SCREENALYTICS_WEB_PORT="${SCREENALYTICS_WEB_PORT:-8080}"
-
 # Managed local workspace runs always use loopback service URLs derived from
 # the launcher ports. Inherited shell values must not hijack local routing.
 TRR_API_URL="http://127.0.0.1:${TRR_BACKEND_PORT}"
 BACKEND_HEALTH_URL="${TRR_API_URL}/health"
-SCREENALYTICS_LOCAL_API_URL="http://127.0.0.1:${SCREENALYTICS_API_PORT}"
-SCREENALYTICS_API_URL="${SCREENALYTICS_LOCAL_API_URL}"
-SCREENALYTICS_LOCAL_HEALTH_URL="${SCREENALYTICS_LOCAL_API_URL}/healthz"
 TRR_APP_LOCAL_ENV_FILE="$ROOT/TRR-APP/apps/web/.env.local"
 TRR_BACKEND_LOCAL_ENV_FILE="$ROOT/TRR-Backend/.env"
 
@@ -432,7 +370,6 @@ fi
 
 TRR_BACKEND_LOG="${LOG_DIR}/trr-backend.log"
 TRR_APP_LOG="${LOG_DIR}/trr-app.log"
-SCREENALYTICS_LOG="${LOG_DIR}/screenalytics.log"
 SOCIAL_WORKER_LOG="${LOG_DIR}/social-worker.log"
 REMOTE_WORKER_LOG="${LOG_DIR}/remote-workers.log"
 BACKEND_WATCHDOG_STATE_FILE="${LOG_DIR}/backend-watchdog.env"
@@ -442,7 +379,7 @@ BACKEND_WATCHDOG_EVENTS_FILE="${LOG_DIR}/backend-watchdog-events.jsonl"
 RUN_TS="$(date +%Y%m%d-%H%M%S)"
 ARCHIVE_DIR="${LOG_DIR}/archive/${RUN_TS}"
 rotated_any=0
-for log in "$TRR_BACKEND_LOG" "$TRR_APP_LOG" "$SCREENALYTICS_LOG" "$SOCIAL_WORKER_LOG" "$REMOTE_WORKER_LOG"; do
+for log in "$TRR_BACKEND_LOG" "$TRR_APP_LOG" "$SOCIAL_WORKER_LOG" "$REMOTE_WORKER_LOG"; do
   if [[ -f "$log" && -s "$log" ]]; then
     rotated_any=1
     break
@@ -450,7 +387,7 @@ for log in "$TRR_BACKEND_LOG" "$TRR_APP_LOG" "$SCREENALYTICS_LOG" "$SOCIAL_WORKE
 done
 if [[ "$rotated_any" -eq 1 ]]; then
   mkdir -p "$ARCHIVE_DIR"
-  for log in "$TRR_BACKEND_LOG" "$TRR_APP_LOG" "$SCREENALYTICS_LOG" "$SOCIAL_WORKER_LOG" "$REMOTE_WORKER_LOG"; do
+  for log in "$TRR_BACKEND_LOG" "$TRR_APP_LOG" "$SOCIAL_WORKER_LOG" "$REMOTE_WORKER_LOG"; do
     if [[ -f "$log" ]]; then
       mv "$log" "$ARCHIVE_DIR/$(basename "$log")"
     fi
@@ -460,7 +397,6 @@ fi
 
 : > "$TRR_BACKEND_LOG"
 : > "$TRR_APP_LOG"
-: > "$SCREENALYTICS_LOG"
 : > "$SOCIAL_WORKER_LOG"
 : > "$REMOTE_WORKER_LOG"
 
@@ -558,9 +494,6 @@ is_safe_stale() {
   if [[ "$port" == "$TRR_BACKEND_PORT" ]]; then
     [[ "$cmd" == *"uvicorn"* && "$cmd" == *"api.main:app"* ]] && return 0
   fi
-  if [[ "$port" == "$SCREENALYTICS_API_PORT" ]]; then
-    [[ "$cmd" == *"uvicorn"* && "$cmd" == *"apps.api.main:app"* ]] && return 0
-  fi
 
   return 1
 }
@@ -652,100 +585,6 @@ if [ -z "${NEXT_PUBLIC_SUPABASE_URL:-}" ] || [ -z "${NEXT_PUBLIC_SUPABASE_ANON_K
     "Flashback browser envs are missing." \
     "Impact: /flashback/cover and /flashback/play stay unavailable; normal startup is unaffected." \
     "Remediation: set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in apps/web/.env.local so they point at the same project as TRR_CORE_SUPABASE_URL."
-fi
-
-# ---------------------------------------------------------------------------
-# Optional screenalytics gating (Docker is only required in the explicit local_docker fallback mode)
-# ---------------------------------------------------------------------------
-if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
-  if [[ "$WORKSPACE_SCREENALYTICS_SKIP_DOCKER" != "1" ]]; then
-    if ! command -v docker >/dev/null 2>&1; then
-      if [[ "$WORKSPACE_STRICT" == "1" ]]; then
-        echo "[workspace] ERROR: docker not found (required for the explicit make dev-local fallback / local Screenalytics Redis + MinIO)." >&2
-        exit 1
-      fi
-      echo "[workspace] WARNING: docker not found; disabling screenalytics for this session because the explicit Docker fallback is unavailable." >&2
-      WORKSPACE_SCREENALYTICS=0
-    elif ! docker info >/dev/null 2>&1; then
-      echo "[workspace] Docker fallback selected; Docker daemon is not running. Starting Docker..."
-      if [[ "$(uname)" == "Darwin" ]]; then
-        if [[ -d "/Applications/Docker.app" ]]; then
-          open -a Docker
-          echo "[workspace] Waiting for Docker daemon for the explicit dev-local fallback..."
-          for i in $(seq 1 60); do
-            if docker info >/dev/null 2>&1; then
-              echo "[workspace] Docker daemon is ready."
-              break
-            fi
-            sleep 1
-            if (( i % 10 == 0 )); then
-              echo "[workspace]   Still waiting... (${i}s elapsed)"
-            fi
-          done
-        fi
-      fi
-
-      if ! docker info >/dev/null 2>&1; then
-        if [[ "$WORKSPACE_STRICT" == "1" ]]; then
-          echo "[workspace] ERROR: Docker daemon is not running (required for the explicit make dev-local fallback / local Screenalytics Redis + MinIO)." >&2
-          exit 1
-        fi
-        echo "[workspace] WARNING: Docker daemon not available; disabling screenalytics for this session because the explicit Docker fallback is unavailable." >&2
-        WORKSPACE_SCREENALYTICS=0
-      else
-        echo "[workspace] Docker daemon is running for the explicit dev-local fallback."
-      fi
-    else
-      echo "[workspace] Docker daemon is running for the explicit dev-local fallback."
-    fi
-  fi
-
-  if [[ "$WORKSPACE_SCREENALYTICS" == "1" && "$HAVE_LSOF" -eq 1 ]]; then
-    # Screenalytics ports are optional for workspace success. If they conflict with unknown listeners,
-    # disable screenalytics unless in strict mode.
-    rc=0
-    ensure_port_free "$SCREENALYTICS_API_PORT" "screenalytics API" 0 || rc=$?
-    if [[ "$rc" -ne 0 ]]; then
-      if [[ "$WORKSPACE_STRICT" == "1" ]]; then
-        echo "[workspace] ERROR: screenalytics API port conflict in strict mode." >&2
-        exit 1
-      fi
-      echo "[workspace] WARNING: screenalytics API port not available; disabling screenalytics for this session." >&2
-      WORKSPACE_SCREENALYTICS=0
-    fi
-
-    if workspace_screenalytics_streamlit_enabled; then
-      rc=0
-      ensure_port_free "$SCREENALYTICS_STREAMLIT_PORT" "screenalytics Streamlit" 0 || rc=$?
-      if [[ "$rc" -ne 0 ]]; then
-        if [[ "$WORKSPACE_STRICT" == "1" ]]; then
-          echo "[workspace] ERROR: screenalytics Streamlit port conflict in strict mode." >&2
-          exit 1
-        fi
-        echo "[workspace] WARNING: screenalytics Streamlit port not available; disabling the Streamlit UI for this session." >&2
-        WORKSPACE_SCREENALYTICS_STREAMLIT_ENABLED=0
-      fi
-    fi
-
-    if workspace_screenalytics_web_enabled; then
-      rc=0
-      ensure_port_free "$SCREENALYTICS_WEB_PORT" "screenalytics Web" 0 || rc=$?
-      if [[ "$rc" -ne 0 ]]; then
-        if [[ "$WORKSPACE_STRICT" == "1" ]]; then
-          echo "[workspace] ERROR: screenalytics Web port conflict in strict mode." >&2
-          exit 1
-        fi
-        echo "[workspace] WARNING: screenalytics Web port not available; disabling the Web UI for this session." >&2
-        WORKSPACE_SCREENALYTICS_WEB_ENABLED=0
-      fi
-    fi
-  fi
-
-  if [[ "$WORKSPACE_SCREENALYTICS" == "1" && "$WORKSPACE_SCREENALYTICS_SKIP_DOCKER" != "1" ]]; then
-    # Start explicit local screenalytics fallback infrastructure (Redis + MinIO) before services.
-    echo "[workspace] Starting explicit local Docker fallback infrastructure for Screenalytics (Redis + MinIO)..."
-    docker compose -f "${ROOT}/screenalytics/infra/docker/compose.yaml" up -d
-  fi
 fi
 
 declare -a PIDS=()
@@ -977,26 +816,13 @@ print_workspace_ready_summary() {
   echo "    TRR-APP:             http://${TRR_APP_HOST}:${TRR_APP_PORT}"
   echo "    TRR-APP Admin:       ${ADMIN_APP_ORIGIN}"
   echo "    TRR-Backend:         ${TRR_API_URL}"
-  if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
-    echo "    screenalytics API:   ${SCREENALYTICS_API_URL}"
-    if workspace_screenalytics_streamlit_enabled; then
-      echo "    screenalytics Streamlit: http://127.0.0.1:${SCREENALYTICS_STREAMLIT_PORT}"
-    fi
-    if workspace_screenalytics_web_enabled; then
-      echo "    screenalytics Web:   http://127.0.0.1:${SCREENALYTICS_WEB_PORT}"
-    fi
-  fi
 
   echo "  Runtime:"
   if [[ -n "$PROFILE" ]]; then
     echo "    Workspace profile:   ${PROFILE}"
   fi
   echo "    Workspace dev mode:  $(workspace_dev_mode_label)"
-  if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
-    echo "    Local services:      TRR-APP, TRR-Backend, screenalytics API"
-  else
-    echo "    Local services:      TRR-APP, TRR-Backend"
-  fi
+  echo "    Local services:      TRR-APP, TRR-Backend"
   if [[ "$TRR_BACKEND_RELOAD" == "1" ]]; then
     echo "    TRR-Backend mode:    reload"
   else
@@ -1038,23 +864,9 @@ print_workspace_ready_summary() {
   else
     echo "    Remote execution:    disabled"
   fi
-  if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
-    echo "    screenalytics mode:  $(workspace_screenalytics_mode_label)"
-    if [[ "$WORKSPACE_SCREENALYTICS_SKIP_DOCKER" == "1" ]]; then
-      echo "    screenalytics infra: cloud-first path active; no local Docker fallback infra"
-    else
-      echo "    screenalytics infra: explicit local Redis + MinIO fallback via Docker"
-    fi
-  else
-    echo "    screenalytics:       disabled"
-  fi
-
   echo "  Logs:"
   echo "    ${TRR_APP_LOG}"
   echo "    ${TRR_BACKEND_LOG}"
-  if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
-    echo "    ${SCREENALYTICS_LOG}"
-  fi
   if workspace_local_social_worker_active; then
     echo "    ${SOCIAL_WORKER_LOG}"
   fi
@@ -1087,7 +899,6 @@ start_trr_backend() {
     TRR_DB_FALLBACK_URL=\"${TRR_DB_FALLBACK_URL:-}\" \
     SUPABASE_JWT_SECRET=\"${SUPABASE_JWT_SECRET:-}\" \
     TRR_INTERNAL_ADMIN_SHARED_SECRET=\"$WORKSPACE_TRR_INTERNAL_ADMIN_SHARED_SECRET\" \
-    SCREENALYTICS_SERVICE_TOKEN=\"$WORKSPACE_SCREENALYTICS_SERVICE_TOKEN\" \
     TRR_BACKEND_PORT=\"$TRR_BACKEND_PORT\" \
     TRR_BACKEND_RELOAD=\"$TRR_BACKEND_RELOAD\" \
     TRR_BACKEND_WORKERS=\"$TRR_BACKEND_WORKERS\" \
@@ -1113,7 +924,6 @@ start_trr_backend() {
     SOCIAL_WORKER_POOL_MEDIA_MIRROR=\"$social_stage_media_mirror\" \
     SOCIAL_WORKER_POOL_COMMENT_MEDIA_MIRROR=\"$social_stage_comment_media_mirror\" \
     TRR_API_URL=\"$TRR_API_URL\" \
-    SCREENALYTICS_API_URL=\"$SCREENALYTICS_API_URL\" \
     CORS_ALLOW_ORIGINS=\"http://127.0.0.1:${TRR_APP_PORT},http://localhost:${TRR_APP_PORT}\" \
     exec \"$BASH_BIN\" ./start-api.sh"
 
@@ -1188,7 +998,6 @@ start_trr_app() {
     TRR_DB_URL=\"$TRR_DB_URL\" \
     TRR_DB_FALLBACK_URL=\"${TRR_DB_FALLBACK_URL:-}\" \
     TRR_API_URL=\"$TRR_API_URL\" \
-    SCREENALYTICS_API_URL=\"$SCREENALYTICS_API_URL\" \
     TRR_INTERNAL_ADMIN_SHARED_SECRET=\"$WORKSPACE_TRR_INTERNAL_ADMIN_SHARED_SECRET\" \
     TRR_ADMIN_ROUTE_CACHE_DISABLED=\"$TRR_ADMIN_ROUTE_CACHE_DISABLED\" \
     TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS=\"$TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS\" \
@@ -1332,28 +1141,15 @@ write_backend_watchdog_state
   echo "ADMIN_APP_HOSTS=\"${ADMIN_APP_HOSTS}\""
   echo "ADMIN_ENFORCE_HOST=${ADMIN_ENFORCE_HOST}"
   echo "ADMIN_STRICT_HOST_ROUTING=${ADMIN_STRICT_HOST_ROUTING}"
-  echo "SCREENALYTICS_API_PORT=${SCREENALYTICS_API_PORT}"
-  echo "SCREENALYTICS_STREAMLIT_PORT=${SCREENALYTICS_STREAMLIT_PORT}"
-  echo "SCREENALYTICS_WEB_PORT=${SCREENALYTICS_WEB_PORT}"
   echo "TRR_API_URL=\"${TRR_API_URL}\""
-  echo "SCREENALYTICS_API_URL=\"${SCREENALYTICS_API_URL}\""
-  echo "SCREENALYTICS_LOCAL_API_URL=\"${SCREENALYTICS_LOCAL_API_URL}\""
   echo "WORKSPACE_DEV_MODE=${WORKSPACE_DEV_MODE}"
-  echo "WORKSPACE_SCREENALYTICS=${WORKSPACE_SCREENALYTICS}"
-  echo "WORKSPACE_SCREENALYTICS_SKIP_DOCKER=${WORKSPACE_SCREENALYTICS_SKIP_DOCKER}"
-  echo "WORKSPACE_SCREENALYTICS_STREAMLIT_ENABLED=${WORKSPACE_SCREENALYTICS_STREAMLIT_ENABLED}"
-  echo "WORKSPACE_SCREENALYTICS_WEB_ENABLED=${WORKSPACE_SCREENALYTICS_WEB_ENABLED}"
   echo "WORKSPACE_STRICT=${WORKSPACE_STRICT}"
   echo "WORKSPACE_TRR_APP_DEV_BUNDLER=${WORKSPACE_TRR_APP_DEV_BUNDLER}"
   echo "WORKSPACE_OPEN_BROWSER=${WORKSPACE_OPEN_BROWSER}"
   echo "WORKSPACE_BROWSER_TAB_SYNC_MODE=${WORKSPACE_BROWSER_TAB_SYNC_MODE}"
-  echo "WORKSPACE_OPEN_SCREENALYTICS_TABS=${WORKSPACE_OPEN_SCREENALYTICS_TABS}"
   echo "WORKSPACE_HEALTH_CURL_MAX_TIME=${WORKSPACE_HEALTH_CURL_MAX_TIME}"
   echo "WORKSPACE_HEALTH_TIMEOUT_BACKEND=${WORKSPACE_HEALTH_TIMEOUT_BACKEND}"
   echo "WORKSPACE_HEALTH_TIMEOUT_APP=${WORKSPACE_HEALTH_TIMEOUT_APP}"
-  echo "WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_API=${WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_API}"
-  echo "WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_STREAMLIT=${WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_STREAMLIT}"
-  echo "WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_WEB=${WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_WEB}"
   echo "WORKSPACE_BACKEND_AUTO_RESTART=${WORKSPACE_BACKEND_AUTO_RESTART}"
   echo "WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS=${WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS}"
   echo "WORKSPACE_BACKEND_HEALTH_FAILURE_THRESHOLD=${WORKSPACE_BACKEND_HEALTH_FAILURE_THRESHOLD}"
@@ -1410,29 +1206,6 @@ write_backend_watchdog_state
 } >>"$PIDFILE"
 
 echo "[workspace] Starting services..."
-
-if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
-  start_bg_with_label "SCREENALYTICS" "screenalytics API" "$SCREENALYTICS_LOG" "$BASH_BIN" -lc "cd \"$ROOT/screenalytics\" && \
-    PYTHONUNBUFFERED=1 \
-    TRR_LOCAL_DEV=1 \
-    SCREENALYTICS_ENV=dev \
-    TRR_API_URL=\"$TRR_API_URL\" \
-    SCREENALYTICS_SERVICE_TOKEN=\"$WORKSPACE_SCREENALYTICS_SERVICE_TOKEN\" \
-    SCREENALYTICS_API_URL=\"$SCREENALYTICS_LOCAL_API_URL\" \
-    API_BASE_URL=\"$SCREENALYTICS_LOCAL_API_URL\" \
-    API_PORT=\"$SCREENALYTICS_API_PORT\" \
-    STREAMLIT_PORT=\"$SCREENALYTICS_STREAMLIT_PORT\" \
-    WEB_PORT=\"$SCREENALYTICS_WEB_PORT\" \
-    SCREENALYTICS_SKIP_DOCKER=\"$WORKSPACE_SCREENALYTICS_SKIP_DOCKER\" \
-    SCREENALYTICS_STREAMLIT_ENABLED=\"$WORKSPACE_SCREENALYTICS_STREAMLIT_ENABLED\" \
-    SCREENALYTICS_WEB_ENABLED=\"$WORKSPACE_SCREENALYTICS_WEB_ENABLED\" \
-    DEV_AUTO_ALLOW_DB_ERROR=\"$SCREENALYTICS_DEV_AUTO_ALLOW_DB_ERROR\" \
-    DEV_AUTO_OPEN_BROWSER=0 \
-    DEV_AUTO_YES=1 \
-    exec \"$BASH_BIN\" ./scripts/dev_auto.sh"
-else
-  echo "[workspace] screenalytics disabled for this session (WORKSPACE_SCREENALYTICS=0)."
-fi
 
 start_trr_backend
 start_trr_social_worker
@@ -1501,61 +1274,15 @@ if ! wait_http_ok "TRR-APP" "http://${TRR_APP_HOST}:${TRR_APP_PORT}/" "$WORKSPAC
   fi
 fi
 
-if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
-  if ! wait_http_ok "screenalytics API" "$SCREENALYTICS_LOCAL_HEALTH_URL" "$WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_API"; then
-    echo "[workspace] WARNING: screenalytics API did not become healthy within ${WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_API}s (continuing)." >&2
-    tail -n 120 "$SCREENALYTICS_LOG" >&2 || true
-  fi
-
-  # UI servers can take longer (model warmup, Next dev, etc). Don't fail the workspace if they're slow.
-  SCREENALYTICS_STREAMLIT_OK=0
-  if workspace_screenalytics_streamlit_enabled; then
-    if wait_http_ok "screenalytics Streamlit" "http://127.0.0.1:${SCREENALYTICS_STREAMLIT_PORT}/" "$WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_STREAMLIT"; then
-      SCREENALYTICS_STREAMLIT_OK=1
-    else
-      echo "[workspace] WARNING: screenalytics Streamlit did not become reachable within ${WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_STREAMLIT}s (continuing)." >&2
-      tail -n 120 "$SCREENALYTICS_LOG" >&2 || true
-    fi
-  fi
-
-  SCREENALYTICS_WEB_OK=0
-  if workspace_screenalytics_web_enabled; then
-    if wait_http_ok "screenalytics Web" "http://127.0.0.1:${SCREENALYTICS_WEB_PORT}/" "$WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_WEB"; then
-      SCREENALYTICS_WEB_OK=1
-    else
-      echo "[workspace] WARNING: screenalytics Web did not become reachable within ${WORKSPACE_HEALTH_TIMEOUT_SCREENALYTICS_WEB}s (continuing)." >&2
-      tail -n 120 "$SCREENALYTICS_LOG" >&2 || true
-    fi
-  fi
-
-fi
-
 print_workspace_ready_summary
 workspace_attention_render "$ATTENTION_FILE" "[workspace]"
 
 # Keep running until one of the processes exits.
 APP_DEV_URL="http://${TRR_APP_HOST}:${TRR_APP_PORT}"
-SCREENALYTICS_STREAMLIT_DEV_URL=""
-SCREENALYTICS_WEB_DEV_URL=""
-if [[ "$WORKSPACE_SCREENALYTICS" == "1" ]]; then
-  if [[ "${SCREENALYTICS_STREAMLIT_OK:-0}" -eq 1 ]]; then
-    SCREENALYTICS_STREAMLIT_DEV_URL="http://127.0.0.1:${SCREENALYTICS_STREAMLIT_PORT}"
-  fi
-  if [[ "${SCREENALYTICS_WEB_OK:-0}" -eq 1 ]]; then
-    SCREENALYTICS_WEB_DEV_URL="http://127.0.0.1:${SCREENALYTICS_WEB_PORT}"
-  fi
-fi
 if [[ "$WORKSPACE_OPEN_BROWSER" == "1" ]]; then
-  BROWSER_SCREENALYTICS_STREAMLIT_URL="$SCREENALYTICS_STREAMLIT_DEV_URL"
-  BROWSER_SCREENALYTICS_WEB_URL="$SCREENALYTICS_WEB_DEV_URL"
-  if [[ "$WORKSPACE_OPEN_SCREENALYTICS_TABS" != "1" ]]; then
-    BROWSER_SCREENALYTICS_STREAMLIT_URL=""
-    BROWSER_SCREENALYTICS_WEB_URL=""
-    echo "[workspace] Screenalytics tab sync disabled (WORKSPACE_OPEN_SCREENALYTICS_TABS=0)."
-  fi
   echo "[workspace] Syncing workspace browser tabs..."
   echo "[workspace] Browser tab sync mode: ${WORKSPACE_BROWSER_TAB_SYNC_MODE}"
-  bash "$ROOT/scripts/open-workspace-dev-window.sh" "$APP_DEV_URL" "$BROWSER_SCREENALYTICS_STREAMLIT_URL" "$BROWSER_SCREENALYTICS_WEB_URL"
+  bash "$ROOT/scripts/open-workspace-dev-window.sh" "$APP_DEV_URL"
 fi
 
 # Delay the runtime health watchdog to avoid false-positive warnings during
@@ -1669,12 +1396,6 @@ while true; do
         exit 1
       fi
       continue
-    elif [[ "$local_dead_name" == "SCREENALYTICS" && "$WORKSPACE_STRICT" != "1" ]]; then
-      echo ""
-      echo "[workspace] WARNING: screenalytics exited (pid=${local_dead}). Continuing (WORKSPACE_STRICT=0)."
-      tail -n 120 "$SCREENALYTICS_LOG" >&2 || true
-      unset "PIDS[$local_dead_idx]"
-      unset "NAMES[$local_dead_idx]"
     else
       echo ""
       echo "[workspace] WARNING: ${local_dead_name} exited (pid=${local_dead}). Check logs under ${LOG_DIR}."

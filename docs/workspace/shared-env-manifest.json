@@ -2,7 +2,7 @@
   "version": "2026-04-11",
   "canonical": {
     "TRR_API_URL": {
-      "description": "Canonical backend base URL consumed by TRR-APP and Screenalytics.",
+      "description": "Canonical backend base URL consumed by TRR-APP and workspace-managed local tooling.",
       "owner": "TRR-Backend"
     },
     "TRR_DB_URL": {
@@ -18,16 +18,7 @@
       "owner": "workspace"
     }
   },
-  "transitional": {
-    "SCREENALYTICS_SERVICE_TOKEN": {
-      "description": "Compatibility fallback token for Screenalytics-to-backend auth during JWT migration.",
-      "owner": "screenalytics"
-    },
-    "SCREENALYTICS_API_URL": {
-      "description": "Legacy Screenalytics HTTP base URL kept for non-admin or legacy flows.",
-      "owner": "screenalytics"
-    }
-  },
+  "transitional": {},
   "repo_validation": {
     "TRR-APP": {
       "env_example": "TRR-APP/apps/web/.env.example",
@@ -48,25 +39,7 @@
       "required_in_deployed": [
         "TRR_INTERNAL_ADMIN_SHARED_SECRET"
       ],
-      "transitional_compat": [
-        "SCREENALYTICS_API_URL",
-        "SCREENALYTICS_SERVICE_TOKEN"
-      ]
-    },
-    "screenalytics": {
-      "db_any_of": [
-        "TRR_DB_URL",
-        "TRR_DB_FALLBACK_URL"
-      ],
-      "auth_required": [
-        "TRR_INTERNAL_ADMIN_SHARED_SECRET"
-      ],
-      "auth_transitional": [
-        "SCREENALYTICS_SERVICE_TOKEN"
-      ],
-      "recommended": [
-        "TRR_API_URL"
-      ]
+      "transitional_compat": []
     }
   }
 }
