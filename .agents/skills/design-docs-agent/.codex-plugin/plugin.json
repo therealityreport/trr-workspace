@@ -1,7 +1,7 @@
 {
   "name": "design-docs-agent",
-  "version": "1.1.0",
-  "description": "Generate or update TRR design-docs pages from saved source bundles, HTML captures, and source inventories.",
+  "version": "1.3.0",
+  "description": "Generate or update TRR design-docs pages from article URLs, saved source bundles, HTML captures, and source inventories.",
   "skills": "./",
   "author": {
     "name": "The Reality Report",
@@ -13,13 +13,13 @@
   "keywords": ["design-docs", "skills", "documentation", "ingestion", "trr"],
   "interface": {
     "displayName": "Design Docs Agent",
-    "shortDescription": "Generate or update TRR design-docs pages from saved source bundles, HTML captures, and source inventories.",
-    "longDescription": "Shared Design Docs package for Claude Code and Codex. Runtime roster, phase order, shared capabilities, and per-skill versions are defined in agents/openai.yaml. Package-owned contracts live under contracts/ and drive validation, paywall policy, and external-app compatibility checks.",
+    "shortDescription": "Generate or update TRR design-docs pages from article URLs, saved source bundles, HTML captures, and source inventories.",
+    "longDescription": "Shared Design Docs package for Claude Code and Codex. Runtime roster, phase order, fidelity-aware extraction and verification skills, and per-skill versions are defined in agents/openai.yaml. Package-owned contracts live under contracts/ and drive validation, live acquisition, paywall strategy, bespoke-interactive fidelity, and external-app compatibility checks.",
     "developerName": "The Reality Report",
     "category": "Productivity",
     "capabilities": ["Read", "Write"],
     "defaultPrompt": [
-      "Use design docs to ingest an article plus a saved source bundle.",
+      "Use design docs to ingest an article URL with an optional saved source bundle.",
       "List the shared Design Docs skill roster.",
       "Validate the design-docs-agent package contracts and runtime roster."
     ],

@@ -2,7 +2,7 @@
 name: classify-publisher-patterns
 description: Detect publisher technology stack and classify layout patterns into the 15-section brand taxonomy
 metadata:
-  version: 1.0.0
+  version: 1.1.0
 ---
 
 # Classify Publisher Patterns
@@ -43,8 +43,13 @@ Output shapes are defined in:
 1. Scan HTML for framework markers, scripts, stylesheets, analytics, and SSR markers.
 2. Build a technology inventory from the detected signals.
 3. Classify the publisher layout family from article structure and tech markers.
-4. Produce taxonomy hints for likely sections and sub-pages.
-5. Default to a conservative generic classification when evidence is mixed.
+4. Detect `bespoke_interactive` when the page contains custom DOM, SVG, or
+   canvas-driven interactive rendering that is not attributable to a known
+   provider such as Datawrapper, Birdkit, ai2html, YouTube, or a reusable TRR
+   primitive.
+5. Emit `requiresVisualContract` only when bespoke handling is required.
+6. Produce taxonomy hints for likely sections and sub-pages.
+7. Default to a conservative generic classification when evidence is mixed.
 
 ## Validation
 
@@ -63,5 +68,6 @@ Return:
 1. `publisher_classification`
 2. `tech_inventory`
 3. `taxonomy_hints`
-4. `confidence_notes`
-5. `follow_up_extractors`
+4. `bespoke_signals`
+5. `confidence_notes`
+6. `follow_up_extractors`

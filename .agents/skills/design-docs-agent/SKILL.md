@@ -2,12 +2,14 @@
 name: design-docs-agent
 description: Canonical cross-host Design Docs agent for article ingestion, saved-source bundle extraction, generation, wiring, and brand sync.
 metadata:
-  version: 1.1.0
+  version: 1.3.0
 ---
 
 # Design Docs Agent
 
-Canonical cross-host orchestrator for generating or updating TRR design-docs pages from saved source bundles and source inventories. This package is the single behavioral source of truth for both Claude Code and Codex.
+Canonical cross-host orchestrator for generating or updating TRR design-docs pages from article URLs, saved source bundles, and source inventories. This package is the single behavioral source of truth for both Claude Code and Codex.
+
+Acquisition dependency: bespoke-interactive fidelity assumes the acquisition path in `fetch-source-bundle` has already landed. When acquisition is unavailable, the package may still run against a caller-supplied bundle, but fidelity coverage must degrade gracefully instead of fabricating source-faithful output.
 
 ## Ownership Matrix
 
@@ -20,14 +22,14 @@ Canonical cross-host orchestrator for generating or updating TRR design-docs pag
 
 ## Use When
 
-1. A caller provides an `articleUrl` plus saved source bundle inputs and needs the shared Design Docs pipeline to add or update an article or brand.
+1. A caller provides an `articleUrl` with an optional saved source bundle and needs the shared Design Docs pipeline to add or update an article or brand.
 2. A host needs the canonical extraction, generation, wiring, and verification sequence through one public entry point.
 
 ## Do Not Use For
 
 1. Free-form article review with no intention to update TRR design docs.
 2. One-off renderer changes unrelated to the Design Docs ingestion pipeline.
-3. Live-browser-only scraping of gated articles without saved source inputs.
+3. Inventing article content after live acquisition failed to recover a trustworthy bundle.
 
 ## Public entry policy
 
@@ -41,12 +43,13 @@ The caller must provide:
 
 ```text
 articleUrl: string
-sourceBundle: contracts/source-bundle.schema.json
+sourceBundle?: contracts/source-bundle.schema.json
 ```
 
 The orchestrator may also use:
 
 - `contracts/source-bundle.schema.json` for source-bundle shape
+- `contracts/acquisition-report.schema.json` for blocking live-acquisition failures
 - `contracts/publisher-policy.yaml` for paywall and live-fetch policy
 - `contracts/external-app-contract.yaml` for the minimum asserted TRR-APP contract
 - repo-local Design Docs config and pipeline types in `TRR-APP/apps/web`
@@ -60,12 +63,25 @@ Use the canonical capability names declared in `agents/openai.yaml`. Host-specif
 
 ### 1. Validate Inputs And Detect Mode
 
-Run the active `validation` phase from `agents/openai.yaml`. `validate-inputs` owns:
+Run the active `validation` phase from `agents/openai.yaml`.
 
-1. required-input checks for `articleUrl` and `sourceBundle`
+1. `fetch-source-bundle` runs first when `sourceBundle` is absent.
+   - It attempts `curl` acquisition first.
+   - If needed and available, it attempts browser fallback using the declared
+     browser capabilities.
+   - On success it returns a schema-compliant `sourceBundle` with local saved
+     artifact paths.
+   - On failure it returns a blocking acquisition report from
+     `contracts/acquisition-report.schema.json` and the pipeline stops.
+2. `validate-inputs` runs after a bundle exists, whether that bundle came from
+   the caller or from `fetch-source-bundle`.
+
+`validate-inputs` owns:
+
+1. required-input checks for `articleUrl` and a resolved bundle
 2. mode detection for `add-article`, `add-first-article`, `create-brand`, and `update-article`
 3. Mode A / Mode B / merged source resolution
-4. paywall enforcement and live-supporting-source allowances
+4. validation of local saved-artifact paths in `sourceBundle`
 5. preflight assertions against `contracts/external-app-contract.yaml`
 
 ### 2. Discover Inputs
@@ -87,10 +103,13 @@ Run the active `pre-extraction` phase from `agents/openai.yaml`. `classify-publi
 - `PublisherClassification`
 - `TechInventory`
 - taxonomy routing hints for the 15-section system
+- bespoke-interactive detection signals and `requiresVisualContract`
 
 ### 4. Run The Extraction Wave
 
 Resolve the active `extraction` phase from `agents/openai.yaml`. Run those skills in order, in parallel when the host supports delegation and sequentially otherwise.
+
+Fidelity rule: extraction skills emit their normal payloads plus fidelity evidence. Do not insert a separate contract-synthesis phase. The visual-contract extractor stays additive to the existing extraction wave rather than becoming a new bottleneck phase.
 
 ### 5. Merge Extraction Outputs
 
@@ -110,6 +129,16 @@ Resolve the active `wiring` phase from `agents/openai.yaml`. `wire-config-and-ro
 ### 8. Run Verification Gates
 
 Resolve the `verification` pipeline members from `agents/openai.yaml` and run them in order. Do not re-enumerate verification skills here.
+
+Verification severity model:
+
+- `blocking` findings stop the pipeline because the generated output would be factually wrong or visibly misleading.
+- `degraded` findings warn and proceed so partially recoverable bundles do not fail wholesale in v1.
+
+Legacy handling:
+
+- `ArticleVisualContract` is required for newly ingested or re-ingested bespoke interactives.
+- Existing already-generated articles may continue under `legacyFidelityMode` until they are reprocessed.
 
 ## Version Policy
 

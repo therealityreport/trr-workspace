@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import importlib.util
 import json
 import re
+import shutil
 import subprocess
 import tempfile
 from pathlib import Path
@@ -19,6 +21,8 @@ PACKAGE_SKILL_PATH = PACKAGE_ROOT / "SKILL.md"
 EXTRACTION_HELPER_PATH = PACKAGE_ROOT / "agents" / "extraction-orchestrator.md"
 VERIFICATION_HELPER_PATH = PACKAGE_ROOT / "agents" / "verification-gate.md"
 VALIDATE_INPUTS_PATH = PACKAGE_ROOT / "validate-inputs" / "SKILL.md"
+FETCH_SOURCE_BUNDLE_SKILL_PATH = PACKAGE_ROOT / "fetch-source-bundle" / "SKILL.md"
+FETCH_SOURCE_BUNDLE_SCRIPT_PATH = PACKAGE_ROOT / "scripts" / "fetch_source_bundle.py"
 RUNTIME_BASELINE_PATH = PACKAGE_ROOT / "test" / "runtime-order-baseline.yaml"
 EXTERNAL_VALIDATOR_PATH = PACKAGE_ROOT / "test" / "validate-external-contract.mjs"
 CLAUDE_WRAPPER_PATH = REPO_ROOT / "TRR-APP" / ".claude" / "skills" / "design-docs-agent" / "SKILL.md"
@@ -52,6 +56,15 @@ def run_command(command: list[str], cwd: Path | None = None) -> str:
 
 def load_yaml(path: Path) -> dict:
     return yaml.safe_load(path.read_text())
+
+
+def load_module(path: Path, module_name: str):
+    spec = importlib.util.spec_from_file_location(module_name, path)
+    if spec is None or spec.loader is None:
+        fail(f"unable to load module from {path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def parse_frontmatter(path: Path) -> dict:
@@ -162,12 +175,13 @@ def host_matches(host: str, expected_domain: str) -> bool:
     return host == expected_domain or host.endswith(f".{expected_domain}")
 
 
-def is_paywalled_article(article_url: str, policy: dict) -> bool:
+def is_known_paywalled_article(article_url: str, policy: dict) -> bool:
     host = (urlparse(article_url).hostname or "").lower()
-    paywalled = any(host_matches(host, domain) for domain in policy["paywalled_domains"])
-    if paywalled:
-        return True
-    return bool(policy["defaults"]["treat_unknown_domains_as_paywalled"])
+    return any(host_matches(host, domain) for domain in policy["paywalled_domains"])
+
+
+def should_attempt_live_article_acquisition(policy: dict) -> bool:
+    return bool(policy["defaults"]["attempt_live_acquisition_for_article_urls"])
 
 
 def is_allowed_live_supporting_source(url: str, policy: dict) -> bool:
@@ -196,6 +210,12 @@ def validate_contract_shapes() -> tuple[dict, dict]:
     publisher_policy = load_yaml(CONTRACTS_DIR / "publisher-policy.yaml")
     if set(publisher_policy) != {"version", "defaults", "paywalled_domains", "allowed_live_supporting_domains"}:
         fail("publisher-policy.yaml has unexpected top-level keys")
+    if set(publisher_policy["defaults"]) != {
+        "attempt_live_acquisition_for_article_urls",
+        "require_saved_html_after_failed_acquisition",
+        "allow_live_url_for_supporting_sources_only",
+    }:
+        fail("publisher-policy.yaml has unexpected default keys")
     if not isinstance(publisher_policy["paywalled_domains"], list) or not publisher_policy["paywalled_domains"]:
         fail("publisher-policy.yaml must define paywalled_domains")
 
@@ -335,6 +355,19 @@ def validate_validate_inputs_contract_references() -> None:
             fail(f"validate-inputs/SKILL.md must reference {ref}")
 
 
+def validate_fetch_source_bundle_contract_references() -> None:
+    text = FETCH_SOURCE_BUNDLE_SKILL_PATH.read_text()
+    required_refs = [
+        "contracts/source-bundle.schema.json",
+        "contracts/acquisition-report.schema.json",
+        "contracts/publisher-policy.yaml",
+        "scripts/fetch_source_bundle.py",
+    ]
+    for ref in required_refs:
+        if ref not in text:
+            fail(f"fetch-source-bundle/SKILL.md must reference {ref}")
+
+
 def validate_wrapper_deleted() -> None:
     if CLAUDE_WRAPPER_PATH.exists():
         fail("broken Claude wrapper still exists under TRR-APP/.claude/skills/design-docs-agent")
@@ -342,20 +375,20 @@ def validate_wrapper_deleted() -> None:
 
 def validate_fixture_scenarios(policy: dict) -> None:
     schema_path = CONTRACTS_DIR / "source-bundle.schema.json"
-    existing_fixture = REPO_ROOT / "TRR-APP" / "apps" / "web" / "tests" / "fixtures" / "design-docs-agent" / "athletic-article.html"
-    if not existing_fixture.exists():
-        fail("expected existing design-docs-agent fixture is missing")
-
-    mode_a_bundle = {
-        "canonicalSourceUrl": "https://www.theathletic.com/example-article",
-        "html": str(existing_fixture),
-        "authoritativeViewport": "desktop",
-    }
-    validate_json_payload(schema_path, mode_a_bundle)
-    if detect_source_mode(mode_a_bundle) != "mode-a":
-        fail("mode-a fixture scenario did not resolve as mode-a")
-
+    acquisition_schema_path = CONTRACTS_DIR / "acquisition-report.schema.json"
+    fetch_module = load_module(FETCH_SOURCE_BUNDLE_SCRIPT_PATH, "fetch_source_bundle")
     with tempfile.TemporaryDirectory() as temp_dir:
+        mode_a_path = Path(temp_dir) / "article.html"
+        mode_a_path.write_text("<html><body><article>fixture</article></body></html>")
+        mode_a_bundle = {
+            "canonicalSourceUrl": "https://www.theathletic.com/example-article",
+            "html": str(mode_a_path),
+            "authoritativeViewport": "desktop",
+        }
+        validate_json_payload(schema_path, mode_a_bundle)
+        if detect_source_mode(mode_a_bundle) != "mode-a":
+            fail("mode-a fixture scenario did not resolve as mode-a")
+
         mode_b_path = Path(temp_dir) / "view-source.html"
         mode_b_path.write_text(
             "<table class=\"highlight\"><tr><td class=\"line-content\">&lt;html&gt;</td></tr></table>"
@@ -368,19 +401,79 @@ def validate_fixture_scenarios(policy: dict) -> None:
         if detect_source_mode(mode_b_bundle) != "mode-b":
             fail("mode-b fixture scenario did not resolve as mode-b")
 
-    merged_bundle = {
-        "canonicalSourceUrl": "https://www.nytimes.com/interactive/example",
-        "html": {
-            "modeA": str(existing_fixture),
-            "modeB": str(existing_fixture),
-        },
-        "css": ["styles.css"],
-        "js": ["runtime.js"],
-        "authoritativeViewport": "both",
-    }
-    validate_json_payload(schema_path, merged_bundle)
-    if detect_source_mode(merged_bundle) != "merged":
-        fail("merged fixture scenario did not resolve as merged")
+        merged_bundle = {
+            "canonicalSourceUrl": "https://www.nytimes.com/interactive/example",
+            "html": {
+                "modeA": str(mode_a_path),
+                "modeB": str(mode_a_path),
+            },
+            "css": ["styles.css"],
+            "js": ["runtime.js"],
+            "authoritativeViewport": "both",
+        }
+        validate_json_payload(schema_path, merged_bundle)
+        if detect_source_mode(merged_bundle) != "merged":
+            fail("merged fixture scenario did not resolve as merged")
+
+        long_article_html = (
+            "<html><head><meta property='og:type' content='article'></head><body>"
+            "<article><h1>Example Interactive</h1><p>By Example Author</p>"
+            + ("Meaningful source content with charts and analysis. " * 260)
+            + "<svg class='chart'></svg></article></body></html>"
+        )
+        assessment = fetch_module.assess_html_trustworthiness(long_article_html)
+        if not assessment["isTrustworthy"]:
+            fail("trustworthy acquisition fixture unexpectedly failed heuristics")
+
+        short_but_marked_html = (
+            "<html><body><article><h1>Short piece</h1><p>By Reporter</p>"
+            + ("Short but real. " * 40)
+            + "</article></body></html>"
+        )
+        short_assessment = fetch_module.assess_html_trustworthiness(short_but_marked_html)
+        if short_assessment["isTrustworthy"]:
+            fail("borderline acquisition fixture unexpectedly passed heuristics")
+        if not short_assessment["warnings"]:
+            fail("borderline acquisition fixture should have produced a warning")
+
+        blocked_html = "<html><body><div>Subscribe to read. Sign in to continue.</div></body></html>"
+        blocked_assessment = fetch_module.assess_html_trustworthiness(blocked_html)
+        if blocked_assessment["failureReason"] != "server-side-paywall":
+            fail("blocked acquisition fixture did not resolve to server-side-paywall")
+
+        repo_bundle_root = PACKAGE_ROOT / "source-bundles" / "__validate-package-fixtures__"
+        bundle = fetch_module.persist_bundle_from_html(
+            "https://www.example.com/story/example-article",
+            long_article_html,
+            repo_bundle_root,
+            fetch_assets=False,
+        )
+        validate_json_payload(schema_path, bundle)
+        if detect_source_mode(bundle) != "mode-c":
+            fail("auto-acquired bundle fixture did not resolve as mode-c")
+        if not bundle["html"]["rendered"].startswith(".agents/skills/design-docs-agent/source-bundles/"):
+            fail("auto-acquired bundle fixture did not emit repo-relative bundle paths")
+        shutil.rmtree(repo_bundle_root, ignore_errors=True)
+
+        bundle_root = Path(temp_dir) / "slug-root"
+        first_slug = fetch_module.derive_bundle_slug("https://www.nytimes.com/interactive/2020/02/25/us/elections/debate-speaking-time.html", bundle_root)
+        (bundle_root / first_slug).mkdir(parents=True)
+        second_slug = fetch_module.derive_bundle_slug("https://www.nytimes.com/interactive/2020/02/25/us/elections/debate-speaking-time.html", bundle_root)
+        if second_slug != f"{first_slug}-2":
+            fail("bundle slug collision did not increment with -2 suffix")
+
+        report = fetch_module.build_acquisition_report(
+            "https://www.wsj.com/story/example",
+            curl_attempted=True,
+            curl_succeeded=False,
+            curl_summary="curl failed",
+            browser_attempted=True,
+            browser_succeeded=False,
+            browser_summary="browser fallback did not recover enough content",
+            failure_reason="popup-not-bypassable",
+            evidence=["No trustworthy article markers recovered."],
+        )
+        validate_json_payload(acquisition_schema_path, report)
 
     invalid_bundle = {
         "canonicalSourceUrl": "https://www.example.com/article",
@@ -394,8 +487,11 @@ def validate_fixture_scenarios(policy: dict) -> None:
         fail("malformed source bundle unexpectedly passed schema validation")
 
     paywalled_url = "https://www.ft.com/content/example"
-    if not is_paywalled_article(paywalled_url, policy):
+    if not is_known_paywalled_article(paywalled_url, policy):
         fail("paywalled URL was not detected as paywalled")
+
+    if not should_attempt_live_article_acquisition(policy):
+        fail("article acquisition should be enabled in publisher-policy.yaml")
 
     public_supporting_url = "https://datawrapper.de/example"
     if not is_allowed_live_supporting_source(public_supporting_url, policy):
@@ -405,6 +501,7 @@ def validate_fixture_scenarios(policy: dict) -> None:
 def main() -> None:
     validate_yaml_against_schema(CONTRACTS_DIR / "roster.schema.json", ROSTER_PATH)
     validate_json_schema_file(CONTRACTS_DIR / "source-bundle.schema.json")
+    validate_json_schema_file(CONTRACTS_DIR / "acquisition-report.schema.json")
     publisher_policy, _external_contract = validate_contract_shapes()
 
     roster = load_yaml(ROSTER_PATH)
@@ -416,6 +513,7 @@ def main() -> None:
     validate_no_phase_reenumeration(roster)
     validate_runtime_baseline(roster)
     validate_validate_inputs_contract_references()
+    validate_fetch_source_bundle_contract_references()
     validate_wrapper_deleted()
     validate_fixture_scenarios(publisher_policy)
     run_command(["node", str(EXTERNAL_VALIDATOR_PATH)])

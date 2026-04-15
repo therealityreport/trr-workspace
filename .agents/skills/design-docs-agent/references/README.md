@@ -22,3 +22,7 @@ This directory holds non-executable guidance for the shared Design Docs package.
 - `reference-implementations.md` — known reference routes in TRR
 - `lessons-learned.md` — condensed article-specific pitfalls and carry-forward rules
 - `preflight-checklist.md` — verification checklist used before closeout
+
+Current hardening rule:
+
+- bespoke-interactive fidelity depends on acquisition support and uses a blocking/degraded verification split instead of universal hard-fail.
