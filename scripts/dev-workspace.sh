@@ -5,6 +5,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
 source "$ROOT/scripts/lib/runtime-db-env.sh"
+source "$ROOT/scripts/lib/workspace-health.sh"
 source "$ROOT/scripts/lib/workspace-terminal.sh"
 
 # Optional profile defaults.
@@ -354,7 +355,8 @@ ADMIN_STRICT_HOST_ROUTING="${ADMIN_STRICT_HOST_ROUTING:-false}"
 # Managed local workspace runs always use loopback service URLs derived from
 # the launcher ports. Inherited shell values must not hijack local routing.
 TRR_API_URL="http://127.0.0.1:${TRR_BACKEND_PORT}"
-BACKEND_HEALTH_URL="${TRR_API_URL}/health"
+BACKEND_READINESS_URL="$(workspace_backend_readiness_url "${TRR_BACKEND_PORT}")"
+BACKEND_LIVENESS_URL="$(workspace_backend_watchdog_url "${TRR_BACKEND_PORT}")"
 TRR_APP_LOCAL_ENV_FILE="$ROOT/TRR-APP/apps/web/.env.local"
 TRR_BACKEND_LOCAL_ENV_FILE="$ROOT/TRR-Backend/.env"
 
@@ -439,7 +441,7 @@ backend_has_active_connections() {
 
 backend_health_probe() {
   local timeout="$1"
-  curl -fsS --max-time "$timeout" "$BACKEND_HEALTH_URL" >/dev/null 2>&1
+  curl -fsS --max-time "$timeout" "$BACKEND_LIVENESS_URL" >/dev/null 2>&1
 }
 
 backend_busy_confirm_timeout() {
@@ -1232,7 +1234,7 @@ wait_http_ok() {
 }
 
 echo "[workspace] Checking service health..."
-if ! wait_http_ok "TRR-Backend" "$BACKEND_HEALTH_URL" "$WORKSPACE_HEALTH_TIMEOUT_BACKEND"; then
+if ! wait_http_ok "TRR-Backend" "$BACKEND_READINESS_URL" "$WORKSPACE_HEALTH_TIMEOUT_BACKEND"; then
   echo "[workspace] ERROR: TRR-Backend did not become healthy within ${WORKSPACE_HEALTH_TIMEOUT_BACKEND}s." >&2
   tail -n 80 "$TRR_BACKEND_LOG" >&2 || true
   exit 1
@@ -1355,7 +1357,7 @@ while true; do
             unset "NAMES[$backend_idx]"
           fi
           start_trr_backend
-          if ! wait_http_ok "TRR-Backend" "$BACKEND_HEALTH_URL" "$WORKSPACE_HEALTH_TIMEOUT_BACKEND"; then
+          if ! wait_http_ok "TRR-Backend" "$BACKEND_LIVENESS_URL" "$WORKSPACE_HEALTH_TIMEOUT_BACKEND"; then
             echo "[workspace] ERROR: TRR-Backend did not recover after auto-restart." >&2
             tail -n 120 "$TRR_BACKEND_LOG" >&2 || true
             exit 1
@@ -1390,7 +1392,7 @@ while true; do
       unset "PIDS[$local_dead_idx]"
       unset "NAMES[$local_dead_idx]"
       start_trr_backend
-      if ! wait_http_ok "TRR-Backend" "$BACKEND_HEALTH_URL" "$WORKSPACE_HEALTH_TIMEOUT_BACKEND"; then
+      if ! wait_http_ok "TRR-Backend" "$BACKEND_LIVENESS_URL" "$WORKSPACE_HEALTH_TIMEOUT_BACKEND"; then
         echo "[workspace] ERROR: TRR-Backend did not recover after process exit restart." >&2
         tail -n 120 "$TRR_BACKEND_LOG" >&2 || true
         exit 1

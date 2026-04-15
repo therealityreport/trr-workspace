@@ -95,6 +95,30 @@ class SyncHandoffsTests(unittest.TestCase):
         self.assertIn("docs/ai/local-status/example.md", str(ctx.exception))
         self.assertIn("missing '## Handoff Snapshot' section.", str(ctx.exception))
 
+    def test_invalid_state_is_rejected(self) -> None:
+        source = self.write_file(
+            "docs/ai/local-status/example.md",
+            """
+            # Example
+
+            ## Handoff Snapshot
+            ```yaml
+            handoff:
+              include: true
+              state: completed
+              last_updated: 2026-03-16
+              current_phase: "done"
+              next_action: "monitor"
+              detail: self
+            ```
+            """,
+        )
+
+        with self.assertRaises(MODULE.InvalidSourceError) as ctx:
+            MODULE.parse_source_file(source, MODULE.dt.date(2026, 3, 16))
+
+        self.assertIn("state must be one of active, archived, blocked, recent.", str(ctx.exception))
+
     def test_workspace_scope_renders_local_status_item(self) -> None:
         original_root = MODULE.ROOT
         MODULE.ROOT = self.root
