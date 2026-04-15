@@ -1,5 +1,5 @@
 {
-  "version": "2026-04-11",
+  "version": "2026-04-15",
   "canonical": {
     "TRR_API_URL": {
       "description": "Canonical backend base URL consumed by TRR-APP and workspace-managed local tooling.",
@@ -16,6 +16,10 @@
     "TRR_INTERNAL_ADMIN_SHARED_SECRET": {
       "description": "Shared internal-admin JWT signing secret across backend, app, and Screenalytics.",
       "owner": "workspace"
+    },
+    "SUPABASE_JWT_SECRET": {
+      "description": "JWT signing secret required by backend auth validation for deployed runtimes.",
+      "owner": "TRR-Backend"
     }
   },
   "transitional": {},
@@ -37,7 +41,8 @@
         "TRR_DB_FALLBACK_URL"
       ],
       "required_in_deployed": [
-        "TRR_INTERNAL_ADMIN_SHARED_SECRET"
+        "TRR_INTERNAL_ADMIN_SHARED_SECRET",
+        "SUPABASE_JWT_SECRET"
       ],
       "transitional_compat": []
     }

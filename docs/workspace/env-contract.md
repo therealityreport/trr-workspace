@@ -30,7 +30,7 @@ Visibility tiers:
 | `TRR_SOCIAL_PROXY_DEFAULT_TIMEOUT_MS` | `25000` | integer | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `TRR_SOCIAL_PROXY_LONG_TIMEOUT_MS` | `60000` | integer | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS` | `10000` | integer | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
-| `WORKSPACE_BACKEND_AUTO_RESTART` | `1` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable the backend watchdog that restarts TRR-Backend after repeated failed health probes or unexpected process exits. |
+| `WORKSPACE_BACKEND_AUTO_RESTART` | `1` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable the backend process watchdog that restarts TRR-Backend after repeated failed liveness probes or unexpected process exits. |
 | `WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_IGNORE` | `1` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | When set to 1, active-traffic curl timeouts log warnings but do not trigger backend auto-restarts. |
 | `WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_STREAK` | `6` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Advisory busy-timeout streak denominator used in watchdog logs while active-traffic timeout ignore mode is enabled. |
 | `WORKSPACE_BACKEND_HEALTH_CURL_MAX_TIME` | `5` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
@@ -80,3 +80,10 @@ Visibility tiers:
 | `WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS` | `1` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable or disable the Modal social lane in the remote execution contract; this is not a worker-count knob. |
 | `WORKSPACE_TRR_REMOTE_WORKERS_ENABLED` | `1` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable remote background execution. When executor is Modal, local claim loops are skipped and Modal-owned dispatch remains active. |
 | `WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS` | `2` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
+
+## Auth Runtime Notes
+
+- `ADMIN_EMAIL_ALLOWLIST`, `ADMIN_UID_ALLOWLIST`, and `ADMIN_DISPLAYNAME_ALLOWLIST` are read during TRR-APP server module initialization. Changing them requires a redeploy or full replica restart before every instance agrees on the new access set.
+- `TRR_DEV_ADMIN_BYPASS` is explicit opt-in only. Set it to `true` for local-only debugging on localhost-family hosts; leaving it unset or `false` disables the synthetic admin bypass even in development.
+- `TRR_AUTH_DIAGNOSTICS_PERSIST` defaults to disabled. Set it to `true` only when you intentionally want file-backed auth diagnostics snapshots; test runs still keep persistence disabled.
+- Admin mutation routes rely on same-origin browser requests. Cross-origin `POST`, `PUT`, `PATCH`, and `DELETE` requests to `/api/admin/*` are rejected before allowlist evaluation.
