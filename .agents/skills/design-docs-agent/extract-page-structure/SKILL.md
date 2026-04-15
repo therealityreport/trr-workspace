@@ -2,7 +2,7 @@
 name: extract-page-structure
 description: Extract content blocks and metadata from HTML source
 metadata:
-  version: 1.0.0
+  version: 1.1.0
 ---
 
 # Extract Page Structure
@@ -40,6 +40,8 @@ Output shapes are defined in:
 - ordered block inventory
 - embed and asset references
 - `blockCompleteness`
+- `headerFidelityRequirements`
+- `noteTextRequirements`
 
 ## Procedure
 
@@ -48,7 +50,9 @@ Output shapes are defined in:
 3. Walk the article body in source order and classify content-bearing blocks.
 4. Record embeds and special containers such as Birdkit, Datawrapper, ai2html, and quote sections.
 5. Produce a normalized `PageStructure` payload with stable ordering and block indexes.
-6. Compute `blockCompleteness` from matched versus expected content-bearing blocks.
+6. Emit header fidelity evidence such as deck presence versus visible rendering,
+   byline/date arrangement, and explanatory note ordering.
+7. Compute `blockCompleteness` from matched versus expected content-bearing blocks.
 
 ## Validation
 

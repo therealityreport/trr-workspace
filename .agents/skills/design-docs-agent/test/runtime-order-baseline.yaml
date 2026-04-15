@@ -9,6 +9,7 @@ top_level_sequence:
 extraction_membership:
   - extract-page-structure
   - extract-css-tokens
+  - extract-visual-contract
   - extract-icons-and-media
   - extract-navigation
   - extract-site-shell-interactions
@@ -22,6 +23,7 @@ extraction_membership:
   - extract-quote-components
 verification_sequence:
   - audit-generated-config-integrity
+  - verify-source-fidelity
   - sync-brand-page
   - audit-responsive-accessibility
   - integration-test-runner

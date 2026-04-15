@@ -2,7 +2,7 @@
 name: audit-generated-config-integrity
 description: Post-generation validation gate — type-checks config, validates block order, enforces uniqueness and union coverage
 metadata:
-  version: 1.0.0
+  version: 1.1.0
 ---
 
 # Audit Generated Config Integrity
@@ -51,7 +51,10 @@ Canonical validators live in:
 6. Validate recoverable social/share image coverage so multi-slot share sets are
    not silently dropped back to a single fallback image.
 7. Validate article URL and page background contract expectations.
-8. Validate that any emitted page-section or TOC metadata is internally
+8. Validate required article asset categories for bespoke interactives.
+9. Validate typography specimens are source-ready instead of placeholder text.
+10. Validate chart source-link policy against extracted evidence.
+11. Validate that any emitted page-section or TOC metadata is internally
    consistent and free of duplicate section ids.
 
 ## Validation

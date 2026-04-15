@@ -2,7 +2,7 @@
 name: wire-config-and-routing
 description: Register new brand in design docs config, sidebar, and routing.
 metadata:
-  version: 1.0.0
+  version: 1.1.0
 ---
 
 # Wire Config And Routing
@@ -40,7 +40,9 @@ updated brand or article to become reachable in the Design Docs system.
 1. Resolve which shared surfaces need edits for the current mode.
 2. Apply only the required incidental edits to config, imports, and routing surfaces.
 3. Preserve ordering and shared conventions in the touched files.
-4. Avoid introducing per-article rendering behavior into shared wiring files.
+4. Support article-specific interactive components and data files as first-class
+   pipeline outputs when the merged extraction payload requires them.
+5. Avoid introducing per-article rendering behavior into shared wiring files.
 
 ## Validation
 

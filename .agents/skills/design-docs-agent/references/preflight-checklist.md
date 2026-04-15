@@ -13,25 +13,31 @@ Run this checklist before reporting Design Docs success:
 9. Generated pages use the expected white page background contract.
 10. Typecheck and pipeline verification commands pass or any remaining failures
     are explicitly reported.
+11. If the article is `bespoke_interactive`, acquisition succeeded or the caller
+    supplied a bundle rich enough for fidelity extraction.
+12. `verify-source-fidelity` reports no blocking findings. Any degraded
+    findings are explicitly disclosed.
+13. Existing legacy articles only rely on `legacyFidelityMode` when they were
+    not re-ingested in the current run.
 
 ### Data File Checks (when a standalone `*-data.ts` file is generated)
 
-11. Read back the first entry in the data file and confirm it matches the
+14. Read back the first entry in the data file and confirm it matches the
     expected rank-1 player/item from the source HTML.
-12. Read back the last entry and confirm it matches the expected final
+15. Read back the last entry and confirm it matches the expected final
     player/item. A mismatch on either check indicates the wrong source was used.
-13. The export constant name in the data file matches the import statement in
+16. The export constant name in the data file matches the import statement in
     `ArticleDetailPage.tsx` exactly (same identifier, same year suffix).
 
 ### Wide Component Checks (when `filter-card-tracker` or similar is present)
 
-14. `ArticleDetailPage.tsx` outer container uses `maxWidth: "100%"` (not a
+17. `ArticleDetailPage.tsx` outer container uses `maxWidth: "100%"` (not a
     fixed pixel value).
-15. The component's internal container applies the appropriate max-width
+18. The component's internal container applies the appropriate max-width
     (e.g., 1150px) and centering.
 
 ### Interactive Component Visual Fidelity
 
-16. Any SVG shape elements (`<polygon>`, `<polyline>`) in the generated
+19. Any SVG shape elements (`<polygon>`, `<polyline>`) in the generated
     component use the exact `points` coordinates extracted from the source HTML,
     not CSS approximations.

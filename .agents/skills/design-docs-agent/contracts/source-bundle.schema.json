@@ -8,9 +8,11 @@
   "properties": {
     "canonicalSourceUrl": {
       "type": "string",
-      "minLength": 1
+      "minLength": 1,
+      "description": "Canonical article URL represented by the saved bundle."
     },
     "html": {
+      "description": "Local saved-artifact path(s). Package convention: string values point at saved HTML files on disk, not inline HTML content.",
       "oneOf": [
         {
           "type": "string",
@@ -30,22 +32,27 @@
     },
     "css": {
       "type": "array",
+      "description": "Local saved-artifact paths for companion CSS files.",
       "items": { "type": "string", "minLength": 1 }
     },
     "js": {
       "type": "array",
+      "description": "Local saved-artifact paths for companion JavaScript files.",
       "items": { "type": "string", "minLength": 1 }
     },
     "manifests": {
       "type": "array",
+      "description": "Local saved-artifact paths for asset manifests recovered from the same session.",
       "items": { "type": "string", "minLength": 1 }
     },
     "har": {
       "type": "string",
-      "minLength": 1
+      "minLength": 1,
+      "description": "Local saved-artifact path for an optional HAR file."
     },
     "screenshots": {
       "type": "object",
+      "description": "Local saved-artifact paths for optional screenshots captured during acquisition.",
       "additionalProperties": false,
       "properties": {
         "desktop": {
@@ -60,6 +67,7 @@
     },
     "sourceTree": {
       "type": "object",
+      "description": "Local saved-artifact paths for optional source-tree evidence.",
       "additionalProperties": false,
       "properties": {
         "exportedPaths": {
@@ -78,6 +86,7 @@
     },
     "authoritativeViewport": {
       "type": "string",
+      "description": "Viewport that the saved bundle most accurately represents.",
       "enum": ["desktop", "mobile", "both"]
     }
   }

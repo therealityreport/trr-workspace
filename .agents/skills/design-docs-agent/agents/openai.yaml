@@ -1,11 +1,11 @@
 # Canonical runtime roster and phase-order source for the shared Design Docs package.
 # `wave` is rollout metadata only. It does not affect runtime ordering.
 schema_version: 1
-package_version: "1.1.0"
+package_version: "1.3.0"
 interface:
   display_name: "Design Docs Agent (TRR)"
-  short_description: "Generate or update TRR design-docs pages from saved source bundles, HTML captures, and source inventories."
-  default_prompt: "Use $design-docs-agent to ingest an articleUrl plus saved source bundle inputs, validate the bundle contract, extract structure and media, and generate or update the matching TRR design-docs pages."
+  short_description: "Generate or update TRR design-docs pages from article URLs, saved source bundles, HTML captures, and source inventories."
+  default_prompt: "Use $design-docs-agent to ingest an articleUrl with an optional saved source bundle, acquire a bundle when needed, validate the bundle contract, extract structure and media, and generate or update the matching TRR design-docs pages."
 dependencies:
   tools:
     - type: "mcp"
@@ -30,12 +30,13 @@ pipeline:
   - phase: verification
     members:
       - skill: audit-generated-config-integrity
+      - skill: verify-source-fidelity
       - skill: sync-brand-page
       - skill: audit-responsive-accessibility
       - skill: integration-test-runner
       - capability: check.typecheck
 skillset:
-  version: 3
+  version: 5
   supporting:
     - skill: senior-frontend
       source: "skill://senior-frontend"
@@ -66,35 +67,47 @@ skillset:
       status: active
       version: "1.0.0"
   owned:
-    - skill: validate-inputs
+    - skill: fetch-source-bundle
       phases: [validation]
       wave: 1
       status: active
       version: "1.0.0"
+      order: 5
+    - skill: validate-inputs
+      phases: [validation]
+      wave: 1
+      status: active
+      version: "1.1.0"
       order: 10
     - skill: classify-publisher-patterns
       phases: [pre-extraction]
       wave: 1
       status: active
-      version: "1.0.0"
+      version: "1.1.0"
       order: 10
     - skill: extract-page-structure
       phases: [extraction]
       wave: 1
       status: active
-      version: "1.0.0"
+      version: "1.1.0"
       order: 10
     - skill: extract-css-tokens
       phases: [extraction]
       wave: 1
       status: active
-      version: "1.0.0"
+      version: "1.1.0"
       order: 20
-    - skill: extract-icons-and-media
+    - skill: extract-visual-contract
       phases: [extraction]
       wave: 1
       status: active
       version: "1.0.0"
+      order: 25
+    - skill: extract-icons-and-media
+      phases: [extraction]
+      wave: 1
+      status: active
+      version: "1.1.0"
       order: 30
     - skill: extract-navigation
       phases: [extraction]
@@ -112,7 +125,7 @@ skillset:
       phases: [extraction]
       wave: 1
       status: active
-      version: "1.0.0"
+      version: "1.1.0"
       order: 60
     - skill: extract-reusable-ui-primitives
       phases: [extraction]
@@ -160,7 +173,7 @@ skillset:
       phases: [generation]
       wave: 2
       status: active
-      version: "1.0.0"
+      version: "1.1.0"
       order: 10
     - skill: generate-brand-section
       phases: [generation]
@@ -172,19 +185,25 @@ skillset:
       phases: [wiring]
       wave: 2
       status: active
-      version: "1.0.0"
+      version: "1.1.0"
       order: 10
     - skill: audit-generated-config-integrity
       phases: [verification]
       wave: 1
       status: active
-      version: "1.0.0"
+      version: "1.1.0"
       order: 10
+    - skill: verify-source-fidelity
+      phases: [verification]
+      wave: 1
+      status: active
+      version: "1.0.0"
+      order: 15
     - skill: sync-brand-page
       phases: [post-generation]
       wave: 2
       status: active
-      version: "1.0.0"
+      version: "1.1.0"
       order: 10
     - skill: audit-responsive-accessibility
       phases: [verification]
@@ -196,5 +215,5 @@ skillset:
       phases: [verification]
       wave: 2
       status: active
-      version: "1.0.0"
+      version: "1.1.0"
       order: 30

@@ -6,6 +6,7 @@ cd "$ROOT"
 
 source "$ROOT/scripts/lib/node-baseline.sh"
 source "$ROOT/scripts/lib/preflight-diagnostics.sh"
+source "$ROOT/scripts/lib/preflight-handoff.sh"
 source "$ROOT/scripts/lib/runtime-db-env.sh"
 source "$ROOT/scripts/lib/workspace-terminal.sh"
 
@@ -148,6 +149,67 @@ run_preflight_phase() {
   return "$rc"
 }
 
+run_preflight_phase_capture() {
+  local output_var="$1"
+  local phase="$2"
+  local message="$3"
+  shift 3
+
+  local command_display start_ms end_ms elapsed_ms child_pid rc child_script="" phase_output="" output_file=""
+
+  echo "$message"
+  command_display="$(preflight_diag_render_command "$@")"
+  preflight_diag_set_phase "$phase"
+  output_file="$(mktemp)"
+
+  if ! preflight_diag_is_enabled; then
+    set +e
+    "$@" >"$output_file" 2>&1
+    rc="$?"
+    set -e
+    phase_output="$(cat "$output_file")"
+    rm -f "$output_file"
+    printf -v "$output_var" '%s' "$phase_output"
+    preflight_diag_set_phase "idle"
+    return "$rc"
+  fi
+
+  start_ms="$(preflight_diag_now_ms)"
+  CODEX_CAPTURE_OUTPUT_FILE="$output_file" perl -e '
+    $SIG{INT} = "DEFAULT";
+    $SIG{TERM} = "DEFAULT";
+    $SIG{HUP} = "DEFAULT";
+    open STDOUT, ">", $ENV{CODEX_CAPTURE_OUTPUT_FILE} or die "stdout redirect failed: $!";
+    open STDERR, ">&STDOUT" or die "stderr redirect failed: $!";
+    exec @ARGV or die "exec failed: $!";
+  ' "$@" &
+  child_pid="$!"
+  if [[ "${1:-}" == "bash" && "${2:-}" == *.sh ]]; then
+    child_script="${2##*/}"
+  fi
+  export WORKSPACE_PREFLIGHT_DIAGNOSTICS_ACTIVE_CHILD_PID="$child_pid"
+  export WORKSPACE_PREFLIGHT_DIAGNOSTICS_ACTIVE_CHILD_COMMAND="$command_display"
+  export WORKSPACE_PREFLIGHT_DIAGNOSTICS_ACTIVE_CHILD_SCRIPT="$child_script"
+  preflight_diag_log_event phase_start child_pid "$child_pid" command "$command_display"
+
+  set +e
+  wait "$child_pid"
+  rc="$?"
+  set -e
+
+  end_ms="$(preflight_diag_now_ms)"
+  elapsed_ms="$((end_ms - start_ms))"
+  preflight_diag_log_event phase_end child_pid "$child_pid" exit_code "$rc" elapsed_ms "$elapsed_ms" command "$command_display"
+  unset WORKSPACE_PREFLIGHT_DIAGNOSTICS_ACTIVE_CHILD_PID
+  unset WORKSPACE_PREFLIGHT_DIAGNOSTICS_ACTIVE_CHILD_COMMAND
+  unset WORKSPACE_PREFLIGHT_DIAGNOSTICS_ACTIVE_CHILD_SCRIPT
+  phase_output="$(cat "$output_file")"
+  rm -f "$output_file"
+  printf -v "$output_var" '%s' "$phase_output"
+  preflight_diag_set_phase "idle"
+  return "$rc"
+}
+
 preflight_on_signal() {
   local signal_name="$1"
   local active_child="${WORKSPACE_PREFLIGHT_DIAGNOSTICS_ACTIVE_CHILD_PID:-}"
@@ -273,7 +335,19 @@ if [[ "$env_contract_report_rc" != "0" ]]; then
   echo "[preflight] NOTE: env contract reports were refreshed in-place; review and commit docs/workspace/env-contract-inventory.md, docs/workspace/env-deprecations.md, and docs/workspace/vercel-env-review.md if the new baseline is intended." >&2
 fi
 
-run_preflight_phase "handoff-sync" "[preflight] Syncing generated handoffs..." python3 "$ROOT/scripts/sync-handoffs.py" --write
+handoff_sync_output=""
+handoff_sync_rc=0
+run_preflight_phase_capture handoff_sync_output "handoff-sync" "[preflight] Syncing generated handoffs..." python3 "$ROOT/scripts/sync-handoffs.py" --write || handoff_sync_rc="$?"
+if [[ "$handoff_sync_rc" == "0" ]]; then
+  emit_preflight_phase_output "handoff-sync" 0 "$handoff_sync_output"
+else
+  if [[ "$WORKSPACE_PREFLIGHT_STRICT" == "1" ]]; then
+    printf '%s\n' "$handoff_sync_output"
+    exit "$handoff_sync_rc"
+  fi
+  handoff_warning="$(preflight_handle_handoff_sync_result "$WORKSPACE_PREFLIGHT_STRICT" "$handoff_sync_rc" "$handoff_sync_output")"
+  printf '%s\n' "$handoff_warning" >&2
+fi
 
 run_preflight_phase "check-policy" "[preflight] Checking policy drift rules..." bash "$ROOT/scripts/check-policy.sh"
 

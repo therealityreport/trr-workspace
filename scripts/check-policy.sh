@@ -3,8 +3,10 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "$ROOT/scripts/lib/preflight-diagnostics.sh"
+source "$ROOT/scripts/lib/preflight-handoff.sh"
 
 preflight_diag_init "check-policy.sh" "$ROOT" "check-policy"
+WORKSPACE_PREFLIGHT_STRICT="${WORKSPACE_PREFLIGHT_STRICT:-0}"
 
 check_policy_on_signal() {
   local signal_name="$1"
@@ -243,9 +245,21 @@ if rg -n -i 'playwright' "${POLICY_SCAN_FILES[@]}" >/tmp/trr-policy-playwright-h
 fi
 rm -f /tmp/trr-policy-playwright-hits.txt
 
-if ! make -C "$ROOT" --no-print-directory handoff-check; then
-  echo "[check-policy] ERROR: generated handoffs are out of sync or canonical sources are invalid." >&2
-  failures=$((failures + 1))
+handoff_check_output=""
+set +e
+handoff_check_output="$(make -C "$ROOT" --no-print-directory handoff-check 2>&1)"
+handoff_check_rc="$?"
+set -e
+if [[ "$handoff_check_rc" != "0" ]]; then
+  if [[ "$WORKSPACE_PREFLIGHT_STRICT" == "1" ]]; then
+    printf '%s\n' "$handoff_check_output" >&2
+    echo "[check-policy] ERROR: generated handoffs are out of sync or canonical sources are invalid." >&2
+    failures=$((failures + 1))
+  else
+    handoff_warning="$(preflight_handle_handoff_sync_result "$WORKSPACE_PREFLIGHT_STRICT" "$handoff_check_rc" "$handoff_check_output")"
+    printf '%s\n' "$handoff_warning" >&2
+    echo "[check-policy] WARNING: handoff validation did not block policy checks in non-strict mode." >&2
+  fi
 fi
 
 if ! bash "$ROOT/scripts/check-codex.sh"; then

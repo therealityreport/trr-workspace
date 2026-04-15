@@ -9,6 +9,9 @@ Use these commands from `/Users/thomashulihan/Projects/TRR`.
 
 ## Daily Commands
 - `make dev` — recommended default workspace startup (cloud-first; no Docker required for normal backend/app work)
+- `make preflight` — local startup gate; warns on malformed handoff source docs but still blocks on runtime-affecting issues
+- `make preflight-strict` — blocking validation path for malformed handoff source docs and env-contract drift
+- `make handoff-check` — canonical blocking handoff/status snapshot validator
 - `make status` — workspace health and PID snapshot
 - `make stop` — stop workspace-managed processes
 - `make test-fast`
@@ -37,6 +40,10 @@ If your task is ordinary backend/app development or milestone verification, star
 - TRR-Backend: `http://127.0.0.1:8000`
 
 The default `make dev` profile now launches only TRR-APP and TRR-Backend. Screenalytics remains an admin feature label in the app, not a separately managed local runtime.
+
+The backend auto-restart path is now liveness-based. A transient Supabase/DNS issue can still make backend readiness (`/health`) degrade, but the workspace watchdog should only recycle the process when backend liveness (`/health/live`) fails.
+
+If preflight warns about malformed handoff source docs, fix the cited file and rerun `make handoff-check` or `make preflight-strict`. Default local startup intentionally continues so ordinary backend/app work is not blocked by continuity-note formatting mistakes.
 
 The same default profile now runs TRR long jobs on the remote Modal executor by default. Shared-account Instagram `Sync Recent`, `Resume Tail`, and `Backfill Posts` should use Modal-owned dispatch unless you explicitly override the workspace profile for rollback/debug.
 

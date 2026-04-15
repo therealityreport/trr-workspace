@@ -20,7 +20,7 @@
 # WORKSPACE_CLEAN_NEXT_CACHE=1 make dev  # force clean Next.js cache
 # WORKSPACE_TRR_APP_DEV_BUNDLER=webpack make dev  # force the webpack fallback if Turbopack regresses
 # WORKSPACE_OPEN_BROWSER=1 make dev      # opt in to browser tab reuse/open on startup
-# WORKSPACE_BACKEND_AUTO_RESTART=0 make dev  # disable backend watchdog auto-restart (default profile enables it)
+# WORKSPACE_BACKEND_AUTO_RESTART=0 make dev  # disable backend process watchdog auto-restart (liveness-based; default profile enables it)
 # WORKSPACE_BROWSER_TAB_SYNC_MODE=reuse_no_reload make dev  # browser sync strategy when enabled
 # WORKSPACE_BROWSER_TAB_SYNC_MODE=reload_first make dev     # reload only the first matching tab
 # WORKSPACE_BROWSER_TAB_SYNC_MODE=reload_all make dev       # legacy behavior: reload every matching tab

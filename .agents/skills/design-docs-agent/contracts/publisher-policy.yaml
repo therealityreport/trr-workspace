@@ -1,7 +1,7 @@
-version: 1
+version: 2
 defaults:
-  treat_unknown_domains_as_paywalled: true
-  require_saved_html_for_paywalled_articles: true
+  attempt_live_acquisition_for_article_urls: true
+  require_saved_html_after_failed_acquisition: true
   allow_live_url_for_supporting_sources_only: true
 paywalled_domains:
   - nytimes.com

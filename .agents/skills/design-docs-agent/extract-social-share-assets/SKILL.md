@@ -2,7 +2,7 @@
 name: extract-social-share-assets
 description: Extract named social/share image slots and dimensions from saved source bundles for Design Docs articles.
 metadata:
-  version: 1.0.0
+  version: 1.1.0
 ---
 
 # Extract Social Share Assets
@@ -52,7 +52,9 @@ Typed outputs land in:
    source naming supports that mapping.
 5. Preserve dimensions and ratios when recoverable from filenames, metadata, or
    explicit source fields.
-6. Return a deduped, ordered social image set rather than a loose image list.
+6. Treat each recoverable share variant as its own asset record rather than
+   collapsing everything into one fallback OG image.
+7. Return a deduped, ordered social image set rather than a loose image list.
 
 ## Validation
 

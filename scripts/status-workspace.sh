@@ -6,6 +6,7 @@ LOG_DIR="${ROOT}/.logs/workspace"
 PIDFILE="${LOG_DIR}/pids.env"
 BACKEND_WATCHDOG_STATE_FILE="${LOG_DIR}/backend-watchdog.env"
 source "${ROOT}/scripts/lib/mcp-runtime.sh"
+source "${ROOT}/scripts/lib/workspace-health.sh"
 
 OUTPUT_FORMAT="text"
 if [[ "${1:-}" == "--json" ]]; then
@@ -424,9 +425,11 @@ build_codex_runtime_json() {
   printf ']'
 }
 
-BACKEND_HEALTH_URL="http://127.0.0.1:${TRR_BACKEND_PORT}/health"
+BACKEND_READINESS_URL="$(workspace_backend_status_readiness_url "${TRR_BACKEND_PORT}")"
+BACKEND_LIVENESS_URL="$(workspace_backend_status_liveness_url "${TRR_BACKEND_PORT}")"
 APP_HEALTH_URL="http://${TRR_APP_HOST}:${TRR_APP_PORT}/"
-BACKEND_HEALTH_STATUS="$(backend_health_status "${BACKEND_HEALTH_URL}" "${TRR_BACKEND_PID:-}")"
+BACKEND_READINESS_STATUS="$(backend_health_status "${BACKEND_READINESS_URL}" "${TRR_BACKEND_PID:-}")"
+BACKEND_LIVENESS_STATUS="$(health_status "${BACKEND_LIVENESS_URL}" "${TRR_BACKEND_PID:-}")"
 APP_HEALTH_STATUS="$(health_status "${APP_HEALTH_URL}" "${TRR_APP_PID:-}")"
 
 TRR_APP_LISTENERS="$(port_listeners "${TRR_APP_PORT}")"
@@ -502,8 +505,12 @@ if [[ "$OUTPUT_FORMAT" == "json" ]]; then
     "trr_backend": {"port": "${TRR_BACKEND_PORT}", "listeners": "$(json_escape "$TRR_BACKEND_LISTENERS")"}
   },
   "health": {
-    "trr_backend_url": "$(json_escape "$BACKEND_HEALTH_URL")",
-    "trr_backend_status": "$(json_escape "$BACKEND_HEALTH_STATUS")",
+    "trr_backend_url": "$(json_escape "$BACKEND_READINESS_URL")",
+    "trr_backend_status": "$(json_escape "$BACKEND_READINESS_STATUS")",
+    "trr_backend_readiness_url": "$(json_escape "$BACKEND_READINESS_URL")",
+    "trr_backend_readiness_status": "$(json_escape "$BACKEND_READINESS_STATUS")",
+    "trr_backend_liveness_url": "$(json_escape "$BACKEND_LIVENESS_URL")",
+    "trr_backend_liveness_status": "$(json_escape "$BACKEND_LIVENESS_STATUS")",
     "trr_app_url": "$(json_escape "$APP_HEALTH_URL")",
     "trr_app_status": "$(json_escape "$APP_HEALTH_STATUS")"
   },
@@ -595,7 +602,8 @@ echo "  TRR-Backend (:${TRR_BACKEND_PORT}): ${TRR_BACKEND_LISTENERS}"
 echo ""
 
 echo "[status] Health checks (best effort):"
-echo "  TRR-Backend (${BACKEND_HEALTH_URL}): ${BACKEND_HEALTH_STATUS}"
+echo "  TRR-Backend readiness (${BACKEND_READINESS_URL}): ${BACKEND_READINESS_STATUS}"
+echo "  TRR-Backend liveness (${BACKEND_LIVENESS_URL}): ${BACKEND_LIVENESS_STATUS}"
 echo "  TRR-APP (${APP_HEALTH_URL}): ${APP_HEALTH_STATUS}"
 echo ""
 
