@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://therealityreport.com/schemas/design-docs-agent/acquisition-report.schema.json",
+  "title": "Design Docs Acquisition Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["status", "articleUrl", "attempts", "failureReason", "evidence", "nextAction"],
+  "properties": {
+    "status": {
+      "type": "string",
+      "const": "needs-manual-bundle"
+    },
+    "articleUrl": {
+      "type": "string",
+      "minLength": 1
+    },
+    "attempts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["curl", "browser"],
+      "properties": {
+        "curl": { "$ref": "#/$defs/attempt" },
+        "browser": { "$ref": "#/$defs/attempt" }
+      }
+    },
+    "failureReason": {
+      "type": "string",
+      "enum": [
+        "server-side-paywall",
+        "popup-not-bypassable",
+        "insufficient-article-content",
+        "asset-capture-incomplete",
+        "browser-unavailable"
+      ]
+    },
+    "evidence": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "nextAction": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "$defs": {
+    "attempt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["attempted", "succeeded", "summary"],
+      "properties": {
+        "attempted": { "type": "boolean" },
+        "succeeded": { "type": "boolean" },
+        "summary": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

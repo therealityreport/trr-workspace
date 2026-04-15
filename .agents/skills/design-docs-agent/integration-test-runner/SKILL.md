@@ -2,7 +2,7 @@
 name: integration-test-runner
 description: Executable validation skill that runs integration test assertions from test/integration-test.md against the actual ARTICLES array and generated files
 metadata:
-  version: 1.0.0
+  version: 1.1.0
 ---
 
 # Integration Test Runner
@@ -45,9 +45,11 @@ Canonical validators live in:
 3. Validate hosted-media usage, source-size fidelity, interactive specimen
    behavior, and TOC anchor integrity when those contracts are present.
 4. Validate regression fixtures for reusable shell primitives, share-image
-   completeness, interactive overlay generation, and icon reuse when the source
-   bundle contains that evidence.
-5. Surface any article-specific or cross-article failures with actionable context.
+   completeness, interactive overlay generation, icon reuse, and bespoke
+   source-fidelity expectations when fixture evidence exists.
+5. Treat `debate-speaking-time` as the first permanent bespoke-interactive
+   regression fixture.
+6. Surface any article-specific or cross-article failures with actionable context.
 
 ## Validation
 

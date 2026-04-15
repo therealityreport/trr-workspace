@@ -113,7 +113,7 @@ description_for() {
       echo "Comment media mirror stage cap used by Modal social dispatch and by legacy local social worker mode."
       ;;
     WORKSPACE_BACKEND_AUTO_RESTART)
-      echo "Enable the backend watchdog that restarts TRR-Backend after repeated failed health probes or unexpected process exits."
+      echo "Enable the backend process watchdog that restarts TRR-Backend after repeated failed liveness probes or unexpected process exits."
       ;;
     WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_IGNORE)
       echo "When set to 1, active-traffic curl timeouts log warnings but do not trigger backend auto-restarts."

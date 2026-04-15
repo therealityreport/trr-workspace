@@ -2,7 +2,7 @@
 name: extract-icons-and-media
 description: Extract SVG icons, logos, avatars, and embedded media from saved source bundles for design system documentation
 metadata:
-  version: 1.0.0
+  version: 1.1.0
 ---
 
 # Extract Icons And Media
@@ -30,8 +30,9 @@ system can document brand assets and media usage without relying on a live DOM.
 
 ## Outputs
 
-- structured asset manifest
-- classification by asset type and usage class
+- structured asset manifest split across `icons`, `images`, `portraits`,
+  `socialImages`, and `assetFailures`
+- classification by asset type, usage class, and required versus optional status
 - deduped SVG, image, and CSS asset references
 - source inventory and mirroring follow-up tasks when needed
 
@@ -49,7 +50,9 @@ system can document brand assets and media usage without relying on a live DOM.
    follow-up hosted-media mirroring.
 6. Feed reusable SVG and icon findings into the reusable-primitive layer rather
    than leaving header, search, close, account, or menu icons as loose assets only.
-7. Return a normalized asset manifest and typed source inventory for downstream
+7. Mark each recovered asset as required or optional and preserve the intended
+   repo-served or hosted-media destination when known.
+8. Return a normalized asset manifest and typed source inventory for downstream
    documentation.
 
 ## Validation

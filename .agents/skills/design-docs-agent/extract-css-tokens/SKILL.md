@@ -2,7 +2,7 @@
 name: extract-css-tokens
 description: Extract design tokens from CSS stylesheets
 metadata:
-  version: 1.0.0
+  version: 1.1.0
 ---
 
 # Extract CSS Tokens
@@ -37,6 +37,7 @@ See `references/rendering-contracts.md`, `references/lessons-learned.md`, and
 
 - normalized token map
 - typography specimens with parseable `usedIn` values
+- `typographyFidelityRequirements`
 - article-specific color palette
 - dark-mode token notes when present
 
@@ -44,10 +45,13 @@ See `references/rendering-contracts.md`, `references/lessons-learned.md`, and
 
 1. Parse stylesheets and inline styles in document order.
 2. Extract design tokens such as fonts, colors, spacing, radii, and shadows where present.
-3. Extract actual article typography specimens for headline, subheads, body text, and chart or table labels.
-4. Capture article-specific chart or interactive palettes rather than copying prior article values.
-5. When trusted computed-style evidence is available, cross-check key elements against the extracted payload.
-6. When Birdkit `g-*` structures are present, extract `--g-*` custom properties
+3. Extract actual article typography specimens for headline, subheads, body
+   text, and chart or table labels.
+4. Emit specimen-ready typography fidelity requirements with real article copy
+   or source-faithful sample text for each distinct style combination.
+5. Capture article-specific chart or interactive palettes rather than copying prior article values.
+6. When trusted computed-style evidence is available, cross-check key elements against the extracted payload.
+7. When Birdkit `g-*` structures are present, extract `--g-*` custom properties
    from `:root`, article wrapper scope, or Birdkit body scope and map them into
    token groups:
    - typography

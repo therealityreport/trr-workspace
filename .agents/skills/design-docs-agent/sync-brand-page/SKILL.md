@@ -2,7 +2,7 @@
 name: sync-brand-page
 description: Sync article data to parent brand tab pages — ensures fonts, colors, components, and charts are reflected in the brand landing tabs
 metadata:
-  version: 1.0.0
+  version: 1.1.0
 ---
 
 # Sync Brand Page
@@ -43,7 +43,9 @@ See `references/taxonomy.md` for the 15-section rules.
 2. In `create-brand` mode, ensure all 15 tab files exist.
 3. In other modes, update existing tabs and create newly qualifying sub-pages lazily.
 4. Aggregate article data into the right taxonomy sections through shared data flow.
-5. Report what was created, updated, or left unchanged.
+5. Ensure bespoke typography variants and article asset categories flow into
+   brand tabs through aggregation rather than manual article-specific edits.
+6. Report what was created, updated, or left unchanged.
 
 ## Validation
 

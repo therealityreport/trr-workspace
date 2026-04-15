@@ -5,7 +5,9 @@ files:
     interfaces:
       - TechInventory
       - PublisherClassification
+      - ArticleVisualContract
       - MergedExtractionOutput
+      - SourceFidelityResult
       - AuditResult
       - A11yAuditResult
       - IntegrationTestResult
@@ -15,12 +17,29 @@ files:
         - layoutFamily
         - taxonomyMapping
         - extractionPlan
+        - bespokeInteractive
+        - requiresVisualContract
+        - classificationSignals
+      ArticleVisualContract:
+        - chrome
+        - typography
+        - charts
+        - assets
+        - severitySummary
       MergedExtractionOutput:
         - articleUrl
         - sourceHtmlLength
         - publisherClassification
         - navigationData
         - techInventory
+        - visualContract
+        - legacyFidelityMode
+      SourceFidelityResult:
+        - articleId
+        - passed
+        - legacyMode
+        - blockingFindings
+        - degradedFindings
     type_aliases:
       LayoutFamily:
         union_literals:

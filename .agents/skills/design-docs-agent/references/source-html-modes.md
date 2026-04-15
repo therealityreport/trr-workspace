@@ -3,9 +3,10 @@
 ## Overview
 
 Every Design Docs ingestion starts from a concrete saved source bundle. The
-bundle mode determines how to parse the file, whether a live URL is permitted,
-whether two-source merging is needed, how component inventory is recovered, and
-what to do when assets or hydrated states are missing.
+bundle may come from the caller or from `fetch-source-bundle`. The bundle mode
+determines how to parse the file, whether live acquisition is needed, whether
+two-source merging is needed, how component inventory is recovered, and what to
+do when assets or hydrated states are missing.
 
 Always resolve the source mode before running the extraction wave.
 
@@ -74,22 +75,35 @@ are stripped or blocked.
 
 ---
 
-## Mode D: Live URL (fetch at runtime)
+## Mode D: Live Acquisition (fetch at runtime)
 
-**Permitted for**: Non-paywall, publicly accessible sites only, and never as a
-replacement for a required saved paywall bundle.
+`fetch-source-bundle` may attempt live acquisition whenever the caller omits
+`sourceBundle`. The acquisition path is:
 
-Examples of **ALLOWED** live URL targets:
+### D1: curl-first article acquisition
+
+- Fetch the article HTML with `curl -fsSL`.
+- Persist the response under `source-bundles/<slug>/index.html`.
+- Validate the saved HTML with the trustworthiness gate before continuing.
+
+### D2: browser fallback acquisition
+
+- Only run when the curl result does not recover trustworthy content.
+- Use the declared browser capabilities to inspect the live page, remove
+  obvious login or subscribe overlays when the underlying content is already in
+  the DOM, serialize the rendered HTML, and optionally capture a screenshot.
+- Re-run the same trustworthiness gate against the browser-captured HTML.
+
+Examples of **ALLOWED** supporting live URL targets:
 - `datawrapper.de` embeds
 - Public GitHub raw content
 - Public government or open-data portals
-- Any source that renders fully without authentication
 
-Examples of **PROHIBITED** live URL targets:
-- any host declared paywalled in `contracts/publisher-policy.yaml`
-- Any site that requires a login or subscription to view the article
+Examples of **HIGH-RISK** article hosts:
+- any host declared in `contracts/publisher-policy.yaml` `paywalled_domains`
+- any site where curl or browser fallback still fails the trustworthiness gate
 
-**When in doubt, treat as paywall.** Ask the user for a saved file instead.
+**If acquisition fails, ask the user for a saved file instead.**
 
 ---
 
@@ -176,13 +190,16 @@ or explicit article config data.
 When the article URL is from a host declared paywalled in
 `contracts/publisher-policy.yaml`:
 
-1. Require the caller to supply at least one saved HTML file path.
-2. Check whether the file is Mode A or Mode B by inspecting the outer HTML.
-3. If image URLs in Mode A are relative or missing, ask for a Mode B companion
+1. Still attempt `fetch-source-bundle` first when the caller did not supply a
+   bundle.
+2. Treat those hosts as high-risk for acquisition reporting, not as a
+   pre-validation hard block.
+3. If live acquisition fails, require the caller to supply at least one saved
+   HTML file path before extraction starts.
+4. If image URLs in Mode A are relative or missing, ask for a Mode B companion
    file or use the missing-asset recovery flow below.
-4. If responsive behavior, overlays, or asset sizing matter, prefer a saved
+5. If responsive behavior, overlays, or asset sizing matter, prefer a saved
    bundle that also includes CSS, JS, or a HAR.
-5. Never navigate to the live paywalled URL to supplement missing data.
 
 ---
 

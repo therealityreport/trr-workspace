@@ -30,7 +30,7 @@ Visibility tiers:
 | `TRR_SOCIAL_PROXY_DEFAULT_TIMEOUT_MS` | `25000` | integer | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `TRR_SOCIAL_PROXY_LONG_TIMEOUT_MS` | `60000` | integer | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS` | `10000` | integer | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
-| `WORKSPACE_BACKEND_AUTO_RESTART` | `1` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable the backend watchdog that restarts TRR-Backend after repeated failed health probes or unexpected process exits. |
+| `WORKSPACE_BACKEND_AUTO_RESTART` | `1` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable the backend process watchdog that restarts TRR-Backend after repeated failed liveness probes or unexpected process exits. |
 | `WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_IGNORE` | `1` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | When set to 1, active-traffic curl timeouts log warnings but do not trigger backend auto-restarts. |
 | `WORKSPACE_BACKEND_HEALTH_BUSY_TIMEOUT_STREAK` | `6` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Advisory busy-timeout streak denominator used in watchdog logs while active-traffic timeout ignore mode is enabled. |
 | `WORKSPACE_BACKEND_HEALTH_CURL_MAX_TIME` | `5` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
