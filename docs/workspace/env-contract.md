@@ -80,10 +80,3 @@ Visibility tiers:
 | `WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS` | `1` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable or disable the Modal social lane in the remote execution contract; this is not a worker-count knob. |
 | `WORKSPACE_TRR_REMOTE_WORKERS_ENABLED` | `1` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable remote background execution. When executor is Modal, local claim loops are skipped and Modal-owned dispatch remains active. |
 | `WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS` | `2` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
-
-## Auth Runtime Notes
-
-- `ADMIN_EMAIL_ALLOWLIST`, `ADMIN_UID_ALLOWLIST`, and `ADMIN_DISPLAYNAME_ALLOWLIST` are read during TRR-APP server module initialization. Changing them requires a redeploy or full replica restart before every instance agrees on the new access set.
-- `TRR_DEV_ADMIN_BYPASS` is explicit opt-in only. Set it to `true` for local-only debugging on localhost-family hosts; leaving it unset or `false` disables the synthetic admin bypass even in development.
-- `TRR_AUTH_DIAGNOSTICS_PERSIST` defaults to disabled. Set it to `true` only when you intentionally want file-backed auth diagnostics snapshots; test runs still keep persistence disabled.
-- Admin mutation routes rely on same-origin browser requests. Cross-origin `POST`, `PUT`, `PATCH`, and `DELETE` requests to `/api/admin/*` are rejected before allowlist evaluation.
