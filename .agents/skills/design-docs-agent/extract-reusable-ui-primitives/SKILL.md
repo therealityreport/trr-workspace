@@ -1,6 +1,7 @@
 ---
 name: extract-reusable-ui-primitives
 description: Normalize repeated publisher shell, menu, drawer, popup, storyline, and icon surfaces into reusable Design Docs primitives.
+user-invocable: false
 metadata:
   version: 1.0.0
 ---

@@ -1,6 +1,7 @@
 ---
 name: sync-brand-page
 description: Sync article data to parent brand tab pages — ensures fonts, colors, components, and charts are reflected in the brand landing tabs
+user-invocable: false
 metadata:
   version: 1.1.0
 ---

@@ -1,6 +1,7 @@
 ---
 name: extract-css-tokens
 description: Extract design tokens from CSS stylesheets
+user-invocable: false
 metadata:
   version: 1.1.0
 ---

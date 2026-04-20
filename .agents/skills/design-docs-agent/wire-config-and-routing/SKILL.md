@@ -1,6 +1,7 @@
 ---
 name: wire-config-and-routing
 description: Register new brand in design docs config, sidebar, and routing.
+user-invocable: false
 metadata:
   version: 1.1.0
 ---

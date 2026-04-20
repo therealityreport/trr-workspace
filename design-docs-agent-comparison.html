@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Design Docs Agent — v1.0.0 vs v1.1.0</title>
+<style>
+  :root{
+    --navy:#1B365D; --navy-dark:#0F2240; --gold:#C9A961;
+    --mint:#4FB286; --coral:#E8746B; --bg:#F4F1EA; --ink:#14202E;
+    --card:#FFFFFF; --muted:#6B7689; --line:#E3DDD0;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Inter","Helvetica Neue",sans-serif;
+       background:var(--bg);color:var(--ink);line-height:1.5;padding:40px 24px}
+  .wrap{max-width:1200px;margin:0 auto}
+  header{text-align:center;padding:40px 20px 40px;border-bottom:3px solid var(--navy);margin-bottom:32px}
+  .eyebrow{font-size:12px;letter-spacing:.25em;color:var(--gold);text-transform:uppercase;font-weight:700;margin-bottom:12px}
+  h1{font-size:54px;font-weight:800;color:var(--navy);letter-spacing:-.02em;line-height:1.05}
+  h1 span{color:var(--coral)}
+  .sub{margin-top:16px;font-size:18px;color:var(--muted);max-width:680px;margin-left:auto;margin-right:auto}
+
+  /* Tabs */
+  .tabs{display:flex;gap:4px;border-bottom:2px solid var(--navy);margin-bottom:40px;justify-content:center;flex-wrap:wrap}
+  .tab-btn{background:transparent;border:none;padding:14px 28px;font-family:inherit;font-size:13px;
+           font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);cursor:pointer;
+           border-radius:10px 10px 0 0;transition:all .15s;position:relative;top:2px}
+  .tab-btn:hover{color:var(--navy)}
+  .tab-btn.active{background:var(--navy);color:#fff}
+  .panel{display:none;animation:fade .25s ease-out}
+  .panel.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px;position:relative}
+  .card.v1{border-top:6px solid var(--muted)}
+  .card.v2{border-top:6px solid var(--mint)}
+  .ver{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+  .tag{font-size:11px;padding:4px 10px;border-radius:999px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+  .tag.old{background:#EAE6DC;color:var(--muted)}
+  .tag.new{background:var(--mint);color:#fff}
+  .card h2{font-size:28px;color:var(--navy);margin-bottom:4px}
+  .card .path{font-family:"SF Mono",Menlo,monospace;font-size:11px;color:var(--muted);word-break:break-all;margin-bottom:20px}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0}
+  .stat{background:var(--bg);border-radius:8px;padding:14px 10px;text-align:center}
+  .stat .n{font-size:28px;font-weight:800;color:var(--navy)}
+  .stat .l{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+  ul.feat{list-style:none;margin-top:14px}
+  ul.feat li{padding:8px 0;border-bottom:1px dashed var(--line);font-size:14px;display:flex;gap:10px;align-items:flex-start}
+  ul.feat li:last-child{border-bottom:none}
+  .dot{width:8px;height:8px;border-radius:50%;margin-top:7px;flex-shrink:0}
+  .dot.g{background:var(--mint)}.dot.r{background:var(--coral)}.dot.y{background:var(--gold)}.dot.n{background:var(--muted)}
+  section.diff{margin-top:56px}
+  .section-head{text-align:center;margin-bottom:32px}
+  .section-head h3{font-size:32px;color:var(--navy);margin-bottom:8px}
+  .section-head p{color:var(--muted);font-size:15px;max-width:720px;margin:0 auto}
+  .venn{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-top:20px}
+  .col{background:var(--card);border-radius:14px;padding:24px;border:1px solid var(--line)}
+  .col.left{border-top:6px solid var(--coral)}
+  .col.both{border-top:6px solid var(--gold)}
+  .col.right{border-top:6px solid var(--mint)}
+  .col h4{font-size:14px;text-transform:uppercase;letter-spacing:.1em;color:var(--navy);margin-bottom:14px}
+  .col ul{list-style:none}
+  .col li{font-size:13px;padding:6px 0;font-family:"SF Mono",Menlo,monospace;color:var(--ink);border-bottom:1px dotted var(--line)}
+  .col li:last-child{border-bottom:none}
+  .bar{margin-top:56px;background:var(--navy);color:#fff;border-radius:14px;padding:36px;display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+  .bar .b{text-align:center}
+  .bar .n{font-size:40px;font-weight:800;color:var(--gold)}
+  .bar .l{font-size:11px;letter-spacing:.15em;text-transform:uppercase;margin-top:6px;opacity:.85}
+  table.meta{width:100%;border-collapse:collapse;margin-top:20px;background:var(--card);border-radius:12px;overflow:hidden}
+  table.meta th,table.meta td{padding:14px 18px;text-align:left;border-bottom:1px solid var(--line);font-size:14px}
+  table.meta th{background:var(--navy);color:#fff;font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+  table.meta td.k{font-weight:700;color:var(--navy);width:32%}
+  table.meta tr:last-child td{border-bottom:none}
+  .check{color:var(--mint);font-weight:700}.x{color:var(--coral);font-weight:700}
+
+  /* Prompt panel */
+  .prompt-box{background:var(--navy-dark);border-radius:14px;padding:0;overflow:hidden;
+              box-shadow:0 20px 50px rgba(15,34,64,.25);margin-top:10px}
+  .prompt-head{background:var(--navy);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:1px solid rgba(255,255,255,.08)}
+  .prompt-head .dots{display:flex;gap:6px}
+  .prompt-head .dots span{width:11px;height:11px;border-radius:50%;background:rgba(255,255,255,.2)}
+  .prompt-head .dots span:first-child{background:#FF5F57}
+  .prompt-head .dots span:nth-child(2){background:#FEBC2E}
+  .prompt-head .dots span:nth-child(3){background:#28C840}
+  .prompt-head .fname{font-family:"SF Mono",Menlo,monospace;font-size:12px;color:rgba(255,255,255,.65)}
+  .copy-btn{background:var(--gold);color:var(--navy-dark);border:none;padding:8px 16px;border-radius:6px;
+            font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;
+            transition:all .15s;font-family:inherit}
+  .copy-btn:hover{background:#d4b975;transform:translateY(-1px)}
+  .copy-btn.ok{background:var(--mint);color:#fff}
+  pre.prompt{margin:0;padding:28px 32px;color:#E6EDF3;font-family:"SF Mono",Menlo,monospace;
+             font-size:13px;line-height:1.65;white-space:pre-wrap;word-wrap:break-word;max-height:640px;overflow-y:auto}
+  pre.prompt code{color:var(--gold)}
+  pre.prompt strong{color:#fff;font-weight:700}
+
+  .prompt-intro{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px;margin-bottom:24px}
+  .prompt-intro h3{color:var(--navy);font-size:22px;margin-bottom:10px}
+  .prompt-intro p{color:var(--muted);font-size:15px;margin-bottom:8px}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+  .chip{background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:6px 12px;
+        font-family:"SF Mono",Menlo,monospace;font-size:11px;color:var(--navy)}
+
+  footer{text-align:center;margin-top:64px;padding:24px;color:var(--muted);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+  @media(max-width:820px){.grid2,.venn,.bar{grid-template-columns:1fr}h1{font-size:36px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="eyebrow">The Reality Report · Plugin Diff Report</div>
+  <h1>Design Docs Agent<br><span>v1.0.0 → v1.1.0</span></h1>
+  <p class="sub">A side-by-side comparison of the cached Codex install and the plugin-bridge working copy of the shared Design Docs package.</p>
+</header>
+
+<nav class="tabs" role="tablist">
+  <button class="tab-btn active" data-tab="compare" role="tab">Comparison</button>
+  <button class="tab-btn" data-tab="prompt" role="tab">Migration Prompt</button>
+</nav>
+
+<!-- ======== TAB 1: COMPARISON ======== -->
+<div class="panel active" id="compare" role="tabpanel">
+
+<div class="grid2">
+  <div class="card v1">
+    <div class="ver"><h2>Cached Install</h2><span class="tag old">v1.0.0</span></div>
+    <div class="path">~/.codex/plugins/cache/local-plugins/design-docs-agent/1.0.0</div>
+    <div class="stats">
+      <div class="stat"><div class="n">17</div><div class="l">Skills</div></div>
+      <div class="stat"><div class="n">2</div><div class="l">Assets</div></div>
+      <div class="stat"><div class="n">0</div><div class="l">Contracts</div></div>
+    </div>
+    <ul class="feat">
+      <li><span class="dot y"></span>Per-skill <code>agents/openai.yaml</code> runtime files</li>
+      <li><span class="dot y"></span>Ships <code>assets/</code> with composer + logo icons</li>
+      <li><span class="dot y"></span>Nested <code>skills/design-docs/SKILL.md</code> scaffold</li>
+      <li><span class="dot n"></span>No <code>keywords</code>, <code>homepage</code>, or <code>license</code></li>
+      <li><span class="dot n"></span>No <code>contracts/</code> or validation scripts</li>
+      <li><span class="dot n"></span>No <code>bridge.yaml</code> provenance</li>
+    </ul>
+  </div>
+
+  <div class="card v2">
+    <div class="ver"><h2>Plugin-Bridge Root</h2><span class="tag new">v1.1.0</span></div>
+    <div class="path">~/Projects/plugin-bridge/plugins/design-docs-agent</div>
+    <div class="stats">
+      <div class="stat"><div class="n">21</div><div class="l">Skills</div></div>
+      <div class="stat"><div class="n">4</div><div class="l">Contracts</div></div>
+      <div class="stat"><div class="n">3</div><div class="l">Test Utils</div></div>
+    </div>
+    <ul class="feat">
+      <li><span class="dot g"></span>New <code>contracts/</code> dir with schemas + policy YAML</li>
+      <li><span class="dot g"></span><code>bridge.yaml</code> records pin, source, parity</li>
+      <li><span class="dot g"></span>Adds <code>validate-inputs</code> skill + 4 extractors</li>
+      <li><span class="dot g"></span>Test harness: <code>validate-package.py</code>, <code>validate-external-contract.mjs</code></li>
+      <li><span class="dot g"></span>Manifest adds <code>homepage</code>, <code>repository</code>, <code>license</code>, <code>keywords</code></li>
+      <li><span class="dot r"></span>Drops icons (<code>composerIcon</code>, <code>logo</code>) + nested scaffold</li>
+    </ul>
+  </div>
+</div>
+
+<section class="diff">
+  <div class="section-head">
+    <h3>Skill Roster Diff</h3>
+    <p>What's exclusive to each version and what carries over.</p>
+  </div>
+  <div class="venn">
+    <div class="col left">
+      <h4>Only in v1.0.0</h4>
+      <ul>
+        <li>skills/design-docs/ (nested)</li>
+        <li>assets/app-icon.png</li>
+        <li>assets/app-icon-small.png</li>
+        <li>per-skill openai.yaml (×17)</li>
+      </ul>
+    </div>
+    <div class="col both">
+      <h4>Shared (16 skills)</h4>
+      <ul>
+        <li>audit-generated-config-integrity</li>
+        <li>audit-responsive-accessibility</li>
+        <li>classify-publisher-patterns</li>
+        <li>extract-ai2html-artboards</li>
+        <li>extract-birdkit-tables</li>
+        <li>extract-css-tokens</li>
+        <li>extract-datawrapper-charts</li>
+        <li>extract-icons-and-media</li>
+        <li>extract-navigation</li>
+        <li>extract-page-structure</li>
+        <li>extract-quote-components</li>
+        <li>extract-source-component-inventory</li>
+        <li>generate-article-page</li>
+        <li>generate-brand-section</li>
+        <li>integration-test-runner</li>
+        <li>sync-brand-page · wire-config-and-routing</li>
+      </ul>
+    </div>
+    <div class="col right">
+      <h4>Only in v1.1.0</h4>
+      <ul>
+        <li>validate-inputs/</li>
+        <li>extract-birdkit-arrow-charts/</li>
+        <li>extract-reusable-ui-primitives/</li>
+        <li>extract-site-shell-interactions/</li>
+        <li>extract-social-share-assets/</li>
+        <li>contracts/*.yaml + *.schema.json</li>
+        <li>bridge.yaml</li>
+        <li>test/runtime-order-baseline.yaml</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="bar">
+  <div class="b"><div class="n">+4</div><div class="l">Net New Skills</div></div>
+  <div class="b"><div class="n">+4</div><div class="l">Contract Files</div></div>
+  <div class="b"><div class="n">−17</div><div class="l">Per-Skill YAMLs</div></div>
+  <div class="b"><div class="n">1.1.0</div><div class="l">Pinned Version</div></div>
+</div>
+
+<section class="diff">
+  <div class="section-head">
+    <h3>Manifest &amp; Interface</h3>
+    <p>Field-by-field lookup across <code>.claude-plugin</code> and <code>.codex-plugin</code> manifests.</p>
+  </div>
+  <table class="meta">
+    <thead><tr><th>Field</th><th>v1.0.0 (cache)</th><th>v1.1.0 (bridge)</th></tr></thead>
+    <tbody>
+      <tr><td class="k">version</td><td>1.0.0</td><td>1.1.0</td></tr>
+      <tr><td class="k">homepage / repository</td><td class="x">— absent</td><td class="check">github.com/therealityreport/TRR</td></tr>
+      <tr><td class="k">license</td><td class="x">—</td><td class="check">Proprietary</td></tr>
+      <tr><td class="k">keywords</td><td class="x">—</td><td class="check">design-docs, skills, documentation, ingestion, trr</td></tr>
+      <tr><td class="k">interface.composerIcon / logo</td><td class="check">./assets/app-icon.png</td><td class="x">removed</td></tr>
+      <tr><td class="k">interface.longDescription</td><td>Workflow behavior in SKILL.md</td><td>Runtime roster + package-owned <code>contracts/</code></td></tr>
+      <tr><td class="k">defaultPrompt[2]</td><td>"Verify shared package skill parity."</td><td>"Validate the design-docs-agent package contracts and runtime roster."</td></tr>
+      <tr><td class="k">brandColor</td><td>#1B365D</td><td>#1B365D</td></tr>
+    </tbody>
+  </table>
+</section>
+
+</div><!-- /compare -->
+
+<!-- ======== TAB 2: MIGRATION PROMPT ======== -->
+<div class="panel" id="prompt" role="tabpanel">
+
+<div class="prompt-intro">
+  <h3>Migration Prompt — upgrade v1.0.0 to v1.1.0 parity</h3>
+  <p>Paste this into your coding agent from the repo root. It revises the "Only in v1.0.0" artifacts so they pick up every value from the v1.1.0 additions — new extractor skills, the <code>contracts/</code> directory, <code>bridge.yaml</code>, and the runtime-order baseline — and updates the existing v1.1 skills and <code>agents/openai.yaml</code> roster to stay consistent.</p>
+  <div class="chips">
+    <span class="chip">validate-inputs</span>
+    <span class="chip">extract-birdkit-arrow-charts</span>
+    <span class="chip">extract-reusable-ui-primitives</span>
+    <span class="chip">extract-site-shell-interactions</span>
+    <span class="chip">extract-social-share-assets</span>
+    <span class="chip">contracts/*</span>
+    <span class="chip">bridge.yaml</span>
+    <span class="chip">runtime-order-baseline.yaml</span>
+  </div>
+</div>
+
+<div class="prompt-box">
+  <div class="prompt-head">
+    <div class="dots"><span></span><span></span><span></span></div>
+    <span class="fname">migration-prompt.md</span>
+    <button class="copy-btn" id="copyBtn">Copy Prompt</button>
+  </div>
+<pre class="prompt" id="promptText"># Task: Migrate design-docs-agent v1.0.0 → v1.1.0 parity
+
+You are updating the cached Codex plugin at:
+
+  SOURCE: /Users/thomashulihan/.codex/plugins/cache/local-plugins/design-docs-agent/1.0.0
+  TARGET: /Users/thomashulihan/Projects/plugin-bridge/plugins/design-docs-agent  (v1.1.0 — canonical)
+
+The v1.0.0 tree has three things the v1.1.0 tree does NOT: a nested
+`skills/design-docs/` scaffold, an `assets/` icon pair, and a per-skill
+`agents/openai.yaml` beneath every owned skill. Revise those v1.0.0-only
+artifacts so they reflect the values introduced in v1.1.0, then apply the
+downstream updates the v1.1 skills and top-level roster need to stay
+internally consistent.
+
+## 1. Revise the "Only in v1.0.0" artifacts
+
+### 1a. `skills/design-docs/SKILL.md` (nested scaffold)
+Rewrite it so the ownership matrix, public-entry policy, and procedure match
+the canonical v1.1.0 `SKILL.md` at the package root. Specifically it must:
+
+- Declare `metadata.version: 1.1.0`.
+- Reference `contracts/source-bundle.schema.json`,
+  `contracts/publisher-policy.yaml`, and `contracts/external-app-contract.yaml`
+  as the canonical input, policy, and external-app contracts.
+- Describe the eight-step procedure: validation → pre-extraction →
+  extraction → merge → generation → wiring → verification → closeout.
+- Cite `agents/openai.yaml` as the single source of truth for phase order,
+  shared capabilities, and per-skill wave/status/version.
+- Remove any workflow wording that duplicates the contract files or names
+  paywall domains inline.
+
+### 1b. `assets/app-icon.png` and `assets/app-icon-small.png`
+v1.1.0 drops the Codex `interface.composerIcon` / `interface.logo` fields,
+so the asset files become dead references. Either:
+
+- delete both PNGs and remove the `assets/` directory, OR
+- keep them only if you also re-add `composerIcon` and `logo` to
+  `.codex-plugin/plugin.json` — in which case the path must remain
+  `./assets/app-icon.png`. Default to deletion unless the user opts in.
+
+### 1c. Per-skill `agents/openai.yaml` files (×17)
+v1.1.0 consolidates all runtime metadata into the single top-level
+`agents/openai.yaml`. For every owned skill directory under v1.0.0
+(`audit-generated-config-integrity/`, `audit-responsive-accessibility/`,
+`classify-publisher-patterns/`, `extract-ai2html-artboards/`,
+`extract-birdkit-tables/`, `extract-css-tokens/`,
+`extract-datawrapper-charts/`, `extract-icons-and-media/`,
+`extract-navigation/`, `extract-page-structure/`,
+`extract-quote-components/`, `extract-source-component-inventory/`,
+`generate-article-page/`, `generate-brand-section/`,
+`integration-test-runner/`, `sync-brand-page/`,
+`wire-config-and-routing/`):
+
+- delete the nested `agents/openai.yaml`,
+- remove the now-empty `agents/` subdirectory,
+- confirm the skill appears in the top-level `agents/openai.yaml` `skillset.owned` with matching `phases`, `wave`, `status`, `version: "1.0.0"`, and `order`.
+
+## 2. Add the v1.1.0-only artifacts to v1.0.0
+
+Copy (or recreate) the following from the plugin-bridge target into the
+cache tree, preserving contents exactly:
+
+- `validate-inputs/SKILL.md` — owns the validation phase; required inputs
+  are `articleUrl`, `sourceBundle`, and the three contract files.
+- `extract-birdkit-arrow-charts/SKILL.md` — Birdkit arrow-comparison chart
+  extractor keyed on `.g-arrow-chart` / `.g-arrow-row`.
+- `extract-reusable-ui-primitives/SKILL.md` — normalizes repeat shell/icon
+  surfaces into `reusablePrimitives` keyed by publisher+layout+role+variant.
+- `extract-site-shell-interactions/SKILL.md` — recovers masthead, storyline
+  rails, drawers, menus, and popup bodies into `siteShell` +
+  `interactionCoverage`.
+- `extract-social-share-assets/SKILL.md` — emits slot-aware
+  `socialShareAssets` (e.g. `facebookJumbo`, `video16x9-3000`, `google4x3`).
+- `contracts/external-app-contract.yaml` — minimum TRR-APP interface +
+  field requirements (`PublisherClassification`, `MergedExtractionOutput`,
+  `LayoutFamily`, `DESIGN_DOC_SECTIONS`, `DesignDocSectionId`).
+- `contracts/publisher-policy.yaml` — paywall domain list +
+  `treat_unknown_domains_as_paywalled: true` default.
+- `contracts/roster.schema.json` — JSON-Schema for `agents/openai.yaml`
+  (schema_version, package_version, interface, shared_capabilities,
+  pipeline phases, skillset.owned/supporting).
+- `contracts/source-bundle.schema.json` — required `canonicalSourceUrl` +
+  `html` (string or modeA/modeB/rendered object), optional css, js,
+  manifests, har, screenshots, sourceTree, authoritativeViewport.
+- `bridge.yaml` — `pin: 1.1.0`, `source.type: local`, `parity.hooks: full`,
+  `normalize.{codex,claude}: auto`.
+- `test/runtime-order-baseline.yaml` — canonical
+  `top_level_sequence`, `extraction_membership`, and `verification_sequence`.
+
+## 3. Update the existing v1.1 skills and agents to stay consistent
+
+After adding the artifacts above, revise the already-present v1.1 material:
+
+- **Top-level `agents/openai.yaml`** — confirm it pins
+  `package_version: "1.1.0"` and that `skillset.owned` contains every new
+  skill with the correct ordering:
+  `validate-inputs` (validation, order 10),
+  `extract-site-shell-interactions` (extraction, order 50),
+  `extract-social-share-assets` (order 60),
+  `extract-reusable-ui-primitives` (order 70),
+  `extract-birdkit-arrow-charts` (wave 2, order 110).
+  Reflow `order` on the other extractors so the sequence in
+  `test/runtime-order-baseline.yaml` (`extract-page-structure`,
+  `-css-tokens`, `-icons-and-media`, `-navigation`,
+  `-site-shell-interactions`, `-social-share-assets`,
+  `-reusable-ui-primitives`, `-source-component-inventory`,
+  `-datawrapper-charts`, `-birdkit-tables`, `-birdkit-arrow-charts`,
+  `-ai2html-artboards`, `-quote-components`) is preserved.
+
+- **Package `SKILL.md`** — update the ownership matrix to list
+  `contracts/` as canonical, mention `validate-inputs` as the validation
+  owner, and remove any inline paywall/contract duplication. Bump
+  `metadata.version: 1.1.0` if not already set.
+
+- **`classify-publisher-patterns/SKILL.md`** — confirm outputs
+  `PublisherClassification`, `TechInventory`, and taxonomy routing
+  hints, and that it references the `pre-extraction` phase.
+
+- **`extract-page-structure/SKILL.md` / `extract-navigation/SKILL.md` /
+  `extract-icons-and-media/SKILL.md`** — ensure they do NOT attempt to
+  recover shell chrome, storyline rails, drawer bodies, or slot-aware share
+  art. That responsibility now belongs to the three new extractors.
+  Trim overlapping procedures and point readers to the new skills.
+
+- **`extract-source-component-inventory/SKILL.md`** — reference
+  `extract-reusable-ui-primitives` for primitive matching so the inventory
+  stops inlining reusable-chrome decisions.
+
+- **`generate-article-page/SKILL.md` / `generate-brand-section/SKILL.md`**
+  — consume `reusablePrimitives`, `siteShell`, `interactionCoverage`, and
+  `socialShareAssets` from the merged extraction output. Update typed
+  references to `TRR-APP/apps/web/src/lib/admin/design-docs-pipeline-types.ts`
+  and `design-docs-ui-primitives.ts`.
+
+- **`wire-config-and-routing/SKILL.md`** — ensure it respects the
+  `DESIGN_DOC_SECTIONS` enumeration from `contracts/external-app-contract.yaml`.
+
+- **`audit-generated-config-integrity/SKILL.md`** — add an assertion step
+  that validates the merged output against
+  `contracts/source-bundle.schema.json` and the TRR-APP interface fields
+  listed in `contracts/external-app-contract.yaml`.
+
+- **`sync-brand-page/SKILL.md` / `audit-responsive-accessibility/SKILL.md`
+  / `integration-test-runner/SKILL.md`** — confirm they sit in the
+  `verification_sequence` defined by `test/runtime-order-baseline.yaml`
+  (audit-generated-config-integrity → sync-brand-page →
+  audit-responsive-accessibility → integration-test-runner →
+  check.typecheck) and update any out-of-date ordering language.
+
+- **`.claude-plugin/plugin.json` + `.codex-plugin/plugin.json`** — bump
+  `version` to `1.1.0`, add `homepage`, `repository`, `license: "Proprietary"`,
+  and `keywords: ["design-docs","skills","documentation","ingestion","trr"]`.
+  Update `interface.longDescription` to mention package-owned contracts and
+  the canonical runtime roster. Swap `defaultPrompt[2]` to
+  "Validate the design-docs-agent package contracts and runtime roster."
+
+## 4. Validation
+
+After the migration, run:
+
+- `python test/validate-package.py` — must pass against
+  `contracts/roster.schema.json`.
+- `node test/validate-external-contract.mjs` — must pass the TRR-APP
+  interface assertions.
+- Diff `test/runtime-order-baseline.yaml` against the `extraction` phase
+  ordering recovered from `agents/openai.yaml` — they must be identical.
+
+Report any skill whose `order` had to shift, any contract field that drifted,
+and any v1.0.0 artifact you chose to delete vs. retain with a rationale.
+</pre>
+</div>
+
+</div><!-- /prompt -->
+
+<footer>Generated 2026-04-15 · TRR Workspace · design-docs-agent diff</footer>
+</div>
+
+<script>
+  document.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.tab).classList.add('active');
+    });
+  });
+  const copyBtn=document.getElementById('copyBtn');
+  copyBtn.addEventListener('click',async()=>{
+    const text=document.getElementById('promptText').innerText;
+    try{await navigator.clipboard.writeText(text);
+      copyBtn.textContent='Copied ✓';copyBtn.classList.add('ok');
+      setTimeout(()=>{copyBtn.textContent='Copy Prompt';copyBtn.classList.remove('ok')},1800);
+    }catch(e){copyBtn.textContent='Copy failed'}
+  });
+</script>
+</body>
+</html>

@@ -44,6 +44,16 @@ This fallback is for live verification only. Browser defaults still belong in wr
 - `make chrome-devtools-mcp-status` — inspect current session state
 - `make chrome-devtools-mcp-stop-conflicts` — detect non-Codex browser-control clients
 
+### Readiness states
+The status script and workspace preflight now classify browser automation with the same four states:
+
+- `ready` — browser automation is usable and pressure is normal
+- `degraded` — browser automation is usable, but local Chrome pressure or stale metadata suggests cleanup may help
+- `recoverable` — the shared `9422` keeper is currently stopped, but the shared launcher can still auto-launch Chrome on demand
+- `unavailable` — the shared keeper is down and there is no usable recovery path for the current startup contract
+
+Only the `unavailable` state should surface the stronger “shared Chrome is not responding” startup attention. `degraded` remains a cleanup suggestion, and `recoverable` is informational.
+
 ### Deep cleanup
 - `bash scripts/codex-mcp-session-reaper.sh diagnose` — full snapshot of all Chrome/MCP state
 - `bash scripts/codex-mcp-session-reaper.sh reap` — aggressive orphan kill + artifact purge
@@ -65,6 +75,7 @@ Use the status command to separate keepers from leaks:
 - `stale-browser` means the wrapper metadata exists but the browser itself is gone.
 - `bash scripts/mcp-clean.sh --soak` prints pre/post pressure snapshots while repeatedly exercising the cleanup path.
 - `Pressure snapshot` and `Pressure verdict` are the two lines to compare across soak runs.
+- A missing `9422` listener is only an `unavailable` condition when the shared launcher cannot recover it for fresh sessions. Otherwise the status is `recoverable`.
 
 ### Random Chrome windows
 If Chrome opens randomly while idle, run `make chrome-devtools-mcp-status` first and check for competing non-Codex browser-control clients before restarting anything.

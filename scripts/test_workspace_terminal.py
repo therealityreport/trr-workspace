@@ -39,13 +39,9 @@ def test_attention_render_groups_nonblocking_items(tmp_path: Path) -> None:
         source "{SCRIPT_PATH}"
         workspace_attention_reset "{attention_file}"
         workspace_attention_add "{attention_file}" \
-          "Flashback browser envs are missing." \
-          "Impact: /flashback/cover and /flashback/play stay unavailable; normal startup is unaffected." \
-          "Remediation: set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in apps/web/.env.local."
-        workspace_attention_add "{attention_file}" \
           "Browser automation pressure is degraded." \
           "Impact: chrome-devtools is available, but local browser pressure is elevated." \
-          "Remediation: run 'make mcp-clean' if stale Chrome runtime artifacts are not expected."
+          "Remediation: run 'make mcp-clean' if stale Chrome runtime artifacts or external MCP leftovers are not expected."
         workspace_attention_render "{attention_file}" "[workspace]"
         """
     )
@@ -53,12 +49,9 @@ def test_attention_render_groups_nonblocking_items(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stderr
     assert result.stdout == (
         "[workspace] Attention:\n"
-        "  - Flashback browser envs are missing.\n"
-        "    Impact: /flashback/cover and /flashback/play stay unavailable; normal startup is unaffected.\n"
-        "    Remediation: set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in apps/web/.env.local.\n"
         "  - Browser automation pressure is degraded.\n"
         "    Impact: chrome-devtools is available, but local browser pressure is elevated.\n"
-        "    Remediation: run 'make mcp-clean' if stale Chrome runtime artifacts are not expected.\n"
+        "    Remediation: run 'make mcp-clean' if stale Chrome runtime artifacts or external MCP leftovers are not expected.\n"
     )
 
 

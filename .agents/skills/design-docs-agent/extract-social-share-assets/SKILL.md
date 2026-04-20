@@ -1,6 +1,7 @@
 ---
 name: extract-social-share-assets
 description: Extract named social/share image slots and dimensions from saved source bundles for Design Docs articles.
+user-invocable: false
 metadata:
   version: 1.1.0
 ---

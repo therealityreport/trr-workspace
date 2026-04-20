@@ -1,6 +1,7 @@
 ---
 name: extract-site-shell-interactions
 description: Extract masthead spacers, shell chrome, storyline rails, drawers, menus, and popup interaction surfaces from saved source bundles.
+user-invocable: false
 metadata:
   version: 1.0.0
 ---

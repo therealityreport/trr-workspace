@@ -1,6 +1,7 @@
 ---
 name: extract-quote-components
 description: Extract styled quote blocks with CSS specifications.
+user-invocable: false
 metadata:
   version: 1.0.0
 ---
