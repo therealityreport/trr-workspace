@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Reskinning Claude Desktop (macOS) — Plan & Field Guide</title>
+<style>
+  :root{
+    --bg:#1a1815;
+    --panel:#24211d;
+    --panel2:#2d2925;
+    --ink:#f2ede4;
+    --muted:#b8ad9c;
+    --accent:#d97757;   /* Claude orange */
+    --accent2:#cc785c;
+    --line:#3a352f;
+    --ok:#7ab87a;
+    --warn:#e6b864;
+    --danger:#e07a6a;
+    --mono:"SF Mono", ui-monospace, Menlo, monospace;
+    --sans:-apple-system, "Inter", system-ui, sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.55}
+  .wrap{max-width:1180px;margin:0 auto;padding:48px 32px 96px}
+  header{border-bottom:1px solid var(--line);padding-bottom:32px;margin-bottom:40px;position:relative}
+  .eyebrow{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);font-weight:600}
+  h1{font-size:44px;line-height:1.1;margin:8px 0 12px;letter-spacing:-.02em}
+  h1 span{color:var(--accent)}
+  .sub{color:var(--muted);max-width:760px;font-size:17px}
+  .meta{display:flex;gap:24px;margin-top:20px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+  .meta b{color:var(--ink);font-weight:600}
+
+  h2{font-size:22px;margin:48px 0 18px;letter-spacing:-.01em;display:flex;align-items:center;gap:12px}
+  h2::before{content:"";width:10px;height:10px;background:var(--accent);border-radius:2px;transform:rotate(45deg)}
+
+  .grid{display:grid;gap:16px}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  @media(max-width:820px){.g2,.g3,.g4{grid-template-columns:1fr}}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px}
+  .card h3{margin:0 0 8px;font-size:15px;letter-spacing:.02em}
+  .card p{margin:0;color:var(--muted);font-size:14px}
+  .card .tag{display:inline-block;font-size:11px;padding:3px 8px;border-radius:20px;background:var(--panel2);color:var(--muted);margin-bottom:10px;letter-spacing:.06em;text-transform:uppercase}
+
+  /* Stats row */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel)}
+  .stat{padding:22px;border-right:1px solid var(--line)}
+  .stat:last-child{border-right:0}
+  .stat .n{font-size:32px;font-weight:700;color:var(--accent);letter-spacing:-.02em}
+  .stat .l{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-top:4px}
+  @media(max-width:820px){.stats{grid-template-columns:repeat(2,1fr)} .stat{border-right:0;border-bottom:1px solid var(--line)}}
+
+  /* Timeline */
+  .timeline{position:relative;padding-left:28px}
+  .timeline::before{content:"";position:absolute;left:8px;top:6px;bottom:6px;width:2px;background:linear-gradient(var(--accent),var(--line))}
+  .step{position:relative;margin-bottom:22px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+  .step::before{content:"";position:absolute;left:-26px;top:20px;width:14px;height:14px;border-radius:50%;background:var(--accent);border:3px solid var(--bg)}
+  .step h4{margin:0 0 4px;font-size:15px}
+  .step .when{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--accent);font-weight:600}
+  .step p{margin:6px 0 0;color:var(--muted);font-size:14px}
+  .step code{font-family:var(--mono);background:var(--panel2);padding:1px 6px;border-radius:4px;font-size:12.5px;color:var(--ink)}
+
+  /* Todo */
+  .todo li{list-style:none;padding:12px 14px;border:1px solid var(--line);border-radius:8px;margin-bottom:8px;display:flex;gap:12px;align-items:flex-start;background:var(--panel)}
+  .todo ul{padding:0;margin:0}
+  .box{width:18px;height:18px;border:2px solid var(--muted);border-radius:4px;flex-shrink:0;margin-top:2px}
+  .todo li.done .box{background:var(--ok);border-color:var(--ok);position:relative}
+  .todo li.done .box::after{content:"✓";color:#0c0;position:absolute;color:#0c1e0c;font-size:13px;font-weight:900;top:-3px;left:3px}
+  .todo .t{font-weight:600;font-size:14px}
+  .todo .d{color:var(--muted);font-size:13px;margin-top:2px}
+
+  /* repo cards */
+  .repo{display:flex;flex-direction:column;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;transition:border-color .15s;text-decoration:none;color:inherit}
+  .repo:hover{border-color:var(--accent)}
+  .repo .name{font-family:var(--mono);font-size:13px;color:var(--accent)}
+  .repo .desc{font-size:13px;color:var(--muted)}
+  .repo .meta2{font-size:11px;color:var(--muted);margin-top:4px;display:flex;gap:10px}
+
+  /* callout */
+  .callout{border-left:3px solid var(--warn);background:var(--panel);padding:14px 18px;border-radius:0 8px 8px 0;margin:20px 0;font-size:14px;color:var(--muted)}
+  .callout b{color:var(--warn)}
+  .callout.danger{border-color:var(--danger)}
+  .callout.danger b{color:var(--danger)}
+
+  /* code block */
+  pre{background:#15130f;border:1px solid var(--line);border-radius:8px;padding:16px;overflow:auto;font-family:var(--mono);font-size:12.5px;color:#e8dfd0}
+  pre .c{color:#7d7468}
+  pre .k{color:var(--accent)}
+
+  /* diagram */
+  .diag{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:28px;display:grid;grid-template-columns:repeat(5,1fr);gap:8px;align-items:center;text-align:center;font-size:12px}
+  .diag .node{background:var(--panel2);padding:14px 8px;border-radius:8px;border:1px solid var(--line)}
+  .diag .node b{display:block;color:var(--accent);font-size:11px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+  .diag .arrow{color:var(--accent);font-size:18px;font-weight:700}
+  @media(max-width:820px){.diag{grid-template-columns:1fr} .diag .arrow{transform:rotate(90deg)}}
+
+  footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--line);color:var(--muted);font-size:12px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+
+  a{color:var(--accent)}
+  a:hover{color:var(--accent2)}
+
+  .swatch-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+  .sw{width:72px;height:72px;border-radius:8px;display:flex;flex-direction:column;justify-content:flex-end;padding:6px;font-family:var(--mono);font-size:10px;color:rgba(0,0,0,.6);font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Field Guide · macOS · Electron Reskin</div>
+  <h1>Reskinning the <span>Claude Desktop</span> App on macOS</h1>
+  <p class="sub">A practical plan for changing the colors and UI of Anthropic's Claude Desktop app — how the app is built, what can safely be customized, which community projects already do it, and a phased checklist to ship your own theme.</p>
+  <div class="meta">
+    <span><b>Target:</b> Claude Desktop for macOS</span>
+    <span><b>Runtime:</b> Electron (Chromium + Node)</span>
+    <span><b>Approach:</b> CSS injection via asar patch</span>
+    <span><b>Risk:</b> Medium — survives only until next auto-update</span>
+  </div>
+</header>
+
+<section class="stats">
+  <div class="stat"><div class="n">1</div><div class="l">ASAR bundle</div></div>
+  <div class="stat"><div class="n">~6</div><div class="l">CSS entrypoints</div></div>
+  <div class="stat"><div class="n">3</div><div class="l">Viable mod paths</div></div>
+  <div class="stat"><div class="n">∞</div><div class="l">Themes possible</div></div>
+</section>
+
+<h2>How the app is built (know before you mod)</h2>
+<div class="diag">
+  <div class="node"><b>Shell</b>Claude.app</div>
+  <div class="arrow">→</div>
+  <div class="node"><b>Electron</b>Chromium + Node</div>
+  <div class="arrow">→</div>
+  <div class="node"><b>app.asar</b>Bundled JS/CSS/HTML</div>
+</div>
+<p style="color:var(--muted);font-size:14px;margin-top:12px">Claude Desktop is a signed Electron app. The UI is a web app compiled into <code style="font-family:var(--mono);background:var(--panel2);padding:1px 6px;border-radius:4px">Claude.app/Contents/Resources/app.asar</code>. Modifying the UI means unpacking that archive, injecting CSS, and repacking it. The app is code-signed, so after modification macOS Gatekeeper will warn on launch and you'll need to re-sign (ad-hoc) or remove the quarantine attribute.</p>
+
+<h2>Theme palette proposal</h2>
+<div class="grid g2">
+  <div class="card">
+    <span class="tag">Dark · Warm</span>
+    <h3>"Claude Classic+"</h3>
+    <p>Tuned version of the stock warm theme with deeper contrast and a brighter accent.</p>
+    <div class="swatch-row">
+      <div class="sw" style="background:#1a1815;color:#f2ede4">#1a1815</div>
+      <div class="sw" style="background:#24211d;color:#f2ede4">#24211d</div>
+      <div class="sw" style="background:#d97757">#d97757</div>
+      <div class="sw" style="background:#f2ede4">#f2ede4</div>
+    </div>
+  </div>
+  <div class="card">
+    <span class="tag">Dark · Cool</span>
+    <h3>"Midnight Blueprint"</h3>
+    <p>Cool indigo variant — same density, different mood.</p>
+    <div class="swatch-row">
+      <div class="sw" style="background:#0f1419;color:#e6edf3">#0f1419</div>
+      <div class="sw" style="background:#1c2128;color:#e6edf3">#1c2128</div>
+      <div class="sw" style="background:#58a6ff">#58a6ff</div>
+      <div class="sw" style="background:#e6edf3">#e6edf3</div>
+    </div>
+  </div>
+</div>
+
+<h2>Implementation plan (phased)</h2>
+<div class="timeline">
+  <div class="step">
+    <div class="when">Phase 0 · Recon</div>
+    <h4>Locate and inspect the bundle</h4>
+    <p><code>cd /Applications/Claude.app/Contents/Resources</code> — confirm an <code>app.asar</code> exists. Install <code>npx @electron/asar</code>. Extract to a workspace copy so the original stays untouched.</p>
+  </div>
+  <div class="step">
+    <div class="when">Phase 1 · Extract</div>
+    <h4>Unpack app.asar and map the CSS</h4>
+    <p><code>npx @electron/asar extract app.asar ./app-unpacked</code>. Grep for <code>--bg</code>, <code>background-color</code>, or the hex <code>#d97757</code> to find the design tokens that drive the UI.</p>
+  </div>
+  <div class="step">
+    <div class="when">Phase 2 · Inject</div>
+    <h4>Add an override stylesheet</h4>
+    <p>Create <code>custom-theme.css</code> and load it from the renderer HTML (usually <code>index.html</code>) via a <code>&lt;link&gt;</code> tag placed last so specificity wins. Keep overrides to CSS variables where possible — future-proof and reversible.</p>
+  </div>
+  <div class="step">
+    <div class="when">Phase 3 · Repack</div>
+    <h4>Rebuild the asar and re-sign</h4>
+    <p><code>npx @electron/asar pack ./app-unpacked app.asar</code>. Then <code>xattr -cr /Applications/Claude.app</code> to drop quarantine, and <code>codesign --force --deep --sign - /Applications/Claude.app</code> for an ad-hoc signature.</p>
+  </div>
+  <div class="step">
+    <div class="when">Phase 4 · Automate</div>
+    <h4>Write an idempotent installer</h4>
+    <p>A shell script that: detects the Claude version, backs up the original asar, applies the patch, re-signs, and can fully revert. Re-run after every app update.</p>
+  </div>
+  <div class="step">
+    <div class="when">Phase 5 · Distribute (optional)</div>
+    <h4>Publish as a theme pack</h4>
+    <p>Ship the CSS + installer as a GitHub repo. Match the structure of existing theme projects (see below) so users can drop in new palettes without re-patching.</p>
+  </div>
+</div>
+
+<h2>Todo list</h2>
+<div class="todo">
+<ul>
+  <li class="done"><div class="box"></div><div><div class="t">Confirm Claude Desktop is Electron</div><div class="d">Verified via app.asar presence and process inspection.</div></div></li>
+  <li class="done"><div class="box"></div><div><div class="t">Choose mod strategy</div><div class="d">CSS injection via asar patch — best tradeoff of power vs fragility.</div></div></li>
+  <li><div class="box"></div><div><div class="t">Back up <code>/Applications/Claude.app</code></div><div class="d">Zip the original before any mutation.</div></div></li>
+  <li><div class="box"></div><div><div class="t">Extract app.asar and map CSS variables</div><div class="d">Produce a tokens.md listing every --var found in the bundle.</div></div></li>
+  <li><div class="box"></div><div><div class="t">Draft two theme variants</div><div class="d">"Classic+" and "Midnight Blueprint" as proof the token mapping works.</div></div></li>
+  <li><div class="box"></div><div><div class="t">Build install / uninstall scripts</div><div class="d">Idempotent, version-aware, with clear rollback.</div></div></li>
+  <li><div class="box"></div><div><div class="t">Test after a forced app update</div><div class="d">Confirm reinstall flow restores the theme cleanly.</div></div></li>
+  <li><div class="box"></div><div><div class="t">Publish repo with screenshots + README</div><div class="d">Include disclaimer that this is unofficial and breaks with updates.</div></div></li>
+</ul>
+</div>
+
+<h2>Patch snippet (illustrative)</h2>
+<pre><span class="c"># 1. Unpack</span>
+cd /Applications/Claude.app/Contents/Resources
+sudo cp app.asar app.asar.backup
+sudo npx @electron/asar extract app.asar /tmp/claude-unpacked
+
+<span class="c"># 2. Drop in override CSS</span>
+cat &gt; /tmp/claude-unpacked/custom-theme.css &lt;&lt;'CSS'
+:root{
+  --bg-000: #0f1419 !important;
+  --bg-100: #1c2128 !important;
+  --accent:  #58a6ff !important;
+  --text-100:#e6edf3 !important;
+}
+CSS
+
+<span class="c"># 3. Link it from the renderer HTML (append &lt;link&gt; last)</span>
+<span class="k">printf</span> '&lt;link rel="stylesheet" href="custom-theme.css"&gt;' \
+  &gt;&gt; /tmp/claude-unpacked/index.html
+
+<span class="c"># 4. Repack + re-sign</span>
+sudo npx @electron/asar pack /tmp/claude-unpacked app.asar
+sudo xattr -cr /Applications/Claude.app
+sudo codesign --force --deep --sign - /Applications/Claude.app</pre>
+
+<div class="callout danger"><b>Heads up:</b> This modifies a signed application. It will break on every auto-update, may violate Anthropic's terms for redistribution, and can prevent future updates from applying cleanly. Always keep <code>app.asar.backup</code> and be ready to revert.</div>
+
+<h2>Related repos &amp; projects</h2>
+<div class="grid g2">
+  <a class="repo" href="https://github.com/aaddrick/claude-desktop-debian">
+    <div class="name">aaddrick/claude-desktop-debian</div>
+    <div class="desc">Popular reverse-engineered packaging of Claude Desktop. Great reference for where the asar lives and how the Electron shell is assembled.</div>
+    <div class="meta2"><span>Shell/Electron</span><span>Active</span></div>
+  </a>
+  <a class="repo" href="https://github.com/k3d3/claude-desktop-linux-flake">
+    <div class="name">k3d3/claude-desktop-linux-flake</div>
+    <div class="desc">Nix flake that extracts and rebuilds Claude Desktop for Linux — demonstrates the extract/patch/repack flow in code.</div>
+    <div class="meta2"><span>Nix</span><span>Reference</span></div>
+  </a>
+  <a class="repo" href="https://github.com/electron/asar">
+    <div class="name">electron/asar</div>
+    <div class="desc">Official archive format tool. You will use this (or <code>@electron/asar</code>) to unpack and repack the bundle.</div>
+    <div class="meta2"><span>Toolchain</span><span>Required</span></div>
+  </a>
+  <a class="repo" href="https://github.com/khanhas/spicetify-cli">
+    <div class="name">khanhas/spicetify-cli (analogue)</div>
+    <div class="desc">Not Claude, but the gold standard for Electron-app theming. Study its install/backup/apply/revert architecture before writing your own installer.</div>
+    <div class="meta2"><span>Architecture</span><span>Inspiration</span></div>
+  </a>
+  <a class="repo" href="https://github.com/Vencord/Vencord">
+    <div class="name">Vencord (Discord mod)</div>
+    <div class="desc">Another mature Electron-reskin project — clean theme-loader pattern worth borrowing.</div>
+    <div class="meta2"><span>Architecture</span><span>Inspiration</span></div>
+  </a>
+  <a class="repo" href="https://userstyles.world/">
+    <div class="name">userstyles.world</div>
+    <div class="desc">Community CSS themes. Search for existing Claude web themes — many translate directly to the desktop app's stylesheet.</div>
+    <div class="meta2"><span>CSS Library</span><span>Browse</span></div>
+  </a>
+</div>
+
+<h2>Community discussions to track</h2>
+<div class="grid g3">
+  <a class="repo" href="https://www.reddit.com/r/ClaudeAI/">
+    <div class="name">r/ClaudeAI</div>
+    <div class="desc">Search "desktop theme" / "dark mode" / "custom css" — threads surface roughly monthly.</div>
+  </a>
+  <a class="repo" href="https://github.com/anthropics/claude-code/issues">
+    <div class="name">anthropics/claude-code · Issues</div>
+    <div class="desc">Not Desktop, but the closest official channel where UI/theming feature requests get triaged.</div>
+  </a>
+  <a class="repo" href="https://www.anthropic.com/discord">
+    <div class="name">Anthropic Discord</div>
+    <div class="desc">#desktop-app and #feature-requests channels — active users have posted mod attempts.</div>
+  </a>
+  <a class="repo" href="https://news.ycombinator.com/from?site=anthropic.com">
+    <div class="name">Hacker News</div>
+    <div class="desc">Release threads for Claude Desktop attract mod-curious comments and pointers to forks.</div>
+  </a>
+  <a class="repo" href="https://github.com/aaddrick/claude-desktop-debian/issues">
+    <div class="name">claude-desktop-debian · Issues</div>
+    <div class="desc">De-facto upstream community for third-party packaging + customization Qs.</div>
+  </a>
+  <a class="repo" href="https://forum.obsidian.md/">
+    <div class="name">Obsidian forum (analogue)</div>
+    <div class="desc">Best existing playbook for "CSS snippets" style theming in a desktop Electron app.</div>
+  </a>
+</div>
+
+<h2>Risks &amp; mitigations</h2>
+<div class="grid g3">
+  <div class="card">
+    <span class="tag">Update churn</span>
+    <h3>Breaks on every release</h3>
+    <p>Auto-update replaces app.asar. <b>Mitigate:</b> version-pinned installer with one-command re-apply.</p>
+  </div>
+  <div class="card">
+    <span class="tag">Signing</span>
+    <h3>Gatekeeper refuses to launch</h3>
+    <p>Modifying a signed bundle invalidates the signature. <b>Mitigate:</b> <code>codesign --force --deep --sign -</code> for ad-hoc, and <code>xattr -cr</code> to clear quarantine.</p>
+  </div>
+  <div class="card">
+    <span class="tag">ToS</span>
+    <h3>Redistribution concerns</h3>
+    <p>Ship CSS + installer only — never the patched asar or Anthropic assets. Ship diffs, not binaries.</p>
+  </div>
+</div>
+
+<div class="callout"><b>Alternative worth trying first:</b> check Claude Desktop's Settings for a built-in theme toggle or high-contrast mode before patching. A supported setting is always better than a modded bundle.</div>
+
+<footer>
+  <span>Plan generated · 2026-04-14 · unofficial, not affiliated with Anthropic</span>
+  <span>v0.1 · revise after Claude Desktop's next minor release</span>
+</footer>
+
+</div>
+</body>
+</html>

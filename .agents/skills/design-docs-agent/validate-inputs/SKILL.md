@@ -1,6 +1,7 @@
 ---
 name: validate-inputs
 description: Validate the public design-docs-agent input contract, resolve source mode, and enforce paywall plus external-app preflight rules.
+user-invocable: false
 metadata:
   version: 1.1.0
 ---

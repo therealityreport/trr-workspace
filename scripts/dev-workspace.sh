@@ -6,6 +6,7 @@ cd "$ROOT"
 
 source "$ROOT/scripts/lib/runtime-db-env.sh"
 source "$ROOT/scripts/lib/workspace-health.sh"
+source "$ROOT/scripts/lib/workspace-port-cleanup.sh"
 source "$ROOT/scripts/lib/workspace-terminal.sh"
 
 # Optional profile defaults.
@@ -454,65 +455,23 @@ backend_busy_confirm_timeout() {
 }
 
 pid_ppid() {
-  local pid="$1"
-  ps -o ppid= -p "$pid" 2>/dev/null | tr -d ' ' || true
+  workspace_pid_ppid "$1"
 }
 
 pid_cmd() {
-  local pid="$1"
-  ps -o command= -p "$pid" 2>/dev/null | sed 's/^ *//' || true
+  workspace_pid_cmd "$1"
 }
 
 pid_cwd() {
-  local pid="$1"
-  if [[ "$HAVE_LSOF" -ne 1 ]]; then
-    echo ""
-    return 0
-  fi
-  lsof -a -p "$pid" -d cwd -Fn 2>/dev/null | sed -n 's/^n//p' | head -n 1 || true
+  workspace_pid_cwd "$1"
 }
 
 is_safe_stale() {
-  local pid="$1"
-  local port="$2"
-
-  local ppid cwd cmd
-  ppid="$(pid_ppid "$pid")"
-  if [[ "$ppid" == "1" ]]; then
-    return 0
-  fi
-
-  cwd="$(pid_cwd "$pid")"
-  if [[ -n "$cwd" && "$cwd" == "$ROOT"* ]]; then
-    return 0
-  fi
-
-  cmd="$(pid_cmd "$pid")"
-  if [[ -n "$cmd" && "$cmd" == *"$ROOT"* ]]; then
-    return 0
-  fi
-
-  # Port-specific allowlist (kept narrow; do not auto-kill generic :3000 "next dev" processes).
-  if [[ "$port" == "$TRR_BACKEND_PORT" ]]; then
-    [[ "$cmd" == *"uvicorn"* && "$cmd" == *"api.main:app"* ]] && return 0
-  fi
-
-  return 1
+  workspace_is_safe_stale "$1" "$2"
 }
 
 kill_pids() {
-  local pids="$1"
-  if [[ -z "$pids" ]]; then
-    return 0
-  fi
-
-  # shellcheck disable=SC2086
-  kill -TERM $pids >/dev/null 2>&1 || true
-  sleep 0.5
-
-  # shellcheck disable=SC2086
-  kill -KILL $pids >/dev/null 2>&1 || true
-  sleep 0.2
+  workspace_kill_targets "$1"
 }
 
 ensure_port_free() {
@@ -559,8 +518,10 @@ ensure_port_free() {
     return 2
   fi
 
-  echo "[workspace] Killing safe-stale listeners on port ${port}: ${pids}"
-  kill_pids "$pids"
+  local cleanup_targets
+  cleanup_targets="$(workspace_expand_cleanup_targets "$pids" "$port")"
+  echo "[workspace] Killing safe-stale listeners on port ${port}: ${cleanup_targets}"
+  kill_pids "$cleanup_targets"
 
   if [[ -n "$(port_listeners "$port")" ]]; then
     echo "[workspace] ERROR: port ${port} still appears to be in use after kill attempt." >&2
@@ -576,17 +537,6 @@ if [[ "$HAVE_LSOF" -eq 1 ]]; then
   ensure_port_free "$TRR_APP_PORT" "TRR-APP" 1
 else
   echo "[workspace] WARNING: lsof not available; skipping port preflight." >&2
-fi
-
-# ---------------------------------------------------------------------------
-# Flashback browser-env guard (warning-only)
-# ---------------------------------------------------------------------------
-if [ -z "${NEXT_PUBLIC_SUPABASE_URL:-}" ] || [ -z "${NEXT_PUBLIC_SUPABASE_ANON_KEY:-}" ]; then
-  workspace_attention_add \
-    "$ATTENTION_FILE" \
-    "Flashback browser envs are missing." \
-    "Impact: /flashback/cover and /flashback/play stay unavailable; normal startup is unaffected." \
-    "Remediation: set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in apps/web/.env.local so they point at the same project as TRR_CORE_SUPABASE_URL."
 fi
 
 declare -a PIDS=()

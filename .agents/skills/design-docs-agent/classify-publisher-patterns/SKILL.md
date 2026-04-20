@@ -1,6 +1,7 @@
 ---
 name: classify-publisher-patterns
 description: Detect publisher technology stack and classify layout patterns into the 15-section brand taxonomy
+user-invocable: false
 metadata:
   version: 1.1.0
 ---

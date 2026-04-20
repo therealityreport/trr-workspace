@@ -41,9 +41,13 @@ If your task is ordinary backend/app development or milestone verification, star
 
 The default `make dev` profile now launches only TRR-APP and TRR-Backend. Screenalytics remains an admin feature label in the app, not a separately managed local runtime.
 
+Flashback live gameplay is currently disabled and `/flashback`, `/flashback/cover`, and `/flashback/play` redirect to `/hub`, so legacy browser-only Flashback envs are not part of the normal `make dev` startup contract.
+
 The backend auto-restart path is now liveness-based. A transient Supabase/DNS issue can still make backend readiness (`/health`) degrade, but the workspace watchdog should only recycle the process when backend liveness (`/health/live`) fails.
 
 If preflight warns about malformed handoff source docs, fix the cited file and rerun `make handoff-check` or `make preflight-strict`. Default local startup intentionally continues so ordinary backend/app work is not blocked by continuity-note formatting mistakes.
+
+Browser automation warnings now come from the same structured readiness states used by `make chrome-devtools-mcp-status`: `ready`, `degraded`, `recoverable`, and `unavailable`. A missing shared `9422` keeper with working auto-launch remains a recoverable state, not an unavailable one.
 
 The same default profile now runs TRR long jobs on the remote Modal executor by default. Shared-account Instagram `Sync Recent`, `Resume Tail`, and `Backfill Posts` should use Modal-owned dispatch unless you explicitly override the workspace profile for rollback/debug.
 

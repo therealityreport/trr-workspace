@@ -1,8 +1,9 @@
 ---
 name: design-docs-agent
 description: Canonical cross-host Design Docs agent for article ingestion, saved-source bundle extraction, generation, wiring, and brand sync.
+user-invocable: true
 metadata:
-  version: 1.3.0
+  version: 1.4.0
 ---
 
 # Design Docs Agent
@@ -34,8 +35,9 @@ Acquisition dependency: bespoke-interactive fidelity assumes the acquisition pat
 ## Public entry policy
 
 1. This package is the only public Design Docs entry point.
-2. Extraction, generation, audit, sync, and wiring skills under this package are internal pipeline modules, not standalone public surfaces.
-3. Host wrappers or slash-command adapters may call this package, but they must not redefine workflow policy.
+2. `skills/design-docs/SKILL.md` is the only user wrapper surface.
+3. Extraction, generation, audit, sync, and wiring skills under this package are internal pipeline modules, not standalone public surfaces.
+4. Host wrappers or slash-command adapters may call this package, but they must not redefine workflow policy.
 
 ## Inputs
 
@@ -59,6 +61,15 @@ The orchestrator may also use:
 
 Use the canonical capability names declared in `agents/openai.yaml`. Host-specific mappings live in `adapters/claude.md` and `adapters/codex.md`.
 
+## Acquisition Contract
+
+When `sourceBundle` is absent, `fetch-source-bundle` owns acquisition behavior.
+
+1. Attempt shell acquisition first with `curl` and the package helper script.
+2. If shell acquisition is insufficient and browser tooling is available, attempt browser fallback.
+3. Return a schema-compliant `sourceBundle` on success.
+4. Return a blocking acquisition report from `contracts/acquisition-report.schema.json` on failure.
+
 ## Procedure
 
 ### 1. Validate Inputs And Detect Mode
@@ -66,13 +77,7 @@ Use the canonical capability names declared in `agents/openai.yaml`. Host-specif
 Run the active `validation` phase from `agents/openai.yaml`.
 
 1. `fetch-source-bundle` runs first when `sourceBundle` is absent.
-   - It attempts `curl` acquisition first.
-   - If needed and available, it attempts browser fallback using the declared
-     browser capabilities.
-   - On success it returns a schema-compliant `sourceBundle` with local saved
-     artifact paths.
-   - On failure it returns a blocking acquisition report from
-     `contracts/acquisition-report.schema.json` and the pipeline stops.
+   - Follow the shared acquisition contract above.
 2. `validate-inputs` runs after a bundle exists, whether that bundle came from
    the caller or from `fetch-source-bundle`.
 
