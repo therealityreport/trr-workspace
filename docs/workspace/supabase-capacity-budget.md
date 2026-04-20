@@ -1,10 +1,15 @@
 # Supabase Capacity Budget
 
-Last reviewed: 2026-04-14
+Last reviewed: 2026-04-17
 
 Sizing reference for the TRR workspace's Supabase Postgres connections. Read
 this before changing `POSTGRES_POOL_MAX`, `POSTGRES_MAX_CONCURRENT_OPERATIONS`,
 `TRR_DB_POOL_MAXCONN`, or Render/Vercel instance counts.
+
+Holder math in this document is based on checked-in repo config plus explicit
+assumptions where platform concurrency is not stored in the repo. The live
+Supabase project snapshot below is retained as historical context from the last
+MCP refresh; re-verify it before using this doc for a production scale change.
 
 ## Supabase project
 
@@ -91,11 +96,19 @@ Default sizing in `postgres.ts`:
 Each concurrent Vercel function instance = 1 holder. Reality check in Vercel
 dashboard → Observability → Functions → concurrent executions (p95 over 7d).
 
-- **Production p95 concurrent functions:** _TODO: fill in from Vercel dashboard_
-- **Preview env (if pointed at same DB):** _TODO_
+- **Budget assumption: production holders = 2.** Rationale: the repo pins a
+  small session-pooler pool (`POSTGRES_POOL_MAX=4`) and low deployed
+  in-instance concurrency (`POSTGRES_MAX_CONCURRENT_OPERATIONS=2`), but it does
+  not store live Vercel concurrency. Budget for one steady-state warm instance
+  plus one burst or rolling-deploy instance until Observability proves a
+  different p95.
+- **Budget assumption: preview holders = 1** if any Preview deployment points at
+  the same Supabase project. If Preview uses an isolated DB, set this to `0`
+  and reclaim 4 connections.
+- **Session-pooler subtotal from assumptions:** `(2 + 1) × 4 = 12` connections.
 
-Subtotal formula: `p95_concurrent × 4` = potential open connections (most will
-be idle in the pool but still count).
+Subtotal formula: `budgeted_concurrent_holders × 4` = potential open
+connections (most will be idle in the pool but still count).
 
 ### Render (TRR-Backend)
 
@@ -109,9 +122,17 @@ From `TRR-Backend/render.yaml` + `start-api.sh`:
 | Default `TRR_DB_POOL_MAXCONN` (session pooler) | 2 | `pg.py:35` |
 | Default `TRR_DB_POOL_MINCONN` (session pooler) | 1 | `pg.py:34` |
 
-- **Production instance count:** _TODO: fill in from Render dashboard → Scaling_
-- **Effective `TRR_BACKEND_WORKERS` in Render env:** _TODO_
-- **Additional cron/worker services holding DB connections:** _TODO_
+- **Budget assumption: production instance count = 1.** The repo contains one
+  Render web service definition (`trr-backend-api`) and no checked-in
+  horizontal scaling override.
+- **Budget assumption: effective `TRR_BACKEND_WORKERS` = 1.** `start-api.sh`
+  defaults to `1`, the workspace env contract defaults to `1`, and multi-worker
+  mode requires explicit env changes plus Redis-safe runtime conditions.
+- **Persistent cron/worker holders = 0.** The checked-in deploy topology does
+  not define extra Render worker or cron services. Modal jobs exist, but they
+  are treated as ephemeral consumers in the one-off reserve below rather than
+  as always-on holders.
+- **Session-pooler subtotal from assumptions:** `1 × 1 × 2 = 2` connections.
 
 Subtotal formula: `instances × workers × 2`.
 
@@ -125,21 +146,50 @@ Reserve ~5 connections for this class to be safe.
 
 ## Math
 
-Fill in the TODOs above and compute:
+Repo-config-backed budget with the assumptions above:
 
 ```
-Vercel_prod   = p95_concurrent_functions × 4
-Vercel_preview= concurrent_preview_fns × 4   (if preview env targets same DB)
-Render_python = instances × workers × 2
+Vercel_prod   = 2 × 4 = 8
+Vercel_preview= 1 × 4 = 4   (set to 0 if Preview uses an isolated DB)
+Render_python = 1 × 1 × 2 = 2
 Scripts/cron  = 5
 Supabase_int  = 10
 Superuser     = 3
 Operator_head = 5
-Total         = Vercel_prod + Vercel_preview + Render_python + Scripts_cron
-                + Supabase_int + Superuser + Operator_head
+Total         = 8 + 4 + 2 + 5 + 10 + 3 + 5 = 37
+Headroom      = 60 - 37 = 23
 ```
 
-**Target:** `Total ≤ 60` with comfortable headroom (e.g., `Total ≤ 50`).
+This leaves `23 / 60 = 38.3%` of the backend ceiling free under the documented
+budget assumptions.
+
+### Safe headroom thresholds
+
+- **Fixed reserve before app traffic:** `3 + 10 + 5 + 5 = 23` connections are
+  intentionally held back for superuser recovery, Supabase internals, operators,
+  and one-off jobs.
+- **App-lane budget after fixed reserve:** `60 - 23 = 37`.
+- **Render consumes:** `2`, leaving `35` for Vercel holders that use
+  `POSTGRES_POOL_MAX=4`.
+- **Absolute Vercel ceiling with current Render budget:** `floor(35 / 4) = 8`
+  concurrent Vercel holders across Production + Preview, leaving 3 spare
+  connections.
+- **Comfortable Vercel ceiling with a 10-connection overall safety margin:**
+  target `Total ≤ 50`, so app lanes should stay within `27` connections.
+  After subtracting Render's `2`, Vercel should stay at `25` or below:
+  `floor(25 / 4) = 6` concurrent holders across Production + Preview.
+
+**Working rule:** treat **6 total Vercel holders** as the comfortable cap on
+this tier, and **8 total Vercel holders** as the practical failure boundary if
+the rest of the repo-configured budget stays unchanged.
+
+### Optional local-workspace note
+
+If an operator points `make dev` at the same hosted Supabase project, the local
+workspace can add up to `6` more session-mode connections (`TRR-APP` local pool
+`4` + `TRR-Backend` local pool `2`). That does not fit cleanly inside the
+`Operator_head = 5` reserve, so local workspace access to production should be
+treated as explicit break-glass usage rather than normal operating budget.
 
 **If `Total > 60`:** `MaxClientsInSessionMode` errors are inevitable. Options
 in order of preference:

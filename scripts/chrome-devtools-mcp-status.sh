@@ -12,6 +12,7 @@ STATUS_MODE="${CHROME_DEVTOOLS_MCP_STATUS_MODE:-detailed}"
 VISIBLE_BROWSER_OWNER_FILE="${LOG_DIR}/chrome-devtools-visible-browser-owner.env"
 PORT_DIAG=0
 source "${ROOT}/scripts/lib/chrome-runtime.sh"
+source "${ROOT}/scripts/lib/chrome-devtools-status.sh"
 source "${ROOT}/scripts/lib/mcp-runtime.sh"
 TAB_CAP_DEFAULT="${CODEX_CHROME_TAB_CAP:-3}"
 TAB_TARGET_DEFAULT="${CODEX_CHROME_TAB_TARGET:-1}"
@@ -192,6 +193,10 @@ validate_chrome_registration() {
 
 is_summary_mode() {
   [[ "$STATUS_MODE" == "summary" ]]
+}
+
+is_structured_mode() {
+  [[ "$STATUS_MODE" == "structured" ]]
 }
 
 isolated_profile_state() {
@@ -483,6 +488,10 @@ configured_shared_singleton() {
 
 configured_shared_port() {
   configured_env_value "CODEX_CHROME_SHARED_PORT" "$(default_shared_port_for_command "$configured_command")"
+}
+
+configured_auto_launch() {
+  configured_env_value "CODEX_CHROME_AUTO_LAUNCH" "${CODEX_CHROME_AUTO_LAUNCH:-0}"
 }
 
 configured_isolated_headless() {
@@ -935,12 +944,14 @@ shared_listener_pid="$(port_listener_pid "$SHARED_PORT")"
 shared_pidfile_pid="$(shared_pidfile_value)"
 shared_profile="$(shared_profile_value)"
 shared_ws="$(shared_ws_url)"
+shared_endpoint_state="$(endpoint_state "$SHARED_PORT")"
 current_scope="$(current_scope_label)"
 current_shell_command="$(current_shell_chrome_command)"
 shared_clients="$(collect_shared_client_processes)"
 shared_client_count="$(printf '%s\n' "$shared_clients" | sed '/^$/d' | wc -l | tr -d ' ')"
 conflicts="$(collect_external_conflicts "$wrapper_mode" "$SHARED_PORT")"
 conflict_count="$(printf '%s\n' "$conflicts" | sed '/^$/d' | wc -l | tr -d ' ')"
+shared_auto_launch="$(configured_auto_launch)"
 summary_status_line=""
 summary_note_line=""
 summary_warning_line=""
@@ -948,10 +959,10 @@ summary_pressure_line=""
 owner_state="$(visible_browser_owner_state)"
 managed_root_count="$(managed_chrome_root_count)"
 chrome_rss_mb="$(process_rss_mb_for_regex "Google Chrome|chrome-devtools-mcp|codex-chrome-devtools-mcp|Codex.app")"
-pressure_state="safe"
+pressure_state="$(pressure_verdict "$owner_state" "$managed_root_count" "$chrome_rss_mb" "$shared_client_count" "$conflict_count")"
 
 if is_summary_mode; then
-  summary_pressure_line="$(pressure_verdict "$owner_state" "$managed_root_count" "$chrome_rss_mb" "$shared_client_count" "$conflict_count")"
+  summary_pressure_line="$pressure_state"
   if [[ "$wrapper_mode" == "isolated" ]]; then
     if [[ "$summary_pressure_line" == "safe" ]]; then
       summary_status_line="[chrome-devtools-mcp] OK: browser automation is ready (isolated default, tab cap enforceable)."
@@ -960,7 +971,7 @@ if is_summary_mode; then
       summary_warning_line="[chrome-devtools-mcp] WARNING: consider 'make mcp-clean' if stale Chrome runtime artifacts or external MCP leftovers are not expected."
     fi
     summary_note_line="[chrome-devtools-mcp] NOTE: fresh chats will launch isolated headless Chrome with a target of ${tab_target} working tab and a hard cap of ${tab_cap} tabs."
-  elif [[ "$(endpoint_state "$SHARED_PORT")" == "reachable" ]]; then
+  elif [[ "$shared_endpoint_state" == "reachable" ]]; then
     if [[ "$summary_pressure_line" == "safe" ]]; then
       summary_status_line="[chrome-devtools-mcp] OK: browser automation is ready."
     else
@@ -968,10 +979,13 @@ if is_summary_mode; then
       summary_warning_line="[chrome-devtools-mcp] WARNING: consider 'make mcp-clean' if stale Chrome runtime artifacts or external MCP leftovers are not expected."
     fi
     summary_note_line="[chrome-devtools-mcp] NOTE: if this already-open chat still lacks chrome-devtools, restart the Codex session/thread to reload MCP registrations."
+  elif [[ "$shared_auto_launch" == "1" ]]; then
+    summary_status_line="[chrome-devtools-mcp] OK: browser automation can recover on demand; shared Chrome is currently stopped."
+    summary_note_line="[chrome-devtools-mcp] NOTE: the shared launcher will auto-launch Chrome for fresh browser automation sessions when needed."
   else
     summary_warning_line="[chrome-devtools-mcp] WARNING: shared Chrome is not responding on port ${SHARED_PORT}."
   fi
-else
+elif ! is_structured_mode; then
   echo "[chrome-devtools-mcp] Config OK: ${config_source}"
   if [[ -n "$project_chrome_section" ]]; then
     echo "[chrome-devtools-mcp] Project-local Codex config OK"
@@ -1024,14 +1038,25 @@ else
   fi
   print_conflict_summary "$conflicts"
   pressure_snapshot_line
-  pressure_state="$(pressure_verdict "$owner_state" "$managed_root_count" "$chrome_rss_mb" "$shared_client_count" "$conflict_count")"
   echo "[chrome-devtools-mcp] Pressure verdict: ${pressure_state}"
 fi
-if ! CODEX_CHROME_SKIP_BROWSER_BOOT=1 "$EXPECTED_COMMAND" --version >/dev/null; then
+if ! CODEX_CHROME_SKIP_BROWSER_BOOT=1 "$EXPECTED_COMMAND" --version >/dev/null 2>&1; then
   fail "Wrapper smoke check failed"
 fi
 
-if is_summary_mode; then
+structured_status_output="$(
+  chrome_devtools_status_classify \
+    "$wrapper_mode" \
+    "$shared_endpoint_state" \
+    "$pressure_state" \
+    "$shared_auto_launch" \
+    "1" \
+    "$SHARED_PORT"
+)"
+
+if is_structured_mode; then
+  printf '%s\n' "$structured_status_output"
+elif is_summary_mode; then
   if [[ -n "$summary_status_line" ]]; then
     echo "$summary_status_line"
   fi
@@ -1055,16 +1080,16 @@ else
   echo "[chrome-devtools-mcp] Smoke check passed."
 fi
 
-if ! is_summary_mode && [[ "$wrapper_mode" == "shared" && "$(endpoint_state "$SHARED_PORT")" != "reachable" ]]; then
+if ! is_summary_mode && ! is_structured_mode && [[ "$wrapper_mode" == "shared" && "$shared_endpoint_state" != "reachable" ]]; then
   echo "[chrome-devtools-mcp] Shared Chrome is not running, but the MCP wrapper will auto-launch it at session start." >&2
   echo "[chrome-devtools-mcp] To start it manually now:" >&2
   echo "[chrome-devtools-mcp]   CHROME_AGENT_DEBUG_PORT=${SHARED_PORT} CHROME_AGENT_PROFILE_DIR=\${HOME}/.chrome-profiles/codex-agent CHROME_AGENT_HEADLESS=$(default_chrome_headless_for_port "${SHARED_PORT}") bash ${ROOT}/scripts/chrome-agent.sh" >&2
-elif ! is_summary_mode && [[ "$conflict_count" != "0" && "$wrapper_mode" == "shared" ]]; then
+elif ! is_summary_mode && ! is_structured_mode && [[ "$conflict_count" != "0" && "$wrapper_mode" == "shared" ]]; then
   echo "[chrome-devtools-mcp] Recommended next action: inspect or stop conflicting non-Codex browser-control clients:" >&2
   echo "[chrome-devtools-mcp]   bash ${ROOT}/scripts/chrome-devtools-mcp-stop-conflicts.sh" >&2
   echo "[chrome-devtools-mcp]   bash ${ROOT}/scripts/chrome-devtools-mcp-stop-conflicts.sh --apply" >&2
-elif ! is_summary_mode && [[ "$wrapper_mode" == "isolated" ]]; then
+elif ! is_summary_mode && ! is_structured_mode && [[ "$wrapper_mode" == "isolated" ]]; then
   echo "[chrome-devtools-mcp] Recommended next action: start a fresh Codex chat to pick up the isolated headless default and per-chat tab cap." >&2
-elif ! is_summary_mode; then
+elif ! is_summary_mode && ! is_structured_mode; then
   echo "[chrome-devtools-mcp] Recommended next action: if this chat still lacks chrome-devtools, restart the Codex session to reload MCP registrations." >&2
 fi

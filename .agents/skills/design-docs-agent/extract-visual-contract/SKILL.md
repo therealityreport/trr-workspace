@@ -1,6 +1,7 @@
 ---
 name: extract-visual-contract
 description: Use when an article needs source-faithful bespoke-interactive extraction for header behavior, charts, typography, and required assets.
+user-invocable: false
 metadata:
   version: 1.0.0
 ---

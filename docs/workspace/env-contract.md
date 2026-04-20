@@ -6,6 +6,14 @@ Defaults reflect the effective `make dev` baseline (`PROFILE=default`) when that
 
 Preferred contract: `make dev` is the cloud-first baseline for normal workspace development. Docker-backed `make dev-local` remains an explicit fallback for local-only Screenalytics / Redis / MinIO cases.
 
+Route-scoped browser envs for disabled Flashback gameplay are intentionally excluded from the workspace startup contract.
+
+Database ownership note:
+- `TRR_DB_URL` is the canonical runtime Postgres URL for TRR-APP and TRR-Backend.
+- `TRR_DB_FALLBACK_URL` is the only intentional runtime fallback lane.
+- `DATABASE_URL` is tooling compatibility only and is not the app runtime contract.
+- Shared-schema SQL ownership is backend-owned. `TRR-APP/apps/web/scripts/run-migrations.mjs` now defaults to app-local migrations and requires an explicit transitional opt-in before touching backend-owned shared-schema backlog such as `firebase_surveys`, `admin`, grants, or RLS setup.
+
 Visibility tiers:
 - `common`: frequently used day-to-day toggles
 - `advanced`: less common tuning and troubleshooting controls

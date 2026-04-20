@@ -1,6 +1,7 @@
 ---
 name: extract-page-structure
 description: Extract content blocks and metadata from HTML source
+user-invocable: false
 metadata:
   version: 1.1.0
 ---

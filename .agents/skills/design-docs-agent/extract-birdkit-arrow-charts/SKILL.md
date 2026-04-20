@@ -1,6 +1,7 @@
 ---
 name: extract-birdkit-arrow-charts
 description: Extract structured data and metadata from Birdkit arrow comparison charts rendered in NYT SSR HTML
+user-invocable: false
 metadata:
   version: 1.0.0
 ---

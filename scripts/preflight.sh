@@ -8,6 +8,7 @@ source "$ROOT/scripts/lib/node-baseline.sh"
 source "$ROOT/scripts/lib/preflight-diagnostics.sh"
 source "$ROOT/scripts/lib/preflight-handoff.sh"
 source "$ROOT/scripts/lib/runtime-db-env.sh"
+source "$ROOT/scripts/lib/chrome-devtools-status.sh"
 source "$ROOT/scripts/lib/workspace-terminal.sh"
 
 preflight_diag_init "preflight.sh" "$ROOT" "preflight"
@@ -17,24 +18,27 @@ workspace_attention_reset "$ATTENTION_FILE"
 
 record_browser_attention() {
   local output="$1"
-  local pressure=""
-  local port=""
+  local attention_kind=""
+  local pressure_state=""
+  local shared_port=""
 
-  pressure="$(printf '%s\n' "$output" | sed -n 's/.*local browser pressure is \([^ .][^.]*\)\(.|\)*$/\1/p' | head -n 1)"
-  if [[ -n "$pressure" ]]; then
+  attention_kind="$(printf '%s\n' "$output" | sed -n 's/^attention_kind=//p' | head -n 1)"
+  pressure_state="$(printf '%s\n' "$output" | sed -n 's/^pressure_state=//p' | head -n 1)"
+  shared_port="$(printf '%s\n' "$output" | sed -n 's/^shared_port=//p' | head -n 1)"
+
+  if [[ "$attention_kind" == "pressure" ]]; then
     workspace_attention_add \
       "$ATTENTION_FILE" \
-      "Browser automation pressure is ${pressure}." \
+      "Browser automation pressure is ${pressure_state:-degraded}." \
       "Impact: chrome-devtools is available, but local browser pressure is elevated." \
       "Remediation: run 'make mcp-clean' if stale Chrome runtime artifacts or external MCP leftovers are not expected."
     return 0
   fi
 
-  if printf '%s\n' "$output" | grep -q "shared Chrome is not responding on port"; then
-    port="$(printf '%s\n' "$output" | sed -n 's/.*shared Chrome is not responding on port \([0-9][0-9]*\).*/\1/p' | head -n 1)"
+  if [[ "$attention_kind" == "unavailable" ]]; then
     workspace_attention_add \
       "$ATTENTION_FILE" \
-      "Browser automation shared Chrome is not responding${port:+ on port ${port}}." \
+      "Browser automation shared Chrome is not responding${shared_port:+ on port ${shared_port}}." \
       "Impact: chrome-devtools registration is present, but the shared browser runtime is unavailable." \
       "Remediation: run 'make mcp-clean' and retry the workspace startup."
   fi
@@ -353,7 +357,7 @@ run_preflight_phase "check-policy" "[preflight] Checking policy drift rules..." 
 
 run_preflight_phase "design-docs-agent-package" "[preflight] Validating design-docs-agent package..." python3 "$ROOT/.agents/skills/design-docs-agent/test/validate-package.py"
 
-run_preflight_phase "chrome-devtools-mcp-status" "[preflight] Checking browser automation..." env CHROME_DEVTOOLS_MCP_STATUS_MODE=summary bash "$ROOT/scripts/chrome-devtools-mcp-status.sh"
+run_preflight_phase "chrome-devtools-mcp-status" "[preflight] Checking browser automation..." env CHROME_DEVTOOLS_MCP_STATUS_MODE=structured bash "$ROOT/scripts/chrome-devtools-mcp-status.sh"
 
 if [[ -d "$ROOT/.playwright-mcp" && "${WORKSPACE_PREFLIGHT_DIAGNOSTICS:-0}" == "1" ]]; then
   echo "[preflight] NOTE: '$ROOT/.playwright-mcp' exists and is treated as legacy/local-only." >&2

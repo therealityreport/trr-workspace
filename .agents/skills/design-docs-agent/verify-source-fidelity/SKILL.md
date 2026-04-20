@@ -1,6 +1,7 @@
 ---
 name: verify-source-fidelity
 description: Use when verification must compare generated Design Docs output against bespoke source-fidelity requirements.
+user-invocable: false
 metadata:
   version: 1.0.0
 ---

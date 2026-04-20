@@ -8,6 +8,7 @@ This directory holds non-executable guidance for the shared Design Docs package.
 - Package `SKILL.md` is the orchestration contract.
 - `skills/design-docs/SKILL.md` is the user entry wrapper only.
 - Each owned subskill `SKILL.md` is the execution contract for that skill.
+- Owned subskills are internal pipeline modules and should remain `user-invocable: false`.
 - `references/` is the home for long-form guidance, examples, lessons learned,
   and checklist material that should not live inside executable skills.
 - Plugin manifests and host adapters do not define independent behavior.

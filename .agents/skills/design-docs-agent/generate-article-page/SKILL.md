@@ -1,6 +1,7 @@
 ---
 name: generate-article-page
 description: Generate ARTICLES config entry and chart data constants from extraction data.
+user-invocable: false
 metadata:
   version: 1.1.0
 ---

@@ -18,6 +18,7 @@ APP_WEB_ROOT = REPO_ROOT / "TRR-APP" / "apps" / "web"
 CONTRACTS_DIR = PACKAGE_ROOT / "contracts"
 ROSTER_PATH = PACKAGE_ROOT / "agents" / "openai.yaml"
 PACKAGE_SKILL_PATH = PACKAGE_ROOT / "SKILL.md"
+USER_WRAPPER_PATH = PACKAGE_ROOT / "skills" / "design-docs" / "SKILL.md"
 EXTRACTION_HELPER_PATH = PACKAGE_ROOT / "agents" / "extraction-orchestrator.md"
 VERIFICATION_HELPER_PATH = PACKAGE_ROOT / "agents" / "verification-gate.md"
 VALIDATE_INPUTS_PATH = PACKAGE_ROOT / "validate-inputs" / "SKILL.md"
@@ -31,7 +32,17 @@ SKILL_VERSION_POLICY = {
     "minor": "additive input/output fields or additive behavior",
     "patch": "wording or non-contract clarifications",
 }
-METADATA_DIRS = {"agents", "adapters", "references", "test", "contracts", ".codex-plugin", ".claude-plugin"}
+METADATA_DIRS = {
+    "agents",
+    "adapters",
+    "references",
+    "test",
+    "contracts",
+    "docs",
+    "skills",
+    ".codex-plugin",
+    ".claude-plugin",
+}
 
 
 def fail(message: str) -> None:
@@ -277,6 +288,24 @@ def validate_manifest_parity() -> None:
             fail(f"manifest parity mismatch for field '{field}'")
 
 
+def validate_public_entry_surfaces() -> None:
+    if not USER_WRAPPER_PATH.exists():
+        fail("missing user entry wrapper at skills/design-docs/SKILL.md")
+
+    package_frontmatter = parse_frontmatter(PACKAGE_SKILL_PATH)
+    if package_frontmatter.get("user-invocable") is not True:
+        fail("package SKILL.md must declare user-invocable: true")
+
+    wrapper_frontmatter = parse_frontmatter(USER_WRAPPER_PATH)
+    if wrapper_frontmatter.get("user-invocable") is not True:
+        fail("skills/design-docs/SKILL.md must declare user-invocable: true")
+
+    for skill_name in list_owned_skill_dirs():
+        frontmatter = parse_frontmatter(PACKAGE_ROOT / skill_name / "SKILL.md")
+        if frontmatter.get("user-invocable") is not False:
+            fail(f"{skill_name}/SKILL.md must declare user-invocable: false")
+
+
 def extract_adapter_capabilities(path: Path) -> list[str]:
     capabilities: list[str] = []
     pattern = re.compile(r"\|\s*`([^`]+)`\s*\|")
@@ -509,6 +538,7 @@ def main() -> None:
     validate_skill_versions(roster)
     validate_supporting_sources(roster)
     validate_manifest_parity()
+    validate_public_entry_surfaces()
     validate_adapter_capabilities(roster)
     validate_no_phase_reenumeration(roster)
     validate_runtime_baseline(roster)
