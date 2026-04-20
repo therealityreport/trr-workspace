@@ -12,7 +12,6 @@ shared capability list live in `agents/openai.yaml`.
 
 - shared skill discovery from `.agents/skills/design-docs-agent`
 - OpenAI agent metadata from `agents/openai.yaml`
-- acquisition shell commands via repo shell (`curl` plus helper script)
 - saved source bundle inputs, source-map inputs, and screenshot-backed component
   inventory evidence
 
@@ -36,5 +35,4 @@ Codex should consume the canonical shared package directly and should not rely
 on a duplicated implementation. Preserve the shared package rules for saved
 bundles, component-inventory provenance, interactive coverage, overlay layers,
 and hosted-media validation rather than redefining them in the plugin wrapper.
-`fetch-source-bundle` may use repo shell commands for `curl` and the declared
-browser capabilities for fallback capture.
+Acquisition behavior is documented once in package `SKILL.md`.

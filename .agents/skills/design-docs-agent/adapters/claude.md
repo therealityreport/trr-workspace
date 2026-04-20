@@ -13,7 +13,6 @@ capability list live in `agents/openai.yaml`.
 
 - `/design-docs`
 - `/design-docs-add-article` as a deprecated redirect to `/design-docs`
-- acquisition shell commands via repo shell (`curl` plus helper script)
 - saved source bundle inputs, source-map inputs, and screenshot-backed component
   inventory evidence
 
@@ -37,5 +36,4 @@ Point Claude wrappers at the shared package and do not maintain a second full
 implementation elsewhere. Preserve the shared package rules for saved bundles,
 component-inventory provenance, interactive coverage, overlay layers, and
 hosted-media validation rather than rewriting them in Claude-specific wrappers.
-`fetch-source-bundle` may use repo shell commands for `curl` and the declared
-browser capabilities for fallback capture.
+Acquisition behavior is documented once in package `SKILL.md`.

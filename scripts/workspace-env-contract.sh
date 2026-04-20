@@ -170,6 +170,8 @@ generate_contract() {
     echo
     echo 'Preferred contract: `make dev` is the cloud-first baseline for normal workspace development. Docker-backed `make dev-local` remains an explicit fallback for local-only Screenalytics / Redis / MinIO cases.'
     echo
+    echo 'Route-scoped browser envs for disabled Flashback gameplay are intentionally excluded from the workspace startup contract.'
+    echo
     echo "Visibility tiers:"
     echo '- `common`: frequently used day-to-day toggles'
     echo '- `advanced`: less common tuning and troubleshooting controls'

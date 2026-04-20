@@ -1,6 +1,7 @@
 ---
 name: extract-datawrapper-charts
 description: Extract chart data from Datawrapper embeds and generate TypeScript constants.
+user-invocable: false
 metadata:
   version: 1.0.0
 ---

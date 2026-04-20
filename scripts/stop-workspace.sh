@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LOG_DIR="${ROOT}/.logs/workspace"
 PIDFILE="${LOG_DIR}/pids.env"
+source "${ROOT}/scripts/lib/workspace-port-cleanup.sh"
 
 # Defaults (may be overridden by pidfile)
 TRR_BACKEND_PORT="${TRR_BACKEND_PORT:-8000}"
@@ -32,95 +33,27 @@ port_listeners() {
 }
 
 pid_ppid() {
-  local pid="$1"
-  ps -o ppid= -p "$pid" 2>/dev/null | tr -d ' ' || true
+  workspace_pid_ppid "$1"
 }
 
 pid_cmd() {
-  local pid="$1"
-  ps -o command= -p "$pid" 2>/dev/null | sed 's/^ *//' || true
+  workspace_pid_cmd "$1"
 }
 
 pid_cwd() {
-  local pid="$1"
-  if [[ "$HAVE_LSOF" -ne 1 ]]; then
-    echo ""
-    return 0
-  fi
-  lsof -a -p "$pid" -d cwd -Fn 2>/dev/null | sed -n 's/^n//p' | head -n 1 || true
+  workspace_pid_cwd "$1"
 }
 
 is_safe_stale() {
-  local pid="$1"
-  local port="$2"
-
-  local ppid cwd cmd
-  ppid="$(pid_ppid "$pid")"
-  if [[ "$ppid" == "1" ]]; then
-    return 0
-  fi
-
-  cwd="$(pid_cwd "$pid")"
-  if [[ -n "$cwd" && "$cwd" == "$ROOT"* ]]; then
-    return 0
-  fi
-
-  cmd="$(pid_cmd "$pid")"
-  if [[ -n "$cmd" && "$cmd" == *"$ROOT"* ]]; then
-    return 0
-  fi
-
-  # Port-specific allowlist for known backends.
-  if [[ "$port" == "$TRR_BACKEND_PORT" ]]; then
-    [[ "$cmd" == *"uvicorn"* && "$cmd" == *"api.main:app"* ]] && return 0
-  fi
-
-  return 1
+  workspace_is_safe_stale "$1" "$2"
 }
 
 kill_pids() {
-  local pids="$1"
-  if [[ -z "$pids" ]]; then
-    return 0
-  fi
-
-  # shellcheck disable=SC2086
-  kill -TERM $pids >/dev/null 2>&1 || true
-  sleep 0.5
-  # shellcheck disable=SC2086
-  kill -KILL $pids >/dev/null 2>&1 || true
-  sleep 0.2
+  workspace_kill_targets "$1"
 }
 
 descendants_of() {
-  local root_pid="$1"
-  local -a queue=()
-  local -a all=()
-
-  queue+=("$root_pid")
-
-  while [[ "${#queue[@]}" -gt 0 ]]; do
-    local pid="${queue[0]}"
-    queue=("${queue[@]:1}")
-
-    local children
-    children="$(pgrep -P "$pid" 2>/dev/null || true)"
-    if [[ -z "$children" ]]; then
-      continue
-    fi
-
-    local child
-    for child in $children; do
-      all+=("$child")
-      queue+=("$child")
-    done
-  done
-
-  if [[ "${#all[@]}" -eq 0 ]]; then
-    echo ""
-    return 0
-  fi
-  printf '%s\n' "${all[@]}" | sort -u | tr '\n' ' '
+  workspace_descendants_of "$1"
 }
 
 kill_tree() {
@@ -242,8 +175,10 @@ cleanup_port() {
 
   to_kill="$(echo "$to_kill" | xargs 2>/dev/null || true)"
   if [[ -n "$to_kill" ]]; then
-    echo "[workspace] Stopping ${label} listeners on port ${port}: ${to_kill}"
-    kill_pids "$to_kill"
+    local cleanup_targets
+    cleanup_targets="$(workspace_expand_cleanup_targets "$to_kill" "$port")"
+    echo "[workspace] Stopping ${label} listeners on port ${port}: ${cleanup_targets}"
+    kill_pids "$cleanup_targets"
   fi
 }
 

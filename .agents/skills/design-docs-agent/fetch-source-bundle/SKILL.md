@@ -1,6 +1,7 @@
 ---
 name: fetch-source-bundle
 description: Acquire a schema-compliant saved source bundle from an article URL before validation when the caller did not supply one.
+user-invocable: false
 metadata:
   version: 1.0.0
 ---
