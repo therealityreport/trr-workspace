@@ -9,9 +9,11 @@ Use these commands from `/Users/thomashulihan/Projects/TRR`.
 
 ## Daily Commands
 - `make dev` — recommended default workspace startup (cloud-first; no Docker required for normal backend/app work)
-- `make preflight` — local startup gate; warns on malformed handoff source docs but still blocks on runtime-affecting issues
+- `make preflight` — local startup gate; warns on malformed handoff source docs and stale generated env docs but still blocks on runtime-affecting issues
 - `make preflight-strict` — blocking validation path for malformed handoff source docs and env-contract drift
 - `make handoff-check` — canonical blocking handoff/status snapshot validator
+- `make env-contract` — refresh `docs/workspace/env-contract.md`
+- `make env-contract-report` — refresh the env-contract inventory/deprecation review docs intentionally
 - `make status` — workspace health and PID snapshot
 - `make stop` — stop workspace-managed processes
 - `make test-fast`
@@ -46,6 +48,8 @@ Flashback live gameplay is currently disabled and `/flashback`, `/flashback/cove
 The backend auto-restart path is now liveness-based. A transient Supabase/DNS issue can still make backend readiness (`/health`) degrade, but the workspace watchdog should only recycle the process when backend liveness (`/health/live`) fails.
 
 If preflight warns about malformed handoff source docs, fix the cited file and rerun `make handoff-check` or `make preflight-strict`. Default local startup intentionally continues so ordinary backend/app work is not blocked by continuity-note formatting mistakes.
+
+If preflight warns that generated env-contract docs are stale, refresh them intentionally with `make env-contract` or `make env-contract-report` and rerun `make preflight` when you want the repo baseline updated. Normal non-strict startup no longer rewrites those tracked docs automatically.
 
 Browser automation warnings now come from the same structured readiness states used by `make chrome-devtools-mcp-status`: `ready`, `degraded`, `recoverable`, and `unavailable`. A missing shared `9422` keeper with working auto-launch remains a recoverable state, not an unavailable one.
 
