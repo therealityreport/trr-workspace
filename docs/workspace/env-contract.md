@@ -8,12 +8,6 @@ Preferred contract: `make dev` is the cloud-first baseline for normal workspace 
 
 Route-scoped browser envs for disabled Flashback gameplay are intentionally excluded from the workspace startup contract.
 
-Database ownership note:
-- `TRR_DB_URL` is the canonical runtime Postgres URL for TRR-APP and TRR-Backend.
-- `TRR_DB_FALLBACK_URL` is the only intentional runtime fallback lane.
-- `DATABASE_URL` is tooling compatibility only and is not the app runtime contract.
-- Shared-schema SQL ownership is backend-owned. `TRR-APP/apps/web/scripts/run-migrations.mjs` now defaults to app-local migrations and requires an explicit transitional opt-in before touching backend-owned shared-schema backlog such as `firebase_surveys`, `admin`, grants, or RLS setup.
-
 Visibility tiers:
 - `common`: frequently used day-to-day toggles
 - `advanced`: less common tuning and troubleshooting controls
@@ -26,11 +20,11 @@ Visibility tiers:
 | `ADMIN_ENFORCE_HOST` | `true` | `true` or `false` | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `ADMIN_STRICT_HOST_ROUTING` | `false` | `true` or `false` | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `PROFILE` | `` | string | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
-| `TRR_ADMIN_ROUTE_CACHE_DISABLED` | `1` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Disable Next.js in-memory admin route caching during managed local workspace runs. |
+| `TRR_ADMIN_ROUTE_CACHE_DISABLED` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Disable Next.js in-memory admin route caching during managed local workspace runs. |
 | `TRR_APP_HOST` | `127.0.0.1` | string | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `TRR_APP_PORT` | `3000` | integer port | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `TRR_BACKEND_PORT` | `8000` | integer port | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
-| `TRR_BACKEND_RELOAD` | `1` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable backend reload mode (1) instead of non-reload server mode (0). |
+| `TRR_BACKEND_RELOAD` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable backend reload mode (1) instead of non-reload server mode (0). |
 | `TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `TRR_BACKEND_WORKERS` | `1` | integer | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `TRR_REDDIT_CACHE_LOOKUP_RETRIES` | `1` | integer | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |

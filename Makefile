@@ -1,6 +1,6 @@
 .PHONY: \
 	dev dev-lite dev-cloud dev-local dev-full \
-	preflight preflight-local preflight-strict preflight-diagnostics env-contract check-policy codex-check handoff-check handoff-sync smoke status stop logs logs-prune cleanup-disk help \
+	preflight preflight-local preflight-strict preflight-diagnostics env-contract env-contract-report check-policy codex-check handoff-check handoff-sync smoke status stop logs logs-prune cleanup-disk help \
 	bootstrap doctor test test-fast test-full test-changed test-env-sensitive \
 	workspace-contract-check \
 	cast-screentime-gap-check cast-screentime-live-check \
@@ -65,6 +65,9 @@ preflight-diagnostics:
 
 env-contract:
 	@bash scripts/workspace-env-contract.sh --generate
+
+env-contract-report:
+	@python3 scripts/env_contract_report.py write
 
 check-policy:
 	@bash scripts/check-policy.sh
@@ -170,6 +173,8 @@ help:
 	@echo "  make dev-local    - deprecated alias for make dev"
 	@echo "  make preflight    - validates the canonical no-Docker workspace path"
 	@echo "  make preflight-local - deprecated alias for make preflight"
+	@echo "  make env-contract - refresh docs/workspace/env-contract.md"
+	@echo "  make env-contract-report - refresh env contract inventory/deprecation review docs"
 	@echo "  make codex-check  - validates tracked Codex config, rules, and user bootstrap state"
 	@echo "  make down         - deprecated no-op retained for compatibility"
 	@echo "Legacy aliases:"

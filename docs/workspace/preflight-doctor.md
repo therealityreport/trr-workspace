@@ -3,10 +3,11 @@
 `make preflight` runs `scripts/doctor.sh` before any workspace startup.
 
 Preflight modes:
-- `make preflight` is the default local developer gate. It still fails on Node baseline, policy drift, and Chrome DevTools MCP readiness; env-contract drift is auto-healed in-place and then re-checked.
+- `make preflight` is the default local developer gate. It still fails on Node baseline, policy drift, and Chrome DevTools MCP readiness; env-contract drift now warns with explicit remediation commands instead of rewriting tracked docs during startup.
 - `make preflight` now warns and continues when generated handoff sync fails because a canonical source file is malformed. The warning includes the exact validator failure and points to `make handoff-check` / `make preflight-strict` for the blocking path.
 - `make preflight-strict` enables `WORKSPACE_PREFLIGHT_STRICT=1` and fails on handoff-source validation errors and env-contract drift.
 - `make env-contract` regenerates `docs/workspace/env-contract.md` directly when you want to refresh the contract without running the full preflight chain.
+- `make env-contract-report` regenerates the env-contract inventory, deprecation review, and Vercel review docs intentionally instead of letting startup rewrite them in place.
 
 Handoff validation:
 - `make handoff-check` is the canonical blocking validator for `docs/ai/local-status/*.md` and cross-collab `STATUS.md` snapshot shape.
