@@ -120,8 +120,8 @@ WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR="${WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MI
 WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR="${WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR:-1}"
 WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS="${WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS:-2}"
 WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_LEASE_SECONDS="${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_LEASE_SECONDS:-300}"
-TRR_BACKEND_RELOAD="${TRR_BACKEND_RELOAD:-1}"
-TRR_ADMIN_ROUTE_CACHE_DISABLED="${TRR_ADMIN_ROUTE_CACHE_DISABLED:-1}"
+TRR_BACKEND_RELOAD="${TRR_BACKEND_RELOAD:-0}"
+TRR_ADMIN_ROUTE_CACHE_DISABLED="${TRR_ADMIN_ROUTE_CACHE_DISABLED:-0}"
 TRR_BACKEND_WORKERS="${TRR_BACKEND_WORKERS:-1}"
 TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER="${TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER:-0}"
 TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS="${TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS:-10000}"
@@ -306,12 +306,12 @@ if ! [[ "$TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER" =~ ^[01]$ ]]; then
   TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER="0"
 fi
 if ! [[ "$TRR_BACKEND_RELOAD" =~ ^[01]$ ]]; then
-  echo "[workspace] WARNING: invalid TRR_BACKEND_RELOAD='${TRR_BACKEND_RELOAD}', using 1." >&2
-  TRR_BACKEND_RELOAD="1"
+  echo "[workspace] WARNING: invalid TRR_BACKEND_RELOAD='${TRR_BACKEND_RELOAD}', using 0." >&2
+  TRR_BACKEND_RELOAD="0"
 fi
 if ! [[ "$TRR_ADMIN_ROUTE_CACHE_DISABLED" =~ ^[01]$ ]]; then
-  echo "[workspace] WARNING: invalid TRR_ADMIN_ROUTE_CACHE_DISABLED='${TRR_ADMIN_ROUTE_CACHE_DISABLED}', using 1." >&2
-  TRR_ADMIN_ROUTE_CACHE_DISABLED="1"
+  echo "[workspace] WARNING: invalid TRR_ADMIN_ROUTE_CACHE_DISABLED='${TRR_ADMIN_ROUTE_CACHE_DISABLED}', using 0." >&2
+  TRR_ADMIN_ROUTE_CACHE_DISABLED="0"
 fi
 if ! [[ "$TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS" =~ ^[1-9][0-9]*$ ]]; then
   echo "[workspace] WARNING: invalid TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS='${TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS}', using 10000." >&2
@@ -755,67 +755,40 @@ workspace_local_remote_workers_active() {
   [[ "$WORKSPACE_TRR_REMOTE_WORKERS_ENABLED" == "1" && ! ( "$WORKSPACE_TRR_REMOTE_EXECUTOR" == "modal" && "$WORKSPACE_TRR_MODAL_ENABLED" == "1" ) ]]
 }
 
-print_workspace_ready_summary() {
-  local local_admin_override_label="disabled"
-
-  if [[ "${TRR_ALLOW_LOCAL_ADMIN_OPERATION_OVERRIDE:-1}" == "1" ]]; then
-    local_admin_override_label="enabled (header-gated)"
+workspace_startup_remote_execution_summary() {
+  if [[ "$WORKSPACE_TRR_REMOTE_WORKERS_ENABLED" != "1" ]]; then
+    echo "disabled"
+    return 0
   fi
 
+  if [[ "$WORKSPACE_TRR_REMOTE_EXECUTOR" == "modal" && "$WORKSPACE_TRR_MODAL_ENABLED" == "1" ]]; then
+    echo "modal dispatch active"
+    return 0
+  fi
+
+  echo "local workers active"
+}
+
+workspace_startup_runtime_summary() {
+  local backend_mode="non-reload"
+  if [[ "$TRR_BACKEND_RELOAD" == "1" ]]; then
+    backend_mode="reload"
+  fi
+
+  printf 'backend=%s, bundler=%s, remote=%s\n' \
+    "$backend_mode" \
+    "$WORKSPACE_TRR_APP_DEV_BUNDLER" \
+    "$(workspace_startup_remote_execution_summary)"
+}
+
+print_workspace_ready_summary() {
   echo ""
   echo "[workspace] Ready:"
   echo "  URLs:"
   echo "    TRR-APP:             http://${TRR_APP_HOST}:${TRR_APP_PORT}"
   echo "    TRR-APP Admin:       ${ADMIN_APP_ORIGIN}"
   echo "    TRR-Backend:         ${TRR_API_URL}"
-
-  echo "  Runtime:"
-  if [[ -n "$PROFILE" ]]; then
-    echo "    Workspace profile:   ${PROFILE}"
-  fi
-  echo "    Workspace dev mode:  $(workspace_dev_mode_label)"
-  echo "    Local services:      TRR-APP, TRR-Backend"
-  if [[ "$TRR_BACKEND_RELOAD" == "1" ]]; then
-    echo "    TRR-Backend mode:    reload"
-  else
-    echo "    TRR-Backend mode:    non-reload"
-  fi
-  if [[ "$WORKSPACE_TRR_APP_DEV_BUNDLER" == "webpack" ]]; then
-    echo "    TRR-APP bundler:     webpack"
-  else
-    echo "    TRR-APP bundler:     ${WORKSPACE_TRR_APP_DEV_BUNDLER} (fallback: pnpm -C TRR-APP/apps/web run dev:stable)"
-  fi
-  echo "    Local admin override: ${local_admin_override_label}"
-  if [[ "$WORKSPACE_OPEN_BROWSER" == "1" ]]; then
-    echo "    Browser sync:        enabled (mode=${WORKSPACE_BROWSER_TAB_SYNC_MODE})"
-  else
-    echo "    Browser sync:        disabled"
-  fi
-  if [[ "$WORKSPACE_BACKEND_AUTO_RESTART" == "1" ]]; then
-    echo "    Backend watchdog:    enabled (interval=${WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS}s, threshold=${WORKSPACE_BACKEND_HEALTH_FAILURE_THRESHOLD})"
-  else
-    echo "    Backend watchdog:    disabled"
-  fi
-  echo "    Job plane mode:      ${WORKSPACE_TRR_JOB_PLANE_MODE} (enforce_remote=${WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE}, executor=${WORKSPACE_TRR_REMOTE_EXECUTOR}, modal_enabled=${WORKSPACE_TRR_MODAL_ENABLED})"
-  if workspace_local_social_worker_active; then
-    echo "    Social worker pool:  posts=${WORKSPACE_SOCIAL_WORKER_POSTS}, comments=${WORKSPACE_SOCIAL_WORKER_COMMENTS}, media_mirror=${WORKSPACE_SOCIAL_WORKER_MEDIA_MIRROR}, comment_media_mirror=${WORKSPACE_SOCIAL_WORKER_COMMENT_MEDIA_MIRROR}"
-  elif [[ "$WORKSPACE_TRR_REMOTE_EXECUTOR" == "modal" && "$WORKSPACE_TRR_MODAL_ENABLED" == "1" ]]; then
-    echo "    Social worker pool:  disabled (Modal-owned background execution)"
-  else
-    echo "    Social worker pool:  disabled"
-  fi
-  if [[ "$WORKSPACE_TRR_REMOTE_WORKERS_ENABLED" == "1" ]]; then
-    if [[ "$WORKSPACE_TRR_REMOTE_EXECUTOR" == "modal" && "$WORKSPACE_TRR_MODAL_ENABLED" == "1" ]]; then
-      echo "    Remote execution:    Modal dispatch active (admin=${WORKSPACE_TRR_REMOTE_ADMIN_WORKERS}, reddit=${WORKSPACE_TRR_REMOTE_REDDIT_WORKERS}, google-news=${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS}; local claim loops skipped)"
-      echo "    Modal social tuning: $(workspace_modal_social_tuning_summary)"
-      echo "    Modal target:        ${WORKSPACE_TRR_MODAL_APP_NAME}.${WORKSPACE_TRR_MODAL_SOCIAL_JOB_FUNCTION}"
-      echo "    Modal readiness:     cd TRR-Backend && python3.11 scripts/modal/verify_modal_readiness.py --json"
-    else
-      echo "    Remote job workers:  enabled (admin=${WORKSPACE_TRR_REMOTE_ADMIN_WORKERS}, reddit=${WORKSPACE_TRR_REMOTE_REDDIT_WORKERS}, google-news=${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS}, social=${WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS}, poll=${WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS}s)"
-    fi
-  else
-    echo "    Remote execution:    disabled"
-  fi
+  echo "  Summary: $(workspace_startup_runtime_summary)"
   echo "  Logs:"
   echo "    ${TRR_APP_LOG}"
   echo "    ${TRR_BACKEND_LOG}"
