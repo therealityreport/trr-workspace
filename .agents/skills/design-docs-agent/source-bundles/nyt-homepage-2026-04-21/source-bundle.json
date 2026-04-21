@@ -1,0 +1,38 @@
+{
+  "canonicalSourceUrl": "https://www.nytimes.com/",
+  "html": {
+    "rendered": ".agents/skills/design-docs-agent/source-bundles/nyt-homepage-2026-04-21/index.html"
+  },
+  "css": [
+    ".agents/skills/design-docs-agent/source-bundles/nyt-homepage-2026-04-21/assets/css/global-bf55b3b62e74478ad488922130f07a8e.css",
+    ".agents/skills/design-docs-agent/source-bundles/nyt-homepage-2026-04-21/assets/css/cssModulesStyles-194a4f08b37a2be7fb8f.css",
+    ".agents/skills/design-docs-agent/source-bundles/nyt-homepage-2026-04-21/assets/css/player-0.2.40-CnxAEwcy.css",
+    ".agents/skills/design-docs-agent/source-bundles/nyt-homepage-2026-04-21/assets/css/cover-0.2.40-eTrf0IGY.css",
+    ".agents/skills/design-docs-agent/source-bundles/nyt-homepage-2026-04-21/assets/css/poster-0.2.40-BdueiXaE.css",
+    ".agents/skills/design-docs-agent/source-bundles/nyt-homepage-2026-04-21/assets/css/overlay-controls-0.2.40-DTyJF-yz.css",
+    ".agents/skills/design-docs-agent/source-bundles/nyt-homepage-2026-04-21/assets/css/scrubber-0.2.40-allGBXvP.css",
+    ".agents/skills/design-docs-agent/source-bundles/nyt-homepage-2026-04-21/assets/css/video-feed-0.2.40-DxGu5TjZ.css",
+    ".agents/skills/design-docs-agent/source-bundles/nyt-homepage-2026-04-21/assets/css/pool-0.2.40-CbJK-W2L.css"
+  ],
+  "js": [
+    ".agents/skills/design-docs-agent/source-bundles/nyt-homepage-2026-04-21/assets/js/adslot-59e729d7c8593a1554b2.js",
+    ".agents/skills/design-docs-agent/source-bundles/nyt-homepage-2026-04-21/assets/js/pool-0.2.40-D37jd-c4.js",
+    ".agents/skills/design-docs-agent/source-bundles/nyt-homepage-2026-04-21/assets/js/player-CKCxHe9J.js",
+    ".agents/skills/design-docs-agent/source-bundles/nyt-homepage-2026-04-21/assets/js/cover-0.2.40-DtYyWQLl.js",
+    ".agents/skills/design-docs-agent/source-bundles/nyt-homepage-2026-04-21/assets/js/poster-0.2.40-CFXJA1Fq.js",
+    ".agents/skills/design-docs-agent/source-bundles/nyt-homepage-2026-04-21/assets/js/overlay-controls-Df1-R5DD.js",
+    ".agents/skills/design-docs-agent/source-bundles/nyt-homepage-2026-04-21/assets/js/video-feed-0.2.40-BZ-zSyuf.js",
+    ".agents/skills/design-docs-agent/source-bundles/nyt-homepage-2026-04-21/assets/js/vendor-9916e8df8eecbd757328.js",
+    ".agents/skills/design-docs-agent/source-bundles/nyt-homepage-2026-04-21/assets/js/home-2c4544aaa307d69dadd2.js",
+    ".agents/skills/design-docs-agent/source-bundles/nyt-homepage-2026-04-21/assets/js/desktopLogoNav-16cdbd8aae0ea9aff7cf.js",
+    ".agents/skills/design-docs-agent/source-bundles/nyt-homepage-2026-04-21/assets/js/nestedNav-d3f6f7e7e20094491b95.js",
+    ".agents/skills/design-docs-agent/source-bundles/nyt-homepage-2026-04-21/assets/js/cssModulesStyles-67982248ede4abbeaa1f.js",
+    ".agents/skills/design-docs-agent/source-bundles/nyt-homepage-2026-04-21/assets/js/main-34f07424be3a0c65c666.js"
+  ],
+  "authoritativeViewport": "desktop",
+  "screenshots": {
+    "desktop": [
+      ".agents/skills/design-docs-agent/source-bundles/nyt-homepage-2026-04-21/screenshots/nyt-homepage-2026-04-21.jpg"
+    ]
+  }
+}

@@ -20,26 +20,34 @@ def test_classify_ready_shared_runtime() -> None:
     result = _run_bash(
         f"""
         source "{SCRIPT_PATH}"
-        chrome_devtools_status_classify "shared" "reachable" "safe" "1" "1" "9422"
+        chrome_devtools_status_classify "shared" "reachable" "safe" "1" "1" "9422" "2200.0" "2" "1" "0"
         """
     )
 
     assert result.returncode == 0, result.stderr
     assert "overall_state=ready" in result.stdout
     assert "attention_kind=none" in result.stdout
+    assert "chrome_rss_mb=2200.0" in result.stdout
+    assert "shared_clients=2" in result.stdout
+    assert "managed_roots=1" in result.stdout
+    assert "conflicts=0" in result.stdout
 
 
 def test_classify_degraded_shared_runtime() -> None:
     result = _run_bash(
         f"""
         source "{SCRIPT_PATH}"
-        chrome_devtools_status_classify "shared" "reachable" "degraded" "1" "1" "9422"
+        chrome_devtools_status_classify "shared" "reachable" "degraded" "1" "1" "9422" "4415.5" "16" "1" "0"
         """
     )
 
     assert result.returncode == 0, result.stderr
     assert "overall_state=degraded" in result.stdout
     assert "attention_kind=pressure" in result.stdout
+    assert "chrome_rss_mb=4415.5" in result.stdout
+    assert "shared_clients=16" in result.stdout
+    assert "managed_roots=1" in result.stdout
+    assert "conflicts=0" in result.stdout
 
 
 def test_classify_recoverable_shared_runtime_when_auto_launch_is_available() -> None:

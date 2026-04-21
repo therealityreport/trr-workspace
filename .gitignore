@@ -25,6 +25,8 @@
 
 # External data
 /.external/
+/data/
+**/instagram_cookies.json
 
 # Local agent config
 /.claude/

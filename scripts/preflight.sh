@@ -6,6 +6,8 @@ cd "$ROOT"
 
 source "$ROOT/scripts/lib/node-baseline.sh"
 source "$ROOT/scripts/lib/preflight-diagnostics.sh"
+source "$ROOT/scripts/lib/preflight-browser-attention.sh"
+source "$ROOT/scripts/lib/preflight-env-contract.sh"
 source "$ROOT/scripts/lib/preflight-handoff.sh"
 source "$ROOT/scripts/lib/runtime-db-env.sh"
 source "$ROOT/scripts/lib/chrome-devtools-status.sh"
@@ -17,31 +19,7 @@ ATTENTION_FILE="$(workspace_attention_file "$ROOT")"
 workspace_attention_reset "$ATTENTION_FILE"
 
 record_browser_attention() {
-  local output="$1"
-  local attention_kind=""
-  local pressure_state=""
-  local shared_port=""
-
-  attention_kind="$(printf '%s\n' "$output" | sed -n 's/^attention_kind=//p' | head -n 1)"
-  pressure_state="$(printf '%s\n' "$output" | sed -n 's/^pressure_state=//p' | head -n 1)"
-  shared_port="$(printf '%s\n' "$output" | sed -n 's/^shared_port=//p' | head -n 1)"
-
-  if [[ "$attention_kind" == "pressure" ]]; then
-    workspace_attention_add \
-      "$ATTENTION_FILE" \
-      "Browser automation pressure is ${pressure_state:-degraded}." \
-      "Impact: chrome-devtools is available, but local browser pressure is elevated." \
-      "Remediation: run 'make mcp-clean' if stale Chrome runtime artifacts or external MCP leftovers are not expected."
-    return 0
-  fi
-
-  if [[ "$attention_kind" == "unavailable" ]]; then
-    workspace_attention_add \
-      "$ATTENTION_FILE" \
-      "Browser automation shared Chrome is not responding${shared_port:+ on port ${shared_port}}." \
-      "Impact: chrome-devtools registration is present, but the shared browser runtime is unavailable." \
-      "Remediation: run 'make mcp-clean' and retry the workspace startup."
-  fi
+  preflight_record_browser_attention "$ATTENTION_FILE" "$1"
 }
 
 emit_preflight_phase_output() {
@@ -63,20 +41,8 @@ emit_preflight_phase_output() {
     env-contract)
       echo "[preflight] Env contract OK"
       ;;
-    env-contract-generate)
-      echo "[preflight] Env contract regenerated"
-      ;;
-    env-contract-verify)
-      echo "[preflight] Env contract re-validated"
-      ;;
     env-contract-report)
       echo "[preflight] Env contract reports OK"
-      ;;
-    env-contract-report-write)
-      echo "[preflight] Env contract reports regenerated"
-      ;;
-    env-contract-report-verify)
-      echo "[preflight] Env contract reports re-validated"
       ;;
     handoff-sync)
       echo "[preflight] Handoffs synced"
@@ -305,38 +271,30 @@ fi
 
 run_preflight_phase "doctor" "[preflight] Running workspace doctor..." env WORKSPACE_DEV_MODE="$WORKSPACE_DEV_MODE" WORKSPACE_PREFLIGHT_STRICT="$WORKSPACE_PREFLIGHT_STRICT" bash "$ROOT/scripts/doctor.sh"
 
+env_contract_output=""
 env_contract_rc=0
-run_preflight_phase "env-contract" "[preflight] Validating generated env contract..." bash "$ROOT/scripts/workspace-env-contract.sh" --check || env_contract_rc="$?"
+run_preflight_phase_capture env_contract_output "env-contract" "[preflight] Validating generated env contract..." bash "$ROOT/scripts/workspace-env-contract.sh" --check || env_contract_rc="$?"
 if [[ "$env_contract_rc" != "0" ]]; then
-  if [[ "$WORKSPACE_PREFLIGHT_STRICT" == "1" ]]; then
+  env_contract_warning="$(preflight_handle_env_contract_result "$WORKSPACE_PREFLIGHT_STRICT" "$env_contract_rc" "$env_contract_output")" || {
+    printf '%s\n' "$env_contract_output"
     exit "$env_contract_rc"
-  fi
-  echo "[preflight] WARNING: generated env contract is out of date; regenerating because WORKSPACE_PREFLIGHT_STRICT=0." >&2
-  run_preflight_phase "env-contract-generate" "[preflight] Regenerating generated env contract..." bash "$ROOT/scripts/workspace-env-contract.sh" --generate
-  env_contract_rc=0
-  run_preflight_phase "env-contract-verify" "[preflight] Re-validating generated env contract..." bash "$ROOT/scripts/workspace-env-contract.sh" --check || env_contract_rc="$?"
-  if [[ "$env_contract_rc" != "0" ]]; then
-    echo "[preflight] ERROR: env contract is still out of date after regeneration." >&2
-    exit "$env_contract_rc"
-  fi
-  echo "[preflight] NOTE: generated env contract was refreshed in-place; review and commit docs/workspace/env-contract.md if the new baseline is intended." >&2
+  }
+  printf '%s\n' "$env_contract_warning" >&2
+else
+  emit_preflight_phase_output "env-contract" 0 "$env_contract_output"
 fi
 
+env_contract_report_output=""
 env_contract_report_rc=0
-run_preflight_phase "env-contract-report" "[preflight] Validating env contract reports..." python3 "$ROOT/scripts/env_contract_report.py" validate || env_contract_report_rc="$?"
+run_preflight_phase_capture env_contract_report_output "env-contract-report" "[preflight] Validating env contract reports..." python3 "$ROOT/scripts/env_contract_report.py" validate || env_contract_report_rc="$?"
 if [[ "$env_contract_report_rc" != "0" ]]; then
-  if [[ "$WORKSPACE_PREFLIGHT_STRICT" == "1" ]]; then
+  env_contract_report_warning="$(preflight_handle_env_contract_report_result "$WORKSPACE_PREFLIGHT_STRICT" "$env_contract_report_rc" "$env_contract_report_output")" || {
+    printf '%s\n' "$env_contract_report_output"
     exit "$env_contract_report_rc"
-  fi
-  echo "[preflight] WARNING: env contract reports are out of date; regenerating because WORKSPACE_PREFLIGHT_STRICT=0." >&2
-  run_preflight_phase "env-contract-report-write" "[preflight] Regenerating env contract reports..." python3 "$ROOT/scripts/env_contract_report.py" write
-  env_contract_report_rc=0
-  run_preflight_phase "env-contract-report-verify" "[preflight] Re-validating env contract reports..." python3 "$ROOT/scripts/env_contract_report.py" validate || env_contract_report_rc="$?"
-  if [[ "$env_contract_report_rc" != "0" ]]; then
-    echo "[preflight] ERROR: env contract reports are still out of date after regeneration." >&2
-    exit "$env_contract_report_rc"
-  fi
-  echo "[preflight] NOTE: env contract reports were refreshed in-place; review and commit docs/workspace/env-contract-inventory.md, docs/workspace/env-deprecations.md, and docs/workspace/vercel-env-review.md if the new baseline is intended." >&2
+  }
+  printf '%s\n' "$env_contract_report_warning" >&2
+else
+  emit_preflight_phase_output "env-contract-report" 0 "$env_contract_report_output"
 fi
 
 handoff_sync_output=""
