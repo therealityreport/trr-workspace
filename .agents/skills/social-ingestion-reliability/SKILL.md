@@ -42,7 +42,11 @@ Use this workspace-local skill for TRR social-ingestion reliability work across 
    - stale heartbeat or stuck queue state
    - sync-session or run-state drift
    - duplicate, missing, or partial persistence
-4. Identify the first source of truth before making changes.
+4. Capture the operator-facing diagnostics before making changes:
+   - additive `alerts` arrays from worker-health or catalog-progress responses
+   - queue execution diagnostics such as `queue_enabled`, `used_inline_fallback`, and `requires_modal_executor`
+   - shared-account canary context, especially whether the failing or recommended order is `Sync Recent`, then `Sync Newer`, then `Backfill Posts`
+5. Identify the first source of truth before making changes.
 
 Stop conditions:
 1. The failing surface cannot be stated concretely.
@@ -70,6 +74,7 @@ Stop conditions:
    - sync pass sequencing
    - shared-account and catalog completion behavior
    - comment, media, and avatar follow-up gaps
+   - preferred shared-account canary order: `Sync Recent`, then `Sync Newer`, then `Backfill Posts`
 5. Verify persistence and idempotency:
    - upsert and dedupe behavior
    - duplicate-write protections
@@ -77,6 +82,8 @@ Stop conditions:
    - cache or summary truthfulness versus storage truth
 6. Close the loop on observability and recurrence prevention:
    - logs and queue-status visibility
+   - additive `alerts` arrays as the primary operator-facing reason codes during triage
+   - queue execution diagnostics such as `used_inline_fallback` and `requires_modal_executor` so inline fallback is not mistaken for healthy queued execution
    - counters or reason buckets needed for recurrence detection
    - targeted regression tests for the failing layer
 7. Keep fixes tightly scoped to the ingestion path and prove them with the smallest targeted validation slice.

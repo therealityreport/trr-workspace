@@ -64,7 +64,6 @@ done < <(
 
 POLICY_SCAN_FILES=(
   "${AGENTS_FILES[@]}"
-  "${CLAUDE_FILES[@]}"
   "$ROOT/.codex/config.toml"
   "$ROOT/.codex/rules/default.rules"
   "$ROOT/docs/workspace/dev-commands.md"
@@ -74,6 +73,9 @@ POLICY_SCAN_FILES=(
   "$ROOT/docs/agent-governance/claude_skill_overlap.md"
   "$ROOT/docs/agent-governance/mcp_inventory.md"
 )
+if [[ "${#CLAUDE_FILES[@]}" -gt 0 ]]; then
+  POLICY_SCAN_FILES+=("${CLAUDE_FILES[@]}")
+fi
 
 failures=0
 
@@ -215,26 +217,28 @@ expected_claude_content() {
   printf '# CLAUDE.md Pointer\n\nCanonical instructions for this scope are in:\n`%s`\n\nRules:\n1. Read `AGENTS.md` first.\n2. `HANDOFF.md` is generated; update canonical status sources and follow the lifecycle commands in `AGENTS.md`.\n3. If there is any conflict, `AGENTS.md` is authoritative.\n4. This file must remain a short pointer shim.' "$agents_path"
 }
 
-for file in "${CLAUDE_FILES[@]}"; do
-  if [[ ! -f "$file" ]]; then
-    echo "[check-policy] ERROR: missing file $file" >&2
-    failures=$((failures + 1))
-    continue
-  fi
+if [[ "${#CLAUDE_FILES[@]}" -gt 0 ]]; then
+  for file in "${CLAUDE_FILES[@]}"; do
+    if [[ ! -f "$file" ]]; then
+      echo "[check-policy] ERROR: missing file $file" >&2
+      failures=$((failures + 1))
+      continue
+    fi
 
-  line_count="$(wc -l < "$file" | tr -d ' ')"
-  if [[ "$line_count" -gt 12 ]]; then
-    echo "[check-policy] ERROR: $file exceeds 12 lines ($line_count)." >&2
-    failures=$((failures + 1))
-  fi
+    line_count="$(wc -l < "$file" | tr -d ' ')"
+    if [[ "$line_count" -gt 12 ]]; then
+      echo "[check-policy] ERROR: $file exceeds 12 lines ($line_count)." >&2
+      failures=$((failures + 1))
+    fi
 
-  actual_content="$(<"$file")"
-  expected_content="$(expected_claude_content "$file")"
-  if [[ "$actual_content" != "$expected_content" ]]; then
-    echo "[check-policy] ERROR: $file does not match the canonical pointer-shim template." >&2
-    failures=$((failures + 1))
-  fi
-done
+    actual_content="$(<"$file")"
+    expected_content="$(expected_claude_content "$file")"
+    if [[ "$actual_content" != "$expected_content" ]]; then
+      echo "[check-policy] ERROR: $file does not match the canonical pointer-shim template." >&2
+      failures=$((failures + 1))
+    fi
+  done
+fi
 
 if rg -n -i 'playwright' "${POLICY_SCAN_FILES[@]}" >/tmp/trr-policy-playwright-hits.txt; then
   if [[ -s /tmp/trr-policy-playwright-hits.txt ]]; then

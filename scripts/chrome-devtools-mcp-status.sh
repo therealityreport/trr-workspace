@@ -1051,7 +1051,11 @@ structured_status_output="$(
     "$pressure_state" \
     "$shared_auto_launch" \
     "1" \
-    "$SHARED_PORT"
+    "$SHARED_PORT" \
+    "$chrome_rss_mb" \
+    "$shared_client_count" \
+    "$managed_root_count" \
+    "$conflict_count"
 )"
 
 if is_structured_mode; then

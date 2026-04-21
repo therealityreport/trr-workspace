@@ -7,7 +7,7 @@ This report enumerates remaining deprecated-name occurrences across active repo 
 ## Summary
 
 - `active drift`: 0
-- `compatibility-only`: 81
+- `compatibility-only`: 80
 - `historical/docs`: 140
 
 ## Active Drift
@@ -18,10 +18,7 @@ No occurrences in this category.
 
 | Deprecated name | Location | Rationale |
 |---|---|---|
-| `DATABASE_URL` | `TRR-APP/apps/web/POSTGRES_SETUP.md:28:`TRR_DB_URL` is the app runtime contract. `DATABASE_URL` is still used by the migration scripts only, so invoke those commands as `DATABASE_URL="$TRR_DB_URL" pnpm run db:migrate` instead of storing `DATABASE_URL` as the app runtime source of truth.` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
-| `DATABASE_URL` | `TRR-APP/apps/web/POSTGRES_SETUP.md:112:DATABASE_URL="${TRR_DB_URL}" pnpm run db:migrate` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
-| `DATABASE_URL` | `TRR-APP/apps/web/POSTGRES_SETUP.md:322:DATABASE_URL="${TRR_DB_URL}" pnpm run db:migrate` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
-| `DATABASE_URL` | `TRR-APP/apps/web/POSTGRES_SETUP.md:393:DATABASE_URL="${TRR_DB_URL}" pnpm run db:migrate` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
+| `DATABASE_URL` | `TRR-APP/apps/web/POSTGRES_SETUP.md:16:- `DATABASE_URL` is not part of the app runtime contract. The migration runner still accepts it as a compatibility-only input for older tooling flows, but it is no longer the preferred source.` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
 | `DATABASE_URL` | `TRR-APP/apps/web/scripts/check-survey-x.mjs:14:const connectionString = process.env.DATABASE_URL;` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
 | `DATABASE_URL` | `TRR-APP/apps/web/scripts/check-surveys.mjs:13:const connectionString = process.env.DATABASE_URL;` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
 | `DATABASE_URL` | `TRR-APP/apps/web/scripts/delete-web-scrape-imports.mjs:52:const connectionString = process.env.DATABASE_URL;` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
@@ -30,8 +27,10 @@ No occurrences in this category.
 | `DATABASE_URL` | `TRR-APP/apps/web/scripts/import-rhoslc-s6.mjs:6:*   DATABASE_URL="postgresql://..." node scripts/import-rhoslc-s6.mjs` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
 | `DATABASE_URL` | `TRR-APP/apps/web/scripts/import-rhoslc-s6.mjs:24:const connectionString = process.env.DATABASE_URL;` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
 | `DATABASE_URL` | `TRR-APP/apps/web/scripts/import-rhoslc-s6.mjs:26:console.error("[import] DATABASE_URL is not set");` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
-| `DATABASE_URL` | `TRR-APP/apps/web/scripts/run-migrations.mjs:16:const connectionString = process.env.DATABASE_URL;` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
-| `DATABASE_URL` | `TRR-APP/apps/web/scripts/run-migrations.mjs:18:console.error("[migrations] DATABASE_URL is not set. Export it before running migrations.");` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
+| `DATABASE_URL` | `TRR-APP/apps/web/scripts/run-migrations.mjs:122:["DATABASE_URL", process.env.DATABASE_URL],` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
+| `DATABASE_URL` | `TRR-APP/apps/web/scripts/run-migrations.mjs:128:"[migrations] No database URL is set. Configure TRR_DB_URL or optional TRR_DB_FALLBACK_URL. DATABASE_URL is compatibility-only for older tooling flows.",` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
+| `DATABASE_URL` | `TRR-APP/apps/web/scripts/run-migrations.mjs:133:if (connectionSource === "DATABASE_URL") {` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
+| `DATABASE_URL` | `TRR-APP/apps/web/scripts/run-migrations.mjs:135:"[migrations] Using DATABASE_URL compatibility input. Prefer TRR_DB_URL and optional TRR_DB_FALLBACK_URL for app runtime and migration tooling.",` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
 | `DATABASE_URL` | `TRR-APP/apps/web/src/lib/server/postgres.ts:160:"No database connection string is set. Configure TRR_DB_URL (recommended in TRR-APP/apps/web/.env.local for make dev) or TRR_DB_FALLBACK_URL. Runtime reads do not use SUPABASE_DB_URL or DATABASE_URL.",` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `DATABASE_URL` | `TRR-APP/apps/web/tests/postgres-connection-string-resolution.test.ts:46:"No database connection string is set. Configure TRR_DB_URL (recommended in TRR-APP/apps/web/.env.local for make dev) or TRR_DB_FALLBACK_URL. Runtime reads do not use SUPABASE_DB_URL or DATABASE_URL.",` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `DATABASE_URL` | `TRR-APP/scripts/auto-categorize-flairs.ts:8:* Requires env vars: TRR_DB_URL, optional TRR_DB_FALLBACK_URL, or DATABASE_URL for tooling-only flows` | Explicit compatibility layer or regression coverage for deprecated env handling. |
@@ -39,12 +38,12 @@ No occurrences in this category.
 | `DATABASE_URL` | `TRR-APP/scripts/auto-categorize-flairs.ts:80:console.error("No database connection string found. Set TRR_DB_URL, optional TRR_DB_FALLBACK_URL, or DATABASE_URL.");` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `DATABASE_URL` | `TRR-Backend/docs/deploy/cloud_run.md:33:Set exactly one runtime DB URL in Cloud Run. The canonical runtime contract is `TRR_DB_URL`, and it should point at the Supavisor session pooler on `pooler.supabase.com:5432`. Keep `DATABASE_URL` toolchain-only for external tools that insist on it.` | The deprecated name is referenced only to document or enforce non-preferred fallback behavior. |
 | `DATABASE_URL` | `TRR-Backend/scripts/README.md:37:- `DATABASE_URL` only when a standalone third-party tool requires that exact variable name` | The deprecated name is referenced only to document or enforce non-preferred fallback behavior. |
-| `DATABASE_URL` | `TRR-Backend/scripts/_db_url.py:50:ordered_sources.append(("DATABASE_URL", _read_env("DATABASE_URL"), True))` | Explicit compatibility layer or regression coverage for deprecated env handling. |
-| `DATABASE_URL` | `TRR-Backend/scripts/_db_url.py:65:"and use DATABASE_URL only for tooling-specific flows."` | Explicit compatibility layer or regression coverage for deprecated env handling. |
-| `DATABASE_URL` | `TRR-Backend/scripts/db/README.md:33:3. **`SUPABASE_DB_URL` / `DATABASE_URL`** - Deprecated compatibility inputs only` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
-| `DATABASE_URL` | `TRR-Backend/scripts/db/README.md:215:| `DATABASE_URL` | Tooling-only Postgres connection | Third-party tools that explicitly require this name |` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
-| `DATABASE_URL` | `TRR-Backend/scripts/db/README.md:239:# Only for tooling that explicitly requires DATABASE_URL` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
-| `DATABASE_URL` | `TRR-Backend/scripts/db/README.md:240:export DATABASE_URL="$TRR_DB_URL"` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
+| `DATABASE_URL` | `TRR-Backend/scripts/_db_url.py:51:ordered_sources.append(("DATABASE_URL", _read_env("DATABASE_URL"), True))` | Explicit compatibility layer or regression coverage for deprecated env handling. |
+| `DATABASE_URL` | `TRR-Backend/scripts/_db_url.py:66:"and use DATABASE_URL only for tooling-specific flows."` | Explicit compatibility layer or regression coverage for deprecated env handling. |
+| `DATABASE_URL` | `TRR-Backend/scripts/db/README.md:36:3. **`SUPABASE_DB_URL` / `DATABASE_URL`** - Deprecated compatibility inputs only` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
+| `DATABASE_URL` | `TRR-Backend/scripts/db/README.md:253:| `DATABASE_URL` | Tooling-only Postgres connection | Third-party tools that explicitly require this name |` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
+| `DATABASE_URL` | `TRR-Backend/scripts/db/README.md:277:# Only for tooling that explicitly requires DATABASE_URL` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
+| `DATABASE_URL` | `TRR-Backend/scripts/db/README.md:278:export DATABASE_URL="$TRR_DB_URL"` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
 | `DATABASE_URL` | `TRR-Backend/scripts/db/guard_core_schema.sql:12:--   cat scripts/db/guard_core_schema.sql your_script.sql | psql "${TRR_DB_URL:-${TRR_DB_FALLBACK_URL:-$DATABASE_URL}}"` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `DATABASE_URL` | `TRR-Backend/scripts/db/run_sql.sh:15:#   DATABASE_URL        - Tooling-only compatibility input` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `DATABASE_URL` | `TRR-Backend/scripts/db/run_sql.sh:56:if [[ -n "${DATABASE_URL:-}" ]]; then` | Explicit compatibility layer or regression coverage for deprecated env handling. |
@@ -76,9 +75,9 @@ No occurrences in this category.
 | `DATABASE_URL` | `scripts/lib/runtime-db-env.sh:107:echo "[${prefix}] Legacy-only app DB envs found in ${app_env}. SUPABASE_DB_URL and DATABASE_URL no longer satisfy TRR-APP runtime startup." >&2` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `SUPABASE_DB_URL` | `TRR-APP/apps/web/src/lib/server/postgres.ts:160:"No database connection string is set. Configure TRR_DB_URL (recommended in TRR-APP/apps/web/.env.local for make dev) or TRR_DB_FALLBACK_URL. Runtime reads do not use SUPABASE_DB_URL or DATABASE_URL.",` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `SUPABASE_DB_URL` | `TRR-APP/apps/web/tests/postgres-connection-string-resolution.test.ts:46:"No database connection string is set. Configure TRR_DB_URL (recommended in TRR-APP/apps/web/.env.local for make dev) or TRR_DB_FALLBACK_URL. Runtime reads do not use SUPABASE_DB_URL or DATABASE_URL.",` | Explicit compatibility layer or regression coverage for deprecated env handling. |
-| `SUPABASE_DB_URL` | `TRR-Backend/scripts/_db_url.py:52:ordered_sources.append(("SUPABASE_DB_URL", _read_env("SUPABASE_DB_URL"), True))` | Explicit compatibility layer or regression coverage for deprecated env handling. |
-| `SUPABASE_DB_URL` | `TRR-Backend/scripts/db/README.md:33:3. **`SUPABASE_DB_URL` / `DATABASE_URL`** - Deprecated compatibility inputs only` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
-| `SUPABASE_DB_URL` | `TRR-Backend/scripts/db/README.md:214:| `SUPABASE_DB_URL` | Deprecated compatibility alias | Transitional fallback only |` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
+| `SUPABASE_DB_URL` | `TRR-Backend/scripts/_db_url.py:53:ordered_sources.append(("SUPABASE_DB_URL", _read_env("SUPABASE_DB_URL"), True))` | Explicit compatibility layer or regression coverage for deprecated env handling. |
+| `SUPABASE_DB_URL` | `TRR-Backend/scripts/db/README.md:36:3. **`SUPABASE_DB_URL` / `DATABASE_URL`** - Deprecated compatibility inputs only` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
+| `SUPABASE_DB_URL` | `TRR-Backend/scripts/db/README.md:252:| `SUPABASE_DB_URL` | Deprecated compatibility alias | Transitional fallback only |` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
 | `SUPABASE_DB_URL` | `TRR-Backend/scripts/db/run_sql.sh:16:#   SUPABASE_DB_URL     - Deprecated compatibility input` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `SUPABASE_DB_URL` | `TRR-Backend/scripts/db/run_sql.sh:62:if [[ -n "${SUPABASE_DB_URL:-}" ]]; then` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `SUPABASE_DB_URL` | `TRR-Backend/scripts/db/run_sql.sh:63:echo "$SUPABASE_DB_URL"` | Explicit compatibility layer or regression coverage for deprecated env handling. |
@@ -98,7 +97,7 @@ No occurrences in this category.
 | `SUPABASE_DB_URL` | `scripts/lib/runtime-db-env.sh:64:trr_read_env_file_value "$env_file" "SUPABASE_DB_URL" >/dev/null 2>&1 && return 0` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `SUPABASE_DB_URL` | `scripts/lib/runtime-db-env.sh:107:echo "[${prefix}] Legacy-only app DB envs found in ${app_env}. SUPABASE_DB_URL and DATABASE_URL no longer satisfy TRR-APP runtime startup." >&2` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `SUPABASE_SERVICE_ROLE_KEY` | `TRR-APP/apps/web/README.md:66:canonical server-side Supabase auth inputs for TRR-APP. The app does not use legacy `SUPABASE_URL` or `SUPABASE_SERVICE_ROLE_KEY` for this surface.` | The deprecated name is referenced only to document or enforce non-preferred fallback behavior. |
-| `SUPABASE_SERVICE_ROLE_KEY` | `TRR-APP/apps/web/tests/server-auth-adapter.test.ts:120:process.env.SUPABASE_SERVICE_ROLE_KEY = "legacy-service-role";` | Explicit compatibility layer or regression coverage for deprecated env handling. |
+| `SUPABASE_SERVICE_ROLE_KEY` | `TRR-APP/apps/web/tests/server-auth-adapter.test.ts:104:process.env.SUPABASE_SERVICE_ROLE_KEY = "legacy-service-role";` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 
 ## Historical/Docs
 

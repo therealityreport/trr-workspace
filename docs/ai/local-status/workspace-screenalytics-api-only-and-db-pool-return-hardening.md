@@ -17,7 +17,7 @@ handoff:
 
 - Hardened `make dev` so the default `PROFILE=default` startup runs screenalytics in API-only mode.
 - Added explicit workspace toggles for the two screenalytics UIs and threaded those flags through the screenalytics launcher, workspace startup, and workspace status output.
-- Non-strict preflight now self-heals stale `docs/workspace/env-contract.md` instead of warning and continuing with drift.
+- Non-strict preflight no longer rewrites stale generated env-contract docs during startup; it now warns with explicit remediation commands instead.
 - Chrome automation summary output now reports pressure-only issues as warnings instead of mixing `OK` readiness with an `unsafe` verdict.
 - Fixed a backend pool-return fault in `TRR-Backend/trr_backend/db/pg.py` where closed read/write connections could still be returned as reusable handles, which surfaced in the app as `Invalid response from backend` on admin people photo requests.
 
