@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DEV_SCRIPT="$ROOT/scripts/dev-workspace.sh"
+RUNTIME_RECONCILE_CONTRACT="$ROOT/scripts/lib/workspace-runtime-reconcile-contract.sh"
 PROFILE_FILE="$ROOT/profiles/default.env"
 OUT_FILE="$ROOT/docs/workspace/env-contract.md"
 
@@ -15,16 +16,28 @@ fi
 mkdir -p "$(dirname "$OUT_FILE")"
 
 extract_var_rows() {
-  grep -E '^[A-Z][A-Z0-9_]*="\$\{[A-Z0-9_]+:-[^}]*\}"' "$DEV_SCRIPT" \
-    | sed -E 's/^([A-Z0-9_]+)="\$\{[A-Z0-9_]+:-([^}]*)\}".*/\1\t\2/' \
-    | awk -F '\t' '!seen[$1]++' \
-    | sort
+  {
+    grep -E '^[A-Z][A-Z0-9_]*="\$\{[A-Z0-9_]+:-[^}]*\}"' "$DEV_SCRIPT" "$RUNTIME_RECONCILE_CONTRACT" \
+      | sed -E 's|^[^:]+:||' \
+      | sed -E 's/^([A-Z0-9_]+)="\$\{[A-Z0-9_]+:-([^}]*)\}".*/\1\t\2/'
+    printf 'TRR_DB_POOL_MINCONN\t\n'
+    printf 'TRR_DB_POOL_MAXCONN\t\n'
+    printf 'TRR_SOCIAL_PROFILE_DB_POOL_MINCONN\t\n'
+    printf 'TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN\t\n'
+    printf 'ADMIN_AUTH_EXTERNAL_TIMEOUT_MS\t3000\n'
+    printf 'TRR_INTERNAL_ADMIN_ALLOW_RAW_SECRET_FALLBACK\t\n'
+    printf 'TRR_ADMIN_ALLOW_SERVICE_ROLE\t\n'
+    printf 'TRR_INTERNAL_ADMIN_ALLOW_SERVICE_ROLE\t\n'
+  } | awk -F '\t' '!seen[$1]++' | sort
 }
 
 visibility_tier() {
   local key="$1"
   case "$key" in
     WORKSPACE_OPEN_BROWSER|WORKSPACE_CLEAN_NEXT_CACHE|WORKSPACE_BROWSER_TAB_SYNC_MODE|WORKSPACE_TRR_JOB_PLANE_MODE|WORKSPACE_TRR_REMOTE_EXECUTOR|WORKSPACE_TRR_MODAL_ENABLED|WORKSPACE_TRR_REMOTE_WORKERS_ENABLED|WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS|WORKSPACE_BACKEND_AUTO_RESTART|TRR_BACKEND_RELOAD|TRR_ADMIN_ROUTE_CACHE_DISABLED)
+      echo "common"
+      ;;
+    WORKSPACE_RUNTIME_RECONCILE_ENABLED|WORKSPACE_RUNTIME_DB_AUTO_APPLY_ENABLED|WORKSPACE_RUNTIME_MODAL_AUTO_DEPLOY|WORKSPACE_RUNTIME_EXTERNAL_VERIFY_ENABLED)
       echo "common"
       ;;
     WORKSPACE_*)
@@ -39,10 +52,25 @@ visibility_tier() {
 accepted_values() {
   local key="$1"
   case "$key" in
+    WORKSPACE_TRR_APP_POSTGRES_POOL_MAX|WORKSPACE_TRR_APP_POSTGRES_MAX_CONCURRENT_OPERATIONS)
+      echo "integer"
+      ;;
+    ADMIN_AUTH_EXTERNAL_TIMEOUT_MS)
+      echo "integer milliseconds"
+      ;;
+    TRR_DB_POOL_MINCONN|TRR_DB_POOL_MAXCONN|TRR_SOCIAL_PROFILE_DB_POOL_MINCONN|TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN)
+      echo "integer"
+      ;;
+    TRR_INTERNAL_ADMIN_ALLOW_RAW_SECRET_FALLBACK|TRR_ADMIN_ALLOW_SERVICE_ROLE|TRR_INTERNAL_ADMIN_ALLOW_SERVICE_ROLE)
+      echo '`0` or `1`'
+      ;;
     WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS)
       echo '`0` or `1`'
       ;;
     WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT|WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT|WORKSPACE_TRR_REMOTE_SOCIAL_POSTS|WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS|WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR|WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR)
+      echo "integer"
+      ;;
+    WORKSPACE_RUNTIME_DB_MAX_AUTO_APPLY)
       echo "integer"
       ;;
     ADMIN_ENFORCE_HOST|ADMIN_STRICT_HOST_ROUTING)
@@ -73,6 +101,36 @@ accepted_values() {
 description_for() {
   local key="$1"
   case "$key" in
+    WORKSPACE_TRR_APP_POSTGRES_POOL_MAX)
+      echo "Optional TRR-APP child-process override for \`POSTGRES_POOL_MAX\`. Leave unset in the default profile; set it in targeted debug profiles such as \`social-debug\`."
+      ;;
+    WORKSPACE_TRR_APP_POSTGRES_MAX_CONCURRENT_OPERATIONS)
+      echo "Optional TRR-APP child-process override for \`POSTGRES_MAX_CONCURRENT_OPERATIONS\`. Leave unset in the default profile; set it in targeted debug profiles such as \`social-debug\`."
+      ;;
+    TRR_DB_POOL_MINCONN)
+      echo "Backend default psycopg2 pool minimum for local workspace runs. Keep conservative when using the Supabase session pooler."
+      ;;
+    TRR_DB_POOL_MAXCONN)
+      echo "Backend default psycopg2 pool maximum for local workspace runs. This remains the conservative general pool, separate from the dedicated social-profile lane."
+      ;;
+    TRR_SOCIAL_PROFILE_DB_POOL_MINCONN)
+      echo "Dedicated TRR-Backend social-profile read pool minimum for local workspace runs."
+      ;;
+    TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN)
+      echo "Dedicated TRR-Backend social-profile read pool maximum for local workspace runs. This local lane may be higher than the general backend pool to keep social admin pages responsive."
+      ;;
+    ADMIN_AUTH_EXTERNAL_TIMEOUT_MS)
+      echo "Timeout for external auth fallbacks in TRR-APP, including Identity Toolkit lookup and Supabase token shadow verification."
+      ;;
+    TRR_INTERNAL_ADMIN_ALLOW_RAW_SECRET_FALLBACK)
+      echo "Dev-only backend escape hatch that allows raw shared-secret internal admin requests. Leave unset in production."
+      ;;
+    TRR_ADMIN_ALLOW_SERVICE_ROLE)
+      echo "Dev-only backend escape hatch that allows service-role tokens through human-admin routes. Leave unset in production."
+      ;;
+    TRR_INTERNAL_ADMIN_ALLOW_SERVICE_ROLE)
+      echo "Dev-only backend escape hatch that allows service-role tokens through internal-admin routes. Leave unset in production."
+      ;;
     WORKSPACE_OPEN_BROWSER)
       echo "Enable automatic browser tab sync/open after startup."
       ;;
@@ -93,6 +151,27 @@ description_for() {
       ;;
     WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS)
       echo "Enable or disable the Modal social lane in the remote execution contract; this is not a worker-count knob."
+      ;;
+    WORKSPACE_RUNTIME_RECONCILE_ENABLED)
+      echo "Enable the startup runtime reconcile phase that checks hosted DB, Modal, Render, and Decodo contracts."
+      ;;
+    WORKSPACE_RUNTIME_DB_AUTO_APPLY_ENABLED)
+      echo "Allow startup to auto-apply a bounded allowlisted Supabase migration suffix."
+      ;;
+    WORKSPACE_RUNTIME_DB_MAX_AUTO_APPLY)
+      echo "Maximum number of allowlisted pending migrations startup may auto-apply."
+      ;;
+    WORKSPACE_RUNTIME_MODAL_AUTO_DEPLOY)
+      echo "Allow startup to auto-apply Modal secrets and redeploy the app when readiness or fingerprint drift is detected."
+      ;;
+    WORKSPACE_RUNTIME_EXTERNAL_VERIFY_ENABLED)
+      echo "Enable verify-only checks for external hosted contracts such as Render and Decodo."
+      ;;
+    WORKSPACE_RUNTIME_RENDER_VERIFY_ONLY)
+      echo "Keep Render checks advisory-only during startup."
+      ;;
+    WORKSPACE_RUNTIME_DECODO_VERIFY_ONLY)
+      echo "Keep Decodo credential checks advisory-only during startup."
       ;;
     WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT)
       echo "Maximum number of queued social jobs the backend will dispatch per Modal sweep."
@@ -133,7 +212,23 @@ description_for() {
   esac
 }
 
-used_by() { echo '`scripts/dev-workspace.sh`, `Makefile`'; }
+used_by() {
+  local key="$1"
+  case "$key" in
+    TRR_DB_POOL_MINCONN|TRR_DB_POOL_MAXCONN|TRR_SOCIAL_PROFILE_DB_POOL_MINCONN|TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN)
+      echo '`TRR-Backend/trr_backend/db/pg.py`, `profiles/default.env`'
+      ;;
+    ADMIN_AUTH_EXTERNAL_TIMEOUT_MS)
+      echo '`TRR-APP/apps/web/src/lib/server/auth.ts`, `TRR-APP/apps/web/.env.example`'
+      ;;
+    TRR_INTERNAL_ADMIN_ALLOW_RAW_SECRET_FALLBACK|TRR_ADMIN_ALLOW_SERVICE_ROLE|TRR_INTERNAL_ADMIN_ALLOW_SERVICE_ROLE)
+      echo '`TRR-Backend/api/auth.py`, `TRR-Backend/.env.example`'
+      ;;
+    *)
+      echo '`scripts/dev-workspace.sh`, `Makefile`'
+      ;;
+  esac
+}
 
 profile_default_for() {
   local key="$1"
