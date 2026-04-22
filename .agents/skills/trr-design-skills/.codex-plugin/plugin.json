@@ -1,0 +1,36 @@
+{
+  "name": "trr-design-skills",
+  "version": "1.0.0",
+  "description": "Codex plugin that bundles TRR's design-system and frontend taste skills.",
+  "author": {
+    "name": "The Reality Report"
+  },
+  "homepage": "https://github.com/therealityreport/trr-workspace",
+  "repository": "https://github.com/therealityreport/trr-workspace",
+  "license": "UNLICENSED",
+  "keywords": [
+    "trr",
+    "design",
+    "frontend",
+    "skills",
+    "codex"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "TRR Design Skills",
+    "shortDescription": "TRR frontend taste and design-system skills for Codex.",
+    "longDescription": "Bundles TRR's design-system, frontend taste, redesign, and full-output skills as a Codex plugin for UI and design work.",
+    "developerName": "The Reality Report",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Use TRR Design Skills to upgrade this UI.",
+      "Apply TRR frontend taste to this page.",
+      "Generate a premium design system for this screen."
+    ],
+    "brandColor": "#111827"
+  }
+}
