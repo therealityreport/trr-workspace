@@ -17,9 +17,11 @@ Visibility tiers:
 |---|---|---|---|---|---|
 | `ADMIN_APP_HOSTS` | `admin.localhost,localhost,127.0.0.1,[::1]` | string | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `ADMIN_APP_ORIGIN` | `http://admin.localhost:3000` | string | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
+| `ADMIN_AUTH_EXTERNAL_TIMEOUT_MS` | `3000` | integer milliseconds | `TRR-APP/apps/web/src/lib/server/auth.ts`, `TRR-APP/apps/web/.env.example` | `internal` | Timeout for external auth fallbacks in TRR-APP, including Identity Toolkit lookup and Supabase token shadow verification. |
 | `ADMIN_ENFORCE_HOST` | `true` | `true` or `false` | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `ADMIN_STRICT_HOST_ROUTING` | `false` | `true` or `false` | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `PROFILE` | `` | string | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
+| `TRR_ADMIN_ALLOW_SERVICE_ROLE` | `` | `0` or `1` | `TRR-Backend/api/auth.py`, `TRR-Backend/.env.example` | `internal` | Dev-only backend escape hatch that allows service-role tokens through human-admin routes. Leave unset in production. |
 | `TRR_ADMIN_ROUTE_CACHE_DISABLED` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Disable Next.js in-memory admin route caching during managed local workspace runs. |
 | `TRR_APP_HOST` | `127.0.0.1` | string | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `TRR_APP_PORT` | `3000` | integer port | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
@@ -27,8 +29,14 @@ Visibility tiers:
 | `TRR_BACKEND_RELOAD` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable backend reload mode (1) instead of non-reload server mode (0). |
 | `TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `TRR_BACKEND_WORKERS` | `1` | integer | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
+| `TRR_DB_POOL_MAXCONN` | `8` | integer | `TRR-Backend/trr_backend/db/pg.py`, `profiles/default.env` | `internal` | Backend default psycopg2 pool maximum for local workspace runs. This remains the conservative general pool, separate from the dedicated social-profile lane. |
+| `TRR_DB_POOL_MINCONN` | `2` | integer | `TRR-Backend/trr_backend/db/pg.py`, `profiles/default.env` | `internal` | Backend default psycopg2 pool minimum for local workspace runs. Keep conservative when using the Supabase session pooler. |
+| `TRR_INTERNAL_ADMIN_ALLOW_RAW_SECRET_FALLBACK` | `` | `0` or `1` | `TRR-Backend/api/auth.py`, `TRR-Backend/.env.example` | `internal` | Dev-only backend escape hatch that allows raw shared-secret internal admin requests. Leave unset in production. |
+| `TRR_INTERNAL_ADMIN_ALLOW_SERVICE_ROLE` | `` | `0` or `1` | `TRR-Backend/api/auth.py`, `TRR-Backend/.env.example` | `internal` | Dev-only backend escape hatch that allows service-role tokens through internal-admin routes. Leave unset in production. |
 | `TRR_REDDIT_CACHE_LOOKUP_RETRIES` | `1` | integer | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `TRR_REDDIT_CACHE_LOOKUP_TIMEOUT_MS` | `20000` | integer | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
+| `TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN` | `8` | integer | `TRR-Backend/trr_backend/db/pg.py`, `profiles/default.env` | `internal` | Dedicated TRR-Backend social-profile read pool maximum for local workspace runs. This local lane may be higher than the general backend pool to keep social admin pages responsive. |
+| `TRR_SOCIAL_PROFILE_DB_POOL_MINCONN` | `2` | integer | `TRR-Backend/trr_backend/db/pg.py`, `profiles/default.env` | `internal` | Dedicated TRR-Backend social-profile read pool minimum for local workspace runs. |
 | `TRR_SOCIAL_PROXY_DEFAULT_TIMEOUT_MS` | `25000` | integer | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `TRR_SOCIAL_PROXY_LONG_TIMEOUT_MS` | `60000` | integer | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS` | `10000` | integer | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
@@ -47,6 +55,13 @@ Visibility tiers:
 | `WORKSPACE_HEALTH_TIMEOUT_APP` | `60` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_HEALTH_TIMEOUT_BACKEND` | `30` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_OPEN_BROWSER` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable automatic browser tab sync/open after startup. |
+| `WORKSPACE_RUNTIME_DB_AUTO_APPLY_ENABLED` | `1` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Allow startup to auto-apply a bounded allowlisted Supabase migration suffix. |
+| `WORKSPACE_RUNTIME_DB_MAX_AUTO_APPLY` | `3` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Maximum number of allowlisted pending migrations startup may auto-apply. |
+| `WORKSPACE_RUNTIME_DECODO_VERIFY_ONLY` | `1` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Keep Decodo credential checks advisory-only during startup. |
+| `WORKSPACE_RUNTIME_EXTERNAL_VERIFY_ENABLED` | `1` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable verify-only checks for external hosted contracts such as Render and Decodo. |
+| `WORKSPACE_RUNTIME_MODAL_AUTO_DEPLOY` | `1` | string | `scripts/dev-workspace.sh`, `Makefile` | `common` | Allow startup to auto-apply Modal secrets and redeploy the app when readiness or fingerprint drift is detected. |
+| `WORKSPACE_RUNTIME_RECONCILE_ENABLED` | `1` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable the startup runtime reconcile phase that checks hosted DB, Modal, Render, and Decodo contracts. |
+| `WORKSPACE_RUNTIME_RENDER_VERIFY_ONLY` | `1` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Keep Render checks advisory-only during startup. |
 | `WORKSPACE_SOCIAL_WORKER_COMMENTS` | `1` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_SOCIAL_WORKER_COMMENT_MEDIA_MIRROR` | `0` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_SOCIAL_WORKER_ENABLED` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
@@ -56,6 +71,8 @@ Visibility tiers:
 | `WORKSPACE_SOCIAL_WORKER_POSTS` | `1` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_STRICT` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_TRR_APP_DEV_BUNDLER` | `webpack` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
+| `WORKSPACE_TRR_APP_POSTGRES_MAX_CONCURRENT_OPERATIONS` | `8` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Optional TRR-APP child-process override for `POSTGRES_MAX_CONCURRENT_OPERATIONS`. Leave unset in the default profile; set it in targeted debug profiles such as `social-debug`. |
+| `WORKSPACE_TRR_APP_POSTGRES_POOL_MAX` | `8` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Optional TRR-APP child-process override for `POSTGRES_POOL_MAX`. Leave unset in the default profile; set it in targeted debug profiles such as `social-debug`. |
 | `WORKSPACE_TRR_INTERNAL_ADMIN_SHARED_SECRET` | `$(workspace_local_auth_secret internal-admin)` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_TRR_JOB_PLANE_MODE` | `remote` | `local` or `remote` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Long-job ownership mode (`local` API-owned or `remote` worker-owned). |
 | `WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE` | `1` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |

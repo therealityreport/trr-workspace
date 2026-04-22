@@ -9,6 +9,7 @@ Use these commands from `/Users/thomashulihan/Projects/TRR`.
 
 ## Daily Commands
 - `make dev` — recommended default workspace startup (cloud-first; no Docker required for normal backend/app work)
+- `PROFILE=social-debug make dev` — tracked low-pressure social-profile validation lane; uses the same launcher but projects reduced app pool settings and lighter social dispatch caps without relying on ignored app-local env files
 - `make preflight` — local startup gate; warns on malformed handoff source docs and stale generated env docs but still blocks on runtime-affecting issues
 - `make preflight-strict` — blocking validation path for malformed handoff source docs and env-contract drift
 - `make handoff-check` — canonical blocking handoff/status snapshot validator
@@ -56,5 +57,9 @@ Browser automation warnings now come from the same structured readiness states u
 The same default profile now runs TRR long jobs on the remote Modal executor by default. Shared-account Instagram `Sync Recent`, `Resume Tail`, and `Backfill Posts` should use Modal-owned dispatch unless you explicitly override the workspace profile for rollback/debug.
 
 For migration or schema validation, prefer an isolated Supabase branch or disposable database target and point `TRR_DB_URL` there before running backend verification commands. Do not aim destructive replay or reset flows at shared persistent databases.
+
+`make dev` now includes a startup runtime-reconcile phase before app/backend launch. It can auto-apply only a bounded allowlisted Supabase migration suffix and can auto-redeploy Modal only when secrets/readiness/fingerprint drift is detected. It does not auto-run `supabase migration repair`, schema-doc checks, Render deploys, or tracked-doc refreshes.
+
+If runtime reconcile blocks on Supabase history drift, use `/Users/thomashulihan/Projects/TRR/TRR-Backend/docs/runbooks/supabase_migration_history_repair.md`. If runtime reconcile blocks on Modal, inspect `python TRR-Backend/scripts/modal/verify_modal_readiness.py --json --probe-remote-auth instagram` for blocking readiness, then add `--probe-getty-remote-access` when you want advisory Getty transport diagnostics. `make status` now surfaces the nested Getty probe under the Modal runtime section. Render and Decodo checks remain advisory-only and are surfaced there as well.
 
 For startup tuning and env overrides, see `/Users/thomashulihan/Projects/TRR/docs/workspace/env-contract.md`.
