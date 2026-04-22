@@ -10,6 +10,7 @@ source "$ROOT/scripts/lib/preflight-browser-attention.sh"
 source "$ROOT/scripts/lib/preflight-env-contract.sh"
 source "$ROOT/scripts/lib/preflight-handoff.sh"
 source "$ROOT/scripts/lib/runtime-db-env.sh"
+source "$ROOT/scripts/lib/workspace-runtime-reconcile-contract.sh"
 source "$ROOT/scripts/lib/chrome-devtools-status.sh"
 source "$ROOT/scripts/lib/workspace-terminal.sh"
 
@@ -270,6 +271,15 @@ if ! trr_runtime_db_require_local_app_url "$ROOT" "preflight"; then
 fi
 
 run_preflight_phase "doctor" "[preflight] Running workspace doctor..." env WORKSPACE_DEV_MODE="$WORKSPACE_DEV_MODE" WORKSPACE_PREFLIGHT_STRICT="$WORKSPACE_PREFLIGHT_STRICT" bash "$ROOT/scripts/doctor.sh"
+
+runtime_reconcile_output=""
+runtime_reconcile_rc=0
+run_preflight_phase_capture runtime_reconcile_output "runtime-reconcile" "[preflight] Reconciling runtime contracts (db, Modal, Render, Decodo; this can pause briefly while readiness probes run)..." python3 "$ROOT/scripts/workspace-runtime-reconcile.py" || runtime_reconcile_rc="$?"
+if [[ "$runtime_reconcile_rc" != "0" ]]; then
+  printf '%s\n' "$runtime_reconcile_output"
+  exit "$runtime_reconcile_rc"
+fi
+emit_preflight_phase_output "runtime-reconcile" 0 "$runtime_reconcile_output"
 
 env_contract_output=""
 env_contract_rc=0

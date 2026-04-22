@@ -5,7 +5,9 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LOG_DIR="${ROOT}/.logs/workspace"
 PIDFILE="${LOG_DIR}/pids.env"
 BACKEND_WATCHDOG_STATE_FILE="${LOG_DIR}/backend-watchdog.env"
+RUNTIME_RECONCILE_FILE="${LOG_DIR}/runtime-reconcile.json"
 source "${ROOT}/scripts/lib/mcp-runtime.sh"
+source "${ROOT}/scripts/lib/workspace-runtime-reconcile-contract.sh"
 source "${ROOT}/scripts/lib/workspace-health.sh"
 
 OUTPUT_FORMAT="text"
@@ -354,6 +356,73 @@ json_escape() {
   printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g; s/\t/\\t/g; s/\r/\\r/g; s/\n/\\n/g'
 }
 
+runtime_reconcile_json() {
+  python3 - "$RUNTIME_RECONCILE_FILE" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+if not path.is_file():
+    print("null")
+    raise SystemExit(0)
+try:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+except Exception:
+    print("null")
+    raise SystemExit(0)
+print(json.dumps(payload, sort_keys=True))
+PY
+}
+
+runtime_reconcile_text() {
+  python3 - "$RUNTIME_RECONCILE_FILE" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+print("[status] Runtime reconcile:")
+if not path.is_file():
+    print("  overall_state: n/a")
+    raise SystemExit(0)
+try:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+except Exception:
+    print("  overall_state: unavailable")
+    raise SystemExit(0)
+
+print(f"  overall_state: {payload.get('overall_state') or 'unknown'}")
+print(f"  summary: {payload.get('summary') or 'n/a'}")
+for name in ("db", "modal", "render", "decodo"):
+    component = payload.get(name) or {}
+    print(f"  {name}: {component.get('state') or 'n/a'}")
+    if component.get("reason"):
+        print(f"    reason: {component['reason']}")
+    if component.get("remediation"):
+        print(f"    remediation: {component['remediation']}")
+    if name == "modal":
+        readiness = component.get("readiness") or {}
+        if isinstance(readiness, dict) and readiness:
+            if readiness.get("core_ok") is not None:
+                print(f"    core_ready: {bool(readiness.get('core_ok'))}")
+            probe = readiness.get("getty_remote_probe") or {}
+            if isinstance(probe, dict) and probe:
+                probe_ready = probe.get("ready") is True
+                probe_reason = probe.get("reason")
+                probe_state = "healthy" if probe_ready else "blocked"
+                if probe_reason == "proxy_unconfigured":
+                    probe_state = "disabled"
+                print(f"    getty_remote_probe: {probe_state}")
+                if probe_reason:
+                    print(f"      reason: {probe_reason}")
+                if probe.get("transport_mode"):
+                    print(f"      transport_mode: {probe['transport_mode']}")
+                if probe.get("proxy_fingerprint"):
+                    print(f"      proxy_fingerprint: {probe['proxy_fingerprint']}")
+PY
+}
+
 codex_owner_label() {
   local owner="$1"
   case "$owner" in
@@ -530,6 +599,7 @@ if [[ "$OUTPUT_FORMAT" == "json" ]]; then
     "modal_social_max_concurrency": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT:-}")")",
     "modal_social_stage_caps": "$(json_escape "$(status_modal_social_stage_caps)")"
   },
+  "runtime_reconcile": $(runtime_reconcile_json),
   "codex_runtime": {
     "app_servers": $(build_codex_runtime_json)
   },
@@ -620,6 +690,8 @@ if status_modal_remote_active; then
   echo "  modal_social: $(modal_social_runtime_summary)"
 fi
 echo ""
+runtime_reconcile_text
+echo ""
 echo "[status] Codex shared-state runtime:"
 if [[ "$CODEX_APP_SERVER_COUNT" == "0" ]]; then
   echo "  app_servers: none detected"
@@ -630,7 +702,7 @@ else
   done <<<"$CODEX_APP_SERVER_ROWS"
 fi
 
-if [[ "${BACKEND_HEALTH_STATUS}" == "hung/unresponsive" ]]; then
+if [[ "${BACKEND_READINESS_STATUS}" == "hung/unresponsive" ]]; then
   echo ""
   if [[ "${WORKSPACE_BACKEND_AUTO_RESTART:-1}" == "1" ]]; then
     echo "[status] Recommendation: backend appears hung; watchdog is enabled. Check '${LOG_DIR}/trr-backend.log' and '${LOG_DIR}/backend-watchdog-events.jsonl'."

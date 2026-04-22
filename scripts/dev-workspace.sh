@@ -5,6 +5,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
 source "$ROOT/scripts/lib/runtime-db-env.sh"
+source "$ROOT/scripts/lib/workspace-runtime-reconcile-contract.sh"
 source "$ROOT/scripts/lib/workspace-health.sh"
 source "$ROOT/scripts/lib/workspace-port-cleanup.sh"
 source "$ROOT/scripts/lib/workspace-terminal.sh"
@@ -76,6 +77,8 @@ WORKSPACE_STRICT="${WORKSPACE_STRICT:-0}"
 WORKSPACE_FORCE_KILL_PORT_CONFLICTS="${WORKSPACE_FORCE_KILL_PORT_CONFLICTS:-0}"
 WORKSPACE_CLEAN_NEXT_CACHE="${WORKSPACE_CLEAN_NEXT_CACHE:-0}"
 WORKSPACE_TRR_APP_DEV_BUNDLER="${WORKSPACE_TRR_APP_DEV_BUNDLER:-turbopack}"
+WORKSPACE_TRR_APP_POSTGRES_POOL_MAX="${WORKSPACE_TRR_APP_POSTGRES_POOL_MAX:-}"
+WORKSPACE_TRR_APP_POSTGRES_MAX_CONCURRENT_OPERATIONS="${WORKSPACE_TRR_APP_POSTGRES_MAX_CONCURRENT_OPERATIONS:-}"
 WORKSPACE_OPEN_BROWSER="${WORKSPACE_OPEN_BROWSER:-0}"
 WORKSPACE_BROWSER_TAB_SYNC_MODE="${WORKSPACE_BROWSER_TAB_SYNC_MODE:-reuse_no_reload}"
 WORKSPACE_HEALTH_CURL_MAX_TIME="${WORKSPACE_HEALTH_CURL_MAX_TIME:-2}"
@@ -663,6 +666,65 @@ start_bg_no_setsid_with_label() {
   echo "[workspace] ${display_name} started (pid=${pid})"
 }
 
+# Forward backend [db-pool] events from $TRR_BACKEND_LOG to the workspace terminal
+# (stderr) so pool contention, statement timeouts, and acquire failures surface
+# live alongside [workspace] status messages. The backend already emits these via
+# trr_backend.db.pg (logger.warning / logger.exception) but they were only
+# reaching the log file, not the dev terminal.
+#
+# Toggles:
+#   WORKSPACE_FORWARD_DB_POOL_EVENTS=0  disable forwarding entirely (default: 1)
+#   WORKSPACE_FORWARD_DB_POOL_VERBOSE=1  also forward the chatty acquire_start events (default: 0)
+start_db_pool_log_forwarder() {
+  if [[ "${WORKSPACE_FORWARD_DB_POOL_EVENTS:-1}" != "1" ]]; then
+    return 0
+  fi
+  if [[ "${DB_POOL_FORWARDER_STARTED:-0}" == "1" ]]; then
+    return 0
+  fi
+
+  # Ensure the file exists so tail -F does not race with the first backend write.
+  : >>"$TRR_BACKEND_LOG"
+
+  local filter_pattern
+  if [[ "${WORKSPACE_FORWARD_DB_POOL_VERBOSE:-0}" == "1" ]]; then
+    filter_pattern='\[db-pool\]'
+  else
+    # Default filter: surface contention and failure signals; exclude acquire_start,
+    # acquire_ok, and pool_checkout_ok which fire per-query and would flood the terminal.
+    filter_pattern='\[db-pool\] (acquire_failed|statement_timeout|discard_failed|autocommit_restore_failed|pool_exhausted|pool_state|session_pool_capacity|pool_initialization_failed)'
+  fi
+
+  # Script is single-quoted so $1/$2 are resolved by the spawned bash -c, not the parent.
+  local forwarder_script='
+set -u
+log_path="$1"
+filter="$2"
+tail -Fn0 "$log_path" 2>/dev/null \
+  | grep --line-buffered -E "$filter" \
+  | while IFS= read -r line; do
+      printf "[backend] %s\n" "$line" >&2
+    done
+'
+
+  if [[ "$USE_SETSID" -eq 1 ]]; then
+    setsid "$BASH_BIN" -c "$forwarder_script" _ "$TRR_BACKEND_LOG" "$filter_pattern" &
+  elif [[ -n "$PY_SETSID" ]]; then
+    "$PY_SETSID" -c 'import os, sys; os.setsid(); os.execvp(sys.argv[1], sys.argv[1:])' \
+      "$BASH_BIN" -c "$forwarder_script" _ "$TRR_BACKEND_LOG" "$filter_pattern" &
+  else
+    "$BASH_BIN" -c "$forwarder_script" _ "$TRR_BACKEND_LOG" "$filter_pattern" &
+  fi
+
+  local pid=$!
+  PIDS+=("$pid")
+  NAMES+=("DB_POOL_FORWARDER")
+  LAST_STARTED_PID="$pid"
+  write_pidfile_runtime_value "DB_POOL_FORWARDER_PID" "$pid"
+  DB_POOL_FORWARDER_STARTED=1
+  echo "[workspace] db-pool event forwarder started (pid=${pid})"
+}
+
 write_pidfile_runtime_value() {
   local key="$1"
   local value="$2"
@@ -781,6 +843,40 @@ workspace_startup_runtime_summary() {
     "$(workspace_startup_remote_execution_summary)"
 }
 
+runtime_reconcile_artifact_path() {
+  echo "${ROOT}/.logs/workspace/runtime-reconcile.json"
+}
+
+runtime_reconcile_startup_summary() {
+  local artifact_path
+  artifact_path="$(runtime_reconcile_artifact_path)"
+  if [[ ! -f "$artifact_path" ]]; then
+    echo "n/a"
+    return 0
+  fi
+  python3 - "$artifact_path" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+try:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+except Exception:
+    print("unavailable")
+    raise SystemExit(0)
+
+state = str(payload.get("overall_state") or "unknown").strip() or "unknown"
+summary = str(payload.get("summary") or "").strip()
+if state == "ok":
+    print("ok")
+elif summary:
+    print(f"{state}: {summary}")
+else:
+    print(state)
+PY
+}
+
 print_workspace_ready_summary() {
   echo ""
   echo "[workspace] Ready:"
@@ -789,6 +885,7 @@ print_workspace_ready_summary() {
   echo "    TRR-APP Admin:       ${ADMIN_APP_ORIGIN}"
   echo "    TRR-Backend:         ${TRR_API_URL}"
   echo "  Summary: $(workspace_startup_runtime_summary)"
+  echo "  Runtime reconcile: $(runtime_reconcile_startup_summary)"
   echo "  Logs:"
   echo "    ${TRR_APP_LOG}"
   echo "    ${TRR_BACKEND_LOG}"
@@ -857,6 +954,11 @@ start_trr_backend() {
   BACKEND_HEALTH_BUSY_TIMEOUT_STREAK_COUNT=0
   BACKEND_LAST_HEALTH_CHECK_AT=0
   write_pidfile_runtime_value "TRR_BACKEND_PID" "$TRR_BACKEND_PID"
+
+  # Surface backend [db-pool] events (acquire_failed, statement_timeout, etc.) to
+  # the dev terminal. Guarded so repeated start_trr_backend calls (auto-restart
+  # flow) do not spawn duplicate forwarders.
+  start_db_pool_log_forwarder
 }
 
 trr_app_next_cache_has_recoverable_errors() {
@@ -922,6 +1024,8 @@ start_trr_app() {
     TRR_LOCAL_DEV=1 \
     TRR_DB_URL=\"$TRR_DB_URL\" \
     TRR_DB_FALLBACK_URL=\"${TRR_DB_FALLBACK_URL:-}\" \
+    POSTGRES_POOL_MAX=\"${WORKSPACE_TRR_APP_POSTGRES_POOL_MAX:-${POSTGRES_POOL_MAX:-}}\" \
+    POSTGRES_MAX_CONCURRENT_OPERATIONS=\"${WORKSPACE_TRR_APP_POSTGRES_MAX_CONCURRENT_OPERATIONS:-${POSTGRES_MAX_CONCURRENT_OPERATIONS:-}}\" \
     TRR_API_URL=\"$TRR_API_URL\" \
     TRR_INTERNAL_ADMIN_SHARED_SECRET=\"$WORKSPACE_TRR_INTERNAL_ADMIN_SHARED_SECRET\" \
     TRR_ADMIN_ROUTE_CACHE_DISABLED=\"$TRR_ADMIN_ROUTE_CACHE_DISABLED\" \
@@ -1114,6 +1218,13 @@ write_backend_watchdog_state
   echo "WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR=${WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR}"
   echo "WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS=${WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS}"
   echo "WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_LEASE_SECONDS=${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_LEASE_SECONDS}"
+  echo "WORKSPACE_RUNTIME_RECONCILE_ENABLED=${WORKSPACE_RUNTIME_RECONCILE_ENABLED}"
+  echo "WORKSPACE_RUNTIME_DB_AUTO_APPLY_ENABLED=${WORKSPACE_RUNTIME_DB_AUTO_APPLY_ENABLED}"
+  echo "WORKSPACE_RUNTIME_DB_MAX_AUTO_APPLY=${WORKSPACE_RUNTIME_DB_MAX_AUTO_APPLY}"
+  echo "WORKSPACE_RUNTIME_MODAL_AUTO_DEPLOY=${WORKSPACE_RUNTIME_MODAL_AUTO_DEPLOY}"
+  echo "WORKSPACE_RUNTIME_EXTERNAL_VERIFY_ENABLED=${WORKSPACE_RUNTIME_EXTERNAL_VERIFY_ENABLED}"
+  echo "WORKSPACE_RUNTIME_RENDER_VERIFY_ONLY=${WORKSPACE_RUNTIME_RENDER_VERIFY_ONLY}"
+  echo "WORKSPACE_RUNTIME_DECODO_VERIFY_ONLY=${WORKSPACE_RUNTIME_DECODO_VERIFY_ONLY}"
   echo "PROFILE=\"${PROFILE}\""
   echo "TRR_BACKEND_WORKERS=${TRR_BACKEND_WORKERS}"
   echo "TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER=${TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER}"
