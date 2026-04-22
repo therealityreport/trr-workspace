@@ -4,7 +4,7 @@
 
 **Goal:** Close the unresolved Instagram posts, media, and comments bugs from the 2026-04-21 inventory using the current `TRR-Backend` contracts, with safe schema sequencing, repo-accurate tests, and no stale-task drift.
 
-**Architecture:** Land this in dependency order. First lock the database and queue contracts: global active media-mirror dedupe for any local Instagram account/run, and composite Instagram comment identity keyed by `(post_id, comment_id)`. Then harden shared primitives already used by multiple lanes. After that, fix media/download correctness, then posts/runtime correctness, then comments/runtime correctness, and finish with focused coverage plus operator-facing validation. Reuse existing writer paths such as `_update_platform_post_media_asset_meta(...)`; do not create duplicate contracts when the repo already has one.
+**Architecture:** Land this in dependency order. First lock the database and queue contracts: global active media-mirror dedupe for any local Instagram account/run, and verification that the deployed Modal comments lane is actually running the repo's landed composite Instagram comment identity contract keyed by `(post_id, comment_id)`. Then harden shared primitives already used by multiple lanes. After that, fix media/download correctness, then posts/runtime correctness, then comments/runtime correctness, and finish with focused coverage plus operator-facing validation. Reuse existing writer paths such as `_update_platform_post_media_asset_meta(...)`; do not create duplicate contracts when the repo already has one.
 
 **Tech Stack:** Python 3.11, FastAPI, Supabase/Postgres, requests, httpx, Playwright/Patchright, Scrapling, boto3/botocore, pytest, ruff
 
@@ -21,6 +21,9 @@ The major corrections are:
 3. Stale tasks were removed or rewritten. This plan does **not** re-fix already-fixed `csrftoken` behavior in posts Scrapling, and it does **not** keep the old unbound-`fetcher` cleanup task for comments Scrapling.
 4. Existing repo contracts stay canonical. `asset_manifest` continues to flow through `_update_platform_post_media_asset_meta(...)`; the plan verifies and strengthens that path instead of inventing a second writer.
 5. `hosted_tagged_profile_pics` shape upgrades are still included, but only after adding downgrade-safe readers across the current repo.
+6. The 2026-04-21 `InvalidColumnReference` / `ON CONFLICT` failure in full-account Instagram comments syncs was **not** a missing database constraint. `social.instagram_comments` already has `instagram_comments_post_comment_unique` in the live schema and current repo code. The failing runs were executing stale deployed Modal code until `trr_backend.modal_jobs` was redeployed.
+7. Comments-lane validation now has an explicit runtime sequence: `scripts/modal/verify_modal_readiness.py`, redeploy `trr_backend.modal_jobs`, run a one-shortcode remote comments diagnostic, then run the full-account comments sync. The old plan skipped the deploy-drift proof step.
+8. The active remaining blocker in the comments lane is remote browser warmup instability, currently surfacing as `Page.goto: net::ERR_TIMED_OUT` against `https://www.instagram.com/`. Task 11 is rewritten to harden and classify that path instead of treating `ON CONFLICT` as the open issue.
 
 ## File Structure
 
@@ -54,6 +57,8 @@ The major corrections are:
 | `TRR-Backend/trr_backend/socials/crawlee_runtime/runtime.py` | Bounded thread join after explicit timeout plumbing |
 | `TRR-Backend/scripts/socials/worker.py` | Stale-worker claim reclaim + queue-loop verification |
 | `TRR-Backend/trr_backend/socials/control_plane/dispatch_runtime.py` | Claim-path reuse verification only if needed |
+| `TRR-Backend/trr_backend/modal_jobs.py` | Deployed Modal job entrypoints and browser image bindings for social lanes |
+| `TRR-Backend/trr_backend/modal_dispatch.py` | Stage-to-function resolution and operator-visible Modal dispatch metadata |
 
 ### Operational Scripts
 
@@ -64,6 +69,9 @@ The major corrections are:
 | `TRR-Backend/scripts/socials/retire_stale_instagram_media_mirror_failures.py` | Retire obsolete, non-retryable failed mirror jobs |
 | `TRR-Backend/scripts/socials/backfill_instagram_profile_avatars.py` | TTL semantics for `skipped_unsupported` + object-map reader compatibility |
 | `TRR-Backend/scripts/socials/instagram/comments_scrape_cli.py` | Runtime metadata whitelist + env-backed defaults |
+| `TRR-Backend/scripts/modal/verify_modal_readiness.py` | Verify deployed Modal app/functions before live Instagram comments validation |
+| `TRR-Backend/scripts/modal/diagnose_instagram_comments_remote.py` | One-shortcode remote comments probe that distinguishes stale deploys from live browser failures |
+| `TRR-Backend/scripts/modal/repair_instagram_auth.py` | Existing auth repair sequence reused when comments warmup points to remote session drift |
 | `TRR-Backend/docs/observability/media_mirror_alerts.md` | Operator-facing failed-backlog alert recipe |
 
 ### Tests
@@ -71,8 +79,7 @@ The major corrections are:
 | Path | Responsibility |
 |---|---|
 | `TRR-Backend/tests/repositories/test_enqueue_platform_media_mirror_job_dedupes.py` | Cross-run mirror dedupe regression |
-| `TRR-Backend/tests/repositories/test_pg_upsert_many_composite_conflict.py` | Composite conflict clause support |
-| `TRR-Backend/tests/repositories/test_instagram_comment_identity_contract.py` | Composite upsert + comment-media lookup/update identity |
+| `TRR-Backend/tests/repositories/test_instagram_comment_identity_contract.py` | Live composite identity contract and downstream comment lookup/update identity |
 | `TRR-Backend/tests/repositories/test_social_season_analytics.py` | Existing broad repository coverage extended where it already has seams |
 | `TRR-Backend/tests/repositories/test_media_assets_mirroring.py` | Hosted-field validation + retry-window filtering |
 | `TRR-Backend/tests/repositories/test_social_mirror_repairs.py` | Existing asset-manifest contract coverage |
@@ -88,12 +95,16 @@ The major corrections are:
 | `TRR-Backend/tests/scripts/test_backfill_instagram_profile_avatars.py` | TTL + object-shape reader compatibility |
 | `TRR-Backend/tests/scripts/test_retire_stale_instagram_media_mirror_failures.py` | Stale mirror failure retirement |
 | `TRR-Backend/tests/scripts/test_social_worker.py` | Claim/reclaim behavior |
+| `TRR-Backend/tests/scripts/test_verify_modal_readiness.py` | Modal readiness output and comments-lane preflight guardrails |
+| `TRR-Backend/tests/test_modal_dispatch.py` | Stage-specific Modal function routing and drift-visible dispatch metadata |
+| `TRR-Backend/tests/test_modal_jobs.py` | Modal entrypoint/runtime wiring regression coverage |
 
 ## Deliberately Removed From the Older Draft
 
 - The old "per-request `csrftoken` header" task is removed because the current posts Scrapling fetcher already reads `csrftoken` fresh per call.
 - The old unbound-`fetcher` cleanup task is removed because the current comments Scrapling runner no longer has that shape.
 - `asset_manifest` is not reimplemented from scratch; the current writer path is retained and strengthened.
+- The old "missing Instagram comment unique constraint" explanation is removed. `instagram_comments_post_comment_unique` is already part of the repo/live contract; deploy drift and remote browser warmup are the real remaining comments blockers.
 
 ---
 
@@ -273,261 +284,145 @@ git commit -m "fix(instagram): globally dedupe active media mirror jobs"
 
 ---
 
-### Task 2: Instagram Comment Identity Contract on `(post_id, comment_id)`
+### Task 2: Lock the Deployed Instagram Comments Contract and Modal Drift Guardrails
 
-Closes: Comments #5, Comments D1, Comments D2, Comments D3, plus the audit follow-up that identity fixes must include lookup/update paths and comment-media flows, not just upserts.
+Closes: Comments #5, Comments D1, Comments D2, Comments D3, plus the audit follow-up that the 2026-04-21 `InvalidColumnReference` failure was stale deployed Modal code, not a missing live constraint.
 
 **Files:**
-- Create: `TRR-Backend/supabase/migrations/20260421131000_instagram_comments_post_comment_unique.sql`
-- Create: `TRR-Backend/supabase/migrations/20260421132000_instagram_comments_nullable_text_deleted_at.sql`
-- Create: `TRR-Backend/supabase/migrations/20260421133000_instagram_comments_parent_same_post_trigger.sql`
-- Modify: `TRR-Backend/trr_backend/repositories/social_season_analytics.py`
-- Modify: `TRR-Backend/trr_backend/socials/instagram/comments_scrapling/persistence.py`
-- Create: `TRR-Backend/tests/repositories/test_pg_upsert_many_composite_conflict.py`
-- Create: `TRR-Backend/tests/repositories/test_instagram_comment_identity_contract.py`
+- Modify: `TRR-Backend/tests/repositories/test_instagram_comment_identity_contract.py`
+- Modify: `TRR-Backend/trr_backend/modal_dispatch.py`
+- Modify: `TRR-Backend/scripts/modal/verify_modal_readiness.py`
+- Modify: `TRR-Backend/scripts/modal/diagnose_instagram_comments_remote.py`
+- Modify: `TRR-Backend/tests/scripts/test_verify_modal_readiness.py`
+- Modify: `TRR-Backend/tests/test_modal_dispatch.py`
 
-- [ ] **Step 1: Write the failing `_pg_upsert_many(...)` composite-conflict test against the real helper seam**
-
-```python
-from trr_backend.repositories import social_season_analytics as social_repo
-
-
-def test_pg_upsert_many_accepts_composite_conflict_cols(monkeypatch) -> None:
-    captured: dict[str, object] = {}
-
-    def _fake_execute_values_returning(sql, values, conn=None):
-        captured["sql"] = sql
-        captured["values"] = values
-        return []
-
-    monkeypatch.setattr(social_repo.pg, "execute_values_returning", _fake_execute_values_returning)
-
-    social_repo._pg_upsert_many(
-        "instagram_comments",
-        [{"post_id": "p1", "comment_id": "c1", "text": "hello"}],
-        conflict_col=["post_id", "comment_id"],
-    )
-
-    assert "on conflict (post_id, comment_id)" in str(captured["sql"]).lower()
-```
-
-- [ ] **Step 2: Write the failing identity regression that upserts the same external comment id on different posts and exercises comment-media lookup**
+- [ ] **Step 1: Extend repo and Modal-preflight regressions so the plan proves schema truth before another live comments run**
 
 ```python
 from trr_backend.repositories import social_season_analytics as social_repo
 
 
-def test_instagram_comment_identity_allows_same_comment_id_on_different_posts(live_test_db) -> None:
-    first = social_repo.pg.execute_returning(
+def test_instagram_comment_identity_contract_keeps_live_post_comment_unique(live_test_db) -> None:
+    rows = social_repo.pg.fetch_all(
         """
-        insert into social.instagram_comments (
-          id, comment_id, post_id, username, text, likes, is_reply, reply_count, scraped_at
-        )
-        values (
-          gen_random_uuid(), 'same-comment', %s::uuid, 'alpha', 'one', 0, false, 0, now()
-        )
-        returning id::text as id
-        """,
-        ["11111111-1111-1111-1111-111111111111"],
-    )
-    second = social_repo.pg.execute_returning(
+        select conname
+        from pg_constraint
+        where conrelid = 'social.instagram_comments'::regclass
+          and conname = 'instagram_comments_post_comment_unique'
         """
-        insert into social.instagram_comments (
-          id, comment_id, post_id, username, text, likes, is_reply, reply_count, scraped_at
-        )
-        values (
-          gen_random_uuid(), 'same-comment', %s::uuid, 'beta', 'two', 0, false, 0, now()
-        )
-        returning id::text as id
-        """,
-        ["22222222-2222-2222-2222-222222222222"],
     )
 
-    assert first[0]["id"] != second[0]["id"]
+    assert rows == [{"conname": "instagram_comments_post_comment_unique"}]
 ```
 
-- [ ] **Step 3: Run the focused repo tests and verify failure**
+```python
+def test_verify_modal_readiness_requires_comments_function_when_social_jobs_are_enabled(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        cli,
+        "get_app_function_handles",
+        lambda *, app_name, modal_environment="": {
+            "serve_backend_api": _StubFunctionHandle(web_url="https://workspace--trr-backend-api.modal.run"),
+            "run_social_job": _StubFunctionHandle(),
+        },
+    )
+
+    summary = cli.verify_modal_readiness(
+        app_name="trr-backend-jobs",
+        runtime_secret_name="trr-backend-runtime",
+        social_secret_name="trr-social-auth",
+        function_names=("serve_backend_api", "run_social_job", "run_social_comments_job"),
+    )
+
+    assert summary["ok"] is False
+    assert summary["missing_functions"] == ["run_social_comments_job"]
+```
+
+- [ ] **Step 2: Run the focused local regressions and confirm the repo contract passes before touching Modal runtime code**
 
 Run:
 
 ```bash
 cd /Users/thomashulihan/Projects/TRR/TRR-Backend
 pytest -q \
-  tests/repositories/test_pg_upsert_many_composite_conflict.py \
-  tests/repositories/test_instagram_comment_identity_contract.py
+  tests/repositories/test_instagram_comment_identity_contract.py \
+  tests/scripts/test_verify_modal_readiness.py \
+  tests/test_modal_dispatch.py -k "instagram_comment_identity_contract or comments_function or stage_specific_function"
 ```
 
-Expected: FAIL because `_pg_upsert_many(...)` only accepts a single conflict column and Instagram comment upserts/lookups still assume global `comment_id`.
+Expected: PASS locally. This is the point of the task: current repo code and schema already know about `instagram_comments_post_comment_unique`, so any live `ON CONFLICT` failure after this step is deploy/runtime drift until proven otherwise.
 
-- [ ] **Step 4: Add the three Instagram comment contract migrations**
-
-```sql
--- 20260421131000_instagram_comments_post_comment_unique.sql
-begin;
-
-alter table social.instagram_comments
-  drop constraint if exists instagram_comments_comment_id_key;
-
-alter table social.instagram_comments
-  add constraint instagram_comments_post_comment_unique unique (post_id, comment_id);
-
-commit;
-```
-
-```sql
--- 20260421132000_instagram_comments_nullable_text_deleted_at.sql
-begin;
-
-alter table social.instagram_comments
-  alter column text drop not null;
-
-alter table social.instagram_comments
-  add column if not exists deleted_at timestamptz null;
-
-create index if not exists instagram_comments_deleted_at_idx
-  on social.instagram_comments (deleted_at)
-  where deleted_at is not null;
-
-commit;
-```
-
-```sql
--- 20260421133000_instagram_comments_parent_same_post_trigger.sql
-begin;
-
-create or replace function social.enforce_instagram_comment_parent_same_post()
-returns trigger as $$
-declare
-  parent_post_id uuid;
-begin
-  if new.parent_comment_id is null then
-    return new;
-  end if;
-
-  select post_id into parent_post_id
-  from social.instagram_comments
-  where id = new.parent_comment_id;
-
-  if parent_post_id is null then
-    raise exception 'parent_comment_id % not found', new.parent_comment_id;
-  end if;
-
-  if parent_post_id <> new.post_id then
-    raise exception 'parent_comment post_id (%) does not match child post_id (%)', parent_post_id, new.post_id;
-  end if;
-
-  return new;
-end;
-$$ language plpgsql;
-
-drop trigger if exists instagram_comments_parent_same_post_tg on social.instagram_comments;
-
-create trigger instagram_comments_parent_same_post_tg
-before insert or update of parent_comment_id, post_id
-on social.instagram_comments
-for each row
-execute function social.enforce_instagram_comment_parent_same_post();
-
-commit;
-```
-
-- [ ] **Step 5: Extend `_pg_upsert_many(...)` and patch all Instagram comment writers to use composite conflict columns**
+- [ ] **Step 3: Surface the comments-lane Modal contract explicitly in readiness and dispatch output**
 
 ```python
-def _pg_upsert_many(
-    table: str,
-    payloads: list[dict[str, Any]],
-    *,
-    conflict_col: str | Sequence[str],
-    conn: Any | None = None,
-) -> list[dict[str, Any]]:
-    if isinstance(conflict_col, str):
-        conflict_cols = [conflict_col]
-    else:
-        conflict_cols = [str(column) for column in conflict_col]
-
-    for column in conflict_cols:
-        if column not in columns:
-            raise ValueError(f"conflict column '{column}' missing in payload for table {table}")
-
-    updates = [column for column in columns if column not in set(conflict_cols)]
-    conflict_sql = ", ".join(conflict_cols)
-    sql = f"""
-        insert into social.{table} ({col_list})
-        values %s
-        on conflict ({conflict_sql}) do update set {update_sql}
-        returning *
-    """
+summary["configured_social_functions"] = {
+    "default": modal_social_job_function_name(),
+    "posts": modal_social_posts_job_function_name(),
+    "media": modal_social_media_job_function_name(),
+    "comments": modal_social_comments_job_function_name(),
+}
+summary["required_social_functions"] = list(function_names)
 ```
 
 ```python
-row = _pg_upsert(
-    "instagram_comments",
-    payload,
-    conflict_col=["post_id", "comment_id"],
-    conn=conn,
-)
-
-rows = _pg_upsert_many(
-    "instagram_comments",
-    batch,
-    conflict_col=["post_id", "comment_id"],
-    conn=conn,
-)
+return {
+    "resolved": resolved,
+    "reason": reason,
+    "function_name": function_name,
+    "app_name": modal_app_name(),
+    "modal_environment": modal_environment_name(),
+}
 ```
 
-- [ ] **Step 6: Patch Instagram comment-media identity helpers so they never rely on `comment_id` alone**
+- [ ] **Step 4: Make the one-shortcode remote comments diagnostic print enough context to distinguish stale deploys from live browser failures**
 
 ```python
-config = {
-    # existing fields...
-    "comment_id": comment_id,
-    "post_id": post_id,
-    "comment_db_id": str(comment_row.get("id") or "") or None,
+payload["dispatch"] = {
+    "app_name": str(os.getenv("TRR_MODAL_APP_NAME") or "trr-backend-jobs").strip() or "trr-backend-jobs",
+    "function_name": str(os.getenv("TRR_MODAL_SOCIAL_COMMENTS_JOB_FUNCTION") or "run_social_comments_job").strip()
+    or "run_social_comments_job",
 }
 ```
 
 ```python
-select
-  c.id::text as id,
-  c.comment_id,
-  c.post_id::text as post_id,
-  c.media_urls
-from social.instagram_comments c
-where (
-    (%s <> '' and c.id = %s::uuid)
-    or (%s <> '' and c.comment_id = %s and c.post_id = %s::uuid)
-)
-limit 1
+except Exception as exc:  # noqa: BLE001
+    payload["error"] = {
+        "class": type(exc).__name__,
+        "message": str(exc),
+        "runtime": dict(fetcher.runtime_metadata),
+    }
 ```
 
-- [ ] **Step 7: Apply migrations, reload PostgREST cache, rerun tests, and commit**
+- [ ] **Step 5: Re-run readiness, redeploy Modal, run the remote comments probe, and commit**
 
 Run:
 
 ```bash
 cd /Users/thomashulihan/Projects/TRR/TRR-Backend
-supabase db push
-./scripts/reload_postgrest_schema.sh
-pytest -q \
-  tests/repositories/test_pg_upsert_many_composite_conflict.py \
-  tests/repositories/test_instagram_comment_identity_contract.py \
-  tests/repositories/test_social_season_analytics.py -k "instagram_comments"
+source .venv/bin/activate
+python scripts/modal/verify_modal_readiness.py --json
+python -m modal deploy -m trr_backend.modal_jobs --env main
+python scripts/modal/diagnose_instagram_comments_remote.py --account thetraitorsus --shortcode DXXAP-Ekb59
 ```
 
-Expected: PASS.
+Expected:
+
+- `verify_modal_readiness.py --json` returns `ok: true`
+- Modal deploy succeeds and republishes `run_social_job` plus `run_social_comments_job`
+- The remote comments diagnostic no longer reports `InvalidColumnReference` or an `ON CONFLICT` schema failure
+- Any remaining failure is now classified as a live browser/runtime issue, for example `Page.goto: net::ERR_TIMED_OUT`
 
 ```bash
 cd /Users/thomashulihan/Projects/TRR
 git add \
-  TRR-Backend/supabase/migrations/20260421131000_instagram_comments_post_comment_unique.sql \
-  TRR-Backend/supabase/migrations/20260421132000_instagram_comments_nullable_text_deleted_at.sql \
-  TRR-Backend/supabase/migrations/20260421133000_instagram_comments_parent_same_post_trigger.sql \
-  TRR-Backend/trr_backend/repositories/social_season_analytics.py \
-  TRR-Backend/trr_backend/socials/instagram/comments_scrapling/persistence.py \
-  TRR-Backend/tests/repositories/test_pg_upsert_many_composite_conflict.py \
-  TRR-Backend/tests/repositories/test_instagram_comment_identity_contract.py
-git commit -m "fix(instagram): enforce composite comment identity and parent contract"
+  TRR-Backend/tests/repositories/test_instagram_comment_identity_contract.py \
+  TRR-Backend/trr_backend/modal_dispatch.py \
+  TRR-Backend/scripts/modal/verify_modal_readiness.py \
+  TRR-Backend/scripts/modal/diagnose_instagram_comments_remote.py \
+  TRR-Backend/tests/scripts/test_verify_modal_readiness.py \
+  TRR-Backend/tests/test_modal_dispatch.py
+git commit -m "fix(instagram): expose comments modal contract and runtime drift"
 ```
 
 ---
@@ -1664,19 +1559,40 @@ git commit -m "fix(instagram): make comments completeness and pagination honest"
 
 ---
 
-### Task 11: Comments Transport, Proxy, Warmup, and CLI Hardening
+### Task 11: Comments Remote Browser Warmup, Timeout Classification, and CLI Hardening
 
-Closes: Comments #6, #12, #14, #16, #17, #18, #19.
+Closes: Comments #6, #12, #14, #16, #17, #18, #19, plus the active Modal comments blocker `Page.goto: net::ERR_TIMED_OUT`.
 
 **Files:**
 - Modify: `TRR-Backend/trr_backend/socials/instagram/comments_scrapling/fetcher.py`
 - Modify: `TRR-Backend/trr_backend/socials/instagram/comments_scrapling/proxy.py`
 - Modify: `TRR-Backend/scripts/socials/instagram/comments_scrape_cli.py`
 - Modify: `TRR-Backend/trr_backend/repositories/social_season_analytics.py`
+- Modify: `TRR-Backend/scripts/modal/diagnose_instagram_comments_remote.py`
 - Modify: `TRR-Backend/tests/socials/test_instagram_comments_scrapling.py`
 - Modify: `TRR-Backend/tests/socials/test_instagram_comments_scrapling_retry.py`
 
-- [ ] **Step 1: Add failing tests for proxy fingerprint shape, env-backed CLI defaults, and safe CLI metadata**
+- [ ] **Step 1: Add failing tests for browser warmup timeout classification, proxy fingerprint shape, env-backed CLI defaults, and safe CLI metadata**
+
+```python
+from playwright.async_api import TimeoutError as PlaywrightTimeoutError
+
+
+@pytest.mark.asyncio
+async def test_warmup_timeout_is_classified_and_recorded(monkeypatch: pytest.MonkeyPatch) -> None:
+    fetcher = _build_fetcher_for_test()
+
+    async def _boom(*_args, **_kwargs):
+        raise PlaywrightTimeoutError("Page.goto: net::ERR_TIMED_OUT at https://www.instagram.com/")
+
+    monkeypatch.setattr(fetcher, "_warm_browser_homepage", _boom)
+
+    with pytest.raises(RuntimeError, match="warmup_failed"):
+        await fetcher.warmup()
+
+    assert fetcher.runtime_metadata["warmup_error_code"] == "page_goto_timeout"
+    assert fetcher.runtime_metadata["warmup_error_phase"] == "instagram_home"
+```
 
 ```python
 def test_fingerprint_from_gateway_normalizes_host_port_provider() -> None:
@@ -1715,9 +1631,17 @@ pytest -q \
   tests/socials/test_instagram_comments_scrapling_retry.py
 ```
 
-Expected: FAIL at the new assertions.
+Expected: FAIL at the new timeout-classification and metadata assertions.
 
-- [ ] **Step 3: Patch rate limiting, warmup retry/jitter, proxy shape, and CLI output safety**
+- [ ] **Step 3: Patch browser warmup timeout classification, rate limiting, retry/jitter, proxy shape, and CLI output safety**
+
+```python
+except PlaywrightTimeoutError as exc:
+    self.runtime_metadata["warmup_error_code"] = "page_goto_timeout"
+    self.runtime_metadata["warmup_error_phase"] = "instagram_home"
+    self.runtime_metadata["warmup_error_detail"] = str(exc)[:200]
+    last_exc = exc
+```
 
 ```python
 self._min_request_interval_s = max(0.0, float(os.getenv("SOCIAL_INSTAGRAM_COMMENTS_MIN_REQUEST_INTERVAL_SECONDS", "0.5")))
@@ -1755,13 +1679,17 @@ def _fingerprint_from_gateway(gateway: str, provider: str) -> str:
 SAFE_RUNTIME_META_KEYS = {
     "warmup_cookie_names",
     "warmup_cookie_count",
+    "warmup_error_code",
+    "warmup_error_phase",
+    "warmup_error_detail",
+    "warmup_attempts",
     "selected_proxy_fingerprint",
     "transport",
     "request_count",
 }
 ```
 
-- [ ] **Step 4: Ensure comment media follow-up enqueue requires both schema columns**
+- [ ] **Step 4: Ensure comment media follow-up enqueue requires both schema columns and the remote diagnostic uses the safe runtime metadata**
 
 ```python
 if media_urls and _column_exists("social", "instagram_comments", "media_mirror_status") and _column_exists("social", "instagram_comments", "media_mirror_error"):
@@ -1769,7 +1697,14 @@ if media_urls and _column_exists("social", "instagram_comments", "media_mirror_s
     payload["media_mirror_error"] = None
 ```
 
-- [ ] **Step 5: Rerun focused tests and commit**
+```python
+payload["warmup"] = {
+    "ok": True,
+    "runtime": _safe_runtime_metadata(dict(fetcher.runtime_metadata)),
+}
+```
+
+- [ ] **Step 5: Rerun focused tests, then verify the remote comments probe surfaces structured timeout data instead of an opaque crash**
 
 Run:
 
@@ -1778,9 +1713,13 @@ cd /Users/thomashulihan/Projects/TRR/TRR-Backend
 pytest -q \
   tests/socials/test_instagram_comments_scrapling.py \
   tests/socials/test_instagram_comments_scrapling_retry.py
+python scripts/modal/diagnose_instagram_comments_remote.py --account thetraitorsus --shortcode DXXAP-Ekb59
 ```
 
-Expected: PASS.
+Expected:
+
+- local tests PASS
+- the remote diagnostic either succeeds or returns structured `warmup_error_code=page_goto_timeout` metadata instead of a generic crash with no warmup context
 
 ```bash
 cd /Users/thomashulihan/Projects/TRR
@@ -1789,9 +1728,10 @@ git add \
   TRR-Backend/trr_backend/socials/instagram/comments_scrapling/proxy.py \
   TRR-Backend/scripts/socials/instagram/comments_scrape_cli.py \
   TRR-Backend/trr_backend/repositories/social_season_analytics.py \
+  TRR-Backend/scripts/modal/diagnose_instagram_comments_remote.py \
   TRR-Backend/tests/socials/test_instagram_comments_scrapling.py \
   TRR-Backend/tests/socials/test_instagram_comments_scrapling_retry.py
-git commit -m "fix(instagram): harden comments transport, proxy, and cli contracts"
+git commit -m "fix(instagram): classify comments warmup timeouts and harden cli output"
 ```
 
 ---
@@ -1861,9 +1801,25 @@ ruff check .
 ruff format --check .
 pytest -q
 make schema-docs-check
+source .venv/bin/activate
+python scripts/modal/verify_modal_readiness.py --json
+python -m modal deploy -m trr_backend.modal_jobs --env main
+python scripts/modal/diagnose_instagram_comments_remote.py --account thetraitorsus --shortcode DXXAP-Ekb59
 python -m scripts.socials.instagram.smoke_posts_scrapling --account bravotv --limit 10
-python -m scripts.socials.instagram.comments_scrape_cli --account bravotv --shortcode C5DUMMY1234 --max-comments 5
+python -m scripts.socials.instagram.comments_scrape_cli --account thetraitorsus --shortcode DXXAP-Ekb59 --max-comments 5
 python -m scripts.socials.backfill_social_media_mirror_jobs --platform instagram --dry-run
+python - <<'PY'
+from trr_backend.repositories.social_season_analytics import start_social_account_comments_scrape
+
+result = start_social_account_comments_scrape(
+    "instagram",
+    "thetraitorsus",
+    mode="profile",
+    refresh_policy="all_saved_posts",
+    initiated_by="instagram-remediation-plan",
+)
+print(result)
+PY
 ```
 
 Expected:
@@ -1872,7 +1828,10 @@ Expected:
 - `ruff format --check .`: PASS
 - `pytest -q`: PASS
 - `make schema-docs-check`: PASS or only intentional `supabase/schema_docs/*` drift that is committed in this task
-- smoke commands: complete without signed CDN params in logs and without immediate auth/queue contract regressions
+- `verify_modal_readiness.py --json`: `ok: true`, with `run_social_job` and `run_social_comments_job` visible in the required/configured function set
+- Modal deploy: succeeds and republishes the current repo code before the live comments run
+- one-shortcode remote comments diagnostic: does not report `InvalidColumnReference`; if Instagram still blocks, the failure is classified as browser warmup timeout with safe runtime metadata
+- profile comments sync kickoff for `@thetraitorsus`: returns a new `run_id` / `job_id` and no longer fails immediately on the old `ON CONFLICT` path
 
 - [ ] **Step 5: Commit the final validation or schema-doc updates and run workspace closeout**
 
@@ -1891,11 +1850,11 @@ git commit -m "chore(instagram): close out scraper remediation validation"
 ### Spec coverage
 
 - Global local Instagram mirror dedupe: covered by Task 1.
-- Instagram comment composite identity plus downstream lookup/update paths: covered by Task 2.
+- Instagram comment composite identity plus deploy/runtime drift guardrails: covered by Task 2.
 - Shared concurrency/cache/client primitives: covered by Tasks 3 and 4.
 - Media downloader, S3, avatar, manifest, redaction, and ops scripts: covered by Tasks 5, 6, and 7.
 - Posts/runtime correctness: covered by Tasks 8 and 9.
-- Comments/runtime correctness: covered by Tasks 10 and 11.
+- Comments/runtime correctness, including remote browser warmup timeouts: covered by Tasks 10 and 11.
 - Timestamp/nullability and full validation: covered by Task 12.
 
 ### Placeholder scan
@@ -1905,7 +1864,7 @@ git commit -m "chore(instagram): close out scraper remediation validation"
 
 ### Type consistency
 
-- Composite Instagram comment identity is consistently keyed by `(post_id, comment_id)` throughout Tasks 2, 10, and 11.
+- Composite Instagram comment identity is treated as already-landed ground truth. Task 2 prevents deploy drift from masking that contract, and Tasks 10 and 11 keep runtime behavior aligned with it.
 - `hosted_tagged_profile_pics` migration explicitly adds reader compatibility before writer-shape changes in Task 7.
 - Async `_rebuild_http_client(...)` is treated consistently in both posts and comments fetchers in Task 4.
 

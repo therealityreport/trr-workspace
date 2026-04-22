@@ -186,10 +186,19 @@ the rest of the repo-configured budget stays unchanged.
 ### Optional local-workspace note
 
 If an operator points `make dev` at the same hosted Supabase project, the local
-workspace can add up to `6` more session-mode connections (`TRR-APP` local pool
-`4` + `TRR-Backend` local pool `2`). That does not fit cleanly inside the
-`Operator_head = 5` reserve, so local workspace access to production should be
-treated as explicit break-glass usage rather than normal operating budget.
+workspace can add up to `10` more session-mode connections (`TRR-APP` local
+pool `4` + `TRR-Backend` default pool `2` + dedicated `social_profile` pool
+`4`). That does not fit cleanly inside the `Operator_head = 5` reserve, so
+local workspace access to production should be treated as explicit break-glass
+usage rather than normal operating budget.
+
+`PROFILE=social-debug make dev` is the tracked low-pressure validation lane for
+social-profile debugging. It leaves the default baseline unchanged but projects
+`WORKSPACE_TRR_APP_POSTGRES_POOL_MAX=2` and
+`WORKSPACE_TRR_APP_POSTGRES_MAX_CONCURRENT_OPERATIONS=2` into the `TRR-APP`
+child process, cutting the local app-side session holder budget in half for
+that specific lane while leaving the backend default pool at `2` and the
+dedicated backend `social_profile` lane at `4`.
 
 **If `Total > 60`:** `MaxClientsInSessionMode` errors are inevitable. Options
 in order of preference:

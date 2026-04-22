@@ -84,6 +84,12 @@ handoff:
       - the successful production path is now local Getty prefetch -> Modal prefetched ingest
       - live Modal Getty remains blocked by Getty’s bot wall and is no longer treated as a viable normal path for app-launched Getty/NBCUMV refreshes
 
+- 2026-04-22 startup/runtime contract hardening:
+  - workspace startup no longer treats Getty challenge-page probe failures as proof that Modal core readiness is down
+  - `scripts/modal/verify_modal_readiness.py` now keeps Getty remote-access failures in the payload as advisory diagnostics unless strict probe mode is requested
+  - `make status` surfaces the nested Getty remote probe under the Modal runtime section so transport state is still visible without blocking startup
+  - app-launched Getty/NBCUMV refreshes continue to use the canonical local Getty prefetch path with `transport_mode=auto` instead of branching on a separate remote-readiness gate first
+
 - 2026-03-24 Modal deploy + live Brandi smoke:
   - redeployed the current `TRR-Backend` workspace to Modal:
     - `cd /Users/thomashulihan/Projects/TRR/TRR-Backend && TRR_MODAL_ADMIN_KEEP_WARM=2 TRR_MODAL_ADMIN_OPERATION_CONCURRENCY_LIMIT=12 ./.venv/bin/python -m modal deploy -m trr_backend.modal_jobs`

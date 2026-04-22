@@ -1,4 +1,0 @@
-interface:
-  display_name: "Social Ingestion Reliability (TRR Workspace)"
-  short_description: "Workspace-local canonical owner for TRR social auth preflight, Modal dispatch, queue and worker health, sync sessions, persistence correctness, and observability."
-  default_prompt: "Use $social-ingestion-reliability to diagnose or harden this TRR social ingestion queue, worker, sync-session, or persistence failure."
