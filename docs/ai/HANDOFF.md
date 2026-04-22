@@ -11,6 +11,7 @@ Purpose: active-work index for multi-turn AI agent sessions affecting workspace-
 - None.
 
 ## Recent Completions
+- `Codex Config Realignment` | last updated `2026-04-21` | current phase `workspace Codex config split remains the active baseline with inherited user/global skills preserved while plugin state stays user-managed` | next action `Keep the split user/project Codex config model in place and avoid repo-managed skill disablement in ~/.codex; only reopen this lane if bootstrap or validation regresses` | details `local-status/codex-config-realignment.md`
 - `Instagram Full-History Backfill Regression` | last updated `2026-04-20` | current phase `debug-session fixes landed` | next action `re-run sync-handoffs check and keep future local-status notes on the canonical template` | details `local-status/instagram-full-history-backfill-regression-2026-04-20.md`
 - `Workspace Browser Status And Flashback Startup Alignment` | last updated `2026-04-15` | current phase `implementation complete` | next action `Use the new structured browser readiness output when adjusting workspace startup warnings or Chrome diagnostics.` | details `local-status/workspace-browser-status-and-flashback-startup-alignment-2026-04-15.md`
 

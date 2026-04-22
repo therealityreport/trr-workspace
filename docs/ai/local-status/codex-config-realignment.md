@@ -1,15 +1,15 @@
 # Codex Config Realignment
 
-Last updated: 2026-04-02
+Last updated: 2026-04-21
 
 ## Handoff Snapshot
 ```yaml
 handoff:
   include: true
   state: recent
-  last_updated: 2026-03-26
-  current_phase: "workspace Codex config split remains the active baseline with TRR-only skill-pruning enforced while plugin state stays user-managed"
-  next_action: "Keep the split user/project Codex config model and the TRR-only disabled-skill baseline in place; only reopen this lane if bootstrap or validation regresses"
+  last_updated: 2026-04-21
+  current_phase: "workspace Codex config split remains the active baseline with inherited user/global skills preserved while plugin state stays user-managed"
+  next_action: "Keep the split user/project Codex config model in place and avoid repo-managed skill disablement in ~/.codex; only reopen this lane if bootstrap or validation regresses"
   detail: self
 ```
 
@@ -24,7 +24,7 @@ handoff:
 - Repurposed `scripts/codex-config-sync.sh` from user-config templating into:
   - `bootstrap` for restoring the expected global MCP set plus the TRR trusted-project entry in `~/.codex`
   - `validate` for both the global user config and the tracked TRR-local config
-- Expanded the user bootstrap and validation flow to disable unrelated global skill families for TRR-only chats, including non-TRR framework specialists, AWS-only infra skills, and duplicate generic ownership surfaces already replaced by workspace-local canonicals.
+- Keep user/global skill inheritance intact; bootstrap and validation should not inject or require repo-managed disabled skill rows in `~/.codex/config.toml`.
 - Removed plugin-state enforcement from the user bootstrap and validation paths so user-level plugin choices no longer fail TRR preflight.
 - Updated workspace policy/docs so `AGENTS.md` describes browser and trust policy, while `.codex/config.toml` and wrapper scripts define actual Chrome MCP defaults.
 - Kept the global Chrome default aligned on `shared + headless + auto-launch` so bootstrap, validation, and the tracked TRR comments all describe the same launcher behavior.
@@ -41,9 +41,8 @@ handoff:
 - `make check-policy`
 
 ## Notes
-- 2026-03-26 check:
-  - extended the user bootstrap baseline to suppress unrelated global skills during workspace chats
-  - this note was refreshed so handoff closeout reflects that the current split-config baseline includes TRR-only skill pruning as part of the intended workspace state
+- 2026-04-21 follow-up:
+  - removed stale TRR-managed disabled-skill enforcement from the user bootstrap/validation path so workspace preflight aligns with the current global-inheritance policy
 - 2026-04-02 follow-up:
   - user plugin enablement is now left untouched by `scripts/codex-config-sync.sh`; bootstrap and validation no longer require specific plugin states
 - 2026-04-01 follow-up:
