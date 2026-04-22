@@ -1,0 +1,32 @@
+{
+  "name": "local-workspace",
+  "interface": {
+    "displayName": "Workspace Plugins"
+  },
+  "plugins": [
+    {
+      "name": "design-docs-agent",
+      "source": {
+        "source": "local",
+        "path": "./plugins/design-docs-agent"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "General"
+    },
+    {
+      "name": "trr-design-skills",
+      "source": {
+        "source": "local",
+        "path": "./plugins/trr-design-skills"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
