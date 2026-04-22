@@ -30,6 +30,8 @@
 
 # Local agent config
 /.claude/
+/brain/
+/.loom-backup/
 
 # Third-party AI editor configs (not part of tracked workspace)
 /.adal/
