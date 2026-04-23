@@ -1,11 +1,27 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-source "$ROOT/scripts/lib/preflight-diagnostics.sh"
-source "$ROOT/scripts/lib/preflight-handoff.sh"
+SCRIPT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+POLICY_ROOT="$SCRIPT_ROOT"
+CHECK_POLICY_SKIP_EXTERNAL="${CHECK_POLICY_SKIP_EXTERNAL:-0}"
 
-preflight_diag_init "check-policy.sh" "$ROOT" "check-policy"
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --root)
+      POLICY_ROOT="$(cd "$2" && pwd)"
+      shift 2
+      ;;
+    *)
+      echo "[check-policy] ERROR: unknown argument $1" >&2
+      exit 2
+      ;;
+  esac
+done
+
+source "$SCRIPT_ROOT/scripts/lib/preflight-diagnostics.sh"
+source "$SCRIPT_ROOT/scripts/lib/preflight-handoff.sh"
+
+preflight_diag_init "check-policy.sh" "$SCRIPT_ROOT" "check-policy"
 WORKSPACE_PREFLIGHT_STRICT="${WORKSPACE_PREFLIGHT_STRICT:-0}"
 
 check_policy_on_signal() {
@@ -34,48 +50,42 @@ check_policy_on_exit() {
 }
 
 AGENTS_FILES=(
-  "$ROOT/AGENTS.md"
-  "$ROOT/TRR-Backend/AGENTS.md"
-  "$ROOT/TRR-APP/AGENTS.md"
+  "$POLICY_ROOT/AGENTS.md"
+  "$POLICY_ROOT/TRR-Backend/AGENTS.md"
+  "$POLICY_ROOT/TRR-APP/AGENTS.md"
 )
 
-CLAUDE_FILES=()
-while IFS= read -r relative_file; do
-  [[ -n "$relative_file" ]] || continue
-  CLAUDE_FILES+=("$ROOT/$relative_file")
-done < <(
-  cd "$ROOT"
-  # screenalytics is a retired nested repo and is out of scope for workspace
-  # make dev / preflight policy enforcement.
-  rg --files -uu \
-    -g 'CLAUDE.md' \
-    -g '!screenalytics/**' \
-    -g '!**/.git/**' \
-    -g '!**/.venv/**' \
-    -g '!**/node_modules/**' \
-    -g '!**/__pycache__/**' \
-    -g '!**/.next/**' \
-    -g '!**/dist/**' \
-    -g '!**/build/**' \
-    -g '!**/.turbo/**' \
-    -g '!**/.logs/**' \
-    | LC_ALL=C sort
-)
+# Only the three repo entrypoint CLAUDE.md files are policy-managed pointer shims.
+# Brain-local CLAUDE.md files remain substantive boot docs and are intentionally excluded.
+collect_entrypoint_claude_files() {
+  local candidate
+  for candidate in \
+    "$POLICY_ROOT/CLAUDE.md" \
+    "$POLICY_ROOT/TRR-Backend/CLAUDE.md" \
+    "$POLICY_ROOT/TRR-APP/CLAUDE.md"
+  do
+    printf '%s\n' "$candidate"
+  done
+}
 
-POLICY_SCAN_FILES=(
-  "${AGENTS_FILES[@]}"
-  "$ROOT/.codex/config.toml"
-  "$ROOT/.codex/rules/default.rules"
-  "$ROOT/docs/workspace/dev-commands.md"
-  "$ROOT/docs/workspace/chrome-devtools.md"
-  "$ROOT/docs/ai/HANDOFF_WORKFLOW.md"
-  "$ROOT/docs/agent-governance/skill_routing.md"
-  "$ROOT/docs/agent-governance/claude_skill_overlap.md"
-  "$ROOT/docs/agent-governance/mcp_inventory.md"
-)
-if [[ "${#CLAUDE_FILES[@]}" -gt 0 ]]; then
-  POLICY_SCAN_FILES+=("${CLAUDE_FILES[@]}")
-fi
+mapfile -t CLAUDE_FILES < <(collect_entrypoint_claude_files | LC_ALL=C sort -u)
+
+POLICY_SCAN_FILES=("${AGENTS_FILES[@]}")
+for candidate in \
+  "$POLICY_ROOT/.codex/config.toml" \
+  "$POLICY_ROOT/.codex/rules/default.rules" \
+  "$POLICY_ROOT/docs/workspace/dev-commands.md" \
+  "$POLICY_ROOT/docs/workspace/chrome-devtools.md" \
+  "$POLICY_ROOT/docs/ai/HANDOFF_WORKFLOW.md" \
+  "$POLICY_ROOT/docs/agent-governance/skill_routing.md" \
+  "$POLICY_ROOT/docs/agent-governance/claude_skill_overlap.md" \
+  "$POLICY_ROOT/docs/agent-governance/mcp_inventory.md"
+do
+  [[ -f "$candidate" ]] && POLICY_SCAN_FILES+=("$candidate")
+done
+for candidate in "${CLAUDE_FILES[@]}"; do
+  [[ -e "$candidate" || -L "$candidate" ]] && POLICY_SCAN_FILES+=("$candidate")
+done
 
 failures=0
 
@@ -92,7 +102,7 @@ if preflight_diag_is_enabled; then
 fi
 
 check_root_agents() {
-  local file="$ROOT/AGENTS.md"
+  local file="$POLICY_ROOT/AGENTS.md"
   local word_count
 
   if [[ ! -f "$file" ]]; then
@@ -198,43 +208,54 @@ check_repo_agents() {
 }
 
 check_root_agents
-check_repo_agents "$ROOT/TRR-Backend/AGENTS.md"
-check_repo_agents "$ROOT/TRR-APP/AGENTS.md"
+check_repo_agents "$POLICY_ROOT/TRR-Backend/AGENTS.md"
+check_repo_agents "$POLICY_ROOT/TRR-APP/AGENTS.md"
 
-expected_claude_content() {
+expected_claude_target() {
   local file="$1"
-  local agents_path="$ROOT/AGENTS.md"
+  local agents_path="$POLICY_ROOT/AGENTS.md"
 
   case "$file" in
-    "$ROOT/TRR-Backend"/*)
-      agents_path="$ROOT/TRR-Backend/AGENTS.md"
+    "$POLICY_ROOT/TRR-Backend"/*)
+      agents_path="$POLICY_ROOT/TRR-Backend/AGENTS.md"
       ;;
-    "$ROOT/TRR-APP"/*)
-      agents_path="$ROOT/TRR-APP/AGENTS.md"
+    "$POLICY_ROOT/TRR-APP"/*)
+      agents_path="$POLICY_ROOT/TRR-APP/AGENTS.md"
       ;;
   esac
 
-  printf '# CLAUDE.md Pointer\n\nCanonical instructions for this scope are in:\n`%s`\n\nRules:\n1. Read `AGENTS.md` first.\n2. `HANDOFF.md` is generated; update canonical status sources and follow the lifecycle commands in `AGENTS.md`.\n3. If there is any conflict, `AGENTS.md` is authoritative.\n4. This file must remain a short pointer shim.' "$agents_path"
+  printf '%s\n' "$agents_path"
+}
+
+resolve_symlink_target_path() {
+  python3 - "$1" <<'PY'
+import os
+import sys
+
+path = sys.argv[1]
+target = os.readlink(path)
+print(os.path.abspath(os.path.join(os.path.dirname(path), target)))
+PY
 }
 
 if [[ "${#CLAUDE_FILES[@]}" -gt 0 ]]; then
   for file in "${CLAUDE_FILES[@]}"; do
-    if [[ ! -f "$file" ]]; then
+    if [[ ! -e "$file" && ! -L "$file" ]]; then
       echo "[check-policy] ERROR: missing file $file" >&2
       failures=$((failures + 1))
       continue
     fi
 
-    line_count="$(wc -l < "$file" | tr -d ' ')"
-    if [[ "$line_count" -gt 12 ]]; then
-      echo "[check-policy] ERROR: $file exceeds 12 lines ($line_count)." >&2
+    if [[ ! -L "$file" ]]; then
+      echo "[check-policy] ERROR: $file must be a symlink to its matching AGENTS.md file." >&2
       failures=$((failures + 1))
+      continue
     fi
 
-    actual_content="$(<"$file")"
-    expected_content="$(expected_claude_content "$file")"
-    if [[ "$actual_content" != "$expected_content" ]]; then
-      echo "[check-policy] ERROR: $file does not match the canonical pointer-shim template." >&2
+    expected_target="$(expected_claude_target "$file")"
+    symlink_target_path="$(resolve_symlink_target_path "$file")"
+    if [[ "$symlink_target_path" != "$expected_target" ]]; then
+      echo "[check-policy] ERROR: $file must point to $expected_target (got $symlink_target_path)." >&2
       failures=$((failures + 1))
     fi
   done
@@ -249,26 +270,28 @@ if rg -n -i 'playwright' "${POLICY_SCAN_FILES[@]}" >/tmp/trr-policy-playwright-h
 fi
 rm -f /tmp/trr-policy-playwright-hits.txt
 
-handoff_check_output=""
-set +e
-handoff_check_output="$(make -C "$ROOT" --no-print-directory handoff-check 2>&1)"
-handoff_check_rc="$?"
-set -e
-if [[ "$handoff_check_rc" != "0" ]]; then
-  if [[ "$WORKSPACE_PREFLIGHT_STRICT" == "1" ]]; then
-    printf '%s\n' "$handoff_check_output" >&2
-    echo "[check-policy] ERROR: generated handoffs are out of sync or canonical sources are invalid." >&2
-    failures=$((failures + 1))
-  else
-    handoff_warning="$(preflight_handle_handoff_sync_result "$WORKSPACE_PREFLIGHT_STRICT" "$handoff_check_rc" "$handoff_check_output")"
-    printf '%s\n' "$handoff_warning" >&2
-    echo "[check-policy] WARNING: handoff validation did not block policy checks in non-strict mode." >&2
+if [[ "$CHECK_POLICY_SKIP_EXTERNAL" != "1" ]]; then
+  handoff_check_output=""
+  set +e
+  handoff_check_output="$(make -C "$POLICY_ROOT" --no-print-directory handoff-check 2>&1)"
+  handoff_check_rc="$?"
+  set -e
+  if [[ "$handoff_check_rc" != "0" ]]; then
+    if [[ "$WORKSPACE_PREFLIGHT_STRICT" == "1" ]]; then
+      printf '%s\n' "$handoff_check_output" >&2
+      echo "[check-policy] ERROR: generated handoffs are out of sync or canonical sources are invalid." >&2
+      failures=$((failures + 1))
+    else
+      handoff_warning="$(preflight_handle_handoff_sync_result "$WORKSPACE_PREFLIGHT_STRICT" "$handoff_check_rc" "$handoff_check_output")"
+      printf '%s\n' "$handoff_warning" >&2
+      echo "[check-policy] WARNING: handoff validation did not block policy checks in non-strict mode." >&2
+    fi
   fi
-fi
 
-if ! bash "$ROOT/scripts/check-codex.sh"; then
-  echo "[check-policy] ERROR: Codex config or rules validation failed." >&2
-  failures=$((failures + 1))
+  if ! bash "$SCRIPT_ROOT/scripts/check-codex.sh"; then
+    echo "[check-policy] ERROR: Codex config or rules validation failed." >&2
+    failures=$((failures + 1))
+  fi
 fi
 
 if [[ "$failures" -gt 0 ]]; then

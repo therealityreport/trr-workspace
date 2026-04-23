@@ -50,3 +50,15 @@ def test_status_outputs_keep_readiness_and_liveness_distinct() -> None:
 
     assert result.returncode == 0, result.stderr
     assert result.stdout == "http://127.0.0.1:7000/health\nhttp://127.0.0.1:7000/health/live"
+
+
+def test_backend_readiness_label_degrades_when_liveness_is_alive() -> None:
+    result = _run_bash(
+        f"""
+        source "{SCRIPT_PATH}"
+        printf '%s' "$(workspace_backend_readiness_label 0 1)"
+        """
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == "degraded/slow"

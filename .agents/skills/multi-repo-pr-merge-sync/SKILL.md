@@ -39,6 +39,10 @@ Workspace wrapper:
 make workspace-pr-agent
 ```
 
+Wrapper default:
+- auto-discovers the workspace root repo plus child repos
+- set `WORKSPACE_PR_AGENT_REPOS='<comma-separated repos>'` to narrow scope
+
 Default wrapper revision command:
 - `python3 /Users/thomashulihan/Projects/TRR/scripts/workspace-pr-agent-revision.py`
 - disable with `WORKSPACE_PR_AGENT_REVISION_COMMAND=none`
