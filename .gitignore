@@ -30,7 +30,7 @@
 
 # Local agent config
 /.claude/
-/trr-workspace-brain/
+/TRR Workspace Brain/
 /.loom-backup/
 
 # Third-party AI editor configs (not part of tracked workspace)

@@ -7,7 +7,7 @@ cd "$ROOT"
 PYTHON_BIN="${PYTHON_BIN:-python3}"
 ORCHESTRATOR="$ROOT/.agents/skills/multi-repo-pr-merge-sync/scripts/orchestrate_multi_repo_pr_merge_sync.py"
 JSON_REPORT="${WORKSPACE_PR_AGENT_JSON_REPORT:-$ROOT/.logs/workspace/pr-agent-report.json}"
-TARGET_REPOS="${WORKSPACE_PR_AGENT_REPOS:-TRR-Backend,TRR-APP}"
+TARGET_REPOS="${WORKSPACE_PR_AGENT_REPOS:-}"
 REVISION_COMMAND="${WORKSPACE_PR_AGENT_REVISION_COMMAND:-python3 $ROOT/scripts/workspace-pr-agent-revision.py}"
 
 cmd=(
@@ -27,11 +27,14 @@ cmd=(
   --max-revision-cycles "${WORKSPACE_PR_AGENT_MAX_REVISION_CYCLES:-5}"
   --delete-non-main-local-branches "${WORKSPACE_PR_AGENT_DELETE_NON_MAIN_LOCAL_BRANCHES:-true}"
   --json-report "$JSON_REPORT"
-  --repos "$TARGET_REPOS"
 )
 
 if [[ "$REVISION_COMMAND" != "none" ]]; then
   cmd+=(--revision-command "$REVISION_COMMAND")
+fi
+
+if [[ -n "$TARGET_REPOS" ]]; then
+  cmd+=(--repos "$TARGET_REPOS")
 fi
 
 if [[ "${WORKSPACE_PR_AGENT_DRY_RUN:-0}" == "1" ]]; then
@@ -41,8 +44,14 @@ fi
 echo "[workspace-pr-agent] workspace: $ROOT"
 echo "[workspace-pr-agent] report: $JSON_REPORT"
 echo "[workspace-pr-agent] revision-command: $REVISION_COMMAND"
+if [[ -n "$TARGET_REPOS" ]]; then
+  echo "[workspace-pr-agent] repos: $TARGET_REPOS"
+else
+  echo "[workspace-pr-agent] repos: auto-discover workspace root + child repos"
+fi
 echo "[workspace-pr-agent] revision-use-github-mcp: ${WORKSPACE_PR_AGENT_REVISION_USE_GITHUB_MCP:-1}"
 echo "[workspace-pr-agent] revision-require-github-mcp: ${WORKSPACE_PR_AGENT_REVISION_REQUIRE_GITHUB_MCP:-0}"
+echo "[workspace-pr-agent] revision-use-vercel-mcp: ${WORKSPACE_PR_AGENT_REVISION_USE_VERCEL_MCP:-1}"
 echo "[workspace-pr-agent] running handoff closeout sync before orchestration"
 bash "$ROOT/scripts/handoff-lifecycle.sh" closeout
 "${cmd[@]}"

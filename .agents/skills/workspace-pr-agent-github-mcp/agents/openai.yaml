@@ -1,7 +1,7 @@
 interface:
-  display_name: "Workspace PR Agent (GitHub MCP)"
-  short_description: "Run multi-repo PR automation with GitHub MCP-first revision assist"
-  default_prompt: "Use $workspace-pr-agent-github-mcp to run workspace PR automation in GitHub MCP-first mode: one PR per repo, wait for checks, process bot reviews/messages, apply revisions, merge to main, and enforce main parity + local branch cleanup."
+  display_name: "Workspace PR Agent (GitHub MCP + Vercel)"
+  short_description: "Run multi-repo PR automation with GitHub MCP review intelligence and Vercel deployment context"
+  default_prompt: "Use $workspace-pr-agent-github-mcp to run workspace PR automation in GitHub MCP + Vercel mode: auto-discover the workspace repo plus child repos, keep one PR per repo, wait for checks and deployments, process bot reviews/messages, apply revisions, merge to main, and enforce main parity plus local branch cleanup."
 policy:
   allow_implicit_invocation: false
 dependencies:
@@ -11,3 +11,6 @@ dependencies:
       description: "GitHub MCP for PR metadata, reviews, and status checks"
       transport: "streamable_http"
       url: "https://api.githubcopilot.com/mcp"
+    - type: "mcp"
+      value: "vercel"
+      description: "Vercel MCP for preview deployments, build logs, and deployment readiness during PR cycles"

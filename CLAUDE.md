@@ -1,1 +1,1 @@
-BRAIN.md
+AGENTS.md

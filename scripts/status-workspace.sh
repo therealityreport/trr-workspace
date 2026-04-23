@@ -287,7 +287,8 @@ health_status() {
 
 backend_health_status() {
   local url="$1"
-  local pid="${2:-}"
+  local liveness_url="${2:-}"
+  local pid="${3:-}"
   if ! command -v curl >/dev/null 2>&1; then
     echo "unknown (curl missing)"
     return 0
@@ -322,7 +323,12 @@ backend_health_status() {
     fi
   done
 
-  echo "hung/unresponsive"
+  local liveness_ok="0"
+  if [[ -n "$liveness_url" ]] && curl -fsS --max-time "$WORKSPACE_STATUS_BACKEND_HEALTH_CURL_MAX_TIME" "$liveness_url" >/dev/null 2>&1; then
+    liveness_ok="1"
+  fi
+
+  workspace_backend_readiness_label 0 "$liveness_ok"
 }
 
 backend_reload_mode() {
@@ -497,7 +503,7 @@ build_codex_runtime_json() {
 BACKEND_READINESS_URL="$(workspace_backend_status_readiness_url "${TRR_BACKEND_PORT}")"
 BACKEND_LIVENESS_URL="$(workspace_backend_status_liveness_url "${TRR_BACKEND_PORT}")"
 APP_HEALTH_URL="http://${TRR_APP_HOST}:${TRR_APP_PORT}/"
-BACKEND_READINESS_STATUS="$(backend_health_status "${BACKEND_READINESS_URL}" "${TRR_BACKEND_PID:-}")"
+BACKEND_READINESS_STATUS="$(backend_health_status "${BACKEND_READINESS_URL}" "${BACKEND_LIVENESS_URL}" "${TRR_BACKEND_PID:-}")"
 BACKEND_LIVENESS_STATUS="$(health_status "${BACKEND_LIVENESS_URL}" "${TRR_BACKEND_PID:-}")"
 APP_HEALTH_STATUS="$(health_status "${APP_HEALTH_URL}" "${TRR_APP_PID:-}")"
 

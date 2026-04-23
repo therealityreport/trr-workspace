@@ -360,7 +360,7 @@ required_user_servers = {
     "context7": {"command": "npx", "args": ["-y", "@upstash/context7-mcp"], "enabled": True},
 }
 required_top_level = {
-    "model": "gpt-5.4",
+    "model": "gpt-5.5",
     "model_reasoning_effort": "high",
     "personality": "pragmatic",
     "approval_policy": "never",

@@ -199,7 +199,8 @@ mcp-clean:
 # WORKSPACE_PR_AGENT_REVISION_USE_CODEX=0     # disable Codex-assist within revision script
 # WORKSPACE_PR_AGENT_REVISION_USE_GITHUB_MCP=0   # default is 1 (MCP-preferred Codex prompt)
 # WORKSPACE_PR_AGENT_REVISION_REQUIRE_GITHUB_MCP=1   # fail revision assist if GitHub MCP auth is missing
+# WORKSPACE_PR_AGENT_REVISION_USE_VERCEL_MCP=0   # disable Vercel deployment-context lookup in revision assist
 # WORKSPACE_PR_AGENT_DRY_RUN=1
-# WORKSPACE_PR_AGENT_REPOS='TRR-Backend,TRR-APP'
+# WORKSPACE_PR_AGENT_REPOS='TRR-Backend,TRR-APP'   # optional scope override; default auto-discovers workspace root + child repos
 workspace-pr-agent:
 	@bash scripts/workspace-pr-agent.sh

@@ -112,6 +112,7 @@ def deterministic_fix_pass(
 
 def codex_prompt(reason: str, context_file: Path) -> str:
     use_github_mcp = os.environ.get("WORKSPACE_PR_AGENT_REVISION_USE_GITHUB_MCP", "1") not in {"0", "false", "no"}
+    use_vercel_mcp = os.environ.get("WORKSPACE_PR_AGENT_REVISION_USE_VERCEL_MCP", "1") not in {"0", "false", "no"}
     pr_number = os.environ.get("WORKSPACE_AGENT_PR_NUMBER", "")
     repo_name = os.environ.get("WORKSPACE_AGENT_REPO_NAME", "")
 
@@ -121,12 +122,22 @@ def codex_prompt(reason: str, context_file: Path) -> str:
         "run relevant validations, and do not commit or create branches. "
         "If no safe fix is possible, explain why in your final response."
     )
-    mcp_hint = (
-        "Use GitHub MCP (not gh CLI) to inspect PR checks/reviews/conversation context before editing. "
-        "If GitHub MCP is unavailable, proceed using only local context + context file."
-        if use_github_mcp
-        else "Do not require GitHub MCP; use local context and the provided context file."
-    )
+    mcp_hints: list[str] = []
+    if use_github_mcp:
+        mcp_hints.append(
+            "Use GitHub MCP (not gh CLI) to inspect PR checks, reviews, and conversation context before editing."
+        )
+    else:
+        mcp_hints.append("Do not require GitHub MCP; use local context and the provided context file.")
+    if use_vercel_mcp and repo_name == "TRR-APP":
+        mcp_hints.append(
+            "Use Vercel tools to inspect preview deployments, build logs, and deployment readiness when app checks or PR comments mention them."
+        )
+    if use_github_mcp or (use_vercel_mcp and repo_name == "TRR-APP"):
+        mcp_hints.append(
+            "If those remote tools are unavailable, proceed using local context plus the context file unless GitHub MCP is explicitly required for this run."
+        )
+    mcp_hint = " ".join(mcp_hints)
 
     if reason == "merge_conflict":
         task = (

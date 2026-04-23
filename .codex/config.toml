@@ -1,7 +1,7 @@
 # Canonical shared Codex configuration for the TRR workspace.
 # Reusable MCPs live in ~/.codex/config.toml; trusted TRR-local settings live here.
 
-model = "gpt-5.4"
+model = "gpt-5.5"
 model_reasoning_effort = "high"
 personality = "pragmatic"
 approval_policy = "never"
