@@ -91,7 +91,7 @@ Default sizing in `postgres.ts`:
 |---|---|---|
 | Production (session pooler) | 4 | 2 |
 | Development (session pooler) | 4 | 4 |
-| Local direct | 4 (non-session) | 2 |
+| Development (direct/local Postgres) | 8 | 8 |
 
 Deployment rollback guard: after lowering deployed session-pooler defaults to
 `POSTGRES_POOL_MAX=4` and `POSTGRES_MAX_CONCURRENT_OPERATIONS=2`, watch
