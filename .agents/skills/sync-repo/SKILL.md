@@ -1,12 +1,12 @@
 ---
-name: multi-repo-pr-merge-sync
-description: Commit and push all changes across multiple git repositories in a workspace, create one PR per repo, wait for checks, process bot feedback, resolve base-branch conflicts, push revisions, merge to main, and enforce final local main parity with only main branch remaining locally.
+name: sync-repo
+description: Commit and push changes across one or more git repositories in a workspace, create one PR per repo, wait for checks, process bot feedback, resolve base-branch conflicts, push revisions, merge to main, and enforce final local main parity with only main branch remaining locally.
 ---
 
-# Multi-Repo PR Merge Sync
+# sync-repo
 
 ## Overview
-Use this skill to run an end-to-end multi-repo release loop:
+Use this skill to run an end-to-end PR merge sync loop for one repo or a repo set:
 1. Detect repos and enforce TRR ordering.
 2. Commit all repo changes and create/reuse one PR per repo.
 3. Wait for CI checks, rerun stalled checks, and process bot feedback.
@@ -16,7 +16,7 @@ Use this skill to run an end-to-end multi-repo release loop:
 
 ## Primary Command
 ```bash
-python .agents/skills/multi-repo-pr-merge-sync/scripts/orchestrate_multi_repo_pr_merge_sync.py \
+python3.11 .agents/skills/sync-repo/scripts/orchestrate_multi_repo_pr_merge_sync.py \
   --workspace-root /absolute/workspace/path \
   --base-branch main \
   --branch-prefix codex \
@@ -31,7 +31,25 @@ python .agents/skills/multi-repo-pr-merge-sync/scripts/orchestrate_multi_repo_pr
   --revision-command '<your auto-fix command>' \
   --max-revision-cycles 5 \
   --delete-non-main-local-branches true \
-  --json-report /tmp/multi-repo-sync-report.json
+  --json-report /tmp/repo-pr-sync-report.json
+```
+
+Single repo:
+```bash
+python3.11 .agents/skills/sync-repo/scripts/orchestrate_multi_repo_pr_merge_sync.py \
+  --workspace-root /Users/thomashulihan/Projects/TRR \
+  --repos TRR-APP \
+  --dry-run \
+  --json-report /tmp/repo-pr-sync-single.json
+```
+
+Multi repo:
+```bash
+python3.11 .agents/skills/sync-repo/scripts/orchestrate_multi_repo_pr_merge_sync.py \
+  --workspace-root /Users/thomashulihan/Projects/TRR \
+  --repos TRR-Backend,TRR-APP \
+  --dry-run \
+  --json-report /tmp/repo-pr-sync-multi.json
 ```
 
 Workspace wrapper:
@@ -41,7 +59,18 @@ make workspace-pr-agent
 
 Wrapper default:
 - auto-discovers the workspace root repo plus child repos
-- set `WORKSPACE_PR_AGENT_REPOS='<comma-separated repos>'` to narrow scope
+- set `WORKSPACE_PR_AGENT_REPOS='<repo>'` for a single-repo run
+- set `WORKSPACE_PR_AGENT_REPOS='<comma-separated repos>'` to narrow a multi-repo run
+
+Single repo through the wrapper:
+```bash
+WORKSPACE_PR_AGENT_REPOS='TRR-APP' make workspace-pr-agent
+```
+
+Workspace-wide multi repo through the wrapper:
+```bash
+make workspace-pr-agent
+```
 
 Default wrapper revision command:
 - `python3 /Users/thomashulihan/Projects/TRR/scripts/workspace-pr-agent-revision.py`
@@ -84,7 +113,7 @@ Common options:
 - `--delete-non-main-local-branches true|false`
 - `--dry-run`
 - `--json-report <path>`
-- `--repos <comma-separated paths>`
+- `--repos <repo-or-comma-separated-paths>`
 
 ## Guardrails
 - Never force-push `main`.

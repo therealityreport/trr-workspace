@@ -843,6 +843,67 @@ workspace_startup_runtime_summary() {
     "$(workspace_startup_remote_execution_summary)"
 }
 
+workspace_positive_int_or_default() {
+  local value="$1"
+  local default_value="$2"
+  if [[ "$value" =~ ^[1-9][0-9]*$ ]]; then
+    echo "$value"
+    return 0
+  fi
+  echo "$default_value"
+}
+
+workspace_projected_positive_int_or_empty() {
+  local primary_value="$1"
+  local fallback_value="$2"
+  if [[ "$primary_value" =~ ^[1-9][0-9]*$ ]]; then
+    echo "$primary_value"
+    return 0
+  fi
+  if [[ "$fallback_value" =~ ^[1-9][0-9]*$ ]]; then
+    echo "$fallback_value"
+    return 0
+  fi
+  echo ""
+}
+
+workspace_projected_app_postgres_pool_max() {
+  workspace_projected_positive_int_or_empty \
+    "${WORKSPACE_TRR_APP_POSTGRES_POOL_MAX:-}" \
+    "${POSTGRES_POOL_MAX:-}"
+}
+
+workspace_projected_app_postgres_max_concurrent_operations() {
+  workspace_projected_positive_int_or_empty \
+    "${WORKSPACE_TRR_APP_POSTGRES_MAX_CONCURRENT_OPERATIONS:-}" \
+    "${POSTGRES_MAX_CONCURRENT_OPERATIONS:-}"
+}
+
+workspace_effective_db_holder_budget() {
+  local app_pool
+  local app_projected_pool
+  local backend_pool
+  local social_profile_pool
+  local health_pool
+  local total
+
+  # Fallbacks mirror the canonical `make dev` / PROFILE=default workspace
+  # contract; explicit profile or environment values still override them.
+  app_projected_pool="$(workspace_projected_app_postgres_pool_max)"
+  app_pool="$(workspace_positive_int_or_default "$app_projected_pool" "4")"
+  backend_pool="$(workspace_positive_int_or_default "${TRR_DB_POOL_MAXCONN:-}" "4")"
+  social_profile_pool="$(workspace_positive_int_or_default "${TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN:-}" "4")"
+  health_pool="$(workspace_positive_int_or_default "${TRR_HEALTH_DB_POOL_MAXCONN:-}" "1")"
+  total=$(( app_pool + backend_pool + social_profile_pool + health_pool ))
+
+  printf 'app=%s, backend=%s, social_profile=%s, health=%s, total=%s' \
+    "$app_pool" \
+    "$backend_pool" \
+    "$social_profile_pool" \
+    "$health_pool" \
+    "$total"
+}
+
 runtime_reconcile_artifact_path() {
   echo "${ROOT}/.logs/workspace/runtime-reconcile.json"
 }
@@ -885,6 +946,7 @@ print_workspace_ready_summary() {
   echo "    TRR-APP Admin:       ${ADMIN_APP_ORIGIN}"
   echo "    TRR-Backend:         ${TRR_API_URL}"
   echo "  Summary: $(workspace_startup_runtime_summary)"
+  echo "  Local DB holders: $(workspace_effective_db_holder_budget)"
   echo "  Runtime reconcile: $(runtime_reconcile_startup_summary)"
   echo "  Logs:"
   echo "    ${TRR_APP_LOG}"
@@ -1009,9 +1071,13 @@ start_trr_app() {
   prepare_trr_app_next_cache
 
   local trr_app_dev_flag="--turbopack"
+  local trr_app_postgres_pool_max
+  local trr_app_postgres_max_concurrent_operations
   if [[ "$WORKSPACE_TRR_APP_DEV_BUNDLER" == "webpack" ]]; then
     trr_app_dev_flag="--webpack"
   fi
+  trr_app_postgres_pool_max="$(workspace_projected_app_postgres_pool_max)"
+  trr_app_postgres_max_concurrent_operations="$(workspace_projected_app_postgres_max_concurrent_operations)"
 
   # Keep TRR_APP attached to its parent shell process; with setsid wrappers,
   # Next.js can re-parent and make PID tracking flaky.
@@ -1024,8 +1090,8 @@ start_trr_app() {
     TRR_LOCAL_DEV=1 \
     TRR_DB_URL=\"$TRR_DB_URL\" \
     TRR_DB_FALLBACK_URL=\"${TRR_DB_FALLBACK_URL:-}\" \
-    POSTGRES_POOL_MAX=\"${WORKSPACE_TRR_APP_POSTGRES_POOL_MAX:-${POSTGRES_POOL_MAX:-}}\" \
-    POSTGRES_MAX_CONCURRENT_OPERATIONS=\"${WORKSPACE_TRR_APP_POSTGRES_MAX_CONCURRENT_OPERATIONS:-${POSTGRES_MAX_CONCURRENT_OPERATIONS:-}}\" \
+    POSTGRES_POOL_MAX=\"$trr_app_postgres_pool_max\" \
+    POSTGRES_MAX_CONCURRENT_OPERATIONS=\"$trr_app_postgres_max_concurrent_operations\" \
     TRR_API_URL=\"$TRR_API_URL\" \
     TRR_INTERNAL_ADMIN_SHARED_SECRET=\"$WORKSPACE_TRR_INTERNAL_ADMIN_SHARED_SECRET\" \
     TRR_ADMIN_ROUTE_CACHE_DISABLED=\"$TRR_ADMIN_ROUTE_CACHE_DISABLED\" \
