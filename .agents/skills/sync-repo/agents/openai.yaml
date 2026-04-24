@@ -1,0 +1,8 @@
+interface:
+  display_name: "sync-repo"
+  short_description: "Commit, PR, check, bot-review revise, merge, and sync one repo or a repo set"
+  icon_small: "./assets/app-icon-small.png"
+  icon_large: "./assets/app-icon.png"
+  default_prompt: "Use $sync-repo to run PR merge sync for one repo or a workspace repo set: create or reuse one PR per repo, wait for checks, process bot reviews/messages, apply revisions, resolve merge conflicts, merge to main, and finish with local main matching origin/main and no local branches except main."
+policy:
+  allow_implicit_invocation: false

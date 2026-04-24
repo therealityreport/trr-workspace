@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Orchestrate multi-repo commit -> PR -> checks -> revise -> merge -> main sync."""
+"""Orchestrate repo PR sync across one or more repositories."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ import sys
 import tempfile
 import time
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -67,7 +67,7 @@ def log(message: str) -> None:
 
 
 def now_iso() -> str:
-    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def parse_bool(value: str) -> bool:
@@ -335,8 +335,8 @@ def get_or_create_pr(repo: RepoTarget, branch_name: str, base_branch: str) -> tu
     title = f"chore: workspace sync for {repo.name}"
     body = (
         "## Summary\n"
-        "- automated multi-repo sync PR\n"
-        "- commits all staged workspace changes for this repository\n"
+        "- automated repo PR sync\n"
+        "- commits staged workspace changes for this repository\n"
         "\n"
         "## Validation\n"
         "- CI checks pending"
@@ -819,7 +819,7 @@ def run_revision_command(
         }
 
     context_file = Path(tempfile.gettempdir()) / (
-        f"multi-repo-sync-{slugify(repo.name)}-pr{pr_number}-{slugify(reason)}-{int(time.time())}.json"
+        f"repo-pr-sync-{slugify(repo.name)}-pr{pr_number}-{slugify(reason)}-{int(time.time())}.json"
     )
     context_file.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
 
@@ -1011,7 +1011,7 @@ def process_repo(
 ) -> dict[str, Any]:
     log(f"[repo:{repo.name}] cycle={cycle_index}")
     base_branch = args.base_branch
-    date_tag = datetime.now(UTC).strftime("%Y-%m-%d")
+    date_tag = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     branch_name = f"{args.branch_prefix}/{date_tag}-{slugify(repo.name)}-sync"
 
     result: dict[str, Any] = {
@@ -1226,7 +1226,7 @@ def process_repo(
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Commit/PR/merge multiple repositories with check monitoring.")
+    parser = argparse.ArgumentParser(description="Commit, PR, merge, and sync one or more repositories with check monitoring.")
     parser.add_argument("--workspace-root", required=True, help="Absolute path to workspace root.")
     parser.add_argument("--base-branch", default="main")
     parser.add_argument("--branch-prefix", default="codex")
@@ -1377,7 +1377,9 @@ def main(argv: list[str]) -> int:
                 report["success"] = True
                 report["ended_at"] = now_iso()
                 write_json_report(report_path, report)
-                log("[result] Success: all repos merged, local/remote main are in sync, and local branches are clean.")
+                log(
+                    "[result] Success: targeted repos merged, local/remote main are in sync, and local branches are clean."
+                )
                 return 0
 
             cycle += 1
