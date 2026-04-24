@@ -93,6 +93,14 @@ Default sizing in `postgres.ts`:
 | Development (session pooler) | 4 | 4 |
 | Local direct | 4 (non-session) | 2 |
 
+Deployment rollback guard: after lowering deployed session-pooler defaults to
+`POSTGRES_POOL_MAX=4` and `POSTGRES_MAX_CONCURRENT_OPERATIONS=2`, watch
+`event=postgres_pool_queue_depth`, admin route p95 latency, and Vercel function
+error rate for the first production deploy. If steady-state queue depth becomes
+non-zero or admin route p95 regresses, set environment overrides
+`POSTGRES_POOL_MAX=6` and `POSTGRES_MAX_CONCURRENT_OPERATIONS=6` for the
+affected environment before changing code again.
+
 Each concurrent Vercel function instance = 1 holder. Reality check in Vercel
 dashboard → Observability → Functions → concurrent executions (p95 over 7d).
 
