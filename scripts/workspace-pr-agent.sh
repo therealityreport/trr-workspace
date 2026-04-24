@@ -1,11 +1,44 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+resolve_bash_4_bin() {
+  local configured="${BASH_BIN:-}"
+  local candidate path
+
+  for candidate in "$configured" /opt/homebrew/bin/bash bash /bin/bash; do
+    [[ -n "$candidate" ]] || continue
+    if [[ -x "$candidate" ]]; then
+      path="$candidate"
+    elif command -v "$candidate" >/dev/null 2>&1; then
+      path="$(command -v "$candidate")"
+    else
+      continue
+    fi
+
+    if "$path" -lc '[[ "${BASH_VERSINFO[0]}" -ge 4 ]]' >/dev/null 2>&1; then
+      echo "$path"
+      return 0
+    fi
+  done
+
+  echo "bash"
+}
+
+BASH_BIN="$(resolve_bash_4_bin)"
+if [[ "${WORKSPACE_PR_AGENT_BASH_REEXEC:-0}" != "1" ]] && ! [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+  export WORKSPACE_PR_AGENT_BASH_REEXEC=1
+  exec "$BASH_BIN" "$0" "$@"
+fi
+
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-PYTHON_BIN="${PYTHON_BIN:-python3}"
-ORCHESTRATOR="$ROOT/.agents/skills/multi-repo-pr-merge-sync/scripts/orchestrate_multi_repo_pr_merge_sync.py"
+if [[ "$BASH_BIN" = /* ]]; then
+  export PATH="$(dirname "$BASH_BIN"):$PATH"
+fi
+
+PYTHON_BIN="${PYTHON_BIN:-python3.11}"
+ORCHESTRATOR="$ROOT/.agents/skills/sync-repo/scripts/orchestrate_multi_repo_pr_merge_sync.py"
 JSON_REPORT="${WORKSPACE_PR_AGENT_JSON_REPORT:-$ROOT/.logs/workspace/pr-agent-report.json}"
 TARGET_REPOS="${WORKSPACE_PR_AGENT_REPOS:-}"
 REVISION_COMMAND="${WORKSPACE_PR_AGENT_REVISION_COMMAND:-python3 $ROOT/scripts/workspace-pr-agent-revision.py}"
@@ -53,5 +86,5 @@ echo "[workspace-pr-agent] revision-use-github-mcp: ${WORKSPACE_PR_AGENT_REVISIO
 echo "[workspace-pr-agent] revision-require-github-mcp: ${WORKSPACE_PR_AGENT_REVISION_REQUIRE_GITHUB_MCP:-0}"
 echo "[workspace-pr-agent] revision-use-vercel-mcp: ${WORKSPACE_PR_AGENT_REVISION_USE_VERCEL_MCP:-1}"
 echo "[workspace-pr-agent] running handoff closeout sync before orchestration"
-bash "$ROOT/scripts/handoff-lifecycle.sh" closeout
+"$BASH_BIN" "$ROOT/scripts/handoff-lifecycle.sh" closeout
 "${cmd[@]}"

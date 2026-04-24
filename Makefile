@@ -193,7 +193,7 @@ chrome-devtools-mcp-stop-conflicts:
 mcp-clean:
 	@bash scripts/mcp-clean.sh
 
-# Multi-repo commit/PR/review/merge automation agent.
+# Repo commit/PR/review/merge automation agent for one repo or a repo set.
 # Optional env overrides:
 # WORKSPACE_PR_AGENT_REVISION_COMMAND='...'   # default uses scripts/workspace-pr-agent-revision.py
 # WORKSPACE_PR_AGENT_REVISION_USE_CODEX=0     # disable Codex-assist within revision script
@@ -201,6 +201,6 @@ mcp-clean:
 # WORKSPACE_PR_AGENT_REVISION_REQUIRE_GITHUB_MCP=1   # fail revision assist if GitHub MCP auth is missing
 # WORKSPACE_PR_AGENT_REVISION_USE_VERCEL_MCP=0   # disable Vercel deployment-context lookup in revision assist
 # WORKSPACE_PR_AGENT_DRY_RUN=1
-# WORKSPACE_PR_AGENT_REPOS='TRR-Backend,TRR-APP'   # optional scope override; default auto-discovers workspace root + child repos
+# WORKSPACE_PR_AGENT_REPOS='TRR-APP' or 'TRR-Backend,TRR-APP'   # optional scope override; default auto-discovers workspace root + child repos
 workspace-pr-agent:
 	@bash scripts/workspace-pr-agent.sh
