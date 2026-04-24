@@ -5,8 +5,11 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DEV_SCRIPT="$ROOT/scripts/dev-workspace.sh"
 PROFILE_FILE="$ROOT/profiles/default.env"
 SOCIAL_DEBUG_PROFILE_FILE="$ROOT/profiles/social-debug.env"
+LOCAL_CLOUD_PROFILE_FILE="$ROOT/profiles/local-cloud.env"
 ENV_CONTRACT_FILE="$ROOT/docs/workspace/env-contract.md"
-TRR_APP_ENV_FILE="$ROOT/TRR-APP/apps/web/.env.example"
+TRR_APP_WEB_DIR="$ROOT/TRR-APP/apps/web"
+TRR_APP_ENV_FILE="$TRR_APP_WEB_DIR/.env.example"
+TRR_APP_POSTGRES_CONTRACT_TEST="$TRR_APP_WEB_DIR/tests/postgres-connection-string-resolution.test.ts"
 
 extract_script_default() {
   local key="$1"
@@ -51,6 +54,83 @@ assert_equals() {
     echo "[workspace-contract] ERROR: ${label} expected '${expected}' but found '${actual}'." >&2
     exit 1
   fi
+}
+
+assert_workspace_app_projection_behavior() {
+  python3 - "$DEV_SCRIPT" <<'PY'
+from __future__ import annotations
+
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+
+dev_script = Path(sys.argv[1])
+text = dev_script.read_text(encoding="utf-8")
+try:
+    start = text.index("workspace_positive_int_or_default() {")
+    end = text.index("\nruntime_reconcile_artifact_path() {", start)
+except ValueError as exc:
+    print(f"[workspace-contract] ERROR: unable to extract workspace projection helpers: {exc}", file=sys.stderr)
+    raise SystemExit(1)
+
+helper_block = text[start:end]
+
+
+def run_helper(helper_call: str, env_overrides: dict[str, str]) -> str:
+    env = {"PATH": os.environ.get("PATH", "/usr/bin:/bin"), **env_overrides}
+    result = subprocess.run(
+        ["bash", "-c", f"set -euo pipefail\n{helper_block}\n{helper_call}\n"],
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        print(result.stderr, file=sys.stderr)
+        raise SystemExit(result.returncode)
+    return result.stdout.strip()
+
+
+checks = [
+    (
+        "malformed inherited POSTGRES_POOL_MAX projection",
+        "workspace_projected_app_postgres_pool_max",
+        {"POSTGRES_POOL_MAX": "bad"},
+        "",
+    ),
+    (
+        "explicit WORKSPACE_TRR_APP_POSTGRES_POOL_MAX projection",
+        "workspace_projected_app_postgres_pool_max",
+        {"POSTGRES_POOL_MAX": "bad", "WORKSPACE_TRR_APP_POSTGRES_POOL_MAX": "2"},
+        "2",
+    ),
+    (
+        "default local DB holder budget",
+        "workspace_effective_db_holder_budget",
+        {},
+        "app=4, backend=4, social_profile=4, health=1, total=13",
+    ),
+]
+
+for label, helper_call, env_overrides, expected in checks:
+    actual = run_helper(helper_call, env_overrides)
+    if actual != expected:
+        print(
+            f"[workspace-contract] ERROR: {label} expected '{expected}' but found '{actual}'.",
+            file=sys.stderr,
+        )
+        raise SystemExit(1)
+PY
+}
+
+assert_app_postgres_pool_contract() {
+  if [[ ! -f "$TRR_APP_POSTGRES_CONTRACT_TEST" ]]; then
+    echo "[workspace-contract] ERROR: missing app postgres contract test ${TRR_APP_POSTGRES_CONTRACT_TEST}." >&2
+    exit 1
+  fi
+
+  pnpm -C "$TRR_APP_WEB_DIR" exec vitest run tests/postgres-connection-string-resolution.test.ts --reporter=dot
 }
 
 modal_script_default="$(extract_script_default "WORKSPACE_TRR_MODAL_ADMIN_OPERATION_FUNCTION")"
@@ -105,10 +185,26 @@ social_worker_comment_media_profile_default="$(extract_profile_value "WORKSPACE_
 social_worker_comment_media_doc_default="$(extract_env_contract_default "WORKSPACE_SOCIAL_WORKER_COMMENT_MEDIA_MIRROR")"
 social_profile_pool_min_profile_default="$(extract_profile_value "TRR_SOCIAL_PROFILE_DB_POOL_MINCONN")"
 social_profile_pool_max_profile_default="$(extract_profile_value "TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN")"
+health_pool_min_profile_default="$(extract_profile_value "TRR_HEALTH_DB_POOL_MINCONN")"
+health_pool_max_profile_default="$(extract_profile_value "TRR_HEALTH_DB_POOL_MAXCONN")"
 db_pool_min_profile_default="$(extract_profile_value "TRR_DB_POOL_MINCONN")"
 db_pool_max_profile_default="$(extract_profile_value "TRR_DB_POOL_MAXCONN")"
+social_profile_pool_min_social_debug="$(extract_env_assignment "$SOCIAL_DEBUG_PROFILE_FILE" "TRR_SOCIAL_PROFILE_DB_POOL_MINCONN")"
+social_profile_pool_max_social_debug="$(extract_env_assignment "$SOCIAL_DEBUG_PROFILE_FILE" "TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN")"
+health_pool_min_social_debug="$(extract_env_assignment "$SOCIAL_DEBUG_PROFILE_FILE" "TRR_HEALTH_DB_POOL_MINCONN")"
+health_pool_max_social_debug="$(extract_env_assignment "$SOCIAL_DEBUG_PROFILE_FILE" "TRR_HEALTH_DB_POOL_MAXCONN")"
+db_pool_min_social_debug="$(extract_env_assignment "$SOCIAL_DEBUG_PROFILE_FILE" "TRR_DB_POOL_MINCONN")"
+db_pool_max_social_debug="$(extract_env_assignment "$SOCIAL_DEBUG_PROFILE_FILE" "TRR_DB_POOL_MAXCONN")"
+social_profile_pool_min_local_cloud="$(extract_env_assignment "$LOCAL_CLOUD_PROFILE_FILE" "TRR_SOCIAL_PROFILE_DB_POOL_MINCONN")"
+social_profile_pool_max_local_cloud="$(extract_env_assignment "$LOCAL_CLOUD_PROFILE_FILE" "TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN")"
+health_pool_min_local_cloud="$(extract_env_assignment "$LOCAL_CLOUD_PROFILE_FILE" "TRR_HEALTH_DB_POOL_MINCONN")"
+health_pool_max_local_cloud="$(extract_env_assignment "$LOCAL_CLOUD_PROFILE_FILE" "TRR_HEALTH_DB_POOL_MAXCONN")"
+db_pool_min_local_cloud="$(extract_env_assignment "$LOCAL_CLOUD_PROFILE_FILE" "TRR_DB_POOL_MINCONN")"
+db_pool_max_local_cloud="$(extract_env_assignment "$LOCAL_CLOUD_PROFILE_FILE" "TRR_DB_POOL_MAXCONN")"
 social_profile_pool_min_doc_default="$(extract_env_contract_default "TRR_SOCIAL_PROFILE_DB_POOL_MINCONN")"
 social_profile_pool_max_doc_default="$(extract_env_contract_default "TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN")"
+health_pool_min_doc_default="$(extract_env_contract_default "TRR_HEALTH_DB_POOL_MINCONN")"
+health_pool_max_doc_default="$(extract_env_contract_default "TRR_HEALTH_DB_POOL_MAXCONN")"
 db_pool_min_doc_default="$(extract_env_contract_default "TRR_DB_POOL_MINCONN")"
 db_pool_max_doc_default="$(extract_env_contract_default "TRR_DB_POOL_MAXCONN")"
 assert_equals "profiles/default.env job plane mode" "remote" "$job_plane_profile_default"
@@ -147,12 +243,28 @@ assert_equals "profiles/default.env local social worker comment media mirror" "0
 assert_equals "docs/workspace/env-contract.md local social worker comment media mirror" "0" "$social_worker_comment_media_doc_default"
 assert_equals "profiles/default.env social profile db pool min" "1" "$social_profile_pool_min_profile_default"
 assert_equals "profiles/default.env social profile db pool max" "4" "$social_profile_pool_max_profile_default"
+assert_equals "profiles/default.env health db pool min" "1" "$health_pool_min_profile_default"
+assert_equals "profiles/default.env health db pool max" "1" "$health_pool_max_profile_default"
 assert_equals "profiles/default.env db pool min" "1" "$db_pool_min_profile_default"
-assert_equals "profiles/default.env db pool max" "2" "$db_pool_max_profile_default"
+assert_equals "profiles/default.env db pool max" "4" "$db_pool_max_profile_default"
+assert_equals "profiles/social-debug.env social profile db pool min" "1" "$social_profile_pool_min_social_debug"
+assert_equals "profiles/social-debug.env social profile db pool max" "4" "$social_profile_pool_max_social_debug"
+assert_equals "profiles/social-debug.env health db pool min" "1" "$health_pool_min_social_debug"
+assert_equals "profiles/social-debug.env health db pool max" "1" "$health_pool_max_social_debug"
+assert_equals "profiles/social-debug.env db pool min" "1" "$db_pool_min_social_debug"
+assert_equals "profiles/social-debug.env db pool max" "4" "$db_pool_max_social_debug"
+assert_equals "profiles/local-cloud.env social profile db pool min" "1" "$social_profile_pool_min_local_cloud"
+assert_equals "profiles/local-cloud.env social profile db pool max" "4" "$social_profile_pool_max_local_cloud"
+assert_equals "profiles/local-cloud.env health db pool min" "1" "$health_pool_min_local_cloud"
+assert_equals "profiles/local-cloud.env health db pool max" "1" "$health_pool_max_local_cloud"
+assert_equals "profiles/local-cloud.env db pool min" "1" "$db_pool_min_local_cloud"
+assert_equals "profiles/local-cloud.env db pool max" "4" "$db_pool_max_local_cloud"
 assert_equals "docs/workspace/env-contract.md social profile db pool min" "1" "$social_profile_pool_min_doc_default"
 assert_equals "docs/workspace/env-contract.md social profile db pool max" "4" "$social_profile_pool_max_doc_default"
+assert_equals "docs/workspace/env-contract.md health db pool min" "1" "$health_pool_min_doc_default"
+assert_equals "docs/workspace/env-contract.md health db pool max" "1" "$health_pool_max_doc_default"
 assert_equals "docs/workspace/env-contract.md db pool min" "1" "$db_pool_min_doc_default"
-assert_equals "docs/workspace/env-contract.md db pool max" "2" "$db_pool_max_doc_default"
+assert_equals "docs/workspace/env-contract.md db pool max" "4" "$db_pool_max_doc_default"
 
 default_app_pool_max="$(extract_profile_value "WORKSPACE_TRR_APP_POSTGRES_POOL_MAX")"
 default_app_max_ops="$(extract_profile_value "WORKSPACE_TRR_APP_POSTGRES_MAX_CONCURRENT_OPERATIONS")"
@@ -160,11 +272,17 @@ social_debug_app_pool_max="$(extract_env_assignment "$SOCIAL_DEBUG_PROFILE_FILE"
 social_debug_app_max_ops="$(extract_env_assignment "$SOCIAL_DEBUG_PROFILE_FILE" "WORKSPACE_TRR_APP_POSTGRES_MAX_CONCURRENT_OPERATIONS")"
 doc_app_pool_max_default="$(extract_env_contract_default "WORKSPACE_TRR_APP_POSTGRES_POOL_MAX")"
 doc_app_max_ops_default="$(extract_env_contract_default "WORKSPACE_TRR_APP_POSTGRES_MAX_CONCURRENT_OPERATIONS")"
+app_env_pool_max="$(extract_env_assignment "$TRR_APP_ENV_FILE" "POSTGRES_POOL_MAX")"
+app_env_max_ops="$(extract_env_assignment "$TRR_APP_ENV_FILE" "POSTGRES_MAX_CONCURRENT_OPERATIONS")"
 assert_equals "profiles/default.env app postgres pool max remains unset" "" "$default_app_pool_max"
 assert_equals "profiles/default.env app postgres max concurrent operations remains unset" "" "$default_app_max_ops"
 assert_equals "profiles/social-debug.env app postgres pool max" "2" "$social_debug_app_pool_max"
 assert_equals "profiles/social-debug.env app postgres max concurrent operations" "2" "$social_debug_app_max_ops"
 assert_equals "docs/workspace/env-contract.md app postgres pool max default" "" "$doc_app_pool_max_default"
 assert_equals "docs/workspace/env-contract.md app postgres max concurrent operations default" "" "$doc_app_max_ops_default"
+assert_equals "TRR-APP/apps/web/.env.example postgres pool max baseline" "4" "$app_env_pool_max"
+assert_equals "TRR-APP/apps/web/.env.example postgres max concurrent operations baseline" "4" "$app_env_max_ops"
+assert_workspace_app_projection_behavior
+assert_app_postgres_pool_contract
 
 echo "[workspace-contract] OK"

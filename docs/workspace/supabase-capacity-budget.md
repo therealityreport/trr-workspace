@@ -1,6 +1,6 @@
 # Supabase Capacity Budget
 
-Last reviewed: 2026-04-17
+Last reviewed: 2026-04-24
 
 Sizing reference for the TRR workspace's Supabase Postgres connections. Read
 this before changing `POSTGRES_POOL_MAX`, `POSTGRES_MAX_CONCURRENT_OPERATIONS`,
@@ -127,8 +127,8 @@ From `TRR-Backend/render.yaml` + `start-api.sh`:
 | Service | `trr-backend-api` | Render Standard plan |
 | Region | virginia | |
 | Default `TRR_BACKEND_WORKERS` | 1 | Unless overridden in Render env |
-| Default `TRR_DB_POOL_MAXCONN` (session pooler) | 2 | `pg.py:35` |
-| Default `TRR_DB_POOL_MINCONN` (session pooler) | 1 | `pg.py:34` |
+| Default `TRR_DB_POOL_MAXCONN` (session pooler) | 8 | `pg.py:40`; no checked-in Render override |
+| Default `TRR_DB_POOL_MINCONN` (session pooler) | 2 | `pg.py:39`; no checked-in Render override |
 
 - **Budget assumption: production instance count = 1.** The repo contains one
   Render web service definition (`trr-backend-api`) and no checked-in
@@ -140,9 +140,13 @@ From `TRR-Backend/render.yaml` + `start-api.sh`:
   not define extra Render worker or cron services. Modal jobs exist, but they
   are treated as ephemeral consumers in the one-off reserve below rather than
   as always-on holders.
-- **Session-pooler subtotal from assumptions:** `1 × 1 × 2 = 2` connections.
+- **Session-pooler subtotal from assumptions:** `1 × 1 × 8 = 8` connections.
 
-Subtotal formula: `instances × workers × 2`.
+Subtotal formula: `instances × workers × 8`.
+
+The `TRR_DB_POOL_MINCONN=1` / `TRR_DB_POOL_MAXCONN=4` contract is a local
+workspace profile budget for `make dev`; it is not a Render deployment default
+unless the deployment adds explicit env overrides.
 
 ### One-off / scripts / cron
 
@@ -159,16 +163,16 @@ Repo-config-backed budget with the assumptions above:
 ```
 Vercel_prod   = 2 × 4 = 8
 Vercel_preview= 1 × 4 = 4   (set to 0 if Preview uses an isolated DB)
-Render_python = 1 × 1 × 2 = 2
+Render_python = 1 × 1 × 8 = 8
 Scripts/cron  = 5
 Supabase_int  = 10
 Superuser     = 3
 Operator_head = 5
-Total         = 8 + 4 + 2 + 5 + 10 + 3 + 5 = 37
-Headroom      = 60 - 37 = 23
+Total         = 8 + 4 + 8 + 5 + 10 + 3 + 5 = 43
+Headroom      = 60 - 43 = 17
 ```
 
-This leaves `23 / 60 = 38.3%` of the backend ceiling free under the documented
+This leaves `17 / 60 = 28.3%` of the backend ceiling free under the documented
 budget assumptions.
 
 ### Safe headroom thresholds
@@ -177,26 +181,28 @@ budget assumptions.
   intentionally held back for superuser recovery, Supabase internals, operators,
   and one-off jobs.
 - **App-lane budget after fixed reserve:** `60 - 23 = 37`.
-- **Render consumes:** `2`, leaving `35` for Vercel holders that use
+- **Render consumes:** `8`, leaving `29` for Vercel holders that use
   `POSTGRES_POOL_MAX=4`.
-- **Absolute Vercel ceiling with current Render budget:** `floor(35 / 4) = 8`
-  concurrent Vercel holders across Production + Preview, leaving 3 spare
+- **Absolute Vercel ceiling with current Render budget:** `floor(29 / 4) = 7`
+  concurrent Vercel holders across Production + Preview, leaving 1 spare
   connections.
 - **Comfortable Vercel ceiling with a 10-connection overall safety margin:**
   target `Total ≤ 50`, so app lanes should stay within `27` connections.
-  After subtracting Render's `2`, Vercel should stay at `25` or below:
-  `floor(25 / 4) = 6` concurrent holders across Production + Preview.
+  After subtracting Render's `8`, Vercel should stay at `19` or below:
+  `floor(19 / 4) = 4` concurrent holders across Production + Preview.
 
-**Working rule:** treat **6 total Vercel holders** as the comfortable cap on
-this tier, and **8 total Vercel holders** as the practical failure boundary if
+**Working rule:** treat **4 total Vercel holders** as the comfortable cap on
+this tier, and **7 total Vercel holders** as the practical failure boundary if
 the rest of the repo-configured budget stays unchanged.
 
 ### Optional local-workspace note
 
 If an operator points `make dev` at the same hosted Supabase project, the local
-workspace can add up to `10` more session-mode connections (`TRR-APP` local
-pool `4` + `TRR-Backend` default pool `2` + dedicated `social_profile` pool
-`4`). That does not fit cleanly inside the `Operator_head = 5` reserve, so
+workspace can add up to `13` more session-mode connections (`TRR-APP` local
+pool `4` + `TRR-Backend` default pool `4` + dedicated `social_profile` pool
+`4` + health pool `1`). That `TRR-Backend` pool `4` value comes from the local
+profile/workspace contract, not Render's unchecked code default. The local
+workspace total does not fit cleanly inside the `Operator_head = 5` reserve, so
 local workspace access to production should be treated as explicit break-glass
 usage rather than normal operating budget.
 
@@ -205,8 +211,8 @@ social-profile debugging. It leaves the default baseline unchanged but projects
 `WORKSPACE_TRR_APP_POSTGRES_POOL_MAX=2` and
 `WORKSPACE_TRR_APP_POSTGRES_MAX_CONCURRENT_OPERATIONS=2` into the `TRR-APP`
 child process, cutting the local app-side session holder budget in half for
-that specific lane while leaving the backend default pool at `2` and the
-dedicated backend `social_profile` lane at `4`.
+that specific lane while keeping the backend default pool at `4`, the dedicated
+backend `social_profile` lane at `4`, and the health lane at `1`.
 
 **If `Total > 60`:** `MaxClientsInSessionMode` errors are inevitable. Options
 in order of preference:
