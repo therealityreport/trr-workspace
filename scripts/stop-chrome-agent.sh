@@ -9,6 +9,12 @@ DEBUG_PORT="${CHROME_AGENT_DEBUG_PORT:-9422}"
 LEGACY_PIDFILE="${LOG_DIR}/chrome-agent.pid"
 STOP_ALL="${CHROME_AGENT_STOP_ALL:-0}"
 
+cleanup_chrome_dock_recents_if_requested() {
+  [[ "${CHROME_AGENT_CLEAN_DOCK_RECENTS:-0}" == "1" ]] || return 0
+  [[ "$(uname)" == "Darwin" ]] || return 0
+  bash "${ROOT}/scripts/cleanup-chrome-dock-recents.sh" >&2 || true
+}
+
 clear_headful_owner_if_matches() {
   local chrome_pid="$1"
   [[ -f "$HEADFUL_OWNER_FILE" ]] || return 0
@@ -92,6 +98,7 @@ if [[ "$STOP_ALL" == "1" ]]; then
     if [[ -f "$LEGACY_PIDFILE" ]]; then
       stop_by_port "9222"
     fi
+    cleanup_chrome_dock_recents_if_requested
     exit 0
   fi
 
@@ -104,7 +111,9 @@ if [[ "$STOP_ALL" == "1" ]]; then
   if [[ -f "$LEGACY_PIDFILE" ]]; then
     stop_by_port "9222"
   fi
+  cleanup_chrome_dock_recents_if_requested
   exit 0
 fi
 
 stop_by_port "$DEBUG_PORT"
+cleanup_chrome_dock_recents_if_requested
