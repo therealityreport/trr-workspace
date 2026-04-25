@@ -9,6 +9,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DEV_SCRIPT = ROOT / "scripts" / "dev-workspace.sh"
+STATUS_SCRIPT = ROOT / "scripts" / "status-workspace.sh"
 SOCIAL_DEBUG_PROFILE = ROOT / "profiles" / "social-debug.env"
 LOCAL_CLOUD_PROFILE = ROOT / "profiles" / "local-cloud.env"
 ENV_CONTRACT_DOC = ROOT / "docs" / "workspace" / "env-contract.md"
@@ -118,6 +119,20 @@ class WorkspaceAppEnvProjectionTests(unittest.TestCase):
         self.assertIn("WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT=12", text)
         self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_POSTS=1", text)
         self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS=1", text)
+
+    def test_workspace_scripts_pin_low_pressure_modal_social_defaults(self) -> None:
+        dev_text = DEV_SCRIPT.read_text(encoding="utf-8")
+        status_text = STATUS_SCRIPT.read_text(encoding="utf-8")
+        defaults = {
+            "WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT": "6",
+            "WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT": "12",
+            "WORKSPACE_TRR_REMOTE_SOCIAL_POSTS": "1",
+            "WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS": "1",
+        }
+        for key, value in defaults.items():
+            self.assertIn(f'{key}="${{{key}:-{value}}}"', dev_text)
+            self.assertIn(f'{key}="${{{key}:-{value}}}"', status_text)
+            self.assertIn(f"invalid {key}='${{{key}}}', using {value}.", dev_text)
 
     def test_dev_workspace_prints_effective_db_holder_budget(self) -> None:
         text = DEV_SCRIPT.read_text(encoding="utf-8")
