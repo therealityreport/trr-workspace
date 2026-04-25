@@ -114,6 +114,10 @@ class WorkspaceAppEnvProjectionTests(unittest.TestCase):
         self.assertIn("TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN=4", text)
         self.assertIn("TRR_HEALTH_DB_POOL_MINCONN=1", text)
         self.assertIn("TRR_HEALTH_DB_POOL_MAXCONN=1", text)
+        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT=6", text)
+        self.assertIn("WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT=12", text)
+        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_POSTS=1", text)
+        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS=1", text)
 
     def test_dev_workspace_prints_effective_db_holder_budget(self) -> None:
         text = DEV_SCRIPT.read_text(encoding="utf-8")
