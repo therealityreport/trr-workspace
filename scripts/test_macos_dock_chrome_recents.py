@@ -196,3 +196,47 @@ def test_restart_dock_if_needed_skips_non_darwin(monkeypatch) -> None:
 
     assert module.restart_dock_if_needed(1, restart_dock=True) is False
     assert calls == []
+
+
+WRAPPER_PATH = Path(__file__).resolve().parent / "cleanup-chrome-dock-recents.sh"
+
+
+def _run_wrapper(*args: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        ["bash", str(WRAPPER_PATH), *args],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
+def test_wrapper_passes_custom_plist_without_restarting_dock(tmp_path: Path) -> None:
+    dock_plist = tmp_path / "com.apple.dock.plist"
+    _write_plist(
+        dock_plist,
+        {
+            "persistent-apps": [],
+            "recent-apps": [_chrome_tile(30), _safari_tile(31)],
+        },
+    )
+
+    result = _run_wrapper("--plist", str(dock_plist), "--no-restart-dock")
+
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == "chrome_recent_apps_removed=1\ndock_restarted=0\n"
+    assert _read_plist(dock_plist)["recent-apps"] == [_safari_tile(31)]
+
+
+def test_wrapper_dry_run_keeps_custom_plist(tmp_path: Path) -> None:
+    dock_plist = tmp_path / "com.apple.dock.plist"
+    original = {
+        "persistent-apps": [],
+        "recent-apps": [_chrome_tile(40), _safari_tile(41)],
+    }
+    _write_plist(dock_plist, original)
+
+    result = _run_wrapper("--plist", str(dock_plist), "--dry-run", "--no-restart-dock")
+
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == "chrome_recent_apps_removed=1\ndock_restarted=0\n"
+    assert _read_plist(dock_plist) == original
