@@ -37,6 +37,8 @@ Visibility tiers:
 | `TRR_INTERNAL_ADMIN_ALLOW_SERVICE_ROLE` | `` | `0` or `1` | `TRR-Backend/api/auth.py`, `TRR-Backend/.env.example` | `internal` | Dev-only backend escape hatch that allows service-role tokens through internal-admin routes. Leave unset in production. |
 | `TRR_REDDIT_CACHE_LOOKUP_RETRIES` | `1` | integer | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `TRR_REDDIT_CACHE_LOOKUP_TIMEOUT_MS` | `20000` | integer | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
+| `TRR_SOCIAL_CONTROL_DB_POOL_MAXCONN` | `2` | integer | `TRR-Backend/trr_backend/db/pg.py`, `profiles/default.env` | `internal` | Maximum Postgres pool connections reserved for social run/finalize/status control-plane reads. |
+| `TRR_SOCIAL_CONTROL_DB_POOL_MINCONN` | `1` | integer | `TRR-Backend/trr_backend/db/pg.py`, `profiles/default.env` | `internal` | Minimum Postgres pool connections reserved for social run/finalize/status control-plane reads. |
 | `TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN` | `4` | integer | `TRR-Backend/trr_backend/db/pg.py`, `profiles/default.env` | `internal` | Dedicated TRR-Backend social-profile read pool maximum for local workspace runs. This local lane may be higher than the general backend pool to keep social admin pages responsive. |
 | `TRR_SOCIAL_PROFILE_DB_POOL_MINCONN` | `1` | integer | `TRR-Backend/trr_backend/db/pg.py`, `profiles/default.env` | `internal` | Dedicated TRR-Backend social-profile read pool minimum for local workspace runs. |
 | `TRR_SOCIAL_PROXY_DEFAULT_TIMEOUT_MS` | `25000` | integer | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
@@ -84,7 +86,7 @@ Visibility tiers:
 | `WORKSPACE_TRR_MODAL_GOOGLE_NEWS_FUNCTION` | `run_google_news_sync` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_TRR_MODAL_REDDIT_REFRESH_FUNCTION` | `run_reddit_refresh` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_TRR_MODAL_RUNTIME_SECRET_NAME` | `trr-backend-runtime` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
-| `WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT` | `64` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Maximum concurrent Modal containers allowed for `run_social_job`. |
+| `WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT` | `12` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Maximum concurrent Modal containers allowed for `run_social_job`. |
 | `WORKSPACE_TRR_MODAL_SOCIAL_JOB_FUNCTION` | `run_social_job` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_TRR_MODAL_SOCIAL_RECOVERY_FUNCTION` | `sweep_social_dispatch_queue` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_TRR_MODAL_SOCIAL_SECRET_NAME` | `trr-social-auth` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
@@ -93,11 +95,11 @@ Visibility tiers:
 | `WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_LEASE_SECONDS` | `300` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS` | `1` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_TRR_REMOTE_REDDIT_WORKERS` | `1` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
-| `WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS` | `2` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Comments-stage cap used by Modal social dispatch and by legacy local social worker mode. |
+| `WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS` | `1` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Comments-stage cap used by Modal social dispatch and by legacy local social worker mode. |
 | `WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR` | `1` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Comment media mirror stage cap used by Modal social dispatch and by legacy local social worker mode. |
-| `WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT` | `25` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Maximum number of queued social jobs the backend will dispatch per Modal sweep. |
+| `WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT` | `6` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Maximum number of queued social jobs the backend will dispatch per Modal sweep. |
 | `WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR` | `1` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Post media mirror stage cap used by Modal social dispatch and by legacy local social worker mode. |
-| `WORKSPACE_TRR_REMOTE_SOCIAL_POSTS` | `2` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Posts-stage cap used by Modal social dispatch and by legacy local social worker mode. |
+| `WORKSPACE_TRR_REMOTE_SOCIAL_POSTS` | `1` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Posts-stage cap used by Modal social dispatch and by legacy local social worker mode. |
 | `WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS` | `1` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable or disable the Modal social lane in the remote execution contract; this is not a worker-count knob. |
 | `WORKSPACE_TRR_REMOTE_WORKERS_ENABLED` | `1` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable remote background execution. When executor is Modal, local claim loops are skipped and Modal-owned dispatch remains active. |
 | `WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS` | `2` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |

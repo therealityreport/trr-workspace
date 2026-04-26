@@ -1,0 +1,13 @@
+{
+  "db_activity": {
+    "stale_advisory_lock_sessions": 0,
+    "states": [
+      "idle",
+      "unknown"
+    ],
+    "total_sessions": 17,
+    "waiting_sessions": 17
+  },
+  "social_jobs": [],
+  "stale_advisory_sessions": []
+}

@@ -1,0 +1,53 @@
+{
+  "planSource": "docs/superpowers/plans/2026-04-26-social-profile-dashboard-stability.md",
+  "rubricPath": "/Users/thomashulihan/Documents/Codex/2026-04-21-create-a-rubric-for-scoring-an/implementation-plan-rubric.md",
+  "artifactDir": ".plan-grader/social-profile-dashboard-stability-20260426-052215",
+  "verdict": "REVISE_BEFORE_EXECUTION",
+  "originalScore": 74.0,
+  "revisedScoreEstimate": 90.1,
+  "cleanupAfterImplementation": true,
+  "suggestionsPath": ".plan-grader/social-profile-dashboard-stability-20260426-052215/SUGGESTIONS.md",
+  "gates": {
+    "thirtySecondTriage": "pass",
+    "hardFailConditions": "fail_until_revised",
+    "shortReviewForm": "revise",
+    "automaticDowngrades": "cap_74",
+    "wrongThingCorrectlyGuardrail": "pass",
+    "optionalApprovalThresholds": "fails_original_passes_revised"
+  },
+  "scores": {
+    "A.1": { "original": 8.0, "revisedEstimate": 8.5, "max": 9 },
+    "A.2": { "original": 6.5, "revisedEstimate": 8.6, "max": 9 },
+    "A.3": { "original": 7.2, "revisedEstimate": 8.2, "max": 9 },
+    "A.4": { "original": 6.0, "revisedEstimate": 8.1, "max": 9 },
+    "A.5": { "original": 6.8, "revisedEstimate": 8.2, "max": 9 },
+    "B": { "original": 5.8, "revisedEstimate": 8.1, "max": 9 },
+    "C": { "original": 6.8, "revisedEstimate": 7.5, "max": 9 },
+    "D.1": { "original": 2.0, "revisedEstimate": 2.0, "max": 2 },
+    "D.2": { "original": 2.0, "revisedEstimate": 2.0, "max": 2 },
+    "D.3": { "original": 1.5, "revisedEstimate": 1.8, "max": 2 },
+    "D.4": { "original": 1.4, "revisedEstimate": 1.6, "max": 2 },
+    "D.5": { "original": 1.5, "revisedEstimate": 1.8, "max": 2 },
+    "E": { "original": 4.8, "revisedEstimate": 7.8, "max": 9 },
+    "F": { "original": 7.0, "revisedEstimate": 7.4, "max": 8 },
+    "G": { "original": 4.2, "revisedEstimate": 4.5, "max": 5 },
+    "H": { "original": 3.4, "revisedEstimate": 4.0, "max": 5 }
+  },
+  "artifacts": {
+    "audit": ".plan-grader/social-profile-dashboard-stability-20260426-052215/AUDIT.md",
+    "scorecard": ".plan-grader/social-profile-dashboard-stability-20260426-052215/SCORECARD.md",
+    "revisedPlan": ".plan-grader/social-profile-dashboard-stability-20260426-052215/REVISED_PLAN.md",
+    "patches": ".plan-grader/social-profile-dashboard-stability-20260426-052215/PATCHES.md",
+    "comparison": ".plan-grader/social-profile-dashboard-stability-20260426-052215/COMPARISON.md",
+    "suggestions": ".plan-grader/social-profile-dashboard-stability-20260426-052215/SUGGESTIONS.md",
+    "validation": ".plan-grader/social-profile-dashboard-stability-20260426-052215/VALIDATION.md"
+  },
+  "topFixes": [
+    "Do not swallow backend dashboard errors into a successful null payload.",
+    "Normalize backend dashboard payload into the existing app snapshot envelope.",
+    "Use current app cache modules and Vitest test locations.",
+    "Fix the backend catalog progress repository call signature.",
+    "Move type edits to src/lib/admin/social-account-profile.ts."
+  ]
+}
+
