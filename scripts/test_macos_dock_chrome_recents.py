@@ -418,3 +418,24 @@ def test_mcp_clean_with_opt_in_runs_dock_cleanup(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stderr
     assert "chrome_recent_apps_removed=1" in result.stdout
     assert _read_plist(dock_plist)["recent-apps"] == [_safari_tile(51)]
+
+
+MAKEFILE_PATH = Path(__file__).resolve().parents[1] / "Makefile"
+CHROME_DOCS_PATH = (
+    Path(__file__).resolve().parents[1] / "docs" / "workspace" / "chrome-devtools.md"
+)
+
+
+def test_makefile_exposes_chrome_dock_clean_target() -> None:
+    source = MAKEFILE_PATH.read_text()
+    assert "chrome-dock-clean" in source
+    assert "remove Google Chrome entries from macOS Dock recents" in source
+    assert "remove Google Chrome duplicate entries from macOS Dock recents" not in source
+    assert "scripts/cleanup-chrome-dock-recents.sh" in source
+
+
+def test_chrome_devtools_docs_explain_dock_cleanup() -> None:
+    source = CHROME_DOCS_PATH.read_text()
+    assert "Chrome Dock Recents" in source
+    assert "make chrome-dock-clean" in source
+    assert "CHROME_AGENT_CLEAN_DOCK_RECENTS=1 make mcp-clean" in source
