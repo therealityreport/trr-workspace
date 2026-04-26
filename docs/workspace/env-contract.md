@@ -53,7 +53,7 @@ Visibility tiers:
 | `WORKSPACE_CLEAN_NEXT_CACHE` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_DEV_MODE` | `` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_FORCE_KILL_PORT_CONFLICTS` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
-| `WORKSPACE_HEALTH_CURL_MAX_TIME` | `2` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
+| `WORKSPACE_HEALTH_CURL_MAX_TIME` | `8` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_HEALTH_TIMEOUT_APP` | `60` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_HEALTH_TIMEOUT_BACKEND` | `30` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_OPEN_BROWSER` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable automatic browser tab sync/open after startup. |

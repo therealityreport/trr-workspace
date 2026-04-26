@@ -1,0 +1,44 @@
+{
+  "planSource": "chat: Social Landing Cast SocialBlade Section proposed plan",
+  "rubricPath": "/Users/thomashulihan/Documents/Codex/2026-04-21-create-a-rubric-for-scoring-an/implementation-plan-rubric.md",
+  "verdict": "APPROVE WITH CHANGES",
+  "originalScore": 72,
+  "revisedScoreEstimate": 88,
+  "benefitScore": 82,
+  "gates": {
+    "triage": "PASS",
+    "hardFail": "PASS_WITH_CONCERNS",
+    "shortReview": "REVISE",
+    "automaticDowngrades": ["CAP_74_NO_CONCRETE_COMMANDS_OR_SUCCESS_METRIC"],
+    "wrongThingCorrectly": "PASS",
+    "optionalThresholds": "NOT_MET"
+  },
+  "topicScores": {
+    "A.1": 4.0,
+    "A.2": 4.0,
+    "A.3": 3.5,
+    "A.4": 3.5,
+    "A.5": 3.5,
+    "B": 3.5,
+    "C": 3.0,
+    "D.1": 2.0,
+    "D.2": 2.0,
+    "D.3": 1.0,
+    "D.4": 1.5,
+    "D.5": 1.5,
+    "E": 3.0,
+    "F": 4.0,
+    "G": 4.0,
+    "H": 3.0
+  },
+  "artifactPaths": {
+    "audit": ".plan-grader/social-landing-cast-socialblade-20260424-122459/AUDIT.md",
+    "scorecard": ".plan-grader/social-landing-cast-socialblade-20260424-122459/SCORECARD.md",
+    "revisedPlan": ".plan-grader/social-landing-cast-socialblade-20260424-122459/REVISED_PLAN.md",
+    "patches": ".plan-grader/social-landing-cast-socialblade-20260424-122459/PATCHES.md",
+    "comparison": ".plan-grader/social-landing-cast-socialblade-20260424-122459/COMPARISON.md",
+    "validation": ".plan-grader/social-landing-cast-socialblade-20260424-122459/VALIDATION.md",
+    "result": ".plan-grader/social-landing-cast-socialblade-20260424-122459/result.json"
+  },
+  "cleanupAfterImplementation": true
+}
