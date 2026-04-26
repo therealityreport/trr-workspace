@@ -10,6 +10,7 @@ Use these commands from `/Users/thomashulihan/Projects/TRR`.
 ## Daily Commands
 - `make dev` — recommended default workspace startup (cloud-first; no Docker required for normal backend/app work)
 - `PROFILE=social-debug make dev` — tracked low-pressure social-profile validation lane; uses the same launcher but projects reduced app pool settings and lighter social dispatch caps without relying on ignored app-local env files
+- Social profile dashboard runbook: `/Users/thomashulihan/Projects/TRR/docs/workspace/social-profile-dashboard.md`
 - `make preflight` — local startup gate; warns on malformed handoff source docs and stale generated env docs but still blocks on runtime-affecting issues
 - `make preflight-strict` — blocking validation path for malformed handoff source docs and env-contract drift
 - `make handoff-check` — canonical blocking handoff/status snapshot validator
@@ -29,6 +30,17 @@ Use these commands from `/Users/thomashulihan/Projects/TRR`.
 - `make down` — tear down local Docker infra used by `make dev-local`
 - `make bootstrap` — one-time dependency setup
 - `bash scripts/codex-config-sync.sh bootstrap` — bootstrap minimal user-level `~/.codex` files without reapplying TRR project config there
+
+## Social Profile Dashboard Smoke
+
+Assuming `TRR_ADMIN_BEARER_TOKEN` is set:
+
+```bash
+curl -sS \
+  -H "Authorization: Bearer ${TRR_ADMIN_BEARER_TOKEN}" \
+  "http://localhost:8000/api/v1/admin/socials/profiles/instagram/thetraitorsus/dashboard?detail=lite" \
+  | jq '{freshness, has_summary: (.data.summary != null), has_progress: (.data.catalog_run_progress != null)}'
+```
 
 ## Remaining Docker-Only Cases
 - `make dev-local` — local Screenalytics Redis + MinIO fallback when you specifically need local infra parity

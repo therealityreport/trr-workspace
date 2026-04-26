@@ -1,0 +1,11 @@
+{
+  "candidate_count": 0,
+  "default_changed": false,
+  "evidence_gate": {
+    "browser_evidence_present_for_default_eligible_candidates": false,
+    "modal_invocation_ids_present_for_modal_backed_candidates": false,
+    "post_completeness_gate": 0.98
+  },
+  "results": [],
+  "winner": null
+}

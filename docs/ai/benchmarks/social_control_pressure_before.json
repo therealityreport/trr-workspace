@@ -1,0 +1,20 @@
+{
+  "db_activity": {
+    "stale_advisory_lock_sessions": 0,
+    "states": [
+      "active",
+      "idle",
+      "unknown"
+    ],
+    "total_sessions": 17,
+    "waiting_sessions": 16
+  },
+  "social_jobs": [
+    {
+      "count": 1,
+      "platform": "twitter",
+      "status": "queued"
+    }
+  ],
+  "stale_advisory_sessions": []
+}

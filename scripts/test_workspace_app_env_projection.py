@@ -89,8 +89,17 @@ class WorkspaceAppEnvProjectionTests(unittest.TestCase):
         text = LOCAL_CLOUD_PROFILE.read_text(encoding="utf-8")
         self.assertIn("TRR_SOCIAL_PROFILE_DB_POOL_MINCONN=1", text)
         self.assertIn("TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN=4", text)
+        self.assertIn("TRR_SOCIAL_CONTROL_DB_POOL_MINCONN=1", text)
+        self.assertIn("TRR_SOCIAL_CONTROL_DB_POOL_MAXCONN=2", text)
         self.assertIn("TRR_HEALTH_DB_POOL_MINCONN=1", text)
         self.assertIn("TRR_HEALTH_DB_POOL_MAXCONN=1", text)
+
+    def test_default_profile_keeps_low_pressure_modal_social_caps(self) -> None:
+        text = DEFAULT_PROFILE.read_text(encoding="utf-8")
+        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT=6", text)
+        self.assertIn("WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT=12", text)
+        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_POSTS=1", text)
+        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS=1", text)
 
     def test_generated_env_contract_mentions_app_pool_projection_vars(self) -> None:
         text = ENV_CONTRACT_DOC.read_text(encoding="utf-8")
@@ -118,22 +127,23 @@ class WorkspaceAppEnvProjectionTests(unittest.TestCase):
                     "WORKSPACE_TRR_APP_POSTGRES_POOL_MAX": "4",
                     "TRR_DB_POOL_MAXCONN": "4",
                     "TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN": "4",
+                    "TRR_SOCIAL_CONTROL_DB_POOL_MAXCONN": "2",
                     "TRR_HEALTH_DB_POOL_MAXCONN": "1",
                 }
             ),
-            "app=4, backend=4, social_profile=4, health=1, total=13",
+            "app=4, backend=4, social_profile=4, social_control=2, health=1, total=15",
         )
 
     def test_effective_db_holder_budget_uses_default_profile_fallbacks_when_omitted(self) -> None:
         self.assertEqual(
             self.run_workspace_db_holder_budget({}),
-            "app=4, backend=4, social_profile=4, health=1, total=13",
+            "app=4, backend=4, social_profile=4, social_control=2, health=1, total=15",
         )
 
     def test_effective_db_holder_budget_uses_social_debug_profile_values(self) -> None:
         self.assertEqual(
             self.run_workspace_db_holder_budget(self.read_profile_env(SOCIAL_DEBUG_PROFILE)),
-            "app=2, backend=4, social_profile=4, health=1, total=11",
+            "app=2, backend=4, social_profile=4, social_control=2, health=1, total=13",
         )
 
     def test_effective_db_holder_budget_uses_default_profile_fallbacks_when_malformed(self) -> None:
@@ -143,10 +153,11 @@ class WorkspaceAppEnvProjectionTests(unittest.TestCase):
                     "POSTGRES_POOL_MAX": "bad",
                     "TRR_DB_POOL_MAXCONN": "0",
                     "TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN": "abc",
+                    "TRR_SOCIAL_CONTROL_DB_POOL_MAXCONN": "nope",
                     "TRR_HEALTH_DB_POOL_MAXCONN": "-1",
                 }
             ),
-            "app=4, backend=4, social_profile=4, health=1, total=13",
+            "app=4, backend=4, social_profile=4, social_control=2, health=1, total=15",
         )
         self.assertEqual(
             self.run_workspace_helper(
