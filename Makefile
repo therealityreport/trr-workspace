@@ -5,7 +5,7 @@
 	workspace-contract-check \
 	cast-screentime-gap-check cast-screentime-live-check \
 	down chrome-devtools-mcp-status chrome-devtools-mcp-clean-stale chrome-devtools-mcp-stop-conflicts \
-	mcp-clean \
+	mcp-clean chrome-dock-clean \
 	workspace-pr-agent \
 	getty-server getty-tunnel getty-remote
 
@@ -177,6 +177,7 @@ help:
 	@echo "  make env-contract-report - refresh env contract inventory/deprecation review docs"
 	@echo "  make codex-check  - validates tracked Codex config, rules, and user bootstrap state"
 	@echo "  make down         - deprecated no-op retained for compatibility"
+	@echo "  make chrome-dock-clean - remove Google Chrome entries from macOS Dock recents"
 	@echo "Legacy aliases:"
 	@echo "  make dev-cloud    - deprecated alias for make dev"
 	@echo "  make dev-full     - deprecated alias for make dev"
@@ -192,6 +193,9 @@ chrome-devtools-mcp-stop-conflicts:
 
 mcp-clean:
 	@bash scripts/mcp-clean.sh
+
+chrome-dock-clean:
+	@bash scripts/cleanup-chrome-dock-recents.sh
 
 # Repo commit/PR/review/merge automation agent for one repo or a repo set.
 # Optional env overrides:

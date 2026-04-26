@@ -1,5 +1,9 @@
 # Local Dev Supabase Connection Stability Implementation Plan
 
+**Status:** Archived — implemented and merged on 2026-04-24.
+
+**Completion evidence:** Backend PR #124, App PR #95, and Workspace PR #37 were merged. Focused verification passed for the workspace contract, workspace app env projection tests, backend DB pool tests, and app Postgres connection-string tests.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Make local `make dev` and direct backend/app launches use the intended Supabase session-pooler connection budget, with guardrails that prevent oversized local pools from silently returning.
@@ -76,7 +80,7 @@ Total                       11
 
 Run this before Task 1 in any implementation session.
 
-- [ ] **Step 0.1: Inspect the existing dirty worktree**
+- [x] **Step 0.1: Inspect the existing dirty worktree**
 
 Run:
 
@@ -88,7 +92,7 @@ git diff -- docs/workspace/env-contract.md docs/workspace/supabase-capacity-budg
 
 Expected: either no unrelated changes, or existing local connection-budget/profile changes already match this plan.
 
-- [ ] **Step 0.2: Stop if target-file changes do not match this plan**
+- [x] **Step 0.2: Stop if target-file changes do not match this plan**
 
 If the diff includes unrelated edits in the target files, stop and ask the owner whether to preserve, split, or commit them separately before staging. Do not run broad `git add .`; every commit below stages only named files.
 
@@ -98,7 +102,7 @@ If the diff includes unrelated edits in the target files, stop and ask the owner
 - Modify: `TRR-Backend/tests/db/test_pg_pool.py`
 - Modify: `TRR-Backend/trr_backend/db/pg.py`
 
-- [ ] **Step 1: Add failing backend pool sizing tests**
+- [x] **Step 1: Add failing backend pool sizing tests**
 
 Add these tests after `test_resolve_pool_sizing_keeps_production_session_defaults_conservative` in `TRR-Backend/tests/db/test_pg_pool.py`:
 
@@ -156,7 +160,7 @@ def test_resolve_pool_sizing_clamps_modal_session_pooler_overrides_without_pytes
     assert sizing["maxconn_source"] == "clamped:modal_session_pooler_ceiling"
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run:
 
@@ -167,7 +171,7 @@ TRR-Backend/.venv/bin/python -m pytest -q TRR-Backend/tests/db/test_pg_pool.py -
 
 Expected: both new tests fail. The first fails because `PYTEST_CURRENT_TEST` is removed and `TRR_LOCAL_DEV=1` is not part of `_is_local_or_dev_runtime()`. The second fails because `modal_session_pooler_override_clamped` is never set to `True`.
 
-- [ ] **Step 3: Implement local marker and Modal clamp**
+- [x] **Step 3: Implement local marker and Modal clamp**
 
 In `TRR-Backend/trr_backend/db/pg.py`, replace `_is_local_or_dev_runtime()` and the clamp block in `_resolve_pool_sizing()` with this code:
 
@@ -229,7 +233,7 @@ if minconn > maxconn:
         session_pooler_override_clamped = True
 ```
 
-- [ ] **Step 4: Run backend DB tests**
+- [x] **Step 4: Run backend DB tests**
 
 Run:
 
@@ -240,7 +244,7 @@ TRR-Backend/.venv/bin/python -m pytest -q TRR-Backend/tests/db/test_pg_pool.py T
 
 Expected: all tests pass.
 
-- [ ] **Step 5: Commit backend clamp fix**
+- [x] **Step 5: Commit backend clamp fix**
 
 Run:
 
@@ -257,7 +261,7 @@ git commit -m "fix: enforce local supabase pool ceilings"
 - Modify: `TRR-APP/apps/web/src/lib/server/postgres.ts`
 - Modify: `docs/workspace/supabase-capacity-budget.md`
 
-- [ ] **Step 1: Update failing app pool sizing tests**
+- [x] **Step 1: Update failing app pool sizing tests**
 
 In `TRR-APP/apps/web/tests/postgres-connection-string-resolution.test.ts`, replace the `resolvePostgresPoolSizing` describe block with:
 
@@ -305,7 +309,7 @@ describe("resolvePostgresPoolSizing", () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify production default fails**
+- [x] **Step 2: Run test to verify production default fails**
 
 Run:
 
@@ -316,7 +320,7 @@ pnpm -C TRR-APP/apps/web exec vitest run tests/postgres-connection-string-resolu
 
 Expected: the deployed session default test fails because the current code returns `{ maxConcurrentOperations: 6, poolMax: 6 }`.
 
-- [ ] **Step 3: Implement explicit app defaults**
+- [x] **Step 3: Implement explicit app defaults**
 
 In `TRR-APP/apps/web/src/lib/server/postgres.ts`, add constants after `DEFAULT_TRANSACTION_SEARCH_PATH`:
 
@@ -349,7 +353,7 @@ export const resolvePostgresPoolSizing = (
 };
 ```
 
-- [ ] **Step 4: Run app DB tests**
+- [x] **Step 4: Run app DB tests**
 
 Run:
 
@@ -360,7 +364,7 @@ pnpm -C TRR-APP/apps/web exec vitest run tests/postgres-connection-string-resolu
 
 Expected: all tests pass.
 
-- [ ] **Step 5: Record deployed rollback guard**
+- [x] **Step 5: Record deployed rollback guard**
 
 In `docs/workspace/supabase-capacity-budget.md`, add this paragraph after the Vercel sizing table:
 
@@ -381,7 +385,7 @@ Expected:
 ... Deployment rollback guard ...
 ```
 
-- [ ] **Step 6: Commit app sizing fix**
+- [x] **Step 6: Commit app sizing fix**
 
 Run:
 
@@ -397,7 +401,7 @@ git commit -m "fix: align app postgres pool defaults"
 - Modify: `scripts/dev-workspace.sh`
 - Modify: `scripts/test_workspace_app_env_projection.py`
 
-- [ ] **Step 1: Add failing workspace summary test**
+- [x] **Step 1: Add failing workspace summary test**
 
 In `scripts/test_workspace_app_env_projection.py`, add `DEFAULT_PROFILE = ROOT / "profiles" / "default.env"` after the existing path constants:
 
@@ -428,7 +432,7 @@ Then add these tests inside `WorkspaceAppEnvProjectionTests`:
         self.assertIn("total=", text)
 ```
 
-- [ ] **Step 2: Run workspace test to verify summary test fails**
+- [x] **Step 2: Run workspace test to verify summary test fails**
 
 Run:
 
@@ -439,7 +443,7 @@ python3 -m pytest -q scripts/test_workspace_app_env_projection.py
 
 Expected: `test_dev_workspace_prints_effective_db_holder_budget` fails because the workspace ready summary does not print the local DB holder budget yet.
 
-- [ ] **Step 3: Implement non-secret budget summary**
+- [x] **Step 3: Implement non-secret budget summary**
 
 In `scripts/dev-workspace.sh`, add this helper after `workspace_startup_runtime_summary()`:
 
@@ -482,7 +486,7 @@ Then add this line to `print_workspace_ready_summary()` after the `Summary:` lin
   echo "  Local DB holders: $(workspace_effective_db_holder_budget)"
 ```
 
-- [ ] **Step 4: Run workspace projection tests**
+- [x] **Step 4: Run workspace projection tests**
 
 Run:
 
@@ -493,7 +497,7 @@ python3 -m pytest -q scripts/test_workspace_app_env_projection.py
 
 Expected: all tests pass.
 
-- [ ] **Step 5: Commit workspace summary fix**
+- [x] **Step 5: Commit workspace summary fix**
 
 Run:
 
@@ -514,7 +518,7 @@ git commit -m "chore: show local db holder budget"
 - Regenerate: `docs/workspace/env-contract.md`
 - Modify: `docs/workspace/supabase-capacity-budget.md`
 
-- [ ] **Step 1: Verify profile targets before editing**
+- [x] **Step 1: Verify profile targets before editing**
 
 Run:
 
@@ -548,7 +552,7 @@ TRR_DB_POOL_MINCONN=1
 TRR_DB_POOL_MAXCONN=4
 ```
 
-- [ ] **Step 2: Fix profile files if any value differs**
+- [x] **Step 2: Fix profile files if any value differs**
 
 If the verification output differs, set the profile entries to exactly:
 
@@ -568,7 +572,7 @@ WORKSPACE_TRR_APP_POSTGRES_POOL_MAX=2
 WORKSPACE_TRR_APP_POSTGRES_MAX_CONCURRENT_OPERATIONS=2
 ```
 
-- [ ] **Step 3: Ensure workspace contract checker locks the target values**
+- [x] **Step 3: Ensure workspace contract checker locks the target values**
 
 In `scripts/check-workspace-contract.sh`, keep these assertions:
 
@@ -594,7 +598,7 @@ assert_equals "docs/workspace/env-contract.md app postgres pool max default" "" 
 assert_equals "docs/workspace/env-contract.md app postgres max concurrent operations default" "" "$doc_app_max_ops_default"
 ```
 
-- [ ] **Step 4: Keep generated env text in source generator**
+- [x] **Step 4: Keep generated env text in source generator**
 
 In `scripts/workspace-env-contract.sh`, keep `WORKSPACE_TRR_APP_POSTGRES_POOL_MAX` and `WORKSPACE_TRR_APP_POSTGRES_MAX_CONCURRENT_OPERATIONS` descriptions as optional debug-profile overrides:
 
@@ -607,7 +611,7 @@ WORKSPACE_TRR_APP_POSTGRES_MAX_CONCURRENT_OPERATIONS)
   ;;
 ```
 
-- [ ] **Step 5: Regenerate and check env docs**
+- [x] **Step 5: Regenerate and check env docs**
 
 Run:
 
@@ -625,7 +629,7 @@ Expected:
 [workspace-contract] OK
 ```
 
-- [ ] **Step 6: Update capacity budget math**
+- [x] **Step 6: Update capacity budget math**
 
 In `docs/workspace/supabase-capacity-budget.md`, make these values true:
 
@@ -651,7 +655,7 @@ pool `4` + `TRR-Backend` default pool `4` + dedicated `social_profile` pool
 
 Keep the deployment rollback guard paragraph added in Task 2; do not remove it when refreshing capacity math.
 
-- [ ] **Step 7: Commit profile and contract guardrails**
+- [x] **Step 7: Commit profile and contract guardrails**
 
 Run:
 
@@ -666,7 +670,7 @@ git commit -m "docs: lock local supabase connection budget"
 **Files:**
 - No source files changed in this task.
 
-- [ ] **Step 1: Verify live DB contract without printing credentials**
+- [x] **Step 1: Verify live DB contract without printing credentials**
 
 Run:
 
@@ -743,7 +747,7 @@ activity
 
 Connection counts may vary, but total live activity should stay well below 60 before starting local load tests.
 
-- [ ] **Step 2: Verify runtime migration reconcile is clean**
+- [x] **Step 2: Verify runtime migration reconcile is clean**
 
 Run:
 
@@ -763,7 +767,7 @@ Expected JSON fields:
 }
 ```
 
-- [ ] **Step 3: Run all focused connection tests**
+- [x] **Step 3: Run all focused connection tests**
 
 Run:
 
@@ -782,7 +786,7 @@ Expected:
 10 passed
 ```
 
-- [ ] **Step 4: Verify production rollback guard is documented**
+- [x] **Step 4: Verify production rollback guard is documented**
 
 Run:
 
@@ -793,7 +797,7 @@ rg -n "Deployment rollback guard|postgres_pool_queue_depth|POSTGRES_POOL_MAX=6|P
 
 Expected: the rollback guard paragraph is present and names both env overrides.
 
-- [ ] **Step 5: Start local dev and verify the visible DB budget**
+- [x] **Step 5: Start local dev and verify the visible DB budget**
 
 Run:
 
@@ -810,7 +814,7 @@ Local DB holders: app=4, backend=4, social_profile=4, health=1, total=13
 
 Stop the workspace with `Ctrl+C` after the ready summary is confirmed.
 
-- [ ] **Step 6: Verify social-debug budget**
+- [x] **Step 6: Verify social-debug budget**
 
 Run:
 
@@ -827,7 +831,7 @@ Local DB holders: app=2, backend=4, social_profile=4, health=1, total=11
 
 Stop the workspace with `Ctrl+C` after the ready summary is confirmed.
 
-- [ ] **Step 7: Commit verification note if needed**
+- [x] **Step 7: Commit verification note if needed**
 
 If verification uncovers documentation-only output drift, update `docs/workspace/supabase-capacity-budget.md` with the observed non-secret counts and run:
 

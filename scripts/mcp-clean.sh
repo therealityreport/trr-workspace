@@ -15,6 +15,12 @@ shared_client_killed=0
 reaper_output=""
 chrome_clean_output=""
 
+cleanup_chrome_dock_recents_if_requested() {
+  [[ "${CHROME_AGENT_CLEAN_DOCK_RECENTS:-0}" == "1" ]] || return 0
+  [[ "$(uname)" == "Darwin" ]] || return 0
+  bash "${ROOT}/scripts/cleanup-chrome-dock-recents.sh" 2>&1 || true
+}
+
 usage() {
   cat <<'EOF'
 Usage:
@@ -107,10 +113,17 @@ run_cleanup_once() {
 }
 
 emit_cleanup_results() {
+  local dock_clean_output=""
+
   echo "[mcp-clean] Stale shared wrapper trees killed: ${shared_wrapper_killed}"
   echo "[mcp-clean] Orphan shared clients killed: ${shared_client_killed}"
   echo "${reaper_output}"
   echo "${chrome_clean_output}"
+
+  dock_clean_output="$(cleanup_chrome_dock_recents_if_requested)"
+  if [[ -n "$dock_clean_output" ]]; then
+    echo "${dock_clean_output}"
+  fi
 }
 
 run_cleanup_cycle() {
