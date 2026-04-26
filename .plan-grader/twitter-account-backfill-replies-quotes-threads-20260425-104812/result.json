@@ -1,0 +1,52 @@
+{
+  "planSource": "chat:pasted-twitter-account-backfill-plan",
+  "rubricPath": "/Users/thomashulihan/Documents/Codex/2026-04-21-create-a-rubric-for-scoring-an/implementation-plan-rubric.md",
+  "artifactDir": ".plan-grader/twitter-account-backfill-replies-quotes-threads-20260425-104812",
+  "verdict": "APPROVE_AFTER_PATCHING",
+  "originalScore": 76.5,
+  "revisedScoreEstimate": 88.3,
+  "cleanupAfterImplementation": true,
+  "suggestionsPath": ".plan-grader/twitter-account-backfill-replies-quotes-threads-20260425-104812/SUGGESTIONS.md",
+  "gates": {
+    "thirtySecondTriage": "pass",
+    "hardFailConditions": "pass",
+    "shortReviewForm": "pass_with_gaps",
+    "automaticDowngrades": "minor_cap",
+    "wrongThingCorrectlyGuardrail": "pass",
+    "optionalApprovalThresholds": "conditional"
+  },
+  "scores": {
+    "A.1": { "original": 8.0, "revisedEstimate": 8.5, "max": 9 },
+    "A.2": { "original": 7.0, "revisedEstimate": 8.5, "max": 9 },
+    "A.3": { "original": 7.0, "revisedEstimate": 8.0, "max": 9 },
+    "A.4": { "original": 6.5, "revisedEstimate": 8.0, "max": 9 },
+    "A.5": { "original": 7.5, "revisedEstimate": 8.0, "max": 9 },
+    "B": { "original": 6.5, "revisedEstimate": 8.0, "max": 9 },
+    "C": { "original": 6.0, "revisedEstimate": 7.0, "max": 9 },
+    "D.1": { "original": 2.0, "revisedEstimate": 2.0, "max": 2 },
+    "D.2": { "original": 2.0, "revisedEstimate": 2.0, "max": 2 },
+    "D.3": { "original": 1.5, "revisedEstimate": 1.8, "max": 2 },
+    "D.4": { "original": 1.5, "revisedEstimate": 1.7, "max": 2 },
+    "D.5": { "original": 1.5, "revisedEstimate": 1.8, "max": 2 },
+    "E": { "original": 5.5, "revisedEstimate": 7.5, "max": 9 },
+    "F": { "original": 6.5, "revisedEstimate": 7.0, "max": 8 },
+    "G": { "original": 4.0, "revisedEstimate": 4.5, "max": 5 },
+    "H": { "original": 3.5, "revisedEstimate": 4.0, "max": 5 }
+  },
+  "artifacts": {
+    "audit": ".plan-grader/twitter-account-backfill-replies-quotes-threads-20260425-104812/AUDIT.md",
+    "scorecard": ".plan-grader/twitter-account-backfill-replies-quotes-threads-20260425-104812/SCORECARD.md",
+    "revisedPlan": ".plan-grader/twitter-account-backfill-replies-quotes-threads-20260425-104812/REVISED_PLAN.md",
+    "patches": ".plan-grader/twitter-account-backfill-replies-quotes-threads-20260425-104812/PATCHES.md",
+    "comparison": ".plan-grader/twitter-account-backfill-replies-quotes-threads-20260425-104812/COMPARISON.md",
+    "suggestions": ".plan-grader/twitter-account-backfill-replies-quotes-threads-20260425-104812/SUGGESTIONS.md",
+    "validation": ".plan-grader/twitter-account-backfill-replies-quotes-threads-20260425-104812/VALIDATION.md"
+  },
+  "topFixes": [
+    "Do not re-add shares to social.twitter_account_catalog_posts; it already exists.",
+    "Add exact twitter_comments_in_posts_stage propagation through launch, run config, job config, requeue, and retrieval metadata.",
+    "Define retryable/incomplete metadata for partial reply and quote hydration.",
+    "Persist account-authored tweets to both catalog and rich tweet tables while keeping external parents out of catalog inventory.",
+    "Use response selected-task labels for Twitter and YouTube success copy."
+  ]
+}
