@@ -24,6 +24,8 @@ extract_var_rows() {
     printf 'TRR_DB_POOL_MAXCONN\t\n'
     printf 'TRR_SOCIAL_PROFILE_DB_POOL_MINCONN\t\n'
     printf 'TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN\t\n'
+    printf 'TRR_SOCIAL_CONTROL_DB_POOL_MINCONN\t\n'
+    printf 'TRR_SOCIAL_CONTROL_DB_POOL_MAXCONN\t\n'
     printf 'TRR_HEALTH_DB_POOL_MINCONN\t\n'
     printf 'TRR_HEALTH_DB_POOL_MAXCONN\t\n'
     printf 'ADMIN_AUTH_EXTERNAL_TIMEOUT_MS\t3000\n'
@@ -60,7 +62,7 @@ accepted_values() {
     ADMIN_AUTH_EXTERNAL_TIMEOUT_MS)
       echo "integer milliseconds"
       ;;
-    TRR_DB_POOL_MINCONN|TRR_DB_POOL_MAXCONN|TRR_SOCIAL_PROFILE_DB_POOL_MINCONN|TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN|TRR_HEALTH_DB_POOL_MINCONN|TRR_HEALTH_DB_POOL_MAXCONN)
+    TRR_DB_POOL_MINCONN|TRR_DB_POOL_MAXCONN|TRR_SOCIAL_PROFILE_DB_POOL_MINCONN|TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN|TRR_SOCIAL_CONTROL_DB_POOL_MINCONN|TRR_SOCIAL_CONTROL_DB_POOL_MAXCONN|TRR_HEALTH_DB_POOL_MINCONN|TRR_HEALTH_DB_POOL_MAXCONN)
       echo "integer"
       ;;
     TRR_INTERNAL_ADMIN_ALLOW_RAW_SECRET_FALLBACK|TRR_ADMIN_ALLOW_SERVICE_ROLE|TRR_INTERNAL_ADMIN_ALLOW_SERVICE_ROLE)
@@ -120,6 +122,12 @@ description_for() {
       ;;
     TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN)
       echo "Dedicated TRR-Backend social-profile read pool maximum for local workspace runs. This local lane may be higher than the general backend pool to keep social admin pages responsive."
+      ;;
+    TRR_SOCIAL_CONTROL_DB_POOL_MINCONN)
+      echo "Minimum Postgres pool connections reserved for social run/finalize/status control-plane reads."
+      ;;
+    TRR_SOCIAL_CONTROL_DB_POOL_MAXCONN)
+      echo "Maximum Postgres pool connections reserved for social run/finalize/status control-plane reads."
       ;;
     TRR_HEALTH_DB_POOL_MINCONN)
       echo "Dedicated TRR-Backend health-check pool minimum for local workspace runs."
@@ -223,7 +231,7 @@ description_for() {
 used_by() {
   local key="$1"
   case "$key" in
-    TRR_DB_POOL_MINCONN|TRR_DB_POOL_MAXCONN|TRR_SOCIAL_PROFILE_DB_POOL_MINCONN|TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN|TRR_HEALTH_DB_POOL_MINCONN|TRR_HEALTH_DB_POOL_MAXCONN)
+    TRR_DB_POOL_MINCONN|TRR_DB_POOL_MAXCONN|TRR_SOCIAL_PROFILE_DB_POOL_MINCONN|TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN|TRR_SOCIAL_CONTROL_DB_POOL_MINCONN|TRR_SOCIAL_CONTROL_DB_POOL_MAXCONN|TRR_HEALTH_DB_POOL_MINCONN|TRR_HEALTH_DB_POOL_MAXCONN)
       echo '`TRR-Backend/trr_backend/db/pg.py`, `profiles/default.env`'
       ;;
     ADMIN_AUTH_EXTERNAL_TIMEOUT_MS)

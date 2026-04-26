@@ -1,0 +1,188 @@
+- banner:
+  - button "Open admin navigation menu":
+  - link "Go to admin dashboard":
+    - /url: /
+    - img "The Reality Report"
+  - button "Open admin search":
+  - 'button "System health: Healthy"'
+  - navigation "Breadcrumb":
+    - list:
+      - link "Admin":
+        - /url: /admin
+      - generic: /
+      - link "Social Analytics":
+        - /url: /admin/social
+      - generic: /
+      - link "Twitter / X @thetraitorsus":
+        - /url: /social/twitter/thetraitorsus
+  - generic: Official Social Profile
+  - generic: All shows / all seasons
+  - heading "Twitter / X · @thetraitorsus" [level=1]
+  - paragraph: Cross-show account view for materialized posts, catalog backfills, hashtags, collaborators, and tags.
+  - button "Backfill Posts"
+  - button "Copy terminal command":
+  - button "Fill Missing Posts"
+  - button "Copy terminal command":
+  - button "Sync Recent"
+  - paragraph: Backfill Posts runs the full-history catalog job. Sync Recent runs the same pipeline, limited to the last day.
+  - paragraph: Posts
+  - paragraph: 0 / 0
+  - paragraph: Saved / Account total
+  - paragraph: Comments Saved
+  - paragraph: Loading…
+  - paragraph: Loads with full profile insights.
+  - paragraph: Media Saved
+  - paragraph: Loading…
+  - paragraph: Loads with full profile insights.
+  - paragraph: Last Post
+  - paragraph: Never
+  - paragraph: Pending Review
+  - paragraph: "0"
+  - navigation "Social account profile tabs":
+    - link "Stats":
+      - /url: /social/twitter/thetraitorsus
+    - link "Catalog":
+      - /url: /social/twitter/thetraitorsus/catalog
+    - link "Comments":
+      - /url: /social/twitter/thetraitorsus/comments
+    - link "Hashtags":
+      - /url: /social/twitter/thetraitorsus/hashtags
+    - link "Collaborators / Tags":
+      - /url: /social/twitter/thetraitorsus/collaborators-tags
+    - button "Open caption search":
+      - generic: Search Posts
+- navigation:
+  - generic: Admin
+  - button: ×
+  - list:
+    - link:
+      - /url: /dev-dashboard
+      - text: Dev Dashboard
+    - link:
+      - /url: /admin/shows
+      - text: Shows
+    - button [expanded]:
+      - generic: ⌄
+    - paragraph: Recent Shows
+    - paragraph: No recent shows yet.
+    - link:
+      - /url: /admin/shows
+      - text: View All Shows
+    - link:
+      - /url: /screenalytics
+      - text: Screenalytics
+    - link:
+      - /url: /people
+      - text: People
+    - link:
+      - /url: /games
+      - text: Games
+    - link:
+      - /url: /surveys
+      - text: Surveys
+    - link:
+      - /url: /admin/social
+      - text: Social Media
+    - link:
+      - /url: /brands
+      - text: Brands
+    - link:
+      - /url: /users
+      - text: Users
+    - link:
+      - /url: /groups
+      - text: Groups
+    - link:
+      - /url: /docs
+      - text: Docs
+    - link:
+      - /url: /admin/api-references
+      - text: API References Library
+    - link:
+      - /url: /design-system/fonts
+      - text: UI Design System
+    - link:
+      - /url: /design-docs
+      - text: Design Docs
+    - link:
+      - /url: /settings
+      - text: Settings
+- main:
+  - generic: Summary read timed out before completion. Retry in a moment.
+- button "DEBUG"
+- navigation:
+  - button: ×
+  - generic: Games
+  - button: + Expand All
+  - list:
+    - region:
+      - generic: News
+      - link:
+        - /url: https://www.nytimes.com/
+        - generic: The New York Times
+    - region:
+      - generic: New York Times Games
+      - link:
+        - /url: /realitease/cover
+        - generic: Realitease
+      - button
+      - link:
+        - /url: /bravodle/cover
+        - generic: Bravodle
+      - button
+      - link:
+        - /url: /realations
+        - generic: Realations
+      - button
+      - link:
+        - /url: /hub
+        - generic: RealTime
+      - button
+      - link:
+        - /url: /hub
+        - text: View all Games
+    - region:
+      - generic: Surveys
+      - link:
+        - /url: /hub/surveys
+        - generic: Weekly Check-Ins
+      - paragraph: Jump into surveys for your favorite Housewives cities.
+      - list:
+        - link:
+          - /url: /hub/surveys?show=rhobh
+          - text: RHOBH
+        - link:
+          - /url: /hub/surveys?show=rhoslc
+          - text: RHOSLC
+        - link:
+          - /url: /hub/surveys?show=rhoa
+          - text: RHOA
+        - link:
+          - /url: /hub/surveys?show=rhop
+          - text: RHOP
+    - region:
+      - generic: Profile
+      - link:
+        - /url: /profile
+        - generic: Account details
+      - button: Log Out
+    - region:
+      - generic: Privacy Settings
+      - list:
+        - link:
+          - /url: /privacy-policy
+          - text: Privacy Policy
+        - link:
+          - /url: /privacy-policy#cookies
+          - text: Cookie Policy
+        - link:
+          - /url: /privacy-policy#faq
+          - text: Privacy FAQ
+        - link:
+          - /url: /privacy-policy#delete
+          - text: Delete My Account
+        - link:
+          - /url: /privacy-policy#choices
+          - text: Your Privacy Choices
+- button "Open Next.js Dev Tools":
+- alert
