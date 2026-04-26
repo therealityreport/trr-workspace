@@ -44,6 +44,24 @@ This fallback is for live verification only. Browser defaults still belong in wr
 - `make chrome-devtools-mcp-status` — inspect current session state
 - `make chrome-devtools-mcp-stop-conflicts` — detect non-Codex browser-control clients
 
+## Chrome Dock Recents
+
+TRR browser automation can launch `/Applications/Google Chrome.app` for managed Chrome sessions. On macOS, repeated launches can leave duplicate Google Chrome icons in the Dock recent-apps area even when the managed browser process was stopped correctly.
+
+Use this command to remove only Google Chrome entries from Dock recents while preserving pinned Dock apps and unrelated recent apps:
+
+```bash
+make chrome-dock-clean
+```
+
+For explicit MCP cleanup runs where Dock recents should be cleaned at the same time, opt in with:
+
+```bash
+CHROME_AGENT_CLEAN_DOCK_RECENTS=1 make mcp-clean
+```
+
+The cleanup is macOS-only and removes only `com.google.Chrome` entries from the Dock `recent-apps` list.
+
 ### Readiness states
 The status script and workspace preflight now classify browser automation with the same four states:
 
