@@ -1,0 +1,52 @@
+{
+  "planSource": "docs/superpowers/plans/2026-04-25-backend-pool-saturation.md",
+  "rubricPath": "/Users/thomashulihan/Documents/Codex/2026-04-21-create-a-rubric-for-scoring-an/implementation-plan-rubric.md",
+  "artifactDir": ".plan-grader/backend-pool-saturation-20260425-170650",
+  "verdict": "APPROVE_AFTER_PATCHING",
+  "originalScore": 79.5,
+  "revisedScoreEstimate": 87.7,
+  "cleanupAfterImplementation": true,
+  "suggestionsPath": ".plan-grader/backend-pool-saturation-20260425-170650/SUGGESTIONS.md",
+  "gates": {
+    "thirtySecondTriage": "pass",
+    "hardFailConditions": "pass_with_required_patch",
+    "shortReviewForm": "pass_with_gaps",
+    "automaticDowngrades": "none",
+    "wrongThingCorrectlyGuardrail": "pass",
+    "optionalApprovalThresholds": "conditional"
+  },
+  "scores": {
+    "A.1": { "original": 8.0, "revisedEstimate": 8.5, "max": 9 },
+    "A.2": { "original": 8.0, "revisedEstimate": 8.5, "max": 9 },
+    "A.3": { "original": 7.5, "revisedEstimate": 8.0, "max": 9 },
+    "A.4": { "original": 7.0, "revisedEstimate": 8.0, "max": 9 },
+    "A.5": { "original": 7.5, "revisedEstimate": 8.2, "max": 9 },
+    "B": { "original": 6.5, "revisedEstimate": 8.0, "max": 9 },
+    "C": { "original": 6.5, "revisedEstimate": 7.2, "max": 9 },
+    "D.1": { "original": 2.0, "revisedEstimate": 2.0, "max": 2 },
+    "D.2": { "original": 2.0, "revisedEstimate": 2.0, "max": 2 },
+    "D.3": { "original": 1.5, "revisedEstimate": 1.8, "max": 2 },
+    "D.4": { "original": 1.5, "revisedEstimate": 1.7, "max": 2 },
+    "D.5": { "original": 1.5, "revisedEstimate": 1.8, "max": 2 },
+    "E": { "original": 5.5, "revisedEstimate": 7.5, "max": 9 },
+    "F": { "original": 6.5, "revisedEstimate": 7.0, "max": 8 },
+    "G": { "original": 4.5, "revisedEstimate": 4.5, "max": 5 },
+    "H": { "original": 3.5, "revisedEstimate": 4.0, "max": 5 }
+  },
+  "artifacts": {
+    "audit": ".plan-grader/backend-pool-saturation-20260425-170650/AUDIT.md",
+    "scorecard": ".plan-grader/backend-pool-saturation-20260425-170650/SCORECARD.md",
+    "revisedPlan": ".plan-grader/backend-pool-saturation-20260425-170650/REVISED_PLAN.md",
+    "patches": ".plan-grader/backend-pool-saturation-20260425-170650/PATCHES.md",
+    "comparison": ".plan-grader/backend-pool-saturation-20260425-170650/COMPARISON.md",
+    "suggestions": ".plan-grader/backend-pool-saturation-20260425-170650/SUGGESTIONS.md",
+    "validation": ".plan-grader/backend-pool-saturation-20260425-170650/VALIDATION.md"
+  },
+  "topFixes": [
+    "Replace reject-only background gating with a bounded de-duplicating queue.",
+    "Keep accepted catalog finalizers eventually runnable or explicitly recoverable.",
+    "Separate async liveness from runtime diagnostics.",
+    "Classify Modal SDK timeouts as modal_sdk_timeout.",
+    "Add manual verification that multiple accepted launches all leave pending/finalizing state."
+  ]
+}

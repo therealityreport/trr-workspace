@@ -1,0 +1,42 @@
+{
+  "sourcePath": "docs/superpowers/plans/2026-04-25-social-backfill-control-plane-pressure.md",
+  "rubricPath": "/Users/thomashulihan/Documents/Codex/2026-04-21-create-a-rubric-for-scoring-an/implementation-plan-rubric.md",
+  "verdict": "APPROVE WITH CHANGES",
+  "originalScoreEstimate": 75,
+  "revisedScoreEstimate": 80.3,
+  "cleanupAfterImplementation": true,
+  "gates": {
+    "triage": "PASS",
+    "hardFail": "PASS",
+    "wrongThingCorrectly": "PASS",
+    "evidence": "PASS_WITH_WATCH"
+  },
+  "scores": {
+    "A.1": 8.1,
+    "A.2": 8.1,
+    "A.3": 7.2,
+    "A.4": 7.2,
+    "A.5": 8.1,
+    "B": 7.2,
+    "C": 8.1,
+    "D.1": 2,
+    "D.2": 2,
+    "D.3": 1.5,
+    "D.4": 1.5,
+    "D.5": 2,
+    "E": 7.2,
+    "F": 5.6,
+    "G": 4.5,
+    "H": 4
+  },
+  "artifacts": {
+    "audit": ".plan-grader/social-backfill-control-plane-pressure-20260425-170839/AUDIT.md",
+    "scorecard": ".plan-grader/social-backfill-control-plane-pressure-20260425-170839/SCORECARD.md",
+    "revisedPlan": ".plan-grader/social-backfill-control-plane-pressure-20260425-170839/REVISED_PLAN.md",
+    "patches": ".plan-grader/social-backfill-control-plane-pressure-20260425-170839/PATCHES.md",
+    "comparison": ".plan-grader/social-backfill-control-plane-pressure-20260425-170839/COMPARISON.md",
+    "suggestions": ".plan-grader/social-backfill-control-plane-pressure-20260425-170839/SUGGESTIONS.md",
+    "validation": ".plan-grader/social-backfill-control-plane-pressure-20260425-170839/VALIDATION.md"
+  },
+  "suggestionsPath": ".plan-grader/social-backfill-control-plane-pressure-20260425-170839/SUGGESTIONS.md"
+}

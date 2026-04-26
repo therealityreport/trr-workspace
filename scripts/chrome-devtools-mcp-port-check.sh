@@ -45,7 +45,10 @@ if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
 fi
 
 if (( ${#ports[@]} == 0 )); then
-  mapfile -t ports < <(collect_default_ports | sort -n | awk '!seen[$0]++')
+  ports=()
+  while IFS= read -r port; do
+    ports+=("$port")
+  done < <(collect_default_ports | sort -n | awk '!seen[$0]++')
 fi
 
 if (( ${#ports[@]} == 0 )); then

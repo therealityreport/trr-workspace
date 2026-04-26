@@ -44,7 +44,10 @@ prune_log_dir() {
   fi
 
   echo "[logs-prune] ${label} size ${current_kb}KB exceeds limit ${max_kb}KB; pruning oldest entries..."
-  mapfile -t entries < <(find "$target_dir" -mindepth 1 -maxdepth 1 -print | sort)
+  entries=()
+  while IFS= read -r entry; do
+    entries+=("$entry")
+  done < <(find "$target_dir" -mindepth 1 -maxdepth 1 -print | sort)
   for entry in "${entries[@]}"; do
     if (( current_kb <= max_kb )); then
       break

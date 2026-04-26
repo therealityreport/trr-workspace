@@ -68,7 +68,10 @@ collect_entrypoint_claude_files() {
   done
 }
 
-mapfile -t CLAUDE_FILES < <(collect_entrypoint_claude_files | LC_ALL=C sort -u)
+CLAUDE_FILES=()
+while IFS= read -r candidate; do
+  CLAUDE_FILES+=("$candidate")
+done < <(collect_entrypoint_claude_files | LC_ALL=C sort -u)
 
 POLICY_SCAN_FILES=("${AGENTS_FILES[@]}")
 for candidate in \
