@@ -38,7 +38,7 @@ extract_var_rows() {
 visibility_tier() {
   local key="$1"
   case "$key" in
-    WORKSPACE_OPEN_BROWSER|WORKSPACE_CLEAN_NEXT_CACHE|WORKSPACE_BROWSER_TAB_SYNC_MODE|WORKSPACE_TRR_JOB_PLANE_MODE|WORKSPACE_TRR_REMOTE_EXECUTOR|WORKSPACE_TRR_MODAL_ENABLED|WORKSPACE_TRR_REMOTE_WORKERS_ENABLED|WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS|WORKSPACE_BACKEND_AUTO_RESTART|TRR_BACKEND_RELOAD|TRR_ADMIN_ROUTE_CACHE_DISABLED)
+    WORKSPACE_OPEN_BROWSER|WORKSPACE_CLEAN_NEXT_CACHE|WORKSPACE_BROWSER_TAB_SYNC_MODE|WORKSPACE_TRR_JOB_PLANE_MODE|WORKSPACE_TRR_REMOTE_EXECUTOR|WORKSPACE_TRR_MODAL_ENABLED|WORKSPACE_TRR_REMOTE_WORKERS_ENABLED|WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS|WORKSPACE_SUPAVISOR_SESSION_POOL_SIZE|WORKSPACE_ENFORCE_DB_HOLDER_BUDGET|WORKSPACE_SCREENALYTICS_DB_ENABLED|WORKSPACE_BACKEND_AUTO_RESTART|TRR_BACKEND_RELOAD|TRR_ADMIN_ROUTE_CACHE_DISABLED)
       echo "common"
       ;;
     WORKSPACE_RUNTIME_RECONCILE_ENABLED|WORKSPACE_RUNTIME_DB_AUTO_APPLY_ENABLED|WORKSPACE_RUNTIME_MODAL_AUTO_DEPLOY|WORKSPACE_RUNTIME_EXTERNAL_VERIFY_ENABLED)
@@ -56,7 +56,7 @@ visibility_tier() {
 accepted_values() {
   local key="$1"
   case "$key" in
-    WORKSPACE_TRR_APP_POSTGRES_POOL_MAX|WORKSPACE_TRR_APP_POSTGRES_MAX_CONCURRENT_OPERATIONS)
+    WORKSPACE_TRR_APP_POSTGRES_POOL_MAX|WORKSPACE_TRR_APP_POSTGRES_MAX_CONCURRENT_OPERATIONS|WORKSPACE_SUPAVISOR_SESSION_POOL_SIZE)
       echo "integer"
       ;;
     ADMIN_AUTH_EXTERNAL_TIMEOUT_MS)
@@ -65,7 +65,7 @@ accepted_values() {
     TRR_DB_POOL_MINCONN|TRR_DB_POOL_MAXCONN|TRR_SOCIAL_PROFILE_DB_POOL_MINCONN|TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN|TRR_SOCIAL_CONTROL_DB_POOL_MINCONN|TRR_SOCIAL_CONTROL_DB_POOL_MAXCONN|TRR_HEALTH_DB_POOL_MINCONN|TRR_HEALTH_DB_POOL_MAXCONN)
       echo "integer"
       ;;
-    TRR_INTERNAL_ADMIN_ALLOW_RAW_SECRET_FALLBACK|TRR_ADMIN_ALLOW_SERVICE_ROLE|TRR_INTERNAL_ADMIN_ALLOW_SERVICE_ROLE)
+    TRR_INTERNAL_ADMIN_ALLOW_RAW_SECRET_FALLBACK|TRR_ADMIN_ALLOW_SERVICE_ROLE|TRR_INTERNAL_ADMIN_ALLOW_SERVICE_ROLE|WORKSPACE_ENFORCE_DB_HOLDER_BUDGET)
       echo '`0` or `1`'
       ;;
     WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS)
@@ -106,16 +106,25 @@ description_for() {
   local key="$1"
   case "$key" in
     WORKSPACE_TRR_APP_POSTGRES_POOL_MAX)
-      echo "Optional TRR-APP child-process override for \`POSTGRES_POOL_MAX\`. Leave unset in the default profile; set it in targeted debug profiles such as \`social-debug\`."
+      echo "TRR-APP child-process override for \`POSTGRES_POOL_MAX\`. Default local workspace keeps the app session pool at one holder."
       ;;
     WORKSPACE_TRR_APP_POSTGRES_MAX_CONCURRENT_OPERATIONS)
-      echo "Optional TRR-APP child-process override for \`POSTGRES_MAX_CONCURRENT_OPERATIONS\`. Leave unset in the default profile; set it in targeted debug profiles such as \`social-debug\`."
+      echo "TRR-APP child-process override for \`POSTGRES_MAX_CONCURRENT_OPERATIONS\`. Default local workspace keeps direct app SQL concurrency at one operation."
+      ;;
+    WORKSPACE_SUPAVISOR_SESSION_POOL_SIZE)
+      echo "Expected Supavisor session pool size used by local holder-budget warnings and CI contract enforcement."
+      ;;
+    WORKSPACE_ENFORCE_DB_HOLDER_BUDGET)
+      echo "When set to 1, contract checks fail if projected local DB holders exceed the configured Supavisor pool size minus five slots."
+      ;;
+    WORKSPACE_SCREENALYTICS_DB_ENABLED)
+      echo "Enable Screenalytics DB-backed metadata in workspace dev. Default is off so Screenalytics does not consume production Supabase sessions during normal TRR runs."
       ;;
     TRR_DB_POOL_MINCONN)
       echo "Backend default psycopg2 pool minimum for local workspace runs. Keep conservative when using the Supabase session pooler."
       ;;
     TRR_DB_POOL_MAXCONN)
-      echo "Backend default psycopg2 pool maximum for local workspace runs. This remains the conservative general pool, separate from the dedicated social-profile lane."
+      echo "Backend default psycopg2 pool maximum for local workspace runs. Default local direct lane uses more headroom than cloud/session; explicit cloud/session profiles keep this conservative."
       ;;
     TRR_SOCIAL_PROFILE_DB_POOL_MINCONN)
       echo "Dedicated TRR-Backend social-profile read pool minimum for local workspace runs."
@@ -154,16 +163,16 @@ description_for() {
       echo 'Tab synchronization strategy (`reuse_no_reload`, `reload_first`, `reload_all`).'
       ;;
     WORKSPACE_TRR_JOB_PLANE_MODE)
-      echo 'Long-job ownership mode (`local` API-owned or `remote` worker-owned).'
+      echo 'Long-job ownership mode (`local` API-owned or `remote` worker-owned). `make dev-cloud` and `make dev-hybrid` select remote explicitly.'
       ;;
     WORKSPACE_TRR_REMOTE_EXECUTOR)
       echo 'Remote long-job backend (`modal` by default, `legacy_worker` for rollback/debug only).'
       ;;
     WORKSPACE_TRR_MODAL_ENABLED)
-      echo "Enable Modal-backed remote dispatch in workspace dev."
+      echo "Enable Modal-backed remote dispatch in explicit cloud/hybrid workspace modes."
       ;;
     WORKSPACE_TRR_REMOTE_WORKERS_ENABLED)
-      echo "Enable remote background execution. When executor is Modal, local claim loops are skipped and Modal-owned dispatch remains active."
+      echo "Enable remote background execution in explicit cloud/hybrid workspace modes. When executor is Modal, local claim loops are skipped and Modal-owned dispatch remains active."
       ;;
     WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS)
       echo "Enable or disable the Modal social lane in the remote execution contract; this is not a worker-count knob."
@@ -279,7 +288,7 @@ generate_contract() {
     echo
     echo 'Defaults reflect the effective `make dev` baseline (`PROFILE=default`) when that profile overrides the raw script fallback.'
     echo
-    echo 'Preferred contract: `make dev` is the cloud-first baseline for normal workspace development. Docker-backed `make dev-local` remains an explicit fallback for local-only Screenalytics / Redis / MinIO cases.'
+    echo 'Preferred contract: `make dev` is the local-process-first baseline: local TRR-APP, local TRR-Backend, direct DB lane, remote workers disabled, and Modal dispatch disabled. Use `make dev-cloud` for cloud/remote behavior or `make dev-hybrid` for local direct app/backend with remote workers on the session/pooler lane.'
     echo
     echo 'Route-scoped browser envs for disabled Flashback gameplay are intentionally excluded from the workspace startup contract.'
     echo
@@ -287,6 +296,37 @@ generate_contract() {
     echo '- `common`: frequently used day-to-day toggles'
     echo '- `advanced`: less common tuning and troubleshooting controls'
     echo '- `internal`: runtime/plumbing variables usually left at defaults'
+    echo
+    echo "Related Supabase docs:"
+    echo "- Glossary: \`docs/workspace/supabase-glossary.md\`"
+    echo "- Capacity/runbook: \`docs/workspace/supabase-capacity-budget.md\` and \`docs/workspace/db-pressure-runbook.md\`"
+    echo "- Ownership inventory: \`docs/workspace/env-contract-inventory.md\`"
+    echo
+    echo "## Runtime DB Application Names"
+    echo
+    echo "Connection holder snapshots rely on stable non-secret \`application_name\` values."
+    echo "Use these defaults unless a task needs a more specific lane label:"
+    echo
+    echo "| Surface | Env | Default | Notes |"
+    echo "|---|---|---|---|"
+    echo "| TRR-APP | \`POSTGRES_APPLICATION_NAME\` | \`trr-app:web\` | Must be a label only; URLs, tokens, passwords, and keys fall back to the app default. |"
+    echo "| TRR-Backend | \`TRR_DB_APPLICATION_NAME\` | \`trr-backend:<pool>\` | Backend named pools append their lane, such as \`default\`, \`social_profile\`, \`social_control\`, or \`health\`. |"
+    echo "| Screenalytics | \`SCREENALYTICS_DB_APPLICATION_NAME\` | \`screenalytics:api\` | Only relevant when Screenalytics DB usage is enabled. |"
+    echo
+    echo "Do not use secret-bearing values as application names. The value appears in"
+    echo "\`pg_stat_activity\` and in non-secret health/pressure diagnostics."
+    echo
+    echo "## Runtime DB URL Lanes"
+    echo
+    echo "Local \`make dev\` requires the direct DB lane. Resolver order is: explicit \`TRR_DB_DIRECT_URL\`, validated derived direct URI for project \`vwxfvzutyufrkhfgoeaa\`, fail closed with operator instructions, then session fallback only when explicitly requested with \`WORKSPACE_TRR_DB_LANE=session\`. \`make dev-cloud\` uses the session/pooler lane. \`make dev-hybrid\` keeps the local app/backend on the direct lane and remote workers on the session/pooler lane."
+    echo
+    echo "| Variable | Lane | Selection rule | Notes |"
+    echo "|---|---|---|---|"
+    echo "| \`TRR_DB_DIRECT_URL\` | Direct local Postgres | Required explicit source for default local \`make dev\`, unless a validated direct URI can be derived. | Local-only. Never commit, print, or pass to Modal/Render/Cloud Run/Vercel. |"
+    echo "| \`TRR_DB_SESSION_URL\` | Supavisor session/local | Preferred session source for \`make dev-cloud\`, remote workers, and hybrid remote surfaces. | Use \`pooler.supabase.com:5432\` for hosted Supabase. |"
+    echo "| \`TRR_DB_URL\` | Compatibility session/local | Used when \`TRR_DB_SESSION_URL\` is absent or set only inside a tightly scoped local child-process env for legacy direct-lane compatibility. | Do not globally overwrite this with the direct URL. |"
+    echo "| \`TRR_DB_TRANSACTION_URL\` | Supavisor transaction | Used only when \`TRR_DB_RUNTIME_LANE=transaction\` and \`TRR_DB_TRANSACTION_FLIGHT_TEST=1\`. | Use \`pooler.supabase.com:6543\`; route-by-route flight tests only. |"
+    echo "| \`TRR_DB_FALLBACK_URL\` | Operator fallback | Used after primary lane candidates or when explicit fallback controls engage. | Keep on session/local unless a separate reviewed test says otherwise. |"
     echo
     echo "| Variable | Default | Accepted Values | Used By | Visibility | Notes |"
     echo "|---|---|---|---|---|---|"

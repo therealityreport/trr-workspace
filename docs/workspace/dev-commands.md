@@ -3,12 +3,15 @@
 Use these commands from `/Users/thomashulihan/Projects/TRR`.
 
 ## Preferred Contract
-- `make dev` is the recommended cloud-first path. Normal `TRR-Backend` and `TRR-APP` development should not require Docker in this workspace.
-- Use `make dev-local` only when you intentionally need local Screenalytics-side Docker infrastructure that the normal cloud-first path does not provide.
+- `make dev` is local-process-first: local `TRR-APP`, local `TRR-Backend`, direct DB lane, remote workers disabled, Modal dispatch disabled.
+- `make dev-cloud` is the explicit cloud/remote-worker path and remains on the session/pooler DB lane.
+- `make dev-hybrid` runs local app/backend on the direct DB lane while allowing Modal/remote workers on the session/pooler lane.
 - `PROFILE=default` is the canonical profile behind `make dev`. `local-cloud`, `local-lite`, and `local-full` remain compatibility profiles only.
 
 ## Daily Commands
-- `make dev` — recommended default workspace startup (cloud-first; no Docker required for normal backend/app work)
+- `make dev` — recommended default workspace startup (local app/backend, direct DB lane, Modal/remote disabled)
+- `make dev-cloud` — explicit cloud/remote worker startup using the session/pooler DB lane
+- `make dev-hybrid` — local direct app/backend with Modal/remote workers using only session/pooler DB settings
 - `PROFILE=social-debug make dev` — tracked low-pressure social-profile validation lane; uses the same launcher but projects reduced app pool settings and lighter social dispatch caps without relying on ignored app-local env files
 - Social profile dashboard runbook: `/Users/thomashulihan/Projects/TRR/docs/workspace/social-profile-dashboard.md`
 - `make preflight` — local startup gate; warns on malformed handoff source docs and stale generated env docs but still blocks on runtime-affecting issues
@@ -17,6 +20,7 @@ Use these commands from `/Users/thomashulihan/Projects/TRR`.
 - `make env-contract` — refresh `docs/workspace/env-contract.md`
 - `make env-contract-report` — refresh the env-contract inventory/deprecation review docs intentionally
 - `make status` — workspace health and PID snapshot
+- `make db-pressure-rehearsal` — local-only DB pressure capture; writes redacted before/after artifacts under `.logs/workspace/`
 - `make stop` — stop workspace-managed processes
 - `make test-fast`
 - `make test-full`
@@ -26,8 +30,8 @@ Use these commands from `/Users/thomashulihan/Projects/TRR`.
 - `make help`
 
 ## Fallback / Specialized Commands
-- `make dev-local` — explicit Docker-backed fallback for local Screenalytics, Redis, and MinIO work
-- `make down` — tear down local Docker infra used by `make dev-local`
+- `make dev-local` — deprecated compatibility alias for `make dev`
+- `make down` — retained no-op for old local infra cleanup muscle memory
 - `make bootstrap` — one-time dependency setup
 - `bash scripts/codex-config-sync.sh bootstrap` — bootstrap minimal user-level `~/.codex` files without reapplying TRR project config there
 
@@ -43,12 +47,10 @@ curl -sS \
 ```
 
 ## Remaining Docker-Only Cases
-- `make dev-local` — local Screenalytics Redis + MinIO fallback when you specifically need local infra parity
-- `make down` — teardown companion for that explicit fallback lane
 - `TRR-Backend make schema-docs-reset-check` — backend-local replay fallback when an isolated remote validation target does not answer the reset/replay question
 - `TRR-Backend make ci-local` — Docker-backed local replay parity lane for intentionally local-only backend verification
 
-If your task is ordinary backend/app development or milestone verification, start with the cloud-first path and only drop to these Docker-backed cases when the question itself is about local infra behavior.
+If your task is ordinary backend/app development or milestone verification, start with the local direct path. Use `make dev-cloud` or `make dev-hybrid` only when the task explicitly needs Modal or remote worker behavior.
 
 ## Quick URLs
 - TRR-APP: `http://127.0.0.1:3000`
@@ -66,12 +68,16 @@ If preflight warns that generated env-contract docs are stale, refresh them inte
 
 Browser automation warnings now come from the same structured readiness states used by `make chrome-devtools-mcp-status`: `ready`, `degraded`, `recoverable`, and `unavailable`. A missing shared `9422` keeper with working auto-launch remains a recoverable state, not an unavailable one.
 
-The same default profile now runs TRR long jobs on the remote Modal executor by default. Shared-account Instagram `Sync Recent`, `Resume Tail`, and `Backfill Posts` should use Modal-owned dispatch unless you explicitly override the workspace profile for rollback/debug.
+The default profile runs TRR long jobs locally. Shared-account Instagram `Sync Recent`, `Resume Tail`, and `Backfill Posts` use Modal-owned dispatch only through `make dev-cloud`, `make dev-hybrid`, or an explicit reviewed override.
 
 For migration or schema validation, prefer an isolated Supabase branch or disposable database target and point `TRR_DB_URL` there before running backend verification commands. Do not aim destructive replay or reset flows at shared persistent databases.
 
-`make dev` now includes a startup runtime-reconcile phase before app/backend launch. It can auto-apply only a bounded allowlisted Supabase migration suffix and can auto-redeploy Modal only when secrets/readiness/fingerprint drift is detected. It does not auto-run `supabase migration repair`, schema-doc checks, Render deploys, or tracked-doc refreshes.
+Shared-schema migration ownership is documented in `/Users/thomashulihan/Projects/TRR/docs/workspace/migration-ownership-policy.md`; check new app migrations with `make migration-ownership-lint`.
+
+`make dev` includes a startup runtime-reconcile phase before app/backend launch. It validates direct DB identity before any migration apply or repair decision, can auto-apply only a bounded allowlisted Supabase migration suffix, and does not auto-run `supabase migration repair`, schema-doc checks, Render deploys, or tracked-doc refreshes. Modal auto-deploy behavior belongs to explicit cloud/hybrid modes.
 
 If runtime reconcile blocks on Supabase history drift, use `/Users/thomashulihan/Projects/TRR/TRR-Backend/docs/runbooks/supabase_migration_history_repair.md`. If runtime reconcile blocks on Modal, inspect `python TRR-Backend/scripts/modal/verify_modal_readiness.py --json --probe-remote-auth instagram` for blocking readiness, then add `--probe-getty-remote-access` when you want advisory Getty transport diagnostics. `make status` now surfaces the nested Getty probe under the Modal runtime section. Render and Decodo checks remain advisory-only and are surfaced there as well.
 
 For startup tuning and env overrides, see `/Users/thomashulihan/Projects/TRR/docs/workspace/env-contract.md`.
+
+For Supabase pressure diagnosis, use `/Users/thomashulihan/Projects/TRR/docs/workspace/db-pressure-runbook.md`. For connection terminology and ownership language, use `/Users/thomashulihan/Projects/TRR/docs/workspace/supabase-glossary.md`.
