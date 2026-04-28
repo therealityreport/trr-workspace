@@ -21,13 +21,35 @@ CANONICAL_INVENTORY: tuple[tuple[str, tuple[tuple[str, tuple[str, ...]], ...]], 
         (
             ("Local workspace sentinel", ("TRR_LOCAL_DEV",)),
             ("Managed local backend base", ("TRR_API_URL",)),
-            ("Managed local runtime DB", ("TRR_DB_URL", "TRR_DB_FALLBACK_URL")),
+            (
+                "Managed local runtime DB",
+                (
+                    "TRR_DB_DIRECT_URL",
+                    "TRR_DB_SESSION_URL",
+                    "TRR_DB_URL",
+                    "TRR_DB_TRANSACTION_URL",
+                    "TRR_DB_RUNTIME_LANE",
+                    "TRR_DB_TRANSACTION_FLIGHT_TEST",
+                    "TRR_DB_FALLBACK_URL",
+                ),
+            ),
         ),
     ),
     (
         "TRR-Backend",
         (
-            ("Runtime DB", ("TRR_DB_URL", "TRR_DB_FALLBACK_URL")),
+            (
+                "Runtime DB",
+                (
+                    "TRR_DB_DIRECT_URL",
+                    "TRR_DB_SESSION_URL",
+                    "TRR_DB_URL",
+                    "TRR_DB_TRANSACTION_URL",
+                    "TRR_DB_RUNTIME_LANE",
+                    "TRR_DB_TRANSACTION_FLIGHT_TEST",
+                    "TRR_DB_FALLBACK_URL",
+                ),
+            ),
             ("Supabase API/auth", ("SUPABASE_URL", "SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY", "SUPABASE_JWT_SECRET")),
             ("Service auth", ("TRR_INTERNAL_ADMIN_SHARED_SECRET",)),
         ),
@@ -38,7 +60,18 @@ CANONICAL_INVENTORY: tuple[tuple[str, tuple[tuple[str, tuple[str, ...]], ...]], 
             ("Backend base", ("TRR_API_URL",)),
             ("Server/admin Supabase", ("TRR_CORE_SUPABASE_URL", "TRR_CORE_SUPABASE_SERVICE_ROLE_KEY")),
             ("Internal admin auth", ("TRR_INTERNAL_ADMIN_SHARED_SECRET",)),
-            ("Server Postgres runtime", ("TRR_DB_URL", "TRR_DB_FALLBACK_URL")),
+            (
+                "Server Postgres runtime",
+                (
+                    "TRR_DB_DIRECT_URL",
+                    "TRR_DB_SESSION_URL",
+                    "TRR_DB_URL",
+                    "TRR_DB_TRANSACTION_URL",
+                    "TRR_DB_RUNTIME_LANE",
+                    "TRR_DB_TRANSACTION_FLIGHT_TEST",
+                    "TRR_DB_FALLBACK_URL",
+                ),
+            ),
         ),
     ),
 )
@@ -48,6 +81,7 @@ DEPRECATED_NAMES = ("SUPABASE_DB_URL", "DATABASE_URL", "SUPABASE_SERVICE_ROLE_KE
 HISTORICAL_PATH_FRAGMENTS = (
     "docs/cross-collab/",
     "docs/ai/",
+    "docs/codex/plans/",
     "docs/_archive/",
     "docs/superpowers/plans/",
 )
@@ -58,6 +92,7 @@ IN_PROGRESS_PATH_FRAGMENTS = (
 
 GENERATED_NON_ACTIONABLE_PATHS = {
     "TRR-APP/apps/web/src/lib/admin/api-references/generated/inventory.ts",
+    "docs/workspace/redacted-env-inventory.md",
 }
 
 COMPATIBILITY_PATHS = {
@@ -74,6 +109,7 @@ COMPATIBILITY_PATHS = {
     "TRR-APP/apps/web/src/lib/server/postgres.ts",
     "TRR-APP/apps/web/tests/postgres-connection-string-resolution.test.ts",
     "TRR-APP/scripts/auto-categorize-flairs.ts",
+    "scripts/redact-env-inventory.py",
     "scripts/lib/runtime-db-env.sh",
 }
 
@@ -110,7 +146,7 @@ INTENTIONAL_EXCEPTION_NOTES: tuple[tuple[str, str], ...] = (
         "Backend compatibility fallbacks",
         "`TRR-Backend/trr_backend/db/connection.py`, `TRR-Backend/scripts/_db_url.py`, "
         "and `TRR-Backend/scripts/db/run_sql.sh` may still read `SUPABASE_DB_URL` / `DATABASE_URL` as "
-        "deprecated fallback inputs while runtime preference stays on `TRR_DB_URL` / `TRR_DB_FALLBACK_URL`.",
+        "deprecated fallback inputs while runtime preference stays on `TRR_DB_DIRECT_URL` / `TRR_DB_SESSION_URL` / `TRR_DB_URL` / `TRR_DB_FALLBACK_URL`.",
     ),
     (
         "Vercel integration-managed retained envs",
@@ -120,7 +156,7 @@ INTENTIONAL_EXCEPTION_NOTES: tuple[tuple[str, str], ...] = (
     (
         "Tooling-only DATABASE_URL consumers",
         "`TRR-APP/apps/web/scripts/run-migrations.mjs` and related one-off scripts still require `DATABASE_URL`; "
-        "operators should source it from `TRR_DB_URL` at invocation time instead of treating it as a runtime contract.",
+        "operators should source it from `TRR_DB_DIRECT_URL`, `TRR_DB_SESSION_URL`, or `TRR_DB_URL` at invocation time instead of treating it as a runtime contract.",
     ),
 )
 
@@ -172,7 +208,7 @@ VERCEL_REVIEW_ROWS: tuple[tuple[str, str, str, str, str], ...] = (
         "POSTGRES_*",
         "env ls + env pull",
         "integration-managed-retained",
-        "Retained as integration-provisioned Postgres connection helpers; app runtime stays on canonical TRR_DB_URL.",
+        "Retained as integration-provisioned Postgres connection helpers; app runtime stays on canonical TRR_DB_DIRECT_URL, TRR_DB_SESSION_URL, or TRR_DB_URL.",
     ),
     (
         "Production",
@@ -417,6 +453,29 @@ def _build_inventory_markdown() -> str:
     lines.extend(
         [
             "",
+            "## Owner Aliases",
+            "",
+            "| Alias | Scope | Source of truth |",
+            "|---|---|---|",
+            "| `workspace-ops` | Workspace scripts, profiles, redacted inventories, and operator runbooks. | `docs/workspace/` plus root `scripts/` and `profiles/`. |",
+            "| `backend-shared-schema` | Shared schema, backend APIs, migrations, auth validation, and worker DB access. | `TRR-Backend` code and `TRR-Backend/supabase/migrations`. |",
+            "| `admin-read-model` | TRR-APP admin read paths retained until a backend aggregate endpoint exists. | `docs/workspace/api-migration-ledger.md`. |",
+            "| `app-local` | TRR-APP-only authoring/editor flows that intentionally remain app-local. | TRR-APP app code plus this workspace contract. |",
+            "",
+            "## Supabase Runtime Ownership Matrix",
+            "",
+            "| Surface | Owner alias | Runtime context | Privilege | Allowed environments | Connection/API type | Notes |",
+            "|---|---|---|---|---|---|---|",
+            "| `TRR_DB_DIRECT_URL` | `workspace-ops` | Local `make dev` Next server and backend API | postgres role | local only | Direct Postgres | Required local direct lane for default `make dev`; never pass to Modal, Render, Cloud Run, Vercel, or remote workers. |",
+            "| `TRR_DB_SESSION_URL`, `TRR_DB_URL`, `TRR_DB_FALLBACK_URL` | `workspace-ops` | Cloud/hybrid remote workers, deployed runtimes, and migration/tooling | postgres role | local, preview, production | Postgres session by default | Session-mode runtime lane; `TRR_DB_URL` remains the compatibility fallback while explicit lanes roll out. |",
+            "| `TRR_DB_TRANSACTION_URL`, `TRR_DB_RUNTIME_LANE`, `TRR_DB_TRANSACTION_FLIGHT_TEST` | `workspace-ops` | Scoped Next/backend read flight tests | postgres role | local, preview, production with review | Supavisor transaction mode | Optional `:6543` lane; selected only when runtime lane is `transaction` and flight-test flag is enabled. |",
+            "| `TRR_CORE_SUPABASE_URL`, `TRR_CORE_SUPABASE_SERVICE_ROLE_KEY` | `admin-read-model` | Next server only | service role | local, preview, production | Supabase REST/Auth/Storage API | Server/admin only; never browser public. |",
+            "| `SUPABASE_URL`, `SUPABASE_ANON_KEY` | `backend-shared-schema` | Backend API or local Supabase tooling | public anon or local tooling | local, preview, production as explicitly configured | Supabase REST/Auth API | Backend and tooling surface; not a TRR-APP browser requirement. |",
+            "| `SUPABASE_JWT_SECRET` | `backend-shared-schema` | Backend API | JWT validation secret | preview, production, local when Supabase auth is exercised | JWT validation only | Required for backend validation; not a client credential. |",
+            "| `NEXT_PUBLIC_SUPABASE_*` | `app-local` | Browser only when a feature explicitly needs it | public anon | only explicitly enabled environments | Supabase browser API | Not required by the current TRR-APP runtime contract. |",
+            "| Vercel `POSTGRES_*` and integration `SUPABASE_*` | `workspace-ops` | Vercel integration metadata | platform-managed | preview, production | Integration-managed retained envs | Reviewed in `docs/workspace/vercel-env-review.md`; do not promote to runtime source without a guard review. |",
+            "| `DATABASE_URL`, `SUPABASE_DB_URL` | `workspace-ops` | migration/tooling compatibility only | postgres role | local/operator shells only | Tool-specific Postgres input | Deprecated for runtime; allowed only in explicit compatibility shims and reviewed generated inventories. |",
+            "",
             "## Compatibility Policy",
             "",
             "- `compatibility-only` references are allowed only in explicit fallback code, tests, or reviewed deployment-governance exceptions.",
@@ -500,14 +559,18 @@ def _build_vercel_review_markdown() -> str:
         "| Surface | Source | Status |",
         "|---|---|---|",
         "| Active app project | `TRR-APP/.vercel/project.json` -> `trr-app` | canonical |",
-        "| Nested app surface | `TRR-APP/apps/web/.vercel/project.json` -> `web` | do not mutate unless separately reclassified as active |",
+        "| Nested app surface | `TRR-APP/apps/web/.vercel/project.json` -> `web` | `sandbox/stale`; project guard must fail for production work |",
+        "| Project guard | `scripts/vercel-project-guard.py --project-dir TRR-APP` | required before production env mutation |",
+        "| Nested project guard | `scripts/vercel-project-guard.py --project-dir TRR-APP/apps/web` | expected non-zero with `sandbox/stale-nested-project` classification |",
+        "| Redacted env inventory | `scripts/redact-env-inventory.py --output docs/workspace/redacted-env-inventory.md` | shape-only review; no secret values |",
         "",
         "## Review Outcome",
         "",
         "- `unknown-blocking` entries remaining: `0`",
-        "- Survey cutover is not blocked by the Vercel env review surface after this explicit classification pass.",
-        "- Production runtime evidence: `https://trr-app.vercel.app/` returned `200` after the review pass.",
-        "- Preview runtime evidence: latest preview deployment was `Ready` in `vercel inspect`; direct unauthenticated `curl` returns `401` because the deployment is Vercel-protected rather than unhealthy.",
+        "- Production env mutation remains blocked unless the active-project guard passes from `TRR-APP`.",
+        "- The nested `TRR-APP/apps/web` link is formally classified as `sandbox/stale`, not production.",
+        "- Historical production runtime evidence: `https://trr-app.vercel.app/` returned `200` after the earlier review pass.",
+        "- Historical preview runtime evidence: latest preview deployment was `Ready` in `vercel inspect`; direct unauthenticated `curl` returns `401` because the deployment is Vercel-protected rather than unhealthy.",
         "",
         "## Reviewed Inventory",
         "",
@@ -521,11 +584,14 @@ def _build_vercel_review_markdown() -> str:
             "",
             "## Runtime Contract Checks",
             "",
-            "- App server Postgres reads `TRR_DB_URL` / `TRR_DB_FALLBACK_URL`; it does not use `DATABASE_URL` or legacy server-side Supabase names.",
+            "- App server Postgres reads `TRR_DB_DIRECT_URL` / `TRR_DB_SESSION_URL` / `TRR_DB_URL` / `TRR_DB_FALLBACK_URL`; transaction mode additionally requires `TRR_DB_TRANSACTION_URL` and `TRR_DB_TRANSACTION_FLIGHT_TEST=1`. It does not use `DATABASE_URL` or legacy server-side Supabase names.",
             "- App server/admin Supabase reads `TRR_CORE_SUPABASE_URL` / `TRR_CORE_SUPABASE_SERVICE_ROLE_KEY` only.",
             "- No browser-side `NEXT_PUBLIC_SUPABASE_*` runtime envs are required for TRR-APP.",
             "- Internal admin proxy/auth flows require `TRR_INTERNAL_ADMIN_SHARED_SECRET`.",
             "- `FIREBASE_SERVICE_ACCOUNT` remains a canonical app-owned secret and is not part of the deprecated runtime-name cleanup.",
+            "- Run the project guard from `TRR-APP`, not `TRR-APP/apps/web`, before any production env mutation.",
+            "- Treat a passing guard from `TRR-APP/apps/web` as a deployment-process regression unless that directory is deliberately relinked and this review is rewritten.",
+            "- Use the redacted env inventory helper for shape-only review; do not paste raw Vercel env values into docs.",
             "",
         ]
     )
@@ -550,8 +616,9 @@ def _validate_contract() -> list[ValidationError]:
         errors.append(ValidationError("launcher-backend-url", "scripts/dev-workspace.sh must own the managed local TRR_API_URL loopback value."))
 
     backend_keys = _env_keys(ROOT / "TRR-Backend/.env.example")
-    if "TRR_DB_URL" not in backend_keys:
-        errors.append(ValidationError("backend-missing-trr-db-url", "TRR-Backend/.env.example must define TRR_DB_URL."))
+    for required in ("TRR_DB_DIRECT_URL", "TRR_DB_SESSION_URL", "TRR_DB_URL"):
+        if required not in backend_keys:
+            errors.append(ValidationError(f"backend-missing-{required.lower()}", f"TRR-Backend/.env.example must define {required}."))
     if "SUPABASE_DB_URL" in backend_keys:
         errors.append(ValidationError("backend-deprecated-supabase-db-url", "TRR-Backend/.env.example must not advertise SUPABASE_DB_URL."))
 

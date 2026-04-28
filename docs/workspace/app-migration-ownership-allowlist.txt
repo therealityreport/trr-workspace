@@ -1,0 +1,42 @@
+# Existing TRR-APP shared-schema backlog pending backend ownership cleanup.
+# `scripts/migration-ownership-lint.py` fails on shared-schema app migrations
+# that are not listed here. These entries are not app ownership approvals; they
+# are temporary provenance exceptions for legacy files ignored by the app runner.
+# Policy: docs/workspace/migration-ownership-policy.md
+#
+# App-local/editor-owned files intentionally excluded from this allowlist:
+# - 000-012 legacy survey/editor tables
+# - 021_add_rhoslc_s6_season_rating.sql
+# - 022_link_brand_shows_to_trr.sql
+# - 030_create_show_palette_library.sql
+#
+# The 022_link/030 legacy copies overlap with backend migration
+# 20260427131550_quarantine_show_runtime_ddl.sql. That backend migration is the
+# canonical provenance for request-time DDL quarantine; the app copies remain
+# app-local lane backlog until runner cleanup removes or retires them.
+TRR-APP/apps/web/db/migrations/013_create_surveys_schema.sql
+TRR-APP/apps/web/db/migrations/014_create_normalized_survey_tables.sql
+TRR-APP/apps/web/db/migrations/015_enable_rls.sql
+TRR-APP/apps/web/db/migrations/016_create_rls_policies.sql
+TRR-APP/apps/web/db/migrations/017_create_rls_role_grants.sql
+TRR-APP/apps/web/db/migrations/018_rename_normalized_surveys_schema.sql
+TRR-APP/apps/web/db/migrations/019_survey_trr_links_and_social_posts.sql
+TRR-APP/apps/web/db/migrations/020_create_covered_shows.sql
+TRR-APP/apps/web/db/migrations/022_create_admin_season_cast_survey_roles.sql
+TRR-APP/apps/web/db/migrations/023_create_admin_reddit_sources.sql
+TRR-APP/apps/web/db/migrations/024_add_post_flares_to_admin_reddit_communities.sql
+TRR-APP/apps/web/db/migrations/025_add_analysis_flares_to_admin_reddit_communities.sql
+TRR-APP/apps/web/db/migrations/026_add_analysis_all_flares_to_admin_reddit_communities.sql
+TRR-APP/apps/web/db/migrations/027_add_focus_fields_to_admin_reddit_communities.sql
+TRR-APP/apps/web/db/migrations/028_add_episode_discussion_rules_to_admin_reddit_communities.sql
+TRR-APP/apps/web/db/migrations/029_add_source_kind_to_admin_reddit_threads.sql
+TRR-APP/apps/web/db/migrations/031_create_admin_reddit_discovery_posts_cache.sql
+TRR-APP/apps/web/db/migrations/032_create_admin_recent_people_views.sql
+TRR-APP/apps/web/db/migrations/033_add_post_flair_categories_to_admin_reddit_communities.sql
+TRR-APP/apps/web/db/migrations/034_rename_flare_columns_to_flair.sql
+TRR-APP/apps/web/db/migrations/035_add_post_flair_assignments_to_admin_reddit_communities.sql
+TRR-APP/apps/web/db/migrations/036_backfill_admin_reddit_community_display_names.sql
+
+# Documented duplicate-prefix ordering exceptions. Lint reads these comments.
+# duplicate-prefix: TRR-APP/apps/web/db/migrations:000 legacy app-local create/seed pair; full filename sort applies create_surveys_table before seed_surveys.
+# duplicate-prefix: TRR-APP/apps/web/db/migrations:022 mixed legacy pair; 022_create_admin_season_cast_survey_roles is backend-owned backlog and skipped by the app runner, while 022_link_brand_shows_to_trr remains a historical app-local/editor lane copy pending cleanup.

@@ -20,11 +20,15 @@ need npm
 need pnpm
 need curl
 
-WORKSPACE_DEV_MODE="${WORKSPACE_DEV_MODE:-cloud}"
+WORKSPACE_DEV_MODE="${WORKSPACE_DEV_MODE:-local}"
+if [[ "$WORKSPACE_DEV_MODE" == "local_docker" ]]; then
+  echo "[doctor] NOTE: WORKSPACE_DEV_MODE=local_docker is retired; continuing with local mode." >&2
+  WORKSPACE_DEV_MODE="local"
+fi
 case "$WORKSPACE_DEV_MODE" in
-  cloud|local_docker) ;;
+  local|cloud|hybrid) ;;
   *)
-    echo "[doctor] ERROR: invalid WORKSPACE_DEV_MODE='${WORKSPACE_DEV_MODE}' (expected cloud for the preferred no-Docker path or local_docker for the explicit Docker fallback)." >&2
+    echo "[doctor] ERROR: invalid WORKSPACE_DEV_MODE='${WORKSPACE_DEV_MODE}' (expected local, cloud, or hybrid)." >&2
     exit 1
     ;;
 esac
@@ -137,7 +141,7 @@ if [[ -n "${VIRTUAL_ENV:-}" ]]; then
   echo "[doctor] NOTE: your activated Python environment is only used for these checks. The workspace still starts each service with its own project setup." >&2
 fi
 
-if [[ "$WORKSPACE_DEV_MODE" == "local_docker" ]]; then
+if [[ "${WORKSPACE_DOCKER_DIAGNOSTICS:-0}" == "1" ]]; then
   if command -v docker >/dev/null 2>&1; then
     echo "  docker: $({ docker --version; } 2>/dev/null)"
     if ! docker info >/dev/null 2>&1; then

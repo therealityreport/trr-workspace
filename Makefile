@@ -1,6 +1,7 @@
 .PHONY: \
-	dev dev-lite dev-cloud dev-local dev-full \
-	preflight preflight-local preflight-strict preflight-diagnostics env-contract env-contract-report check-policy codex-check handoff-check handoff-sync smoke status stop logs logs-prune cleanup-disk help \
+	dev dev-lite dev-cloud dev-hybrid dev-local dev-full \
+	preflight preflight-local preflight-cloud preflight-hybrid preflight-strict preflight-diagnostics env-contract env-contract-report check-policy codex-check handoff-check handoff-sync smoke status stop logs logs-prune cleanup-disk help \
+	app-direct-sql-inventory redacted-env-inventory vercel-project-guard migration-ownership-lint rls-grants-snapshot db-pressure-rehearsal supabase-mcp-access \
 	bootstrap doctor test test-fast test-full test-changed test-env-sensitive \
 	workspace-contract-check \
 	cast-screentime-gap-check cast-screentime-live-check \
@@ -9,11 +10,13 @@
 	workspace-pr-agent \
 	getty-server getty-tunnel getty-remote
 
-# Daily default: `make dev` runs the canonical cloud-first workspace profile.
-# It starts TRR-APP + TRR-Backend locally and avoids legacy screenalytics runtime wiring.
+# Daily default: `make dev` runs local TRR-APP + local TRR-Backend on the direct DB lane.
+# Remote workers and Modal dispatch are disabled unless an explicit cloud/hybrid target is used.
 # To override the default profile explicitly:
 # PROFILE=default make dev
-# PROFILE=local-cloud make dev        # deprecated compatibility alias
+# make dev-cloud                      # explicit cloud/remote worker mode
+# make dev-hybrid                     # local direct app/backend plus remote workers on session/pooler
+# PROFILE=local-cloud make dev-cloud  # deprecated compatibility alias
 # PROFILE=local-docker make dev-local # deprecated compatibility alias
 # PROFILE=local-full make dev-local   # deprecated compatibility alias
 # Startup tuning:
@@ -28,17 +31,22 @@
 # TRR_ADMIN_ROUTE_CACHE_DISABLED=0 make dev  # re-enable local admin route caching if you want production-like staleness locally
 dev:
 	@$(MAKE) --no-print-directory preflight
-	@PROFILE="$${PROFILE:-default}" WORKSPACE_DEV_MODE=cloud bash scripts/dev-workspace.sh
+	@PROFILE="$${PROFILE:-default}" WORKSPACE_DEV_MODE=local bash scripts/dev-workspace.sh
 
 # Compatibility alias for the canonical default path.
 dev-lite:
 	@echo "[workspace] NOTE: 'make dev-lite' is deprecated; running 'make dev'."
 	@$(MAKE) --no-print-directory dev PROFILE="$${PROFILE:-default}"
 
-# Compatibility alias for the canonical default path.
+# Explicit cloud/remote path.
 dev-cloud:
-	@echo "[workspace] NOTE: 'make dev-cloud' is deprecated; running 'make dev'."
-	@$(MAKE) --no-print-directory dev PROFILE="$${PROFILE:-default}"
+	@$(MAKE) --no-print-directory preflight-cloud
+	@PROFILE="$${PROFILE:-local-cloud}" WORKSPACE_DEV_MODE=cloud bash scripts/dev-workspace.sh
+
+# Explicit hybrid path: local app/backend use direct DB; Modal/remote workers use session/pooler.
+dev-hybrid:
+	@$(MAKE) --no-print-directory preflight-hybrid
+	@PROFILE="$${PROFILE:-local-cloud}" WORKSPACE_DEV_MODE=hybrid bash scripts/dev-workspace.sh
 
 # Deprecated compatibility alias retained for older local muscle memory.
 dev-local:
@@ -51,23 +59,49 @@ dev-full:
 	@$(MAKE) --no-print-directory dev PROFILE="$${PROFILE:-default}"
 
 preflight:
-	@WORKSPACE_DEV_MODE=cloud bash scripts/preflight.sh
+	@WORKSPACE_DEV_MODE=local bash scripts/preflight.sh
 
 preflight-local:
-	@echo "[workspace] NOTE: 'make preflight-local' is deprecated; running 'make preflight'."
+	@WORKSPACE_DEV_MODE=local bash scripts/preflight.sh
+
+preflight-cloud:
 	@WORKSPACE_DEV_MODE=cloud bash scripts/preflight.sh
 
+preflight-hybrid:
+	@WORKSPACE_DEV_MODE=hybrid bash scripts/preflight.sh
+
 preflight-strict:
-	@WORKSPACE_DEV_MODE=cloud WORKSPACE_PREFLIGHT_STRICT=1 bash scripts/preflight.sh
+	@WORKSPACE_DEV_MODE=local WORKSPACE_PREFLIGHT_STRICT=1 WORKSPACE_ENFORCE_DB_HOLDER_BUDGET=1 bash scripts/preflight.sh
 
 preflight-diagnostics:
-	@WORKSPACE_DEV_MODE=cloud WORKSPACE_PREFLIGHT_DIAGNOSTICS=1 bash scripts/preflight.sh
+	@WORKSPACE_DEV_MODE=local WORKSPACE_PREFLIGHT_DIAGNOSTICS=1 bash scripts/preflight.sh
 
 env-contract:
 	@bash scripts/workspace-env-contract.sh --generate
 
 env-contract-report:
 	@python3 scripts/env_contract_report.py write
+
+app-direct-sql-inventory:
+	@python3 scripts/app-direct-sql-inventory.py --output docs/workspace/app-direct-sql-inventory.md
+
+redacted-env-inventory:
+	@python3 scripts/redact-env-inventory.py --output docs/workspace/redacted-env-inventory.md
+
+vercel-project-guard:
+	@python3 scripts/vercel-project-guard.py --project-dir TRR-APP
+
+migration-ownership-lint:
+	@python3 scripts/migration-ownership-lint.py
+
+rls-grants-snapshot:
+	@cd TRR-Backend && ./.venv/bin/python scripts/db/rls_grants_snapshot.py --output ../docs/workspace/supabase-rls-grants-review.md
+
+db-pressure-rehearsal:
+	@bash scripts/db-pressure-rehearsal.sh
+
+supabase-mcp-access:
+	@python3 scripts/check-supabase-mcp-access.py
 
 check-policy:
 	@bash scripts/check-policy.sh
@@ -169,17 +203,19 @@ down:
 
 help:
 	@echo "Workspace commands:"
-	@echo "  make dev          - canonical default; cloud-first backend/app path with no local Docker infra"
+	@echo "  make dev          - local TRR-APP + local TRR-Backend, direct DB lane, remote workers disabled"
+	@echo "  make dev-cloud    - explicit cloud/remote worker path using session/pooler DB"
+	@echo "  make dev-hybrid   - local direct app/backend plus Modal/remote workers on session/pooler DB"
 	@echo "  make dev-local    - deprecated alias for make dev"
-	@echo "  make preflight    - validates the canonical no-Docker workspace path"
-	@echo "  make preflight-local - deprecated alias for make preflight"
+	@echo "  make preflight    - validates the local/direct workspace path"
+	@echo "  make preflight-cloud - validates the explicit cloud/session path"
+	@echo "  make preflight-hybrid - validates direct local plus session remote separation"
 	@echo "  make env-contract - refresh docs/workspace/env-contract.md"
 	@echo "  make env-contract-report - refresh env contract inventory/deprecation review docs"
 	@echo "  make codex-check  - validates tracked Codex config, rules, and user bootstrap state"
 	@echo "  make down         - deprecated no-op retained for compatibility"
 	@echo "  make chrome-dock-clean - remove Google Chrome entries from macOS Dock recents"
 	@echo "Legacy aliases:"
-	@echo "  make dev-cloud    - deprecated alias for make dev"
 	@echo "  make dev-full     - deprecated alias for make dev"
 
 chrome-devtools-mcp-status:

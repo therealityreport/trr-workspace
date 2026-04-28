@@ -12,7 +12,7 @@ source "$ROOT/scripts/lib/workspace-terminal.sh"
 
 # Optional profile defaults.
 # Usage: PROFILE=default make dev
-# Default workspace contract: `make dev` is a cloud-first two-repo workspace.
+# Default workspace contract: `make dev` is local app/backend on the direct DB lane.
 PROFILE="${PROFILE:-}"
 if [[ -n "$PROFILE" ]]; then
   PROFILE_FILE="$ROOT/profiles/${PROFILE}.env"
@@ -43,7 +43,7 @@ if [[ -n "$PROFILE" ]]; then
   echo "[workspace] Loaded profile defaults from ${PROFILE_FILE} (explicit env vars preserved)."
   case "$PROFILE" in
     local-cloud)
-      echo "[workspace] NOTE: PROFILE=local-cloud is deprecated; use make dev (or PROFILE=default make dev)." >&2
+      echo "[workspace] NOTE: PROFILE=local-cloud is retained for make dev-cloud compatibility; prefer make dev-cloud without PROFILE." >&2
       ;;
     local-full)
       echo "[workspace] NOTE: PROFILE=local-full is deprecated; use the explicit Docker fallback: make dev-local (or PROFILE=local-docker make dev-local)." >&2
@@ -51,11 +51,42 @@ if [[ -n "$PROFILE" ]]; then
   esac
 fi
 
-if ! WORKSPACE_TRR_DB_URL="$(trr_runtime_db_resolve_local_app_url "$ROOT")"; then
-  trr_runtime_db_require_local_app_url "$ROOT"
-  exit 1
+WORKSPACE_DEV_MODE="${WORKSPACE_DEV_MODE:-local}"
+if [[ "$WORKSPACE_DEV_MODE" == "local_docker" ]]; then
+  echo "[workspace] NOTE: WORKSPACE_DEV_MODE=local_docker is retired; continuing with local mode." >&2
+  WORKSPACE_DEV_MODE="local"
 fi
-export TRR_DB_URL="$WORKSPACE_TRR_DB_URL"
+case "$WORKSPACE_DEV_MODE" in
+  local|cloud|hybrid) ;;
+  *)
+    echo "[workspace] ERROR: invalid WORKSPACE_DEV_MODE='${WORKSPACE_DEV_MODE}' (expected local, cloud, or hybrid)." >&2
+    exit 1
+    ;;
+esac
+
+case "$WORKSPACE_DEV_MODE" in
+  local)
+    WORKSPACE_TRR_JOB_PLANE_MODE_DEFAULT="local"
+    WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE_DEFAULT="0"
+    WORKSPACE_TRR_REMOTE_EXECUTOR_DEFAULT="modal"
+    WORKSPACE_TRR_MODAL_ENABLED_DEFAULT="0"
+    WORKSPACE_TRR_REMOTE_WORKERS_ENABLED_DEFAULT="0"
+    ;;
+  hybrid)
+    WORKSPACE_TRR_JOB_PLANE_MODE_DEFAULT="remote"
+    WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE_DEFAULT="1"
+    WORKSPACE_TRR_REMOTE_EXECUTOR_DEFAULT="modal"
+    WORKSPACE_TRR_MODAL_ENABLED_DEFAULT="1"
+    WORKSPACE_TRR_REMOTE_WORKERS_ENABLED_DEFAULT="1"
+    ;;
+  cloud)
+    WORKSPACE_TRR_JOB_PLANE_MODE_DEFAULT="remote"
+    WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE_DEFAULT="1"
+    WORKSPACE_TRR_REMOTE_EXECUTOR_DEFAULT="modal"
+    WORKSPACE_TRR_MODAL_ENABLED_DEFAULT="1"
+    WORKSPACE_TRR_REMOTE_WORKERS_ENABLED_DEFAULT="0"
+    ;;
+esac
 
 LOG_DIR="${ROOT}/.logs/workspace"
 PIDFILE="${LOG_DIR}/pids.env"
@@ -72,13 +103,15 @@ if [[ -x "$ROOT/scripts/codex-mcp-session-reaper.sh" ]]; then
 fi
 
 # Workspace toggles
-WORKSPACE_DEV_MODE="${WORKSPACE_DEV_MODE:-}"
 WORKSPACE_STRICT="${WORKSPACE_STRICT:-0}"
 WORKSPACE_FORCE_KILL_PORT_CONFLICTS="${WORKSPACE_FORCE_KILL_PORT_CONFLICTS:-0}"
 WORKSPACE_CLEAN_NEXT_CACHE="${WORKSPACE_CLEAN_NEXT_CACHE:-0}"
 WORKSPACE_TRR_APP_DEV_BUNDLER="${WORKSPACE_TRR_APP_DEV_BUNDLER:-turbopack}"
 WORKSPACE_TRR_APP_POSTGRES_POOL_MAX="${WORKSPACE_TRR_APP_POSTGRES_POOL_MAX:-}"
 WORKSPACE_TRR_APP_POSTGRES_MAX_CONCURRENT_OPERATIONS="${WORKSPACE_TRR_APP_POSTGRES_MAX_CONCURRENT_OPERATIONS:-}"
+WORKSPACE_SUPAVISOR_SESSION_POOL_SIZE="${WORKSPACE_SUPAVISOR_SESSION_POOL_SIZE:-15}"
+WORKSPACE_ENFORCE_DB_HOLDER_BUDGET="${WORKSPACE_ENFORCE_DB_HOLDER_BUDGET:-0}"
+WORKSPACE_SCREENALYTICS_DB_ENABLED="${WORKSPACE_SCREENALYTICS_DB_ENABLED:-0}"
 WORKSPACE_OPEN_BROWSER="${WORKSPACE_OPEN_BROWSER:-0}"
 WORKSPACE_BROWSER_TAB_SYNC_MODE="${WORKSPACE_BROWSER_TAB_SYNC_MODE:-reuse_no_reload}"
 WORKSPACE_HEALTH_CURL_MAX_TIME="${WORKSPACE_HEALTH_CURL_MAX_TIME:-8}"
@@ -98,10 +131,10 @@ WORKSPACE_SOCIAL_WORKER_COMMENTS="${WORKSPACE_SOCIAL_WORKER_COMMENTS:-1}"
 WORKSPACE_SOCIAL_WORKER_MEDIA_MIRROR="${WORKSPACE_SOCIAL_WORKER_MEDIA_MIRROR:-0}"
 WORKSPACE_SOCIAL_WORKER_COMMENT_MEDIA_MIRROR="${WORKSPACE_SOCIAL_WORKER_COMMENT_MEDIA_MIRROR:-0}"
 WORKSPACE_SOCIAL_WORKER_INTERVAL_SEC="${WORKSPACE_SOCIAL_WORKER_INTERVAL_SEC:-3}"
-WORKSPACE_TRR_JOB_PLANE_MODE="${WORKSPACE_TRR_JOB_PLANE_MODE:-remote}"
-WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE="${WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE:-1}"
-WORKSPACE_TRR_REMOTE_EXECUTOR="${WORKSPACE_TRR_REMOTE_EXECUTOR:-modal}"
-WORKSPACE_TRR_MODAL_ENABLED="${WORKSPACE_TRR_MODAL_ENABLED:-1}"
+WORKSPACE_TRR_JOB_PLANE_MODE="${WORKSPACE_TRR_JOB_PLANE_MODE:-$WORKSPACE_TRR_JOB_PLANE_MODE_DEFAULT}"
+WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE="${WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE:-$WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE_DEFAULT}"
+WORKSPACE_TRR_REMOTE_EXECUTOR="${WORKSPACE_TRR_REMOTE_EXECUTOR:-$WORKSPACE_TRR_REMOTE_EXECUTOR_DEFAULT}"
+WORKSPACE_TRR_MODAL_ENABLED="${WORKSPACE_TRR_MODAL_ENABLED:-$WORKSPACE_TRR_MODAL_ENABLED_DEFAULT}"
 WORKSPACE_TRR_MODAL_APP_NAME="${WORKSPACE_TRR_MODAL_APP_NAME:-trr-backend-jobs}"
 WORKSPACE_TRR_MODAL_ADMIN_OPERATION_FUNCTION="${WORKSPACE_TRR_MODAL_ADMIN_OPERATION_FUNCTION:-run_admin_operation_v2}"
 WORKSPACE_TRR_MODAL_GOOGLE_NEWS_FUNCTION="${WORKSPACE_TRR_MODAL_GOOGLE_NEWS_FUNCTION:-run_google_news_sync}"
@@ -110,7 +143,7 @@ WORKSPACE_TRR_MODAL_SOCIAL_JOB_FUNCTION="${WORKSPACE_TRR_MODAL_SOCIAL_JOB_FUNCTI
 WORKSPACE_TRR_MODAL_SOCIAL_RECOVERY_FUNCTION="${WORKSPACE_TRR_MODAL_SOCIAL_RECOVERY_FUNCTION:-sweep_social_dispatch_queue}"
 WORKSPACE_TRR_MODAL_RUNTIME_SECRET_NAME="${WORKSPACE_TRR_MODAL_RUNTIME_SECRET_NAME:-trr-backend-runtime}"
 WORKSPACE_TRR_MODAL_SOCIAL_SECRET_NAME="${WORKSPACE_TRR_MODAL_SOCIAL_SECRET_NAME:-trr-social-auth}"
-WORKSPACE_TRR_REMOTE_WORKERS_ENABLED="${WORKSPACE_TRR_REMOTE_WORKERS_ENABLED:-0}"
+WORKSPACE_TRR_REMOTE_WORKERS_ENABLED="${WORKSPACE_TRR_REMOTE_WORKERS_ENABLED:-$WORKSPACE_TRR_REMOTE_WORKERS_ENABLED_DEFAULT}"
 WORKSPACE_TRR_REMOTE_ADMIN_WORKERS="${WORKSPACE_TRR_REMOTE_ADMIN_WORKERS:-1}"
 WORKSPACE_TRR_REMOTE_REDDIT_WORKERS="${WORKSPACE_TRR_REMOTE_REDDIT_WORKERS:-1}"
 WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS="${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS:-1}"
@@ -133,20 +166,6 @@ TRR_SOCIAL_PROXY_LONG_TIMEOUT_MS="${TRR_SOCIAL_PROXY_LONG_TIMEOUT_MS:-60000}"
 TRR_REDDIT_CACHE_LOOKUP_TIMEOUT_MS="${TRR_REDDIT_CACHE_LOOKUP_TIMEOUT_MS:-20000}"
 TRR_REDDIT_CACHE_LOOKUP_RETRIES="${TRR_REDDIT_CACHE_LOOKUP_RETRIES:-1}"
 
-if [[ -z "$WORKSPACE_DEV_MODE" ]]; then
-  WORKSPACE_DEV_MODE="cloud"
-fi
-
-if [[ "$WORKSPACE_DEV_MODE" == "local_docker" ]]; then
-  echo "[workspace] NOTE: WORKSPACE_DEV_MODE=local_docker is retired; continuing with cloud mode." >&2
-  WORKSPACE_DEV_MODE="cloud"
-fi
-
-if [[ "$WORKSPACE_DEV_MODE" != "cloud" ]]; then
-  echo "[workspace] ERROR: invalid WORKSPACE_DEV_MODE='${WORKSPACE_DEV_MODE}' (expected cloud)." >&2
-  exit 1
-fi
-
 workspace_local_auth_secret() {
   local label="$1"
   local seed
@@ -165,7 +184,12 @@ workspace_local_auth_secret() {
 WORKSPACE_TRR_INTERNAL_ADMIN_SHARED_SECRET="${TRR_INTERNAL_ADMIN_SHARED_SECRET:-$(workspace_local_auth_secret internal-admin)}"
 
 workspace_dev_mode_label() {
-  echo "cloud (preferred no-Docker path)"
+  case "$WORKSPACE_DEV_MODE" in
+    local) echo "local" ;;
+    hybrid) echo "hybrid" ;;
+    cloud) echo "cloud" ;;
+    *) echo "$WORKSPACE_DEV_MODE" ;;
+  esac
 }
 
 if ! [[ "$WORKSPACE_BACKEND_AUTO_RESTART" =~ ^[01]$ ]]; then
@@ -336,6 +360,18 @@ if ! [[ "$TRR_REDDIT_CACHE_LOOKUP_RETRIES" =~ ^[0-9]+$ ]]; then
   echo "[workspace] WARNING: invalid TRR_REDDIT_CACHE_LOOKUP_RETRIES='${TRR_REDDIT_CACHE_LOOKUP_RETRIES}', using 1." >&2
   TRR_REDDIT_CACHE_LOOKUP_RETRIES="1"
 fi
+if ! [[ "$WORKSPACE_SUPAVISOR_SESSION_POOL_SIZE" =~ ^[1-9][0-9]*$ ]]; then
+  echo "[workspace] WARNING: invalid WORKSPACE_SUPAVISOR_SESSION_POOL_SIZE='${WORKSPACE_SUPAVISOR_SESSION_POOL_SIZE}', using 15." >&2
+  WORKSPACE_SUPAVISOR_SESSION_POOL_SIZE="15"
+fi
+if ! [[ "$WORKSPACE_ENFORCE_DB_HOLDER_BUDGET" =~ ^[01]$ ]]; then
+  echo "[workspace] WARNING: invalid WORKSPACE_ENFORCE_DB_HOLDER_BUDGET='${WORKSPACE_ENFORCE_DB_HOLDER_BUDGET}', using 0." >&2
+  WORKSPACE_ENFORCE_DB_HOLDER_BUDGET="0"
+fi
+if ! [[ "$WORKSPACE_SCREENALYTICS_DB_ENABLED" =~ ^[01]$ ]]; then
+  echo "[workspace] WARNING: invalid WORKSPACE_SCREENALYTICS_DB_ENABLED='${WORKSPACE_SCREENALYTICS_DB_ENABLED}', using 0." >&2
+  WORKSPACE_SCREENALYTICS_DB_ENABLED="0"
+fi
 
 # Avoid relying on `#!/usr/bin/env bash` (or the `env` command) in sub-scripts.
 # If PATH contains a slow/unavailable entry, `/usr/bin/env` can hang while
@@ -368,11 +404,36 @@ trr_export_runtime_db_env_from_file "$TRR_APP_LOCAL_ENV_FILE"
 trr_export_runtime_db_env_from_file "$TRR_BACKEND_LOCAL_ENV_FILE"
 trr_export_env_value_from_file_if_unset "$TRR_BACKEND_LOCAL_ENV_FILE" "SUPABASE_JWT_SECRET"
 
-if ! trr_runtime_db_env_present "$TRR_APP_LOCAL_ENV_FILE"; then
-  echo "[workspace] ERROR: TRR-APP is missing runtime DB config." >&2
-  echo "[workspace] Add TRR_DB_URL to ${TRR_APP_LOCAL_ENV_FILE} (or export TRR_DB_URL) before running make dev." >&2
+if ! WORKSPACE_TRR_LOCAL_DB_URL="$(trr_runtime_db_resolve_local_app_url "$ROOT" "$WORKSPACE_DEV_MODE")"; then
+  trr_runtime_db_require_local_app_url "$ROOT" "workspace" "$WORKSPACE_DEV_MODE"
   exit 1
 fi
+WORKSPACE_TRR_LOCAL_DB_SOURCE="$(trr_runtime_db_resolve_local_app_source "$ROOT" "$WORKSPACE_DEV_MODE")"
+WORKSPACE_TRR_LOCAL_DB_LANE="$(trr_runtime_db_url_lane "$WORKSPACE_TRR_LOCAL_DB_URL")"
+WORKSPACE_TRR_LOCAL_DB_DIRECT_URL=""
+WORKSPACE_TRR_LOCAL_DB_SESSION_URL=""
+if [[ "$WORKSPACE_TRR_LOCAL_DB_LANE" == "direct" ]]; then
+  WORKSPACE_TRR_LOCAL_DB_DIRECT_URL="$WORKSPACE_TRR_LOCAL_DB_URL"
+else
+  WORKSPACE_TRR_LOCAL_DB_SESSION_URL="$WORKSPACE_TRR_LOCAL_DB_URL"
+fi
+
+WORKSPACE_TRR_REMOTE_DB_URL=""
+WORKSPACE_TRR_REMOTE_DB_SOURCE=""
+WORKSPACE_TRR_REMOTE_DB_LANE="disabled"
+if [[ "$WORKSPACE_DEV_MODE" == "cloud" || "$WORKSPACE_DEV_MODE" == "hybrid" ]]; then
+  if ! WORKSPACE_TRR_REMOTE_DB_URL="$(trr_runtime_db_resolve_remote_worker_url "$ROOT" "$WORKSPACE_DEV_MODE")"; then
+    trr_runtime_db_require_remote_worker_url "$ROOT" "workspace" "$WORKSPACE_DEV_MODE"
+    exit 1
+  fi
+  WORKSPACE_TRR_REMOTE_DB_SOURCE="$(trr_runtime_db_resolve_remote_worker_source "$ROOT" "$WORKSPACE_DEV_MODE")"
+  WORKSPACE_TRR_REMOTE_DB_LANE="$(trr_runtime_db_url_lane "$WORKSPACE_TRR_REMOTE_DB_URL")"
+fi
+
+# Compatibility names describe the local app/backend lane only. They are shell
+# variables, not written back to tracked or ignored env files.
+WORKSPACE_TRR_DB_URL="$WORKSPACE_TRR_LOCAL_DB_URL"
+WORKSPACE_TRR_DB_SOURCE="$WORKSPACE_TRR_LOCAL_DB_SOURCE"
 
 TRR_BACKEND_LOG="${LOG_DIR}/trr-backend.log"
 TRR_APP_LOG="${LOG_DIR}/trr-app.log"
@@ -831,6 +892,27 @@ workspace_startup_remote_execution_summary() {
   echo "local workers active"
 }
 
+workspace_selected_db_lane() {
+  local scope="${1:-local}"
+  if [[ "$scope" == "remote" ]]; then
+    echo "${WORKSPACE_TRR_REMOTE_DB_LANE:-disabled}"
+    return 0
+  fi
+  if [[ -n "${WORKSPACE_TRR_LOCAL_DB_LANE:-}" ]]; then
+    echo "$WORKSPACE_TRR_LOCAL_DB_LANE"
+    return 0
+  fi
+  trr_runtime_db_url_lane "${WORKSPACE_TRR_DB_URL:-}"
+}
+
+workspace_enabled_label() {
+  if [[ "${1:-0}" == "1" ]]; then
+    echo "enabled"
+    return 0
+  fi
+  echo "disabled"
+}
+
 workspace_startup_runtime_summary() {
   local backend_mode="non-reload"
   if [[ "$TRR_BACKEND_RELOAD" == "1" ]]; then
@@ -891,8 +973,8 @@ workspace_effective_db_holder_budget() {
   # Fallbacks mirror the canonical `make dev` / PROFILE=default workspace
   # contract; explicit profile or environment values still override them.
   app_projected_pool="$(workspace_projected_app_postgres_pool_max)"
-  app_pool="$(workspace_positive_int_or_default "$app_projected_pool" "4")"
-  backend_pool="$(workspace_positive_int_or_default "${TRR_DB_POOL_MAXCONN:-}" "4")"
+  app_pool="$(workspace_positive_int_or_default "$app_projected_pool" "1")"
+  backend_pool="$(workspace_positive_int_or_default "${TRR_DB_POOL_MAXCONN:-}" "6")"
   social_profile_pool="$(workspace_positive_int_or_default "${TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN:-}" "4")"
   social_control_pool="$(workspace_positive_int_or_default "${TRR_SOCIAL_CONTROL_DB_POOL_MAXCONN:-}" "2")"
   health_pool="$(workspace_positive_int_or_default "${TRR_HEALTH_DB_POOL_MAXCONN:-}" "1")"
@@ -905,6 +987,52 @@ workspace_effective_db_holder_budget() {
     "$social_control_pool" \
     "$health_pool" \
     "$total"
+}
+
+workspace_effective_db_holder_budget_total() {
+  local app_pool
+  local app_projected_pool
+  local backend_pool
+  local social_profile_pool
+  local social_control_pool
+  local health_pool
+
+  app_projected_pool="$(workspace_projected_app_postgres_pool_max)"
+  app_pool="$(workspace_positive_int_or_default "$app_projected_pool" "1")"
+  backend_pool="$(workspace_positive_int_or_default "${TRR_DB_POOL_MAXCONN:-}" "6")"
+  social_profile_pool="$(workspace_positive_int_or_default "${TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN:-}" "4")"
+  social_control_pool="$(workspace_positive_int_or_default "${TRR_SOCIAL_CONTROL_DB_POOL_MAXCONN:-}" "2")"
+  health_pool="$(workspace_positive_int_or_default "${TRR_HEALTH_DB_POOL_MAXCONN:-}" "1")"
+
+  echo $(( app_pool + backend_pool + social_profile_pool + social_control_pool + health_pool ))
+}
+
+workspace_check_db_holder_budget_headroom() {
+  local total
+  local pool_size
+  local max_safe_total
+  local budget
+
+  total="$(workspace_effective_db_holder_budget_total)"
+  pool_size="$(workspace_positive_int_or_default "${WORKSPACE_SUPAVISOR_SESSION_POOL_SIZE:-}" "15")"
+  max_safe_total=$(( pool_size - 5 ))
+  budget="$(workspace_effective_db_holder_budget)"
+
+  if [[ "$(workspace_selected_db_lane)" == "direct" ]]; then
+    return 0
+  fi
+
+  if (( max_safe_total < 0 )); then
+    max_safe_total=0
+  fi
+
+  if (( total > max_safe_total )); then
+    if [[ "${WORKSPACE_ENFORCE_DB_HOLDER_BUDGET:-0}" == "1" ]]; then
+      echo "[workspace] ERROR: Local DB holder budget exceeds Supavisor headroom target: ${budget}; pool_size=${pool_size}; max_safe_total=${max_safe_total}." >&2
+      exit 1
+    fi
+    echo "[workspace] WARNING: Local DB holder budget is near/exceeds Supavisor headroom target: ${budget}; pool_size=${pool_size}; max_safe_total=${max_safe_total}." >&2
+  fi
 }
 
 runtime_reconcile_artifact_path() {
@@ -949,7 +1077,18 @@ print_workspace_ready_summary() {
   echo "    TRR-APP Admin:       ${ADMIN_APP_ORIGIN}"
   echo "    TRR-Backend:         ${TRR_API_URL}"
   echo "  Summary: $(workspace_startup_runtime_summary)"
+  echo "  Workspace mode: $(workspace_dev_mode_label)"
+  echo "  DB lane: $(workspace_selected_db_lane)"
+  echo "  DB source: ${WORKSPACE_TRR_LOCAL_DB_SOURCE}"
+  if [[ "$WORKSPACE_DEV_MODE" == "hybrid" ]]; then
+    echo "  Remote DB lane: $(workspace_selected_db_lane remote)"
+    echo "  Remote DB source: ${WORKSPACE_TRR_REMOTE_DB_SOURCE}"
+  fi
+  echo "  Remote workers: $(workspace_enabled_label "$WORKSPACE_TRR_REMOTE_WORKERS_ENABLED")"
+  echo "  Modal dispatch: $(workspace_enabled_label "$WORKSPACE_TRR_MODAL_ENABLED")"
+  echo "  Screenalytics DB: $(workspace_enabled_label "$WORKSPACE_SCREENALYTICS_DB_ENABLED")"
   echo "  Local DB holders: $(workspace_effective_db_holder_budget)"
+  workspace_check_db_holder_budget_headroom
   echo "  Runtime reconcile: $(runtime_reconcile_startup_summary)"
   echo "  Logs:"
   echo "    ${TRR_APP_LOG}"
@@ -982,8 +1121,21 @@ start_trr_backend() {
   start_bg_with_label "TRR_BACKEND" "TRR-Backend" "$TRR_BACKEND_LOG" "$BASH_BIN" -lc "cd \"$ROOT/TRR-Backend\" && \
     PYTHONUNBUFFERED=1 \
     TRR_LOCAL_DEV=1 \
-    TRR_DB_URL=\"$TRR_DB_URL\" \
+    TRR_DB_DIRECT_URL=\"$WORKSPACE_TRR_LOCAL_DB_DIRECT_URL\" \
+    TRR_DB_SESSION_URL=\"$WORKSPACE_TRR_LOCAL_DB_SESSION_URL\" \
+    TRR_DB_URL=\"$WORKSPACE_TRR_LOCAL_DB_URL\" \
+    TRR_DB_TRANSACTION_URL=\"${TRR_DB_TRANSACTION_URL:-}\" \
+    TRR_DB_RUNTIME_LANE=\"$(workspace_selected_db_lane)\" \
+    TRR_DB_TRANSACTION_FLIGHT_TEST=\"${TRR_DB_TRANSACTION_FLIGHT_TEST:-0}\" \
     TRR_DB_FALLBACK_URL=\"${TRR_DB_FALLBACK_URL:-}\" \
+    TRR_DB_POOL_MINCONN=\"${TRR_DB_POOL_MINCONN:-1}\" \
+    TRR_DB_POOL_MAXCONN=\"${TRR_DB_POOL_MAXCONN:-6}\" \
+    TRR_SOCIAL_PROFILE_DB_POOL_MINCONN=\"${TRR_SOCIAL_PROFILE_DB_POOL_MINCONN:-1}\" \
+    TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN=\"${TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN:-4}\" \
+    TRR_SOCIAL_CONTROL_DB_POOL_MINCONN=\"${TRR_SOCIAL_CONTROL_DB_POOL_MINCONN:-1}\" \
+    TRR_SOCIAL_CONTROL_DB_POOL_MAXCONN=\"${TRR_SOCIAL_CONTROL_DB_POOL_MAXCONN:-2}\" \
+    TRR_HEALTH_DB_POOL_MINCONN=\"${TRR_HEALTH_DB_POOL_MINCONN:-1}\" \
+    TRR_HEALTH_DB_POOL_MAXCONN=\"${TRR_HEALTH_DB_POOL_MAXCONN:-1}\" \
     SUPABASE_JWT_SECRET=\"${SUPABASE_JWT_SECRET:-}\" \
     TRR_INTERNAL_ADMIN_SHARED_SECRET=\"$WORKSPACE_TRR_INTERNAL_ADMIN_SHARED_SECRET\" \
     TRR_BACKEND_PORT=\"$TRR_BACKEND_PORT\" \
@@ -1091,7 +1243,12 @@ start_trr_app() {
     fi && \
     cd \"$TRR_APP_DIR\" && \
     TRR_LOCAL_DEV=1 \
-    TRR_DB_URL=\"$TRR_DB_URL\" \
+    TRR_DB_DIRECT_URL=\"$WORKSPACE_TRR_LOCAL_DB_DIRECT_URL\" \
+    TRR_DB_SESSION_URL=\"$WORKSPACE_TRR_LOCAL_DB_SESSION_URL\" \
+    TRR_DB_URL=\"$WORKSPACE_TRR_LOCAL_DB_URL\" \
+    TRR_DB_TRANSACTION_URL=\"${TRR_DB_TRANSACTION_URL:-}\" \
+    TRR_DB_RUNTIME_LANE=\"$(workspace_selected_db_lane)\" \
+    TRR_DB_TRANSACTION_FLIGHT_TEST=\"${TRR_DB_TRANSACTION_FLIGHT_TEST:-0}\" \
     TRR_DB_FALLBACK_URL=\"${TRR_DB_FALLBACK_URL:-}\" \
     POSTGRES_POOL_MAX=\"$trr_app_postgres_pool_max\" \
     POSTGRES_MAX_CONCURRENT_OPERATIONS=\"$trr_app_postgres_max_concurrent_operations\" \
@@ -1129,6 +1286,10 @@ start_trr_social_worker() {
     fi && \
     source .venv/bin/activate && \
     PYTHONUNBUFFERED=1 \
+    TRR_DB_DIRECT_URL=\"$WORKSPACE_TRR_LOCAL_DB_DIRECT_URL\" \
+    TRR_DB_SESSION_URL=\"$WORKSPACE_TRR_LOCAL_DB_SESSION_URL\" \
+    TRR_DB_URL=\"$WORKSPACE_TRR_LOCAL_DB_URL\" \
+    TRR_DB_RUNTIME_LANE=\"$(workspace_selected_db_lane)\" \
     SOCIAL_QUEUE_ENABLED=true \
     SOCIAL_WORKER_POOL_POSTS=\"$WORKSPACE_SOCIAL_WORKER_POSTS\" \
     SOCIAL_WORKER_POOL_COMMENTS=\"$WORKSPACE_SOCIAL_WORKER_COMMENTS\" \
@@ -1154,6 +1315,10 @@ start_trr_remote_workers() {
     fi && \
     source .venv/bin/activate && \
     PYTHONUNBUFFERED=1 \
+    TRR_DB_DIRECT_URL=\"\" \
+    TRR_DB_SESSION_URL=\"$WORKSPACE_TRR_REMOTE_DB_URL\" \
+    TRR_DB_URL=\"$WORKSPACE_TRR_REMOTE_DB_URL\" \
+    TRR_DB_RUNTIME_LANE=\"$(workspace_selected_db_lane remote)\" \
     TRR_JOB_PLANE_MODE=\"$WORKSPACE_TRR_JOB_PLANE_MODE\" \
     TRR_LONG_JOB_ENFORCE_REMOTE=\"$WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE\" \
     TRR_REMOTE_WORKER_POLL_SECONDS=\"$WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS\" \
@@ -1242,6 +1407,10 @@ write_backend_watchdog_state
   echo "TRR_API_URL=\"${TRR_API_URL}\""
   echo "WORKSPACE_DEV_MODE=${WORKSPACE_DEV_MODE}"
   echo "WORKSPACE_STRICT=${WORKSPACE_STRICT}"
+  echo "WORKSPACE_TRR_DB_SOURCE=${WORKSPACE_TRR_LOCAL_DB_SOURCE}"
+  echo "WORKSPACE_TRR_DB_LANE=$(workspace_selected_db_lane)"
+  echo "WORKSPACE_TRR_REMOTE_DB_SOURCE=${WORKSPACE_TRR_REMOTE_DB_SOURCE}"
+  echo "WORKSPACE_TRR_REMOTE_DB_LANE=$(workspace_selected_db_lane remote)"
   echo "WORKSPACE_TRR_APP_DEV_BUNDLER=${WORKSPACE_TRR_APP_DEV_BUNDLER}"
   echo "WORKSPACE_OPEN_BROWSER=${WORKSPACE_OPEN_BROWSER}"
   echo "WORKSPACE_BROWSER_TAB_SYNC_MODE=${WORKSPACE_BROWSER_TAB_SYNC_MODE}"
@@ -1285,6 +1454,9 @@ write_backend_watchdog_state
   echo "WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS=${WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS}"
   echo "WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR=${WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR}"
   echo "WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR=${WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR}"
+  echo "WORKSPACE_SUPAVISOR_SESSION_POOL_SIZE=${WORKSPACE_SUPAVISOR_SESSION_POOL_SIZE}"
+  echo "WORKSPACE_ENFORCE_DB_HOLDER_BUDGET=${WORKSPACE_ENFORCE_DB_HOLDER_BUDGET}"
+  echo "WORKSPACE_SCREENALYTICS_DB_ENABLED=${WORKSPACE_SCREENALYTICS_DB_ENABLED}"
   echo "WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS=${WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS}"
   echo "WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_LEASE_SECONDS=${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_LEASE_SECONDS}"
   echo "WORKSPACE_RUNTIME_RECONCILE_ENABLED=${WORKSPACE_RUNTIME_RECONCILE_ENABLED}"
@@ -1309,6 +1481,8 @@ write_backend_watchdog_state
   echo "WORKSPACE_BACKEND_LAST_RESTART_AT=\"${BACKEND_LAST_RESTART_AT}\""
   echo "WORKSPACE_BACKEND_LAST_RESTART_PROBE_RC=\"${BACKEND_LAST_RESTART_PROBE_RC}\""
 } >>"$PIDFILE"
+
+workspace_check_db_holder_budget_headroom
 
 echo "[workspace] Starting services..."
 
