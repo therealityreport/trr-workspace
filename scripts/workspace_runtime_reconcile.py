@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -162,9 +163,14 @@ def render_preflight_summary(artifact: dict[str, Any]) -> str:
 
 def run_runtime_reconcile() -> dict[str, Any]:
     artifact = default_artifact()
+    workspace_mode = (os.getenv("WORKSPACE_DEV_MODE") or "local").strip() or "local"
 
     db_rc, db_payload = _run_backend_script("scripts/dev/reconcile_runtime_db.py")
-    modal_rc, modal_payload = _run_backend_script("scripts/modal/reconcile_modal_runtime.py")
+    if workspace_mode == "local":
+        modal_rc = 0
+        modal_payload = default_component(skipped=True, reason="disabled_local_mode", deployed=False, fingerprint_changed=False)
+    else:
+        modal_rc, modal_payload = _run_backend_script("scripts/modal/reconcile_modal_runtime.py")
     _, external_payload = _run_backend_script("scripts/dev/verify_external_runtime_contracts.py")
 
     artifact["db"].update(db_payload)

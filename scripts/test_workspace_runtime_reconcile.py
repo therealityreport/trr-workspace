@@ -55,6 +55,42 @@ def test_compute_overall_state_renders_fixed_summary() -> None:
     )
 
 
+def test_runtime_reconcile_skips_modal_in_local_mode(monkeypatch) -> None:
+    calls: list[str] = []
+
+    def fake_run(script_relpath: str):
+        calls.append(script_relpath)
+        if script_relpath == "scripts/dev/reconcile_runtime_db.py":
+            return 0, {"state": "ok"}
+        if script_relpath == "scripts/dev/verify_external_runtime_contracts.py":
+            return 0, {}
+        raise AssertionError(f"unexpected helper call: {script_relpath}")
+
+    monkeypatch.setenv("WORKSPACE_DEV_MODE", "local")
+    monkeypatch.setattr(cli, "_run_backend_script", fake_run)
+
+    artifact = cli.run_runtime_reconcile()
+
+    assert "scripts/modal/reconcile_modal_runtime.py" not in calls
+    assert artifact["modal"]["skipped"] is True
+    assert artifact["modal"]["reason"] == "disabled_local_mode"
+
+
+def test_runtime_reconcile_runs_modal_in_hybrid_mode(monkeypatch) -> None:
+    calls: list[str] = []
+
+    def fake_run(script_relpath: str):
+        calls.append(script_relpath)
+        return 0, {"state": "ok"}
+
+    monkeypatch.setenv("WORKSPACE_DEV_MODE", "hybrid")
+    monkeypatch.setattr(cli, "_run_backend_script", fake_run)
+
+    cli.run_runtime_reconcile()
+
+    assert "scripts/modal/reconcile_modal_runtime.py" in calls
+
+
 def test_main_writes_artifact_and_returns_nonzero_for_blocked(tmp_path, monkeypatch) -> None:
     artifact_path = tmp_path / "runtime-reconcile.json"
     blocked = cli.default_artifact()

@@ -1,0 +1,47 @@
+{
+  "sourcePath": "/Users/thomashulihan/Projects/TRR/.plan-grader/unused-index-full-decision-review-20260428-064550/REVISED_PLAN.md",
+  "rubricPath": "/Users/thomashulihan/Documents/Codex/2026-04-21-create-a-rubric-for-scoring-an/implementation-plan-rubric.md",
+  "artifactDir": "/Users/thomashulihan/Projects/TRR/.plan-grader/unused-index-full-decision-review-required-guardrails-20260428-065657",
+  "verdict": "required_guardrails_incorporated_execution_blocked_by_phase0",
+  "previousRevisedScoreEstimate": 95.0,
+  "newRevisedScoreEstimate": 98.2,
+  "gates": {
+    "triage": "pass",
+    "hardFail": "conditional_pass",
+    "downgradeCaps": "none_after_revision",
+    "wrongThingCorrectlyGuardrail": "pass"
+  },
+  "selectedSuggestionsIncorporated": {
+    "required": [
+      "Reusable decision-matrix validator",
+      "Generate owner packet filenames from workload slugs",
+      "No-destructive-SQL scanner",
+      "Social hashtag architecture stub",
+      "Stats-window JSON artifact",
+      "Query-pattern taxonomy labels",
+      "Prior-approval quarantine list",
+      "Sample owner packet table schema"
+    ],
+    "nonBlockingGuardrails": [
+      "Per-workload time budgets",
+      "Post-review Advisor delta snapshot"
+    ]
+  },
+  "currentStateFindings": {
+    "csvRowsObserved": 1302,
+    "ownerRowsExpected": 1324,
+    "executionBlockedByReportDrift": true,
+    "executionBlockedByDirtyWorktreeUntilClassified": true
+  },
+  "artifacts": {
+    "audit": "/Users/thomashulihan/Projects/TRR/.plan-grader/unused-index-full-decision-review-required-guardrails-20260428-065657/AUDIT.md",
+    "scorecard": "/Users/thomashulihan/Projects/TRR/.plan-grader/unused-index-full-decision-review-required-guardrails-20260428-065657/SCORECARD.md",
+    "revisedPlan": "/Users/thomashulihan/Projects/TRR/.plan-grader/unused-index-full-decision-review-required-guardrails-20260428-065657/REVISED_PLAN.md",
+    "patches": "/Users/thomashulihan/Projects/TRR/.plan-grader/unused-index-full-decision-review-required-guardrails-20260428-065657/PATCHES.md",
+    "comparison": "/Users/thomashulihan/Projects/TRR/.plan-grader/unused-index-full-decision-review-required-guardrails-20260428-065657/COMPARISON.md",
+    "validation": "/Users/thomashulihan/Projects/TRR/.plan-grader/unused-index-full-decision-review-required-guardrails-20260428-065657/VALIDATION.md"
+  },
+  "suggestionsPath": null,
+  "cleanupAfterImplementation": true,
+  "recommendedNextExecutionSkill": "orchestrate-subagents"
+}

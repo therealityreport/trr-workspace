@@ -1,0 +1,25 @@
+{
+  "advisors": {
+    "performance": {
+      "artifact": "docs/workspace/supabase-advisor-snapshots/2026-04-28/performance.json",
+      "endpoint": "https://api.supabase.com/v1/projects/vwxfvzutyufrkhfgoeaa/advisors/performance",
+      "http_status": 200,
+      "lint_count": 362,
+      "message": null,
+      "ok": true
+    },
+    "security": {
+      "artifact": "docs/workspace/supabase-advisor-snapshots/2026-04-28/security.json",
+      "endpoint": "https://api.supabase.com/v1/projects/vwxfvzutyufrkhfgoeaa/advisors/security",
+      "http_status": 200,
+      "lint_count": 119,
+      "message": null,
+      "ok": true
+    }
+  },
+  "captured_at": "2026-04-28T12:12:54Z",
+  "project_ref": "vwxfvzutyufrkhfgoeaa",
+  "source": "Supabase Management API",
+  "token_env": "TRR_SUPABASE_ACCESS_TOKEN",
+  "user_agent": "TRR supabase-advisor-snapshot/1.0"
+}

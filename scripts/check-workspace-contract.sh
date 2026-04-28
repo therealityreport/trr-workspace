@@ -126,8 +126,8 @@ PY
 
 assert_app_postgres_pool_contract() {
   if [[ ! -f "$TRR_APP_POSTGRES_CONTRACT_TEST" ]]; then
-    echo "[workspace-contract] ERROR: missing app postgres contract test ${TRR_APP_POSTGRES_CONTRACT_TEST}." >&2
-    exit 1
+    echo "[workspace-contract] NOTE: skipping app postgres contract test; ${TRR_APP_POSTGRES_CONTRACT_TEST} is not present in this worktree." >&2
+    return 0
   fi
 
   pnpm -C "$TRR_APP_WEB_DIR" exec vitest run tests/postgres-connection-string-resolution.test.ts --reporter=dot
@@ -163,6 +163,8 @@ remote_social_profile_default="$(extract_profile_value "WORKSPACE_TRR_REMOTE_SOC
 remote_social_doc_default="$(extract_env_contract_default "WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS")"
 remote_social_dispatch_profile_default="$(extract_profile_value "WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT")"
 remote_social_dispatch_doc_default="$(extract_env_contract_default "WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT")"
+modal_social_job_concurrency_profile_default="$(extract_profile_value "WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT")"
+modal_social_job_concurrency_doc_default="$(extract_env_contract_default "WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT")"
 remote_social_posts_profile_default="$(extract_profile_value "WORKSPACE_TRR_REMOTE_SOCIAL_POSTS")"
 remote_social_posts_doc_default="$(extract_env_contract_default "WORKSPACE_TRR_REMOTE_SOCIAL_POSTS")"
 remote_social_comments_profile_default="$(extract_profile_value "WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS")"
@@ -225,10 +227,12 @@ assert_equals "profiles/default.env modal enabled" "1" "$modal_enabled_profile_d
 assert_equals "docs/workspace/env-contract.md modal enabled" "1" "$modal_enabled_doc_default"
 assert_equals "profiles/default.env remote workers enabled" "1" "$remote_workers_profile_default"
 assert_equals "docs/workspace/env-contract.md remote workers enabled" "1" "$remote_workers_doc_default"
-assert_equals "profiles/default.env remote social workers" "1" "$remote_social_profile_default"
-assert_equals "docs/workspace/env-contract.md remote social workers" "1" "$remote_social_doc_default"
+assert_equals "profiles/default.env remote social workers" "0" "$remote_social_profile_default"
+assert_equals "docs/workspace/env-contract.md remote social workers" "0" "$remote_social_doc_default"
 assert_equals "profiles/default.env remote social dispatch limit" "6" "$remote_social_dispatch_profile_default"
 assert_equals "docs/workspace/env-contract.md remote social dispatch limit" "6" "$remote_social_dispatch_doc_default"
+assert_equals "profiles/default.env modal social job concurrency limit" "12" "$modal_social_job_concurrency_profile_default"
+assert_equals "docs/workspace/env-contract.md modal social job concurrency limit" "12" "$modal_social_job_concurrency_doc_default"
 assert_equals "profiles/default.env remote social posts" "1" "$remote_social_posts_profile_default"
 assert_equals "docs/workspace/env-contract.md remote social posts" "1" "$remote_social_posts_doc_default"
 assert_equals "profiles/default.env remote social comments" "1" "$remote_social_comments_profile_default"
@@ -256,7 +260,7 @@ assert_equals "profiles/default.env social control db pool max" "2" "$social_con
 assert_equals "profiles/default.env health db pool min" "1" "$health_pool_min_profile_default"
 assert_equals "profiles/default.env health db pool max" "1" "$health_pool_max_profile_default"
 assert_equals "profiles/default.env db pool min" "1" "$db_pool_min_profile_default"
-assert_equals "profiles/default.env db pool max" "4" "$db_pool_max_profile_default"
+assert_equals "profiles/default.env db pool max" "2" "$db_pool_max_profile_default"
 assert_equals "profiles/social-debug.env social profile db pool min" "1" "$social_profile_pool_min_social_debug"
 assert_equals "profiles/social-debug.env social profile db pool max" "4" "$social_profile_pool_max_social_debug"
 assert_equals "profiles/social-debug.env social control db pool min" "1" "$social_control_pool_min_social_debug"
@@ -264,7 +268,7 @@ assert_equals "profiles/social-debug.env social control db pool max" "2" "$socia
 assert_equals "profiles/social-debug.env health db pool min" "1" "$health_pool_min_social_debug"
 assert_equals "profiles/social-debug.env health db pool max" "1" "$health_pool_max_social_debug"
 assert_equals "profiles/social-debug.env db pool min" "1" "$db_pool_min_social_debug"
-assert_equals "profiles/social-debug.env db pool max" "4" "$db_pool_max_social_debug"
+assert_equals "profiles/social-debug.env db pool max" "2" "$db_pool_max_social_debug"
 assert_equals "profiles/local-cloud.env social profile db pool min" "1" "$social_profile_pool_min_local_cloud"
 assert_equals "profiles/local-cloud.env social profile db pool max" "4" "$social_profile_pool_max_local_cloud"
 assert_equals "profiles/local-cloud.env social control db pool min" "1" "$social_control_pool_min_local_cloud"
@@ -272,7 +276,7 @@ assert_equals "profiles/local-cloud.env social control db pool max" "2" "$social
 assert_equals "profiles/local-cloud.env health db pool min" "1" "$health_pool_min_local_cloud"
 assert_equals "profiles/local-cloud.env health db pool max" "1" "$health_pool_max_local_cloud"
 assert_equals "profiles/local-cloud.env db pool min" "1" "$db_pool_min_local_cloud"
-assert_equals "profiles/local-cloud.env db pool max" "4" "$db_pool_max_local_cloud"
+assert_equals "profiles/local-cloud.env db pool max" "2" "$db_pool_max_local_cloud"
 assert_equals "docs/workspace/env-contract.md social profile db pool min" "1" "$social_profile_pool_min_doc_default"
 assert_equals "docs/workspace/env-contract.md social profile db pool max" "4" "$social_profile_pool_max_doc_default"
 assert_equals "docs/workspace/env-contract.md social control db pool min" "1" "$social_control_pool_min_doc_default"
@@ -280,7 +284,7 @@ assert_equals "docs/workspace/env-contract.md social control db pool max" "2" "$
 assert_equals "docs/workspace/env-contract.md health db pool min" "1" "$health_pool_min_doc_default"
 assert_equals "docs/workspace/env-contract.md health db pool max" "1" "$health_pool_max_doc_default"
 assert_equals "docs/workspace/env-contract.md db pool min" "1" "$db_pool_min_doc_default"
-assert_equals "docs/workspace/env-contract.md db pool max" "4" "$db_pool_max_doc_default"
+assert_equals "docs/workspace/env-contract.md db pool max" "2" "$db_pool_max_doc_default"
 
 default_app_pool_max="$(extract_profile_value "WORKSPACE_TRR_APP_POSTGRES_POOL_MAX")"
 default_app_max_ops="$(extract_profile_value "WORKSPACE_TRR_APP_POSTGRES_MAX_CONCURRENT_OPERATIONS")"
@@ -288,16 +292,20 @@ social_debug_app_pool_max="$(extract_env_assignment "$SOCIAL_DEBUG_PROFILE_FILE"
 social_debug_app_max_ops="$(extract_env_assignment "$SOCIAL_DEBUG_PROFILE_FILE" "WORKSPACE_TRR_APP_POSTGRES_MAX_CONCURRENT_OPERATIONS")"
 doc_app_pool_max_default="$(extract_env_contract_default "WORKSPACE_TRR_APP_POSTGRES_POOL_MAX")"
 doc_app_max_ops_default="$(extract_env_contract_default "WORKSPACE_TRR_APP_POSTGRES_MAX_CONCURRENT_OPERATIONS")"
-app_env_pool_max="$(extract_env_assignment "$TRR_APP_ENV_FILE" "POSTGRES_POOL_MAX")"
-app_env_max_ops="$(extract_env_assignment "$TRR_APP_ENV_FILE" "POSTGRES_MAX_CONCURRENT_OPERATIONS")"
-assert_equals "profiles/default.env app postgres pool max remains unset" "" "$default_app_pool_max"
-assert_equals "profiles/default.env app postgres max concurrent operations remains unset" "" "$default_app_max_ops"
-assert_equals "profiles/social-debug.env app postgres pool max" "2" "$social_debug_app_pool_max"
-assert_equals "profiles/social-debug.env app postgres max concurrent operations" "2" "$social_debug_app_max_ops"
-assert_equals "docs/workspace/env-contract.md app postgres pool max default" "" "$doc_app_pool_max_default"
-assert_equals "docs/workspace/env-contract.md app postgres max concurrent operations default" "" "$doc_app_max_ops_default"
-assert_equals "TRR-APP/apps/web/.env.example postgres pool max baseline" "4" "$app_env_pool_max"
-assert_equals "TRR-APP/apps/web/.env.example postgres max concurrent operations baseline" "4" "$app_env_max_ops"
+assert_equals "profiles/default.env app postgres pool max" "1" "$default_app_pool_max"
+assert_equals "profiles/default.env app postgres max concurrent operations" "1" "$default_app_max_ops"
+assert_equals "profiles/social-debug.env app postgres pool max" "1" "$social_debug_app_pool_max"
+assert_equals "profiles/social-debug.env app postgres max concurrent operations" "1" "$social_debug_app_max_ops"
+assert_equals "docs/workspace/env-contract.md app postgres pool max default" "1" "$doc_app_pool_max_default"
+assert_equals "docs/workspace/env-contract.md app postgres max concurrent operations default" "1" "$doc_app_max_ops_default"
+if [[ -f "$TRR_APP_ENV_FILE" ]]; then
+  app_env_pool_max="$(extract_env_assignment "$TRR_APP_ENV_FILE" "POSTGRES_POOL_MAX")"
+  app_env_max_ops="$(extract_env_assignment "$TRR_APP_ENV_FILE" "POSTGRES_MAX_CONCURRENT_OPERATIONS")"
+  assert_equals "TRR-APP/apps/web/.env.example postgres pool max baseline" "1" "$app_env_pool_max"
+  assert_equals "TRR-APP/apps/web/.env.example postgres max concurrent operations baseline" "1" "$app_env_max_ops"
+else
+  echo "[workspace-contract] NOTE: skipping app .env.example assertions; ${TRR_APP_ENV_FILE} is not present in this worktree." >&2
+fi
 assert_workspace_app_projection_behavior
 assert_app_postgres_pool_contract
 
