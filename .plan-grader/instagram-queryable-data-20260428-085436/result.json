@@ -1,0 +1,81 @@
+{
+  "sourcePath": "/Users/thomashulihan/Projects/TRR/docs/codex/plans/2026-04-28-instagram-post-queryable-data-plan.md",
+  "artifactPath": "/Users/thomashulihan/Projects/TRR/.plan-grader/instagram-queryable-data-20260428-085436",
+  "rubricPath": "/Users/thomashulihan/Documents/Codex/2026-04-21-create-a-rubric-for-scoring-an/implementation-plan-rubric.md",
+  "verdict": "APPROVED_WITH_REVISIONS",
+  "originalScore": 79,
+  "revisedScoreEstimate": 91,
+  "cleanupAfterImplementation": true,
+  "recommendedNextExecutionSkill": "orchestrate-subagents",
+  "scopeCorrection": {
+    "followersListScraping": "out_of_scope",
+    "followingListScraping": "in_scope",
+    "followerCountsFromProfile": "in_scope"
+  },
+  "gates": {
+    "triage": "pass",
+    "hardFailConditions": "pass_after_revision",
+    "shortReviewForm": "pass_after_revision",
+    "automaticDowngradeCaps": "none_after_revision",
+    "wrongThingCorrectlyGuardrail": "pass"
+  },
+  "scores": {
+    "A1_goalClarity": {
+      "original": 8.1,
+      "revised": 8.6
+    },
+    "A2_repoSurfaceAwareness": {
+      "original": 7.6,
+      "revised": 8.5
+    },
+    "A3_sequencing": {
+      "original": 7.2,
+      "revised": 8.5
+    },
+    "A4_executionSpecificity": {
+      "original": 7.2,
+      "revised": 8.3
+    },
+    "A5_verification": {
+      "original": 7.2,
+      "revised": 8.1
+    },
+    "B_gapCoverage": {
+      "original": 6.8,
+      "revised": 8.3
+    },
+    "C_toolUsage": {
+      "original": 6.3,
+      "revised": 8.1
+    },
+    "D_value": {
+      "original": 7.6,
+      "revised": 8.8
+    },
+    "E_safety": {
+      "original": 6.8,
+      "revised": 8.1
+    },
+    "F_scopeDiscipline": {
+      "original": 6.1,
+      "revised": 6.7
+    },
+    "G_quality": {
+      "original": 4.2,
+      "revised": 4.5
+    },
+    "H_bonus": {
+      "original": 4.0,
+      "revised": 4.5
+    }
+  },
+  "artifactFiles": {
+    "audit": "/Users/thomashulihan/Projects/TRR/.plan-grader/instagram-queryable-data-20260428-085436/AUDIT.md",
+    "scorecard": "/Users/thomashulihan/Projects/TRR/.plan-grader/instagram-queryable-data-20260428-085436/SCORECARD.md",
+    "revisedPlan": "/Users/thomashulihan/Projects/TRR/.plan-grader/instagram-queryable-data-20260428-085436/REVISED_PLAN.md",
+    "patches": "/Users/thomashulihan/Projects/TRR/.plan-grader/instagram-queryable-data-20260428-085436/PATCHES.md",
+    "comparison": "/Users/thomashulihan/Projects/TRR/.plan-grader/instagram-queryable-data-20260428-085436/COMPARISON.md",
+    "suggestionsPath": "/Users/thomashulihan/Projects/TRR/.plan-grader/instagram-queryable-data-20260428-085436/SUGGESTIONS.md",
+    "validation": "/Users/thomashulihan/Projects/TRR/.plan-grader/instagram-queryable-data-20260428-085436/VALIDATION.md"
+  }
+}

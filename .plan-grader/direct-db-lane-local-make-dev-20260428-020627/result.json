@@ -1,0 +1,50 @@
+{
+  "source": {
+    "type": "pasted_chat_plan",
+    "title": "Direct DB Lane for Local make dev",
+    "savedPathFromPlan": "/Users/thomashulihan/Projects/TRR/docs/codex/plans/2026-04-28-direct-uri-make-dev-runtime-reconcile.md"
+  },
+  "rubricPath": "/Users/thomashulihan/Documents/Codex/2026-04-21-create-a-rubric-for-scoring-an/implementation-plan-rubric.md",
+  "artifactFolder": "/Users/thomashulihan/Projects/TRR/.plan-grader/direct-db-lane-local-make-dev-20260428-020627",
+  "gates": {
+    "triage": "pass",
+    "hardFail": "pass",
+    "wrongThingGuardrail": "pass",
+    "approval": "revise_before_execution"
+  },
+  "scores": {
+    "original": 82,
+    "revisedEstimate": 92,
+    "topics": {
+      "A.1": { "original": 8, "revised": 9 },
+      "A.2": { "original": 6, "revised": 8 },
+      "A.3": { "original": 8, "revised": 9 },
+      "A.4": { "original": 6, "revised": 8 },
+      "A.5": { "original": 8, "revised": 9 },
+      "B": { "original": 7, "revised": 8 },
+      "C": { "original": 7, "revised": 8 },
+      "D.1": { "original": 2, "revised": 2 },
+      "D.2": { "original": 2, "revised": 2 },
+      "D.3": { "original": 2, "revised": 2 },
+      "D.4": { "original": 2, "revised": 2 },
+      "D.5": { "original": 1, "revised": 2 },
+      "E": { "original": 8, "revised": 9 },
+      "F": { "original": 8, "revised": 8 },
+      "G": { "original": 5, "revised": 5 },
+      "H": { "original": 2, "revised": 3 }
+    }
+  },
+  "artifacts": {
+    "audit": "/Users/thomashulihan/Projects/TRR/.plan-grader/direct-db-lane-local-make-dev-20260428-020627/AUDIT.md",
+    "scorecard": "/Users/thomashulihan/Projects/TRR/.plan-grader/direct-db-lane-local-make-dev-20260428-020627/SCORECARD.md",
+    "revisedPlan": "/Users/thomashulihan/Projects/TRR/.plan-grader/direct-db-lane-local-make-dev-20260428-020627/REVISED_PLAN.md",
+    "patches": "/Users/thomashulihan/Projects/TRR/.plan-grader/direct-db-lane-local-make-dev-20260428-020627/PATCHES.md",
+    "comparison": "/Users/thomashulihan/Projects/TRR/.plan-grader/direct-db-lane-local-make-dev-20260428-020627/COMPARISON.md",
+    "suggestions": "/Users/thomashulihan/Projects/TRR/.plan-grader/direct-db-lane-local-make-dev-20260428-020627/SUGGESTIONS.md",
+    "validation": "/Users/thomashulihan/Projects/TRR/.plan-grader/direct-db-lane-local-make-dev-20260428-020627/VALIDATION.md"
+  },
+  "suggestionsPath": "/Users/thomashulihan/Projects/TRR/.plan-grader/direct-db-lane-local-make-dev-20260428-020627/SUGGESTIONS.md",
+  "cleanupAfterImplementation": true,
+  "recommendedNextExecutionSkill": "inline",
+  "readyForExecution": true
+}

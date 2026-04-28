@@ -19,6 +19,8 @@ Use these commands from `/Users/thomashulihan/Projects/TRR`.
 - `make handoff-check` — canonical blocking handoff/status snapshot validator
 - `make env-contract` — refresh `docs/workspace/env-contract.md`
 - `make env-contract-report` — refresh the env-contract inventory/deprecation review docs intentionally
+- `make supabase-advisor-snapshot` — capture dated Supabase Security and Performance Advisor JSON plus a redacted manifest under `docs/workspace/supabase-advisor-snapshots/`; uses `TRR_SUPABASE_ACCESS_TOKEN`
+- `cd TRR-Backend && .venv/bin/python scripts/db/index_advisor_social_hot_paths.py --dry-run` — list social/admin hot-path `index_advisor` query labels without connecting to the database
 - `make status` — workspace health and PID snapshot
 - `make db-pressure-rehearsal` — local-only DB pressure capture; writes redacted before/after artifacts under `.logs/workspace/`
 - `make stop` — stop workspace-managed processes
@@ -81,3 +83,13 @@ If runtime reconcile blocks on Supabase history drift, use `/Users/thomashulihan
 For startup tuning and env overrides, see `/Users/thomashulihan/Projects/TRR/docs/workspace/env-contract.md`.
 
 For Supabase pressure diagnosis, use `/Users/thomashulihan/Projects/TRR/docs/workspace/db-pressure-runbook.md`. For connection terminology and ownership language, use `/Users/thomashulihan/Projects/TRR/docs/workspace/supabase-glossary.md`.
+
+For plan or remediation evidence, use `make supabase-advisor-snapshot` before
+claiming current Supabase Advisor state. The exact token/env contract is
+documented in `/Users/thomashulihan/Projects/TRR/docs/workspace/supabase-advisor-snapshot-workflow.md`.
+
+For social/admin index recommendation evidence, use
+`cd TRR-Backend && .venv/bin/python scripts/db/index_advisor_social_hot_paths.py --output-date YYYY-MM-DD`
+after an approved dated review. The helper uses `TRR_DB_SESSION_URL`, then
+`TRR_DB_URL`, then `TRR_DB_FALLBACK_URL`; it writes redacted reports under
+`docs/workspace/` and never executes advisor-returned DDL.

@@ -1,0 +1,32 @@
+{
+  "sourcePath": "/Users/thomashulihan/Projects/TRR/docs/codex/plans/2026-04-28-unused-index-full-decision-review-plan.md",
+  "rubricPath": "/Users/thomashulihan/Documents/Codex/2026-04-21-create-a-rubric-for-scoring-an/implementation-plan-rubric.md",
+  "artifactDir": "/Users/thomashulihan/Projects/TRR/.plan-grader/unused-index-full-decision-review-20260428-064550",
+  "verdict": "revise_before_execution",
+  "originalScore": 88.6,
+  "revisedScoreEstimate": 95.0,
+  "gates": {
+    "triage": "pass",
+    "hardFail": "conditional_pass",
+    "downgradeCaps": "none_after_revision",
+    "wrongThingCorrectlyGuardrail": "pass_after_revision"
+  },
+  "currentStateFindings": {
+    "csvRowsObserved": 1302,
+    "ownerRowsExpected": 1324,
+    "executionBlockedByReportDrift": true,
+    "executionBlockedByWorktreeConflicts": true
+  },
+  "artifacts": {
+    "audit": "/Users/thomashulihan/Projects/TRR/.plan-grader/unused-index-full-decision-review-20260428-064550/AUDIT.md",
+    "scorecard": "/Users/thomashulihan/Projects/TRR/.plan-grader/unused-index-full-decision-review-20260428-064550/SCORECARD.md",
+    "revisedPlan": "/Users/thomashulihan/Projects/TRR/.plan-grader/unused-index-full-decision-review-20260428-064550/REVISED_PLAN.md",
+    "patches": "/Users/thomashulihan/Projects/TRR/.plan-grader/unused-index-full-decision-review-20260428-064550/PATCHES.md",
+    "comparison": "/Users/thomashulihan/Projects/TRR/.plan-grader/unused-index-full-decision-review-20260428-064550/COMPARISON.md",
+    "suggestions": "/Users/thomashulihan/Projects/TRR/.plan-grader/unused-index-full-decision-review-20260428-064550/SUGGESTIONS.md",
+    "validation": "/Users/thomashulihan/Projects/TRR/.plan-grader/unused-index-full-decision-review-20260428-064550/VALIDATION.md"
+  },
+  "suggestionsPath": "/Users/thomashulihan/Projects/TRR/.plan-grader/unused-index-full-decision-review-20260428-064550/SUGGESTIONS.md",
+  "cleanupAfterImplementation": true,
+  "recommendedNextExecutionSkill": "orchestrate-subagents"
+}

@@ -1,0 +1,45 @@
+{
+  "sourcePath": "/Users/thomashulihan/Projects/TRR/docs/codex/plans/2026-04-28-index-advisor-social-hot-path-plan.md",
+  "rubricPath": "/Users/thomashulihan/Documents/Codex/2026-04-21-create-a-rubric-for-scoring-an/implementation-plan-rubric.md",
+  "artifactDir": "/Users/thomashulihan/Projects/TRR/.plan-grader/index-advisor-social-hot-path-20260428-081900",
+  "verdict": "APPROVED_WITH_REVISIONS",
+  "originalScore": 85,
+  "revisedScoreEstimate": 92,
+  "gates": {
+    "triage": "pass",
+    "hardFail": "pass",
+    "shortReviewForm": "pass",
+    "approvalThresholds": "pass",
+    "automaticDowngrade": "none",
+    "wrongThingCorrectly": "pass"
+  },
+  "scores": {
+    "A1": { "original": 4.5, "revised": 4.8 },
+    "A2": { "original": 4.5, "revised": 4.8 },
+    "A3": { "original": 4.5, "revised": 4.8 },
+    "A4": { "original": 4.0, "revised": 4.7 },
+    "A5": { "original": 4.0, "revised": 4.7 },
+    "B": { "original": 4.0, "revised": 4.7 },
+    "C": { "original": 4.0, "revised": 4.5 },
+    "D1": { "original": 5.0, "revised": 5.0 },
+    "D2": { "original": 4.5, "revised": 5.0 },
+    "D3": { "original": 4.0, "revised": 4.7 },
+    "D4": { "original": 4.0, "revised": 4.5 },
+    "D5": { "original": 4.0, "revised": 4.7 },
+    "E": { "original": 4.0, "revised": 4.8 },
+    "F": { "original": 4.5, "revised": 4.8 },
+    "G": { "original": 4.5, "revised": 4.8 },
+    "H": { "original": 3.5, "revised": 4.0 }
+  },
+  "artifactPaths": {
+    "audit": "/Users/thomashulihan/Projects/TRR/.plan-grader/index-advisor-social-hot-path-20260428-081900/AUDIT.md",
+    "scorecard": "/Users/thomashulihan/Projects/TRR/.plan-grader/index-advisor-social-hot-path-20260428-081900/SCORECARD.md",
+    "revisedPlan": "/Users/thomashulihan/Projects/TRR/.plan-grader/index-advisor-social-hot-path-20260428-081900/REVISED_PLAN.md",
+    "patches": "/Users/thomashulihan/Projects/TRR/.plan-grader/index-advisor-social-hot-path-20260428-081900/PATCHES.md",
+    "comparison": "/Users/thomashulihan/Projects/TRR/.plan-grader/index-advisor-social-hot-path-20260428-081900/COMPARISON.md",
+    "validation": "/Users/thomashulihan/Projects/TRR/.plan-grader/index-advisor-social-hot-path-20260428-081900/VALIDATION.md"
+  },
+  "suggestionsPath": "/Users/thomashulihan/Projects/TRR/.plan-grader/index-advisor-social-hot-path-20260428-081900/SUGGESTIONS.md",
+  "cleanupAfterImplementation": true,
+  "recommendedNextExecutionSkill": "inline"
+}

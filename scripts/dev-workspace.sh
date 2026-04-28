@@ -6,6 +6,7 @@ cd "$ROOT"
 
 source "$ROOT/scripts/lib/runtime-db-env.sh"
 source "$ROOT/scripts/lib/workspace-runtime-reconcile-contract.sh"
+source "$ROOT/scripts/lib/backend-restart-diagnostics.sh"
 source "$ROOT/scripts/lib/workspace-health.sh"
 source "$ROOT/scripts/lib/workspace-port-cleanup.sh"
 source "$ROOT/scripts/lib/workspace-terminal.sh"
@@ -441,6 +442,8 @@ SOCIAL_WORKER_LOG="${LOG_DIR}/social-worker.log"
 REMOTE_WORKER_LOG="${LOG_DIR}/remote-workers.log"
 BACKEND_WATCHDOG_STATE_FILE="${LOG_DIR}/backend-watchdog.env"
 BACKEND_WATCHDOG_EVENTS_FILE="${LOG_DIR}/backend-watchdog-events.jsonl"
+BACKEND_RESTART_SEGMENT_DIR="${LOG_DIR}/backend-restart-segments"
+BACKEND_RESTART_SEGMENT_KEEP="${BACKEND_RESTART_SEGMENT_KEEP:-10}"
 
 # Preserve prior run logs for troubleshooting.
 RUN_TS="$(date +%Y%m%d-%H%M%S)"
@@ -585,6 +588,23 @@ ensure_port_free() {
   local cleanup_targets
   cleanup_targets="$(workspace_expand_cleanup_targets "$pids" "$port")"
   echo "[workspace] Killing safe-stale listeners on port ${port}: ${cleanup_targets}"
+  if [[ "$label" == "TRR-Backend" ]]; then
+    backend_restart_event_json \
+      "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+      "signal" \
+      "port_cleanup_signal" \
+      "" \
+      "0" \
+      "signal=TERM;targets=${cleanup_targets}" \
+      "$WORKSPACE_MANAGER_PID" \
+      "$cleanup_targets" \
+      "" \
+      "$pids" \
+      "port_cleanup" \
+      "" \
+      "TERM" \
+      >> "$BACKEND_WATCHDOG_EVENTS_FILE"
+  fi
   kill_pids "$cleanup_targets"
 
   if [[ -n "$(port_listeners "$port")" ]]; then
@@ -616,6 +636,9 @@ BACKEND_RESTART_COUNT=0
 BACKEND_LAST_RESTART_REASON=""
 BACKEND_LAST_RESTART_AT=""
 BACKEND_LAST_RESTART_PROBE_RC=""
+TRR_BACKEND_PGID=""
+TRR_BACKEND_STARTED_AT=""
+TRR_BACKEND_LOG_START_LINE=""
 TRR_APP_DIR="${ROOT}/TRR-APP/apps/web"
 TRR_APP_NEXT_DIR="${TRR_APP_DIR}/.next"
 TRR_APP_NEXT_DEV_DIR="${TRR_APP_NEXT_DIR}/dev"
@@ -639,6 +662,22 @@ kill_tree() {
   done
 
   kill "-${sig}" "$pid" >/dev/null 2>&1 || true
+}
+
+pid_pgid() {
+  local pid="$1"
+  ps -o pgid= -p "$pid" 2>/dev/null | tr -d ' ' || true
+}
+
+process_exit_status() {
+  local pid="$1"
+  local status
+  if wait "$pid" 2>/dev/null; then
+    status=0
+  else
+    status="$?"
+  fi
+  printf '%s\n' "$status"
 }
 
 process_or_group_alive() {
@@ -815,11 +854,23 @@ record_backend_restart() {
   local reason="$1"
   local probe_rc="$2"
   local details="${3:-}"
+  local backend_pid="${4:-${TRR_BACKEND_PID:-}}"
+  local killer_path="${5:-watchdog}"
+  local exit_status="${6:-}"
+  local exit_signal="${7:-}"
+  local backend_pgid="${8:-}"
+  local listeners="${9:-}"
 
   BACKEND_RESTART_COUNT=$((BACKEND_RESTART_COUNT + 1))
   BACKEND_LAST_RESTART_REASON="$reason"
   BACKEND_LAST_RESTART_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
   BACKEND_LAST_RESTART_PROBE_RC="$probe_rc"
+  if [[ -z "$backend_pgid" && -n "$backend_pid" ]]; then
+    backend_pgid="$(pid_pgid "$backend_pid")"
+  fi
+  if [[ -z "$listeners" && "${HAVE_LSOF:-0}" -eq 1 ]]; then
+    listeners="$(port_listeners "$TRR_BACKEND_PORT")"
+  fi
 
   write_backend_watchdog_state
   write_pidfile_runtime_value "WORKSPACE_BACKEND_RESTART_COUNT" "$BACKEND_RESTART_COUNT"
@@ -827,13 +878,67 @@ record_backend_restart() {
   write_pidfile_runtime_value "WORKSPACE_BACKEND_LAST_RESTART_AT" "\"$BACKEND_LAST_RESTART_AT\""
   write_pidfile_runtime_value "WORKSPACE_BACKEND_LAST_RESTART_PROBE_RC" "\"$BACKEND_LAST_RESTART_PROBE_RC\""
 
-  printf '{"ts":"%s","reason":"%s","probe_rc":"%s","count":%s,"details":"%s"}\n' \
-    "$(json_escape "$BACKEND_LAST_RESTART_AT")" \
-    "$(json_escape "$BACKEND_LAST_RESTART_REASON")" \
-    "$(json_escape "$BACKEND_LAST_RESTART_PROBE_RC")" \
+  backend_restart_event_json \
+    "$BACKEND_LAST_RESTART_AT" \
+    "restart" \
+    "$BACKEND_LAST_RESTART_REASON" \
+    "$BACKEND_LAST_RESTART_PROBE_RC" \
     "$BACKEND_RESTART_COUNT" \
-    "$(json_escape "$details")" \
+    "$details" \
+    "$WORKSPACE_MANAGER_PID" \
+    "$backend_pid" \
+    "$backend_pgid" \
+    "$listeners" \
+    "$killer_path" \
+    "$exit_status" \
+    "$exit_signal" \
     >> "$BACKEND_WATCHDOG_EVENTS_FILE"
+}
+
+record_backend_signal_event() {
+  local backend_pid="$1"
+  local signal="$2"
+  local killer_path="$3"
+  local backend_pgid="${4:-}"
+  local listeners="${5:-}"
+  local ts
+
+  ts="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  if [[ -z "$backend_pgid" && -n "$backend_pid" ]]; then
+    backend_pgid="$(pid_pgid "$backend_pid")"
+  fi
+  if [[ -z "$listeners" && "${HAVE_LSOF:-0}" -eq 1 ]]; then
+    listeners="$(port_listeners "$TRR_BACKEND_PORT")"
+  fi
+
+  backend_restart_event_json \
+    "$ts" \
+    "signal" \
+    "signal_sent" \
+    "" \
+    "$BACKEND_RESTART_COUNT" \
+    "signal=${signal}" \
+    "$WORKSPACE_MANAGER_PID" \
+    "$backend_pid" \
+    "$backend_pgid" \
+    "$listeners" \
+    "$killer_path" \
+    "" \
+    "$signal" \
+    >> "$BACKEND_WATCHDOG_EVENTS_FILE"
+}
+
+archive_backend_restart_segment() {
+  local backend_pid="$1"
+  local reason="$2"
+  local ts
+  local segment_path
+
+  ts="$(date -u +%Y%m%dT%H%M%SZ)"
+  segment_path="$(backend_restart_archive_segment "$TRR_BACKEND_LOG" "$BACKEND_RESTART_SEGMENT_DIR" "$backend_pid" "$reason" "$ts" "$BACKEND_RESTART_SEGMENT_KEEP" "${TRR_BACKEND_LOG_START_LINE:-}" || true)"
+  if [[ -n "$segment_path" ]]; then
+    echo "[workspace] Archived TRR-Backend log segment: ${segment_path}"
+  fi
 }
 
 find_service_index() {
@@ -1118,6 +1223,7 @@ start_trr_backend() {
     social_stage_comment_media_mirror="$WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR"
   fi
 
+  TRR_BACKEND_LOG_START_LINE="$(( $(wc -l < "$TRR_BACKEND_LOG" 2>/dev/null || echo 0) + 1 ))"
   start_bg_with_label "TRR_BACKEND" "TRR-Backend" "$TRR_BACKEND_LOG" "$BASH_BIN" -lc "cd \"$ROOT/TRR-Backend\" && \
     PYTHONUNBUFFERED=1 \
     TRR_LOCAL_DEV=1 \
@@ -1167,10 +1273,15 @@ start_trr_backend() {
     exec \"$BASH_BIN\" ./start-api.sh"
 
   TRR_BACKEND_PID="$LAST_STARTED_PID"
+  TRR_BACKEND_PGID="$(pid_pgid "$TRR_BACKEND_PID")"
+  TRR_BACKEND_STARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
   BACKEND_HEALTH_FAILURES=0
   BACKEND_HEALTH_BUSY_TIMEOUT_STREAK_COUNT=0
   BACKEND_LAST_HEALTH_CHECK_AT=0
   write_pidfile_runtime_value "TRR_BACKEND_PID" "$TRR_BACKEND_PID"
+  write_pidfile_runtime_value "TRR_BACKEND_PGID" "${TRR_BACKEND_PGID:-}"
+  write_pidfile_runtime_value "TRR_BACKEND_STARTED_AT" "\"$TRR_BACKEND_STARTED_AT\""
+  write_pidfile_runtime_value "TRR_BACKEND_LOG_START_LINE" "$TRR_BACKEND_LOG_START_LINE"
 
   # Surface backend [db-pool] events (acquire_failed, statement_timeout, etc.) to
   # the dev terminal. Guarded so repeated start_trr_backend calls (auto-restart
@@ -1338,6 +1449,7 @@ start_trr_remote_workers() {
 stop_bg() {
   local name="$1"
   local pid="$2"
+  local killer_path="${3:-stop_bg}"
 
   if [[ -z "${pid}" ]]; then
     return 0
@@ -1349,6 +1461,10 @@ stop_bg() {
   echo "[workspace] Stopping ${name} (pid=${pid})"
 
   # Prefer killing the process group (works when started via setsid).
+  if [[ "$name" == "TRR_BACKEND" ]]; then
+    echo "[workspace] TRR-Backend signal: TERM pid=${pid} pgid=$(pid_pgid "$pid") killer_path=${killer_path}"
+    record_backend_signal_event "$pid" "TERM" "$killer_path"
+  fi
   kill -TERM -- "-${pid}" >/dev/null 2>&1 || true
   kill_tree "$pid" "TERM"
 
@@ -1360,6 +1476,10 @@ stop_bg() {
     sleep 0.2
   done
 
+  if [[ "$name" == "TRR_BACKEND" ]]; then
+    echo "[workspace] TRR-Backend signal: KILL pid=${pid} pgid=$(pid_pgid "$pid") killer_path=${killer_path}"
+    record_backend_signal_event "$pid" "KILL" "$killer_path"
+  fi
   kill -KILL -- "-${pid}" >/dev/null 2>&1 || true
   kill_tree "$pid" "KILL"
 }
@@ -1380,7 +1500,7 @@ cleanup() {
   local i
   for ((i=${#indices[@]}-1; i>=0; i--)); do
     local idx="${indices[$i]}"
-    stop_bg "${NAMES[$idx]-SERVICE_$idx}" "${PIDS[$idx]-}"
+    stop_bg "${NAMES[$idx]-SERVICE_$idx}" "${PIDS[$idx]-}" "workspace_cleanup"
   done
 
   rm -f "$PIDFILE" >/dev/null 2>&1 || true
@@ -1528,7 +1648,7 @@ if ! wait_http_ok "TRR-APP" "http://${TRR_APP_HOST}:${TRR_APP_PORT}/" "$WORKSPAC
       app_pid="${PIDS[$app_idx]-$app_pid}"
     fi
 
-    stop_bg "TRR_APP" "$app_pid"
+    stop_bg "TRR_APP" "$app_pid" "trr_app_cache_recovery"
     if [[ -n "$app_idx" ]]; then
       unset "PIDS[$app_idx]"
       unset "NAMES[$app_idx]"
@@ -1623,12 +1743,15 @@ while true; do
             backend_pid="${PIDS[$backend_idx]-$backend_pid}"
           fi
 
+          archive_backend_restart_segment "$backend_pid" "health_probe_failure"
           record_backend_restart \
             "health_probe_failure" \
             "${probe_rc}" \
-            "failures=${BACKEND_HEALTH_FAILURES};busy_timeout_streak=${BACKEND_HEALTH_BUSY_TIMEOUT_STREAK_COUNT}"
+            "failures=${BACKEND_HEALTH_FAILURES};busy_timeout_streak=${BACKEND_HEALTH_BUSY_TIMEOUT_STREAK_COUNT}" \
+            "$backend_pid" \
+            "watchdog_health_probe_failure"
           echo "[workspace] Restarting TRR-Backend after repeated health failures..."
-          stop_bg "TRR_BACKEND" "$backend_pid"
+          stop_bg "TRR_BACKEND" "$backend_pid" "watchdog_health_probe_failure"
           if [[ -n "$backend_idx" ]]; then
             unset "PIDS[$backend_idx]"
             unset "NAMES[$backend_idx]"
@@ -1664,7 +1787,24 @@ while true; do
   if [[ -n "$local_dead" ]]; then
     if [[ "$local_dead_name" == "TRR_BACKEND" && "$WORKSPACE_BACKEND_AUTO_RESTART" == "1" && "$WORKSPACE_SHUTTING_DOWN" != "1" ]]; then
       echo ""
-      record_backend_restart "process_exit" "0" "exited_pid=${local_dead}"
+      exit_status="$(process_exit_status "$local_dead")"
+      exit_signal="$(backend_restart_exit_signal "$exit_status")"
+      local_dead_pgid="${TRR_BACKEND_PGID:-}"
+      listeners_at_exit=""
+      if [[ "${HAVE_LSOF:-0}" -eq 1 ]]; then
+        listeners_at_exit="$(port_listeners "$TRR_BACKEND_PORT")"
+      fi
+      archive_backend_restart_segment "$local_dead" "process_exit"
+      record_backend_restart \
+        "process_exit" \
+        "0" \
+        "exited_pid=${local_dead};started_at=${TRR_BACKEND_STARTED_AT:-}" \
+        "$local_dead" \
+        "observed_process_exit" \
+        "$exit_status" \
+        "$exit_signal" \
+        "$local_dead_pgid" \
+        "$listeners_at_exit"
       echo "[workspace] WARNING: TRR_BACKEND exited (pid=${local_dead}); restarting automatically."
       unset "PIDS[$local_dead_idx]"
       unset "NAMES[$local_dead_idx]"
