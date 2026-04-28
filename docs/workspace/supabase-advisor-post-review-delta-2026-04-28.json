@@ -1,0 +1,6 @@
+{
+  "http_status": 404,
+  "payload": {
+    "message": "Cannot GET /v1/projects/vwxfvzutyufrkhfgoeaa/advisors?type=performance"
+  }
+}

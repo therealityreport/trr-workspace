@@ -337,7 +337,7 @@ with project_config_path.open("rb") as handle:
 required_servers = {
     "supabase": {
         "url": "https://mcp.supabase.com/mcp?project_ref=vwxfvzutyufrkhfgoeaa&features=docs%2Caccount%2Cdatabase%2Cdebugging%2Cdevelopment%2Cfunctions%2Cbranching%2Cstorage",
-        "bearer_token_env_var": "SUPABASE_ACCESS_TOKEN",
+        "bearer_token_env_var": "TRR_SUPABASE_ACCESS_TOKEN",
     },
 }
 required_user_servers = {

@@ -9,6 +9,8 @@ This project-level file exists for:
 
 The user-level skill is authoritative. Do not duplicate routing rules here — read the skill directly.
 
+Companion rule for Codex/TRR config: routing decides which skill owns a surface, but workspace policy should not disable unrelated user-level or system-level skills just because a local canonical exists.
+
 ## Companion Files
 
 | File | Purpose |

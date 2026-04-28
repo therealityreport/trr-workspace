@@ -1,0 +1,42 @@
+{
+  "sourcePath": "/Users/thomashulihan/Projects/TRR/docs/codex/plans/2026-04-28-instagram-post-queryable-data-plan.md",
+  "previousArtifactPath": "/Users/thomashulihan/Projects/TRR/.plan-grader/instagram-queryable-schema-first-20260428-090450",
+  "artifactPath": "/Users/thomashulihan/Projects/TRR/.plan-grader/instagram-queryable-execution-guardrails-20260428-091828",
+  "rubricPath": "/Users/thomashulihan/Documents/Codex/2026-04-21-create-a-rubric-for-scoring-an/implementation-plan-rubric.md",
+  "verdict": "APPROVED_WITH_REVISIONS",
+  "originalScore": 94,
+  "revisedScoreEstimate": 96,
+  "cleanupAfterImplementation": true,
+  "recommendedNextExecutionSkill": "orchestrate-subagents",
+  "requiredPreExecutionGate": "Phase 0 schema decision note must be explicitly approved by the user before Phase 1 or subagent fan-out",
+  "hotFileOwnership": {
+    "file": "/Users/thomashulihan/Projects/TRR/TRR-Backend/trr_backend/repositories/social_season_analytics.py",
+    "lineCount": 60646,
+    "rule": "exactly_one_writer_all_other_workers_read_only"
+  },
+  "profileIdentity": {
+    "profileIdIndex": "unique profile_id where profile_id is not null",
+    "fallbackIndex": "unique source_scope, normalized_username where profile_id is null",
+    "upgradeFlow": "resolve_merge_update_or_report_collision"
+  },
+  "recentMigrationsToReconcile": [
+    "TRR-Backend/supabase/migrations/20260323173500_add_instagram_post_search_columns.sql",
+    "TRR-Backend/supabase/migrations/20260428114500_instagram_catalog_post_collaborators.sql"
+  ],
+  "gates": {
+    "triage": "pass",
+    "hardFailConditions": "pass_after_revision",
+    "shortReviewForm": "pass",
+    "automaticDowngradeCaps": "none",
+    "wrongThingCorrectlyGuardrail": "pass"
+  },
+  "artifactFiles": {
+    "audit": "/Users/thomashulihan/Projects/TRR/.plan-grader/instagram-queryable-execution-guardrails-20260428-091828/AUDIT.md",
+    "scorecard": "/Users/thomashulihan/Projects/TRR/.plan-grader/instagram-queryable-execution-guardrails-20260428-091828/SCORECARD.md",
+    "revisedPlan": "/Users/thomashulihan/Projects/TRR/.plan-grader/instagram-queryable-execution-guardrails-20260428-091828/REVISED_PLAN.md",
+    "patches": "/Users/thomashulihan/Projects/TRR/.plan-grader/instagram-queryable-execution-guardrails-20260428-091828/PATCHES.md",
+    "comparison": "/Users/thomashulihan/Projects/TRR/.plan-grader/instagram-queryable-execution-guardrails-20260428-091828/COMPARISON.md",
+    "suggestionsPath": "/Users/thomashulihan/Projects/TRR/.plan-grader/instagram-queryable-execution-guardrails-20260428-091828/SUGGESTIONS.md",
+    "validation": "/Users/thomashulihan/Projects/TRR/.plan-grader/instagram-queryable-execution-guardrails-20260428-091828/VALIDATION.md"
+  }
+}

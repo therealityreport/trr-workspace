@@ -1,0 +1,34 @@
+{
+  "sourcePath": "/Users/thomashulihan/Projects/TRR/docs/superpowers/plans/2026-04-26-api-backend-supabase-connection-audit-and-improvement-plan.md",
+  "rubricPath": "/Users/thomashulihan/Documents/Codex/2026-04-21-create-a-rubric-for-scoring-an/implementation-plan-rubric.md",
+  "artifactDirectory": "/Users/thomashulihan/Projects/TRR/.plan-grader/api-backend-supabase-connection-audit-20260426-145247",
+  "gates": {
+    "triage": "pass",
+    "hardFail": "pass_with_concerns",
+    "shortReview": {
+      "yes": 12,
+      "partial": 0,
+      "no": 0
+    },
+    "automaticDowngradeCapApplied": null,
+    "approvalThreshold": "passes_autonomous_threshold_after_revision"
+  },
+  "scores": {
+    "originalRaw": 81.4,
+    "originalFinal": 81,
+    "revisedEstimateRaw": 96.8,
+    "revisedEstimateFinal": 97
+  },
+  "artifactPaths": {
+    "audit": "/Users/thomashulihan/Projects/TRR/.plan-grader/api-backend-supabase-connection-audit-20260426-145247/AUDIT.md",
+    "scorecard": "/Users/thomashulihan/Projects/TRR/.plan-grader/api-backend-supabase-connection-audit-20260426-145247/SCORECARD.md",
+    "revisedPlan": "/Users/thomashulihan/Projects/TRR/.plan-grader/api-backend-supabase-connection-audit-20260426-145247/REVISED_PLAN.md",
+    "patches": "/Users/thomashulihan/Projects/TRR/.plan-grader/api-backend-supabase-connection-audit-20260426-145247/PATCHES.md",
+    "comparison": "/Users/thomashulihan/Projects/TRR/.plan-grader/api-backend-supabase-connection-audit-20260426-145247/COMPARISON.md",
+    "validation": "/Users/thomashulihan/Projects/TRR/.plan-grader/api-backend-supabase-connection-audit-20260426-145247/VALIDATION.md",
+    "result": "/Users/thomashulihan/Projects/TRR/.plan-grader/api-backend-supabase-connection-audit-20260426-145247/result.json"
+  },
+  "suggestionsPath": null,
+  "cleanupAfterImplementation": true,
+  "recommendedNextExecutionSkill": "orchestrate-subagents"
+}

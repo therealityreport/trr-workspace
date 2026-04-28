@@ -1,0 +1,40 @@
+{
+  "sourcePath": "/Users/thomashulihan/Projects/TRR/docs/codex/plans/2026-04-28-supabase-schema-design-repair-plan.md",
+  "rubricPath": "/Users/thomashulihan/Documents/Codex/2026-04-21-create-a-rubric-for-scoring-an/implementation-plan-rubric.md",
+  "artifactDir": "/Users/thomashulihan/Projects/TRR/.plan-grader/supabase-schema-design-repair-20260428-070417",
+  "gates": {
+    "triage": "pass",
+    "hardFail": "pass_with_revision_required",
+    "currentStateValidation": "pass",
+    "approval": "revised_plan_only"
+  },
+  "scores": {
+    "original": 80.0,
+    "revisedEstimate": 91.5
+  },
+  "artifactPaths": {
+    "audit": "/Users/thomashulihan/Projects/TRR/.plan-grader/supabase-schema-design-repair-20260428-070417/AUDIT.md",
+    "scorecard": "/Users/thomashulihan/Projects/TRR/.plan-grader/supabase-schema-design-repair-20260428-070417/SCORECARD.md",
+    "revisedPlan": "/Users/thomashulihan/Projects/TRR/.plan-grader/supabase-schema-design-repair-20260428-070417/REVISED_PLAN.md",
+    "patches": "/Users/thomashulihan/Projects/TRR/.plan-grader/supabase-schema-design-repair-20260428-070417/PATCHES.md",
+    "comparison": "/Users/thomashulihan/Projects/TRR/.plan-grader/supabase-schema-design-repair-20260428-070417/COMPARISON.md",
+    "suggestions": "/Users/thomashulihan/Projects/TRR/.plan-grader/supabase-schema-design-repair-20260428-070417/SUGGESTIONS.md",
+    "validation": "/Users/thomashulihan/Projects/TRR/.plan-grader/supabase-schema-design-repair-20260428-070417/VALIDATION.md"
+  },
+  "suggestionsPath": "/Users/thomashulihan/Projects/TRR/.plan-grader/supabase-schema-design-repair-20260428-070417/SUGGESTIONS.md",
+  "cleanupAfterImplementation": true,
+  "recommendedNextExecutionSkill": "inline",
+  "topFixes": [
+    "Removed dependency on missing Instagram-specific plan artifact",
+    "Added normalized membership/entity keys",
+    "Added scraper observation table and metric merge policy",
+    "Added Supabase verifier, rollback, RLS/grant, and DDL gates",
+    "Added measurable legacy fallback and retirement gates",
+    "Incorporated all ten suggestions into REVISED_PLAN.md under ADDITIONAL SUGGESTIONS"
+  ],
+  "suggestionsIncorporated": {
+    "mode": "all",
+    "count": 10,
+    "revisedPlanHeading": "ADDITIONAL SUGGESTIONS"
+  }
+}

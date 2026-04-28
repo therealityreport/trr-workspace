@@ -1,0 +1,115 @@
+{
+  "sourcePath": "/Users/thomashulihan/Projects/TRR/docs/codex/plans/2026-04-28-supabase-advisor-performance-remediation-plan.md",
+  "canonicalExecutionPlan": "/Users/thomashulihan/Projects/TRR/docs/codex/plans/2026-04-28-supabase-advisor-performance-remediation-plan.md",
+  "rubricPath": "/Users/thomashulihan/Documents/Codex/2026-04-21-create-a-rubric-for-scoring-an/implementation-plan-rubric.md",
+  "artifactDir": "/Users/thomashulihan/Projects/TRR/.plan-grader/supabase-advisor-performance-remediation-20260428-000000",
+  "gates": {
+    "triage": "phase_0_pass",
+    "hardFail": "pass",
+    "wrongThingCorrectly": "pass",
+    "automaticDowngradeCap": "none"
+  },
+  "scores": {
+    "original": 88.5,
+    "revisedEstimate": 96.6
+  },
+  "approval": {
+    "phase0": "approved",
+    "phase1Plus": "implemented_phase3_pipeline_admin_and_flashback_batches_deployed_remaining_indexes_pending_owner_approval"
+  },
+  "phaseStatus": {
+    "phase0": "live_inventory_captured",
+    "parallelSafetyHotfixGate": "live_deployed",
+    "phase1": "live_deployed_post_deploy_verifier_passed_advisor_recheck_passed",
+    "phase2": "live_unused_index_report_regenerated_after_phase3_flashback_gameplay_cleanup",
+    "phase4": "complete_external_id_conflicts_pk_and_auth_percent_allocation",
+    "phase3Plus": "pipeline_admin_and_flashback_gameplay_batches_deployed_remaining_blocked_pending_owner_approvals"
+  },
+  "artifacts": {
+    "audit": "/Users/thomashulihan/Projects/TRR/.plan-grader/supabase-advisor-performance-remediation-20260428-000000/AUDIT.md",
+    "scorecard": "/Users/thomashulihan/Projects/TRR/.plan-grader/supabase-advisor-performance-remediation-20260428-000000/SCORECARD.md",
+    "revisedPlan": "/Users/thomashulihan/Projects/TRR/.plan-grader/supabase-advisor-performance-remediation-20260428-000000/REVISED_PLAN.md",
+    "canonicalPlan": "/Users/thomashulihan/Projects/TRR/docs/codex/plans/2026-04-28-supabase-advisor-performance-remediation-plan.md",
+    "patches": "/Users/thomashulihan/Projects/TRR/.plan-grader/supabase-advisor-performance-remediation-20260428-000000/PATCHES.md",
+    "comparison": "/Users/thomashulihan/Projects/TRR/.plan-grader/supabase-advisor-performance-remediation-20260428-000000/COMPARISON.md",
+    "suggestions": "/Users/thomashulihan/Projects/TRR/.plan-grader/supabase-advisor-performance-remediation-20260428-000000/SUGGESTIONS.md",
+    "validation": "/Users/thomashulihan/Projects/TRR/.plan-grader/supabase-advisor-performance-remediation-20260428-000000/VALIDATION.md",
+    "orchestration": "/Users/thomashulihan/Projects/TRR/.plan-grader/supabase-advisor-performance-remediation-20260428-000000/ORCHESTRATION.md",
+    "advisorRecheck": "/Users/thomashulihan/Projects/TRR/docs/workspace/supabase-advisor-recheck-2026-04-28.md",
+    "unusedIndexReport": "/Users/thomashulihan/Projects/TRR/docs/workspace/unused-index-advisor-review-2026-04-28.md",
+    "unusedIndexCsv": "/Users/thomashulihan/Projects/TRR/docs/workspace/unused-index-advisor-review-2026-04-28.csv"
+  },
+  "suggestionsPath": "/Users/thomashulihan/Projects/TRR/.plan-grader/supabase-advisor-performance-remediation-20260428-000000/SUGGESTIONS.md",
+  "cleanupAfterImplementation": true,
+  "recommendedNextExecutionSkill": "orchestrate-subagents",
+  "recommendedNextExecutionScope": "next_owner_review_batch_phase_3_only_for_explicitly_approved_indexes",
+  "orchestration": {
+    "executionMode": "orchestrate-subagents",
+    "mainSessionRole": "orchestrator",
+    "branchPolicy": "main_only_no_branches_or_worktrees",
+    "subagentWorkstreams": [
+      "safety_hotfix_ddl",
+      "rls_cleanup_and_rollback",
+      "verifier_and_tests",
+      "evidence_and_runbooks",
+      "phase_2_index_evidence_scaffolding",
+      "phase_4_external_id_conflicts_pk",
+      "phase_4_auth_capacity_config",
+      "independent_review"
+    ],
+    "blockedWork": [
+      "additional_phase_3_index_drops_before_remaining_owner_approval"
+    ],
+    "validationsRun": [
+      "TRR-Backend pytest advisor/sql/index/reconcile/connection/startup targeted suite after reviewer fixes: 46 passed in 3.04s",
+      "TRR-Backend pytest advisor/sql/index/reconcile/connection/startup targeted suite after Firebase disable revision: 46 passed in 1.58s",
+      "TRR-Backend pytest advisor/sql/index/reconcile/connection/startup targeted suite after Phase 4 closeout: 49 passed in 2.18s",
+      "Live Phase 1 transaction dry-run passed and rolled back",
+      "Live Phase 1 DDL deployed and post-deploy verifier passed",
+      "Supabase Performance Advisor API recheck with TRR_SUPABASE_ACCESS_TOKEN: HTTP 200, auth_rls_initplan=0, multiple_permissive_policies=0, unused_index=415, total=434",
+      "Stray non-TRR thb_bbl schema backed up to /tmp/trr-thb-bbl-drop-backup-20260428-002111.sql, dropped from TRR Supabase, and verified absent",
+      "Supabase Performance Advisor API recheck after stray schema removal with TRR_SUPABASE_ACCESS_TOKEN: HTTP 200, auth_rls_initplan=0, multiple_permissive_policies=0, unindexed_foreign_keys=0, unused_index=369, total=371",
+      "Phase 4 external_id_conflicts primary key migration deployed live and verified",
+      "Phase 4 Auth DB allocation changed from 10 connections to 17 percent with TRR_SUPABASE_ACCESS_TOKEN",
+      "Supabase Performance Advisor API recheck after Phase 4 with TRR_SUPABASE_ACCESS_TOKEN: HTTP 200, unused_index=369 only",
+      "Supabase Security Advisor API recheck with TRR_SUPABASE_ACCESS_TOKEN: HTTP 200, total=117",
+      "Initial Phase 2 live unused-index report regenerated after schema correction and Phase 4 completion from fresh Advisor JSON: 1324 rows, 277 drop_review_required, 0 approved_to_drop",
+      "Phase 2 owner-specific review packets generated with rollback SQL for the initial 277 candidates",
+      "Phase 3 approved-drop SQL gate generated and later rendered only the 4 explicitly approved pipeline drops",
+      "Pipeline owner packet reviewed and approved 4 indexes with rollback SQL and live/static test evidence",
+      "Phase 3 pipeline owner batch dropped 4 approved indexes and verified to_regclass returned null",
+      "Supabase Performance Advisor API recheck after Phase 3 pipeline batch with TRR_SUPABASE_ACCESS_TOKEN: HTTP 200, unused_index=365 only",
+      "Phase 2 live unused-index report regenerated after Phase 3 pipeline batch from fresh Advisor JSON: 1320 rows, 273 drop_review_required, 0 approved_to_drop in the fresh report",
+      "Post-drop targeted backend validation: 106 passed in 1.53s",
+      "Post-drop live EXPLAIN still uses pipeline_runs_created_at_idx and socialblade_growth_data_platform_account_handle_idx for reviewed paths",
+      "TRR-Backend reviewer fix slice: 11 passed in 0.18s",
+      "python3 scripts/migration-ownership-lint.py: OK",
+      "result.json parses with python3 -m json.tool",
+      "scoped git diff --check clean",
+      "Admin tooling packet reviewed and approved 12 indexes with rollback SQL, live/static test evidence, and live EXPLAIN evidence; 7 admin rows deferred",
+      "Phase 3 admin tooling batch dropped 12 approved indexes and verified to_regclass returned null",
+      "Supabase Performance Advisor API recheck after Phase 3 admin batch with TRR_SUPABASE_ACCESS_TOKEN: HTTP 200, unused_index=352 only",
+      "Phase 2 live unused-index report regenerated after Phase 3 admin batch from fresh Advisor JSON: 1308 rows, 260 drop_review_required, 0 approved_to_drop in the fresh report",
+      "Admin post-drop targeted backend validation: 250 passed in 68.12s",
+      "Admin post-drop live EXPLAIN still uses retained target/entity/pkey/unique indexes for reviewed paths",
+      "Survey/public flashback gameplay packet reviewed and approved 2 indexes after owner direction to remove flashback gameplay for now; 37 survey/public rows deferred",
+      "Phase 3 flashback gameplay index batch dropped 2 approved indexes and verified to_regclass returned null",
+      "Flashback gameplay cleanup removed empty public.flashback_sessions, empty public.flashback_user_stats, and three flashback gameplay RPC helpers while retaining public.flashback_quizzes and public.flashback_events",
+      "TRR-Backend migration 20260428113000_remove_flashback_gameplay_write_path.sql added to preserve the live flashback gameplay removal",
+      "Supabase Performance Advisor API recheck after flashback gameplay cleanup with TRR_SUPABASE_ACCESS_TOKEN: HTTP 200, unused_index=350 only",
+      "Live read-only flashback verification: flashback_quizzes and flashback_events exist; flashback_sessions, flashback_user_stats, and public flashback RPC helpers are absent; thb_bbl schema count is 0",
+      "Phase 2 live unused-index report regenerated after flashback gameplay cleanup from fresh Advisor JSON: 1302 rows, 258 drop_review_required, 0 approved_to_drop in the fresh report",
+      "Flashback cleanup targeted backend validation: 23 passed in 0.90s",
+      "Flashback cleanup targeted app validation: 14 passed in 1.64s"
+    ],
+    "reviewerFindingsResolved": [
+      "unused_index_evidence_report now keys migration provenance by exact schema/table/index identity",
+      "verify_advisor_remediation_phase1 now asserts legacy firebase_surveys app policies are disabled and surveys.submit_response exists",
+      "core.external_id_conflicts now has a defaulted surrogate primary key",
+      "auth_db_connections_absolute cleared by switching Auth DB allocation to percent",
+      "flashback gameplay write path removed live and represented by a backend migration while quiz/event setup remains available"
+    ],
+    "readyForHandoff": true,
+    "recommendedNextExecutionScope": "next_owner_review_batch_phase_3_only_for_explicitly_approved_indexes"
+  }
+}

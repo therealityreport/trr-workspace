@@ -8,6 +8,7 @@ source "$ROOT/scripts/lib/node-baseline.sh"
 source "$ROOT/scripts/lib/preflight-diagnostics.sh"
 source "$ROOT/scripts/lib/preflight-browser-attention.sh"
 source "$ROOT/scripts/lib/preflight-env-contract.sh"
+source "$ROOT/scripts/lib/preflight-env-drift.sh"
 source "$ROOT/scripts/lib/preflight-handoff.sh"
 source "$ROOT/scripts/lib/runtime-db-env.sh"
 source "$ROOT/scripts/lib/workspace-runtime-reconcile-contract.sh"
@@ -249,32 +250,38 @@ if ! trr_ensure_node_baseline "$ROOT"; then
   exit 1
 fi
 
-WORKSPACE_DEV_MODE="${WORKSPACE_DEV_MODE:-cloud}"
+WORKSPACE_DEV_MODE="${WORKSPACE_DEV_MODE:-local}"
+if [[ "$WORKSPACE_DEV_MODE" == "local_docker" ]]; then
+  echo "[preflight] NOTE: WORKSPACE_DEV_MODE=local_docker is retired; continuing with local mode." >&2
+  WORKSPACE_DEV_MODE="local"
+fi
 case "$WORKSPACE_DEV_MODE" in
-  cloud|local_docker) ;;
+  local|cloud|hybrid) ;;
   *)
-    echo "[preflight] ERROR: invalid WORKSPACE_DEV_MODE='${WORKSPACE_DEV_MODE}' (expected cloud for the preferred no-Docker path or local_docker for the explicit Docker fallback)." >&2
+    echo "[preflight] ERROR: invalid WORKSPACE_DEV_MODE='${WORKSPACE_DEV_MODE}' (expected local, cloud, or hybrid)." >&2
     exit 1
     ;;
 esac
 
 WORKSPACE_PREFLIGHT_STRICT="${WORKSPACE_PREFLIGHT_STRICT:-0}"
 
-if [[ "$WORKSPACE_DEV_MODE" == "local_docker" ]]; then
-  echo "[preflight] Mode: local_docker (explicit Docker fallback)"
-else
-  echo "[preflight] Mode: cloud (preferred no-Docker path)"
+echo "[preflight] Mode: ${WORKSPACE_DEV_MODE}"
+
+if ! trr_runtime_db_require_local_app_url "$ROOT" "preflight" "$WORKSPACE_DEV_MODE"; then
+  exit 1
 fi
 
-if ! trr_runtime_db_require_local_app_url "$ROOT" "preflight"; then
-  exit 1
+if [[ "$WORKSPACE_DEV_MODE" == "cloud" || "$WORKSPACE_DEV_MODE" == "hybrid" ]]; then
+  if ! trr_runtime_db_require_remote_worker_url "$ROOT" "preflight" "$WORKSPACE_DEV_MODE"; then
+    exit 1
+  fi
 fi
 
 run_preflight_phase "doctor" "[preflight] Running workspace doctor..." env WORKSPACE_DEV_MODE="$WORKSPACE_DEV_MODE" WORKSPACE_PREFLIGHT_STRICT="$WORKSPACE_PREFLIGHT_STRICT" bash "$ROOT/scripts/doctor.sh"
 
 runtime_reconcile_output=""
 runtime_reconcile_rc=0
-run_preflight_phase_capture runtime_reconcile_output "runtime-reconcile" "[preflight] Reconciling runtime contracts (db, Modal, Render, Decodo; this can pause briefly while readiness probes run)..." python3 "$ROOT/scripts/workspace-runtime-reconcile.py" || runtime_reconcile_rc="$?"
+run_preflight_phase_capture runtime_reconcile_output "runtime-reconcile" "[preflight] Reconciling runtime contracts (db, Modal, Render, Decodo; this can pause briefly while readiness probes run)..." env WORKSPACE_DEV_MODE="$WORKSPACE_DEV_MODE" python3 "$ROOT/scripts/workspace-runtime-reconcile.py" || runtime_reconcile_rc="$?"
 if [[ "$runtime_reconcile_rc" != "0" ]]; then
   printf '%s\n' "$runtime_reconcile_output"
   exit "$runtime_reconcile_rc"
@@ -305,6 +312,15 @@ if [[ "$env_contract_report_rc" != "0" ]]; then
   printf '%s\n' "$env_contract_report_warning" >&2
 else
   emit_preflight_phase_output "env-contract-report" 0 "$env_contract_report_output"
+fi
+
+env_drift_rc=0
+echo "[preflight] Inspecting local env files for known drift markers..."
+preflight_diag_set_phase "env-contract-drift"
+preflight_env_drift_check "$ROOT" "$WORKSPACE_PREFLIGHT_STRICT" || env_drift_rc="$?"
+preflight_diag_set_phase "idle"
+if [[ "$env_drift_rc" != "0" ]]; then
+  exit "$env_drift_rc"
 fi
 
 handoff_sync_output=""

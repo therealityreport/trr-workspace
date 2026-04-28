@@ -5,8 +5,28 @@
       "description": "Canonical backend base URL consumed by TRR-APP and workspace-managed local tooling.",
       "owner": "TRR-Backend"
     },
+    "TRR_DB_DIRECT_URL": {
+      "description": "Explicit local direct Postgres connection string preferred by make dev before session-pooler lanes.",
+      "owner": "workspace"
+    },
+    "TRR_DB_SESSION_URL": {
+      "description": "Preferred explicit runtime Postgres session-mode URL for Supavisor/local-compatible workloads.",
+      "owner": "workspace"
+    },
     "TRR_DB_URL": {
-      "description": "Primary runtime Postgres connection string for TRR-compatible reads and writes.",
+      "description": "Compatibility runtime Postgres connection string for TRR-compatible reads and writes when TRR_DB_SESSION_URL is not set.",
+      "owner": "workspace"
+    },
+    "TRR_DB_TRANSACTION_URL": {
+      "description": "Optional transaction-mode Supavisor URL used only during documented flight tests.",
+      "owner": "workspace"
+    },
+    "TRR_DB_RUNTIME_LANE": {
+      "description": "Runtime DB lane selector. Defaults to session; transaction requires TRR_DB_TRANSACTION_FLIGHT_TEST=1.",
+      "owner": "workspace"
+    },
+    "TRR_DB_TRANSACTION_FLIGHT_TEST": {
+      "description": "Explicit opt-in guard for transaction-mode DB lane testing.",
       "owner": "workspace"
     },
     "TRR_DB_FALLBACK_URL": {
@@ -28,7 +48,12 @@
       "env_example": "TRR-APP/apps/web/.env.example",
       "required_env_example_keys": [
         "TRR_API_URL",
+        "TRR_DB_DIRECT_URL",
+        "TRR_DB_SESSION_URL",
         "TRR_DB_URL",
+        "TRR_DB_TRANSACTION_URL",
+        "TRR_DB_RUNTIME_LANE",
+        "TRR_DB_TRANSACTION_FLIGHT_TEST",
         "TRR_DB_FALLBACK_URL",
         "TRR_CORE_SUPABASE_URL",
         "TRR_CORE_SUPABASE_SERVICE_ROLE_KEY",
@@ -37,6 +62,8 @@
     },
     "TRR-Backend": {
       "db_any_of": [
+        "TRR_DB_DIRECT_URL",
+        "TRR_DB_SESSION_URL",
         "TRR_DB_URL",
         "TRR_DB_FALLBACK_URL"
       ],
@@ -45,6 +72,23 @@
         "SUPABASE_JWT_SECRET"
       ],
       "transitional_compat": []
+    },
+    "screenalytics": {
+      "db_any_of": [
+        "TRR_DB_DIRECT_URL",
+        "TRR_DB_SESSION_URL",
+        "TRR_DB_URL",
+        "TRR_DB_FALLBACK_URL"
+      ],
+      "auth_required": [
+        "TRR_INTERNAL_ADMIN_SHARED_SECRET"
+      ],
+      "auth_transitional": [
+        "SCREENALYTICS_SERVICE_TOKEN"
+      ],
+      "recommended": [
+        "TRR_API_URL"
+      ]
     }
   }
 }

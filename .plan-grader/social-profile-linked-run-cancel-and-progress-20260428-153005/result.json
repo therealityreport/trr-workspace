@@ -1,0 +1,62 @@
+{
+  "sourcePath": "/Users/thomashulihan/Projects/TRR/docs/codex/plans/2026-04-28-social-profile-linked-run-cancel-and-progress-plan.md",
+  "previousArtifactDir": "/Users/thomashulihan/Projects/TRR/.plan-grader/social-profile-linked-run-cancel-and-progress-20260428-190224",
+  "previousSuggestionsPath": "/Users/thomashulihan/Projects/TRR/.plan-grader/social-profile-linked-run-cancel-and-progress-20260428-190224/SUGGESTIONS.md",
+  "canonicalPlanPath": "/Users/thomashulihan/Projects/TRR/docs/codex/plans/2026-04-28-social-profile-linked-run-cancel-and-progress-plan.md",
+  "revisedPlanPath": "/Users/thomashulihan/Projects/TRR/.plan-grader/social-profile-linked-run-cancel-and-progress-20260428-153005/REVISED_PLAN.md",
+  "rubricPath": "/Users/thomashulihan/Documents/Codex/2026-04-21-create-a-rubric-for-scoring-an/implementation-plan-rubric.md",
+  "artifactDir": "/Users/thomashulihan/Projects/TRR/.plan-grader/social-profile-linked-run-cancel-and-progress-20260428-153005",
+  "artifactPaths": {
+    "audit": "/Users/thomashulihan/Projects/TRR/.plan-grader/social-profile-linked-run-cancel-and-progress-20260428-153005/AUDIT.md",
+    "scorecard": "/Users/thomashulihan/Projects/TRR/.plan-grader/social-profile-linked-run-cancel-and-progress-20260428-153005/SCORECARD.md",
+    "revisedPlan": "/Users/thomashulihan/Projects/TRR/.plan-grader/social-profile-linked-run-cancel-and-progress-20260428-153005/REVISED_PLAN.md",
+    "patches": "/Users/thomashulihan/Projects/TRR/.plan-grader/social-profile-linked-run-cancel-and-progress-20260428-153005/PATCHES.md",
+    "comparison": "/Users/thomashulihan/Projects/TRR/.plan-grader/social-profile-linked-run-cancel-and-progress-20260428-153005/COMPARISON.md",
+    "suggestions": "/Users/thomashulihan/Projects/TRR/.plan-grader/social-profile-linked-run-cancel-and-progress-20260428-153005/SUGGESTIONS.md",
+    "validation": "/Users/thomashulihan/Projects/TRR/.plan-grader/social-profile-linked-run-cancel-and-progress-20260428-153005/VALIDATION.md"
+  },
+  "verdict": "approved_after_revision",
+  "previousRevisedScore": 94,
+  "revisedScoreEstimate": 96,
+  "rating": "ready_to_execute_after_approval",
+  "gates": {
+    "triage": "pass",
+    "hardFailConditions": "pass_with_destructive_action_confirmation_gate",
+    "wrongThingCorrectlyGuardrail": "pass",
+    "downgradeCaps": []
+  },
+  "acceptedSuggestions": [
+    "Run Timeline Drawer",
+    "Cancel All Active Lanes Action",
+    "One-Account Run-State CLI",
+    "Active-Lane Debug JSON Button",
+    "Progress Freshness Badge",
+    "DB Pressure Hint On Degraded Summary",
+    "Run-State Contract Fixtures",
+    "Cancel Audit Event Table",
+    "Remote Invocation Status Refresh",
+    "Canary Account Verification"
+  ],
+  "finalResetPhase": {
+    "account": "thetraitorsus",
+    "platform": "instagram",
+    "requiresActionTimeConfirmation": true,
+    "supabaseFullstackRole": "preflight, account-scoped delete after confirmation, post-check counts",
+    "browserUseRole": "confirm zero UI state before launching fresh backfill, then launch and capture new run id",
+    "forbidden": ["truncate", "delete profile rows", "delete relationship rows", "delete scrape run history", "delete unrelated accounts"]
+  },
+  "supabaseEvidence": {
+    "observedAt": "2026-04-28T19:31:37Z",
+    "instagramPosts": 431,
+    "accountCatalogPosts": 431,
+    "accountCatalogPostCollaborators": 578,
+    "instagramCommentsByPost": 18765,
+    "canonicalPostsLinkedByLegacyRefs": 431,
+    "canonicalMediaAssets": 858,
+    "canonicalEntities": 2103,
+    "canonicalObservations": 432
+  },
+  "cleanupAfterImplementation": true,
+  "recommendedNextExecutionSkill": "orchestrate-subagents",
+  "createdAt": "2026-04-28T19:30:05-04:00"
+}
