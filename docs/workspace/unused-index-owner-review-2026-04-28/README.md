@@ -1,60 +1,53 @@
 # Unused Index Owner Review Packets
 
-Status: closed for the 2026-04-28 remediation cycle. Pipeline-owner, admin-tooling, and flashback gameplay batches were approved, executed, and verified on 2026-04-28. Remaining packet rows are intentionally deferred and stay blocked unless a future cycle explicitly reopens owner review with rollback and review evidence.
+Status: reopened for full unused-index decision review. Current artifacts are evidence only until the decision matrix approves rows under the full review rules.
 
-Only rows that remain `approved_to_drop=yes` after owner review and have all required approval fields may be rendered into Phase 3 drop SQL.
+## Historical Artifacts Quarantine
 
-Required approval fields: `approved_to_drop`, `approval_reason`, `approved_by`, `reviewed_routes_or_jobs`, `stats_window_checked_at`, `rollback_sql`.
+Existing `phase3-*-approved-drops.sql` files and previous owner-review files are historical evidence only.
 
-## Inputs
+They are not current approval for the full unused-index decision review.
 
-- Current Advisor snapshot: `/tmp/trr-performance-advisor-after-phase3-flashback-gameplay-removal-20260428.json`
-- Original owner-packet source snapshot: `/tmp/trr-performance-advisor-phase4-complete-20260428.json`
-- Resolved DB host: `db.vwxfvzutyufrkhfgoeaa.supabase.co`
-- Candidate source rows: `277`
+Only rows approved in `docs/workspace/unused-index-decision-matrix-2026-04-28.csv` may appear in proposed Phase 3 batches.
 
-## Packets
+## Current Source Universe
 
-| owner | candidate_count | packet_csv | packet_markdown |
-| --- | --- | --- | --- |
-| admin tooling owner | 19 | admin-tooling-owner.csv | admin-tooling-owner.md |
-| catalog/media owner | 68 | catalog-media-owner.csv | catalog-media-owner.md |
-| pipeline owner | 4 | pipeline-owner.csv | pipeline-owner.md |
-| screenalytics/ml owner | 47 | screenalytics-ml-owner.csv | screenalytics-ml-owner.md |
-| social data/backfill owner | 100 | social-data-backfill-owner.csv | social-data-backfill-owner.md |
-| survey/public app owner | 39 | survey-public-app-owner.csv | survey-public-app-owner.md |
+- Current CSV rows: `1302`
+- Original requested rows: `1324`
+- Reconciliation status: current CSV used for non-destructive artifacts; original count mismatch remains documented.
+- Current approved-to-drop rows in the new decision matrix: `0`
 
-## Phase 3 Gate
+## Required Owner Packet Table Columns
 
-Render drop SQL with:
+| column |
+| --- |
+| schema |
+| table |
+| index |
+| review_status |
+| idx_scan |
+| index_size |
+| table_size |
+| decision |
+| decision_reason |
+| approved_to_drop |
+| approved_by |
+| reviewed_routes_or_jobs |
+| query_pattern_labels |
+| stats_window_checked_at |
+| rollback_sql |
+| drop_sql_if_approved |
+| risk_level |
+| phase3_batch_recommendation |
+| notes |
 
-```bash
-cd /Users/thomashulihan/Projects/TRR/TRR-Backend
-.venv/bin/python scripts/db/unused_index_evidence_report.py \
-  --approval-packet-dir ../docs/workspace/unused-index-owner-review-2026-04-28 \
-  --drop-sql-output ../docs/workspace/unused-index-owner-review-2026-04-28/phase3-approved-drops.sql
-```
+## Packet Filenames
 
-Current execution state:
-
-- Pipeline-owner packet: `4` approved, `4` dropped live on 2026-04-28.
-- Admin-tooling packet: `12` approved, `12` dropped live on 2026-04-28; `7` admin rows remain deferred.
-- Survey/public packet: `2` flashback gameplay indexes approved, `2` dropped live on 2026-04-28; empty `public.flashback_sessions` and `public.flashback_user_stats` gameplay tables plus RPC helpers removed; backend migration `20260428113000_remove_flashback_gameplay_write_path.sql` preserves that removal; `37` survey/public rows remain deferred.
-- Advisor Performance recheck after the flashback gameplay cleanup: `unused_index=350`.
-- Fresh live report after the flashback gameplay cleanup: `/Users/thomashulihan/Projects/TRR/docs/workspace/unused-index-advisor-review-2026-04-28.md`.
-- Remaining `drop_review_required`: `258`.
-- Phase 5 closeout: `/Users/thomashulihan/Projects/TRR/docs/workspace/supabase-advisor-performance-closeout-2026-04-28.md`.
-- Evidence:
-  - `/Users/thomashulihan/Projects/TRR/docs/workspace/unused-index-owner-review-2026-04-28/phase3-pipeline-drop-evidence.md`
-  - `/Users/thomashulihan/Projects/TRR/docs/workspace/unused-index-owner-review-2026-04-28/phase3-admin-drop-evidence.md`
-  - `/Users/thomashulihan/Projects/TRR/docs/workspace/unused-index-owner-review-2026-04-28/phase3-flashback-drop-evidence.md`
-
-Remaining owner-review counts after the flashback gameplay cleanup:
-
-| owner | remaining |
-| --- | ---: |
-| admin tooling owner | 6 |
-| catalog/media owner | 68 |
-| screenalytics/ml owner | 47 |
-| social data/backfill owner | 100 |
-| survey/public app owner | 37 |
+| workload | packet filename |
+| --- | --- |
+| pipeline/other | pipeline-owner-review.md |
+| admin tooling | admin-tooling-owner-review.md |
+| public/survey | survey-public-app-owner-review.md |
+| ml/screenalytics | screenalytics-ml-owner-review.md |
+| core catalog/media | catalog-media-owner-review.md |
+| social data/backfill | social-data-backfill-owner-review.md |

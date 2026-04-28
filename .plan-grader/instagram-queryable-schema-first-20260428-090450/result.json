@@ -1,0 +1,40 @@
+{
+  "sourcePath": "/Users/thomashulihan/Projects/TRR/docs/codex/plans/2026-04-28-instagram-post-queryable-data-plan.md",
+  "previousArtifactPath": "/Users/thomashulihan/Projects/TRR/.plan-grader/instagram-queryable-data-20260428-085436",
+  "artifactPath": "/Users/thomashulihan/Projects/TRR/.plan-grader/instagram-queryable-schema-first-20260428-090450",
+  "rubricPath": "/Users/thomashulihan/Documents/Codex/2026-04-21-create-a-rubric-for-scoring-an/implementation-plan-rubric.md",
+  "verdict": "APPROVED_WITH_REVISIONS",
+  "originalScore": 91,
+  "revisedScoreEstimate": 94,
+  "cleanupAfterImplementation": true,
+  "recommendedNextExecutionSkill": "orchestrate-subagents",
+  "selectedSuggestions": "all",
+  "scopeCorrection": {
+    "schemaArchitectureGate": "required_before_migrations",
+    "broadDestructiveRedesign": "out_of_scope",
+    "canonicalSocialPostsAlignment": "required",
+    "followersListScraping": "out_of_scope",
+    "followingListScraping": "in_scope",
+    "followerCountsFromProfile": "in_scope"
+  },
+  "gates": {
+    "triage": "pass",
+    "hardFailConditions": "pass_after_revision",
+    "shortReviewForm": "pass",
+    "automaticDowngradeCaps": "none",
+    "wrongThingCorrectlyGuardrail": "pass"
+  },
+  "scores": {
+    "previousRevised": 91,
+    "newRevised": 94
+  },
+  "artifactFiles": {
+    "audit": "/Users/thomashulihan/Projects/TRR/.plan-grader/instagram-queryable-schema-first-20260428-090450/AUDIT.md",
+    "scorecard": "/Users/thomashulihan/Projects/TRR/.plan-grader/instagram-queryable-schema-first-20260428-090450/SCORECARD.md",
+    "revisedPlan": "/Users/thomashulihan/Projects/TRR/.plan-grader/instagram-queryable-schema-first-20260428-090450/REVISED_PLAN.md",
+    "patches": "/Users/thomashulihan/Projects/TRR/.plan-grader/instagram-queryable-schema-first-20260428-090450/PATCHES.md",
+    "comparison": "/Users/thomashulihan/Projects/TRR/.plan-grader/instagram-queryable-schema-first-20260428-090450/COMPARISON.md",
+    "suggestionsPath": "/Users/thomashulihan/Projects/TRR/.plan-grader/instagram-queryable-schema-first-20260428-090450/SUGGESTIONS.md",
+    "validation": "/Users/thomashulihan/Projects/TRR/.plan-grader/instagram-queryable-schema-first-20260428-090450/VALIDATION.md"
+  }
+}

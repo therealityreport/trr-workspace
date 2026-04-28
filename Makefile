@@ -1,7 +1,7 @@
 .PHONY: \
 	dev dev-lite dev-cloud dev-hybrid dev-local dev-full \
-	preflight preflight-local preflight-cloud preflight-hybrid preflight-strict preflight-diagnostics env-contract env-contract-report check-policy codex-check handoff-check handoff-sync smoke status stop logs logs-prune cleanup-disk help \
-	app-direct-sql-inventory redacted-env-inventory vercel-project-guard migration-ownership-lint rls-grants-snapshot db-pressure-rehearsal supabase-mcp-access \
+	preflight preflight-local preflight-cloud preflight-hybrid preflight-strict preflight-diagnostics env-contract env-contract-report check-policy codex-check handoff-check handoff-sync smoke status backend-restart-diagnose stop logs logs-prune cleanup-disk help \
+	app-direct-sql-inventory redacted-env-inventory vercel-project-guard migration-ownership-lint rls-grants-snapshot db-pressure-rehearsal supabase-mcp-access supabase-advisor-snapshot \
 	bootstrap doctor test test-fast test-full test-changed test-env-sensitive \
 	workspace-contract-check \
 	cast-screentime-gap-check cast-screentime-live-check \
@@ -103,6 +103,9 @@ db-pressure-rehearsal:
 supabase-mcp-access:
 	@python3 scripts/check-supabase-mcp-access.py
 
+supabase-advisor-snapshot:
+	@python3 scripts/capture-supabase-advisor-snapshot.py
+
 check-policy:
 	@bash scripts/check-policy.sh
 
@@ -122,6 +125,9 @@ smoke:
 # Workspace status snapshot (PIDs, ports, health).
 status:
 	@bash scripts/status-workspace.sh
+
+backend-restart-diagnose:
+	@bash scripts/backend-restart-diagnose.sh
 
 # Local Getty scraper server (residential IP). Required for Getty image scraping
 # since Getty blocks cloud/datacenter IPs.  The admin UI calls this automatically
@@ -213,6 +219,8 @@ help:
 	@echo "  make env-contract - refresh docs/workspace/env-contract.md"
 	@echo "  make env-contract-report - refresh env contract inventory/deprecation review docs"
 	@echo "  make codex-check  - validates tracked Codex config, rules, and user bootstrap state"
+	@echo "  make supabase-advisor-snapshot - capture dated Supabase advisor JSON artifacts"
+	@echo "  make backend-restart-diagnose - prints backend restart/watchdog attribution state"
 	@echo "  make down         - deprecated no-op retained for compatibility"
 	@echo "  make chrome-dock-clean - remove Google Chrome entries from macOS Dock recents"
 	@echo "Legacy aliases:"

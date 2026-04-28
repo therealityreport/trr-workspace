@@ -1,0 +1,2150 @@
+{
+  "lints": [
+    {
+      "cache_key": "rls_enabled_no_policy_admin_brand_families",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`admin.brand_families\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "brand_families",
+        "schema": "admin",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_admin_brand_family_link_rules",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`admin.brand_family_link_rules\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "brand_family_link_rules",
+        "schema": "admin",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_admin_brand_family_members",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`admin.brand_family_members\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "brand_family_members",
+        "schema": "admin",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_admin_brand_family_wikipedia_show_links",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`admin.brand_family_wikipedia_show_links\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "brand_family_wikipedia_show_links",
+        "schema": "admin",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_admin_brand_logo_assets",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`admin.brand_logo_assets\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "brand_logo_assets",
+        "schema": "admin",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_admin_brand_logo_source_queries",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`admin.brand_logo_source_queries\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "brand_logo_source_queries",
+        "schema": "admin",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_admin_brands_franchise_rules",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`admin.brands_franchise_rules\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "brands_franchise_rules",
+        "schema": "admin",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_admin_cast_photo_people_tags",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`admin.cast_photo_people_tags\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "cast_photo_people_tags",
+        "schema": "admin",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_admin_covered_shows",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`admin.covered_shows\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "covered_shows",
+        "schema": "admin",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_admin_entity_logo_imports",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`admin.entity_logo_imports\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "entity_logo_imports",
+        "schema": "admin",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_admin_network_streaming_completion",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`admin.network_streaming_completion\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "network_streaming_completion",
+        "schema": "admin",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_admin_network_streaming_completion_attempts",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`admin.network_streaming_completion_attempts\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "network_streaming_completion_attempts",
+        "schema": "admin",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_admin_network_streaming_discovery_state",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`admin.network_streaming_discovery_state\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "network_streaming_discovery_state",
+        "schema": "admin",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_admin_network_streaming_logo_assets",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`admin.network_streaming_logo_assets\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "network_streaming_logo_assets",
+        "schema": "admin",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_admin_network_streaming_overrides",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`admin.network_streaming_overrides\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "network_streaming_overrides",
+        "schema": "admin",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_admin_network_streaming_sync_runs",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`admin.network_streaming_sync_runs\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "network_streaming_sync_runs",
+        "schema": "admin",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_admin_person_cover_photos",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`admin.person_cover_photos\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "person_cover_photos",
+        "schema": "admin",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_admin_person_reprocess_job_events",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`admin.person_reprocess_job_events\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "person_reprocess_job_events",
+        "schema": "admin",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_admin_person_reprocess_jobs",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`admin.person_reprocess_jobs\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "person_reprocess_jobs",
+        "schema": "admin",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_admin_recent_people_views",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`admin.recent_people_views\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "recent_people_views",
+        "schema": "admin",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_admin_reddit_communities",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`admin.reddit_communities\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "reddit_communities",
+        "schema": "admin",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_admin_reddit_discovery_posts",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`admin.reddit_discovery_posts\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "reddit_discovery_posts",
+        "schema": "admin",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_admin_reddit_threads",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`admin.reddit_threads\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "reddit_threads",
+        "schema": "admin",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_admin_season_cast_survey_roles",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`admin.season_cast_survey_roles\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "season_cast_survey_roles",
+        "schema": "admin",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_admin_show_social_posts",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`admin.show_social_posts\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "show_social_posts",
+        "schema": "admin",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_core_admin_operation_events",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`core.admin_operation_events\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "admin_operation_events",
+        "schema": "core",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_core_admin_operations",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`core.admin_operations\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "admin_operations",
+        "schema": "core",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_core_bravotv_image_runs",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`core.bravotv_image_runs\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "bravotv_image_runs",
+        "schema": "core",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_core_cast_fandom",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`core.cast_fandom\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "cast_fandom",
+        "schema": "core",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_core_cast_photos",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`core.cast_photos\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "cast_photos",
+        "schema": "core",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_core_cast_tmdb",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`core.cast_tmdb\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "cast_tmdb",
+        "schema": "core",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_core_episode_source_history",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`core.episode_source_history\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "episode_source_history",
+        "schema": "core",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_core_episode_source_latest",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`core.episode_source_latest\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "episode_source_latest",
+        "schema": "core",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_core_external_id_conflicts",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`core.external_id_conflicts\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "external_id_conflicts",
+        "schema": "core",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_core_fandom_community_allowlist",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`core.fandom_community_allowlist\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "fandom_community_allowlist",
+        "schema": "core",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_core_fandom_page_directory",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`core.fandom_page_directory\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "fandom_page_directory",
+        "schema": "core",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_core_google_news_sync_jobs",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`core.google_news_sync_jobs\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "google_news_sync_jobs",
+        "schema": "core",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_core_media_asset_variants",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`core.media_asset_variants\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "media_asset_variants",
+        "schema": "core",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_core_media_assets",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`core.media_assets\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "media_assets",
+        "schema": "core",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_core_media_links",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`core.media_links\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "media_links",
+        "schema": "core",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_core_news_topic_taxonomy",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`core.news_topic_taxonomy\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "news_topic_taxonomy",
+        "schema": "core",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_core_people_overrides",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`core.people_overrides\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "people_overrides",
+        "schema": "core",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_core_person_source_history",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`core.person_source_history\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "person_source_history",
+        "schema": "core",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_core_person_source_latest",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`core.person_source_latest\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "person_source_latest",
+        "schema": "core",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_core_season_fandom",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`core.season_fandom\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "season_fandom",
+        "schema": "core",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_core_season_source_history",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`core.season_source_history\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "season_source_history",
+        "schema": "core",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_core_season_source_latest",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`core.season_source_latest\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "season_source_latest",
+        "schema": "core",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_core_show_source_history",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`core.show_source_history\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "show_source_history",
+        "schema": "core",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_core_show_source_latest",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`core.show_source_latest\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "show_source_latest",
+        "schema": "core",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_firebase_surveys_answers",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`firebase_surveys.answers\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "answers",
+        "schema": "firebase_surveys",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_firebase_surveys_responses",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`firebase_surveys.responses\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "responses",
+        "schema": "firebase_surveys",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_public_site_typography_assignments",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`public.site_typography_assignments\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "site_typography_assignments",
+        "schema": "public",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_public_site_typography_sets",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`public.site_typography_sets\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "site_typography_sets",
+        "schema": "public",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_public_survey_cast",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`public.survey_cast\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "survey_cast",
+        "schema": "public",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_public_survey_episodes",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`public.survey_episodes\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "survey_episodes",
+        "schema": "public",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_public_survey_global_profile_responses",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`public.survey_global_profile_responses\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "survey_global_profile_responses",
+        "schema": "public",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_public_survey_rhop_s10_responses",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`public.survey_rhop_s10_responses\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "survey_rhop_s10_responses",
+        "schema": "public",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_public_survey_rhoslc_s6_responses",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`public.survey_rhoslc_s6_responses\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "survey_rhoslc_s6_responses",
+        "schema": "public",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_public_survey_show_palette_library",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`public.survey_show_palette_library\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "survey_show_palette_library",
+        "schema": "public",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_public_survey_show_seasons",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`public.survey_show_seasons\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "survey_show_seasons",
+        "schema": "public",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_public_survey_shows",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`public.survey_shows\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "survey_shows",
+        "schema": "public",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_public_survey_x_responses",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`public.survey_x_responses\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "survey_x_responses",
+        "schema": "public",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_public_surveys",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`public.surveys\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "surveys",
+        "schema": "public",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_social_social_post_legacy_refs",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`social.social_post_legacy_refs\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "social_post_legacy_refs",
+        "schema": "social",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "rls_enabled_no_policy_social_social_post_observations",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+      "detail": "Table \\`social.social_post_observations\\` has RLS enabled, but no policies exist",
+      "facing": "EXTERNAL",
+      "level": "INFO",
+      "metadata": {
+        "name": "social_post_observations",
+        "schema": "social",
+        "type": "table"
+      },
+      "name": "rls_enabled_no_policy",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "title": "RLS Enabled No Policy"
+    },
+    {
+      "cache_key": "function_search_path_mutable_core_propagate_show_name_to_episodes_ddfcad108357c1afae7e22adff98e65b",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`core.propagate_show_name_to_episodes\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "propagate_show_name_to_episodes",
+        "schema": "core",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_public_set_site_typography_updated_at_37e7c1272a63eefe3a2d61917dcb004b",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`public.set_site_typography_updated_at\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "set_site_typography_updated_at",
+        "schema": "public",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_core__cast_photos_best_width_ad01d3c176e10eabd3c40427a2440ade",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`core._cast_photos_best_width\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "_cast_photos_best_width",
+        "schema": "core",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_social_refresh_platform_post_search_fields_a7c1699c54c397548727d444f8e4b1bd",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`social.refresh_platform_post_search_fields\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "refresh_platform_post_search_fields",
+        "schema": "social",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_core_refresh_season_episode_id_arrays_from_episode_inserts_967b948a3f7d69fd7399679d17d24ff8",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`core.refresh_season_episode_id_arrays_from_episode_inserts\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "refresh_season_episode_id_arrays_from_episode_inserts",
+        "schema": "core",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_core_bridge_cast_photos_to_media_b9130928eda04074f4524fad93583c81",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`core.bridge_cast_photos_to_media\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "bridge_cast_photos_to_media",
+        "schema": "core",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_core_propagate_show_name_to_dependents_8d522ab1aca72bc0aa771b2164820486",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`core.propagate_show_name_to_dependents\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "propagate_show_name_to_dependents",
+        "schema": "core",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_core_bridge_person_images_to_media_16b3efe4bcf0a3dba989ab48e4bd0288",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`core.bridge_person_images_to_media\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "bridge_person_images_to_media",
+        "schema": "core",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_core__cast_photos_pick_url_path_30abdfbfd7842b41da63037fc3087426",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`core._cast_photos_pick_url_path\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "_cast_photos_pick_url_path",
+        "schema": "core",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_social__jsonb_detail_handle_values_656c9dd925ca1bd8216a664fa1978fb0",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`social._jsonb_detail_handle_values\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "_jsonb_detail_handle_values",
+        "schema": "social",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_social__build_post_search_handle_identities_aec1a6a87a39e63f95881480126914be",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`social._build_post_search_handle_identities\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "_build_post_search_handle_identities",
+        "schema": "social",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_public_set_current_timestamp_updated_at_9b1889f56258bf9d6554213c05019c76",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`public.set_current_timestamp_updated_at\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "set_current_timestamp_updated_at",
+        "schema": "public",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_core_touch_media_asset_variants_updated_at_9b1889f56258bf9d6554213c05019c76",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`core.touch_media_asset_variants_updated_at\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "touch_media_asset_variants_updated_at",
+        "schema": "core",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_core__cast_photos_pick_url_c734c8e5cd1a136998109cfa19751d1e",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`core._cast_photos_pick_url\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "_cast_photos_pick_url",
+        "schema": "core",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_admin_set_updated_at_301a884953d37769916294bb60562e05",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`admin.set_updated_at\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "set_updated_at",
+        "schema": "admin",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_core_bridge_show_source_snapshots_9dd7c1857c3f75f3978be768336be488",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`core.bridge_show_source_snapshots\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "bridge_show_source_snapshots",
+        "schema": "core",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_firebase_surveys_set_updated_at_301a884953d37769916294bb60562e05",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`firebase_surveys.set_updated_at\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "set_updated_at",
+        "schema": "firebase_surveys",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_core_set_updated_at_9b1889f56258bf9d6554213c05019c76",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`core.set_updated_at\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "set_updated_at",
+        "schema": "core",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_core__show_images_best_width_ad01d3c176e10eabd3c40427a2440ade",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`core._show_images_best_width\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "_show_images_best_width",
+        "schema": "core",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_core_set_episode_appearance_names_06dc8b1442f75182afe423b4f08663f7",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`core.set_episode_appearance_names\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "set_episode_appearance_names",
+        "schema": "core",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_core_bridge_episode_images_to_media_cb4373b98930af5beda21fad180e8b5f",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`core.bridge_episode_images_to_media\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "bridge_episode_images_to_media",
+        "schema": "core",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_social__normalize_search_hashtag_c3fa0b2284caa49ae8004622595f41c3",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`social._normalize_search_hashtag\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "_normalize_search_hashtag",
+        "schema": "social",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_public_set_updated_at_timestamp_9b1889f56258bf9d6554213c05019c76",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`public.set_updated_at_timestamp\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "set_updated_at_timestamp",
+        "schema": "public",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_social__jsonb_text_values_ee19611581b7fe1995ecc838c0aa52ac",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`social._jsonb_text_values\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "_jsonb_text_values",
+        "schema": "social",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_core_refresh_season_episode_id_arrays_3bccdfec42208d3fbb2fa9629ca4b977",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`core.refresh_season_episode_id_arrays\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "refresh_season_episode_id_arrays",
+        "schema": "core",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_social__regex_capture_values_5c91a2a61993453db33c55231ef98031",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`social._regex_capture_values\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "_regex_capture_values",
+        "schema": "social",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_social__build_post_search_text_771d16280a4b586e5670864a98a0c906",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`social._build_post_search_text\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "_build_post_search_text",
+        "schema": "social",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_core_refresh_season_episode_id_arrays_from_episode_deletes_52c4de7e8441b4df93e04b7d3fe63b2f",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`core.refresh_season_episode_id_arrays_from_episode_deletes\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "refresh_season_episode_id_arrays_from_episode_deletes",
+        "schema": "core",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_social__normalize_search_handle_31e44984fbc6608bc50554a417feb4cc",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`social._normalize_search_handle\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "_normalize_search_handle",
+        "schema": "social",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_core_propagate_show_title_to_episodes_ce46700dd8a2febcc3151dfe01d846af",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`core.propagate_show_title_to_episodes\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "propagate_show_title_to_episodes",
+        "schema": "core",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_core__normalize_cast_photo_canonical_url_a1036b2e1d2793f274767d160ea61e96",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`core._normalize_cast_photo_canonical_url\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "_normalize_cast_photo_canonical_url",
+        "schema": "core",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_core_propagate_show_title_to_seasons_f3eb59926b42ad309fb756cd7d0e6846",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`core.propagate_show_title_to_seasons\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "propagate_show_title_to_seasons",
+        "schema": "core",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_core_set_season_show_name_15d3c1d1d4804b91007baf7fc1214423",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`core.set_season_show_name\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "set_season_show_name",
+        "schema": "core",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_social_enforce_instagram_comment_parent_same_post_1836865bde3e133b3fec3ce80697a644",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`social.enforce_instagram_comment_parent_same_post\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "enforce_instagram_comment_parent_same_post",
+        "schema": "social",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_core_refresh_season_episode_id_arrays_from_episode_updates_e8f3f2464c2f3884fd9792551eaf9b00",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`core.refresh_season_episode_id_arrays_from_episode_updates\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "refresh_season_episode_id_arrays_from_episode_updates",
+        "schema": "core",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_social__search_identity_b61b15b6cba04adc47568593e667b08f",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`social._search_identity\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "_search_identity",
+        "schema": "social",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_core_bridge_season_images_to_media_c7043414471b28e00d3fc91c3678cba9",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`core.bridge_season_images_to_media\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "bridge_season_images_to_media",
+        "schema": "core",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_core_jsonb_sha256_673347d9d6accdb89f7cf7ea1b7ba51d",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`core.jsonb_sha256\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "jsonb_sha256",
+        "schema": "core",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_core_bridge_show_images_to_media_c11ba29e0da2d80e4b1f2c651b4de90d",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`core.bridge_show_images_to_media\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "bridge_show_images_to_media",
+        "schema": "core",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_core_cast_tmdb_set_updated_at_06bcf30ac3d0a7f279a54cbf228a7bec",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`core.cast_tmdb_set_updated_at\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "cast_tmdb_set_updated_at",
+        "schema": "core",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_core_purge_admin_operations_dff61c356388ea49330bb1498c21fd14",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`core.purge_admin_operations\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "purge_admin_operations",
+        "schema": "core",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_core_propagate_person_name_to_dependents_f19f0d7694bed43e79c43184fcce9c75",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`core.propagate_person_name_to_dependents\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "propagate_person_name_to_dependents",
+        "schema": "core",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_core_set_episode_show_name_15d3c1d1d4804b91007baf7fc1214423",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`core.set_episode_show_name\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "set_episode_show_name",
+        "schema": "core",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_core_set_show_cast_names_3099be07086dd9141f5bbc4fc4403b11",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`core.set_show_cast_names\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "set_show_cast_names",
+        "schema": "core",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_core_set_admin_operation_event_seq_67104e0a8ca7c3fbdd81efb2afafaacd",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`core.set_admin_operation_event_seq\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "set_admin_operation_event_seq",
+        "schema": "core",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_core_propagate_show_name_to_seasons_91168484e72798cd287c37b2d87c7e71",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`core.propagate_show_name_to_seasons\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "propagate_show_name_to_seasons",
+        "schema": "core",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_social__build_post_search_handles_4eb4c131c3c5158484ab8ec544ded70d",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`social._build_post_search_handles\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "_build_post_search_handles",
+        "schema": "social",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_core__show_images_pick_url_c734c8e5cd1a136998109cfa19751d1e",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`core._show_images_pick_url\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "_show_images_pick_url",
+        "schema": "core",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_social__search_unique_text_array_f53f0015b8d439af48199c145a4d4b82",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`social._search_unique_text_array\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "_search_unique_text_array",
+        "schema": "social",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_core__cast_photos_pick_height_39d831b24ee63c527ba80488468c7d35",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`core._cast_photos_pick_height\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "_cast_photos_pick_height",
+        "schema": "core",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "function_search_path_mutable_social__build_post_search_hashtags_15e6fb5fb8a80496f32ecaffcf5aa8fa",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects functions where the search_path parameter is not set.",
+      "detail": "Function \\`social._build_post_search_hashtags\\` has a role mutable search_path",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "_build_post_search_hashtags",
+        "schema": "social",
+        "type": "function"
+      },
+      "name": "function_search_path_mutable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+      "title": "Function Search Path Mutable"
+    },
+    {
+      "cache_key": "extension_in_public_vector",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects extensions installed in the \\`public\\` schema.",
+      "detail": "Extension \\`vector\\` is installed in the public schema. Move it to another schema.",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "name": "vector",
+        "schema": "public",
+        "type": "extension"
+      },
+      "name": "extension_in_public",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0014_extension_in_public",
+      "title": "Extension in Public"
+    },
+    {
+      "cache_key": "anon_security_definer_function_executable_surveys_submit_response_p_survey_id uuid, p_answers jsonb",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects `SECURITY DEFINER` functions that are callable without signing in. Revoke `EXECUTE`, switch the function to `SECURITY INVOKER`, or move it out of your exposed API schema if it is not meant to be public.",
+      "detail": "Function `surveys.submit_response(p_survey_id uuid, p_answers jsonb)` can be executed by the `anon` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/submit_response`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "arguments": "p_survey_id uuid, p_answers jsonb",
+        "language": "plpgsql",
+        "name": "submit_response",
+        "schema": "surveys",
+        "security_definer": true
+      },
+      "name": "anon_security_definer_function_executable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable",
+      "title": "Public Can Execute SECURITY DEFINER Function"
+    },
+    {
+      "cache_key": "authenticated_security_definer_function_executable_surveys_submit_response_p_survey_id uuid, p_answers jsonb",
+      "categories": [
+        "SECURITY"
+      ],
+      "description": "Detects `SECURITY DEFINER` functions that are callable by signed-in users. Revoke `EXECUTE`, switch the function to `SECURITY INVOKER`, or move it out of your exposed API schema if signed-in users should not call it.",
+      "detail": "Function `surveys.submit_response(p_survey_id uuid, p_answers jsonb)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/submit_response`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+      "facing": "EXTERNAL",
+      "level": "WARN",
+      "metadata": {
+        "arguments": "p_survey_id uuid, p_answers jsonb",
+        "language": "plpgsql",
+        "name": "submit_response",
+        "schema": "surveys",
+        "security_definer": true
+      },
+      "name": "authenticated_security_definer_function_executable",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable",
+      "title": "Signed-In Users Can Execute SECURITY DEFINER Function"
+    }
+  ]
+}

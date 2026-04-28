@@ -1,0 +1,30 @@
+{
+  "sourcePath": "/Users/thomashulihan/Projects/TRR/docs/codex/plans/2026-04-28-cross-platform-social-post-schema-unification-plan.md",
+  "rubricPath": "/Users/thomashulihan/Documents/Codex/2026-04-21-create-a-rubric-for-scoring-an/implementation-plan-rubric.md",
+  "artifactDir": "/Users/thomashulihan/Projects/TRR/.plan-grader/cross-platform-social-post-schema-unification-20260428-070313",
+  "verdict": "REVISE_BEFORE_EXECUTION",
+  "sourceScore": 73,
+  "revisedScoreEstimate": 88,
+  "gates": {
+    "triage": "pass",
+    "hardFail": "pass_with_blockers",
+    "wrongThingCorrectlyGuardrail": "needs_revision",
+    "approvalThreshold": "not_met_for_source_plan"
+  },
+  "capsApplied": [
+    "current_state_mismatch",
+    "security_governance_raw_payload_exposure"
+  ],
+  "artifactPaths": {
+    "audit": "/Users/thomashulihan/Projects/TRR/.plan-grader/cross-platform-social-post-schema-unification-20260428-070313/AUDIT.md",
+    "scorecard": "/Users/thomashulihan/Projects/TRR/.plan-grader/cross-platform-social-post-schema-unification-20260428-070313/SCORECARD.md",
+    "validation": "/Users/thomashulihan/Projects/TRR/.plan-grader/cross-platform-social-post-schema-unification-20260428-070313/VALIDATION.md",
+    "patches": "/Users/thomashulihan/Projects/TRR/.plan-grader/cross-platform-social-post-schema-unification-20260428-070313/PATCHES.md",
+    "comparison": "/Users/thomashulihan/Projects/TRR/.plan-grader/cross-platform-social-post-schema-unification-20260428-070313/COMPARISON.md",
+    "revisedPlan": "/Users/thomashulihan/Projects/TRR/.plan-grader/cross-platform-social-post-schema-unification-20260428-070313/REVISED_PLAN.md",
+    "suggestions": "/Users/thomashulihan/Projects/TRR/.plan-grader/cross-platform-social-post-schema-unification-20260428-070313/SUGGESTIONS.md"
+  },
+  "suggestionsPath": "/Users/thomashulihan/Projects/TRR/.plan-grader/cross-platform-social-post-schema-unification-20260428-070313/SUGGESTIONS.md",
+  "cleanupAfterImplementation": true,
+  "recommendedNextExecutionSkill": "inline"
+}

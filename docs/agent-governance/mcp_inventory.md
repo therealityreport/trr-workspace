@@ -14,3 +14,5 @@ Reusable MCP registrations live in `~/.codex/config.toml`. TRR-local MCPs live i
 Project-scoped custom agents under `.codex/agents/` may declare narrower MCP surfaces for their own runs. Those agent-local overrides do not replace the user-global or project-global MCP inventory; they narrow access for the spawned agent. The same inheritance rule applies to user-global plugins and skills: TRR routing may prefer local canonicals, but it must not suppress unrelated user-owned capabilities.
 
 If Supabase MCP returns `MCP error -32600`, run `make supabase-mcp-access`. A `403` means the active TRR token cannot access project `vwxfvzutyufrkhfgoeaa`; replace `TRR_SUPABASE_ACCESS_TOKEN` with a Supabase personal access token from the account or org that can access TRR core, then restart Codex.
+
+For reproducible Security Advisor and Performance Advisor evidence, run `make supabase-advisor-snapshot`. It uses the same repo-local `TRR_SUPABASE_ACCESS_TOKEN` contract and writes dated JSON artifacts plus a redacted manifest under `docs/workspace/supabase-advisor-snapshots/`.

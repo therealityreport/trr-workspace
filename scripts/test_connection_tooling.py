@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import io
+import os
 import subprocess
 import sys
 import urllib.error
@@ -99,6 +100,16 @@ def load_supabase_mcp_access_module():
     return module
 
 
+def load_supabase_advisor_snapshot_module():
+    module_path = ROOT / "scripts" / "capture-supabase-advisor-snapshot.py"
+    spec = importlib.util.spec_from_file_location("capture_supabase_advisor_snapshot", module_path)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
 def test_supabase_mcp_access_loads_project_specific_token_env(tmp_path: Path) -> None:
     module = load_supabase_mcp_access_module()
     config = tmp_path / "config.toml"
@@ -160,3 +171,88 @@ def test_supabase_mcp_access_missing_trr_token_ignores_generic_token() -> None:
 
     assert result.state == "missing_token"
     assert "SUPABASE_ACCESS_TOKEN is set but TRR ignores it" in rendered
+
+
+def test_supabase_advisor_snapshot_writes_dated_json_artifacts(tmp_path: Path) -> None:
+    module = load_supabase_advisor_snapshot_module()
+    requested_urls: list[str] = []
+
+    class FakeResponse:
+        status = 200
+
+        def __init__(self, body: bytes) -> None:
+            self.body = body
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return None
+
+        def read(self) -> bytes:
+            return self.body
+
+    def fake_opener(request, timeout):
+        assert request.headers["User-agent"] == "TRR supabase-advisor-snapshot/1.0"
+        assert request.headers["Authorization"] == "Bearer secret-token-value"
+        requested_urls.append(request.full_url)
+        advisor_type = request.full_url.rsplit("/", 1)[-1]
+        return FakeResponse(
+            (
+                '{"lints":[{"name":"'
+                + advisor_type
+                + '_lint","level":"WARN"}],"source":"test"}'
+            ).encode("utf-8")
+        )
+
+    result = module.capture_snapshot(
+        project_ref="vwxfvzutyufrkhfgoeaa",
+        token_env="TRR_SUPABASE_ACCESS_TOKEN",
+        token="secret-token-value",
+        output_root=tmp_path,
+        snapshot_date="2026-04-28",
+        timeout=1.0,
+        opener=fake_opener,
+    )
+
+    assert result.exit_code == 0
+    assert requested_urls == [
+        "https://api.supabase.com/v1/projects/vwxfvzutyufrkhfgoeaa/advisors/performance",
+        "https://api.supabase.com/v1/projects/vwxfvzutyufrkhfgoeaa/advisors/security",
+    ]
+    assert (tmp_path / "2026-04-28" / "performance.json").exists()
+    assert (tmp_path / "2026-04-28" / "security.json").exists()
+    summary = (tmp_path / "2026-04-28" / "summary.md").read_text(encoding="utf-8")
+    manifest = (tmp_path / "2026-04-28" / "manifest.json").read_text(encoding="utf-8")
+    assert "TRR_SUPABASE_ACCESS_TOKEN" in manifest
+    assert "secret-token-value" not in manifest
+    assert '"lint_count": 1' in manifest
+    assert "make supabase-advisor-snapshot" in summary
+    assert "TRR_SUPABASE_ACCESS_TOKEN" in summary
+
+
+def test_supabase_advisor_snapshot_reports_missing_trr_token_without_network(tmp_path: Path) -> None:
+    env = os.environ.copy()
+    env.pop("TRR_SUPABASE_ACCESS_TOKEN", None)
+    env["SUPABASE_ACCESS_TOKEN"] = "generic-token-that-must-not-be-used"
+    result = subprocess.run(
+        [
+            "python3",
+            "scripts/capture-supabase-advisor-snapshot.py",
+            "--output-dir",
+            str(tmp_path),
+            "--date",
+            "2026-04-28",
+        ],
+        cwd=ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 2
+    assert "TRR_SUPABASE_ACCESS_TOKEN is not set" in result.stderr
+    assert "SUPABASE_ACCESS_TOKEN is set but TRR ignores it" in result.stderr
+    assert "advisors_read" in result.stderr
+    assert not (tmp_path / "2026-04-28").exists()

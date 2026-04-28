@@ -1,0 +1,32 @@
+{
+  "source": {
+    "type": "plan_grader_revised_plan",
+    "path": "/Users/thomashulihan/Projects/TRR/.plan-grader/direct-db-lane-local-make-dev-20260428-020627/REVISED_PLAN.md",
+    "previousResult": "/Users/thomashulihan/Projects/TRR/.plan-grader/direct-db-lane-local-make-dev-20260428-020627/result.json"
+  },
+  "rubricPath": "/Users/thomashulihan/Documents/Codex/2026-04-21-create-a-rubric-for-scoring-an/implementation-plan-rubric.md",
+  "artifactFolder": "/Users/thomashulihan/Projects/TRR/.plan-grader/direct-db-lane-local-hybrid-modal-20260428-021210",
+  "revisionReason": "Add explicit hybrid mode so local app/backend can use direct DB while Modal and remote workers stay on session/pooler DB.",
+  "gates": {
+    "triage": "pass",
+    "hardFail": "pass",
+    "wrongThingGuardrail": "pass",
+    "approval": "approved_after_revision"
+  },
+  "scores": {
+    "original": 92,
+    "revisedEstimate": 94
+  },
+  "artifacts": {
+    "audit": "/Users/thomashulihan/Projects/TRR/.plan-grader/direct-db-lane-local-hybrid-modal-20260428-021210/AUDIT.md",
+    "scorecard": "/Users/thomashulihan/Projects/TRR/.plan-grader/direct-db-lane-local-hybrid-modal-20260428-021210/SCORECARD.md",
+    "revisedPlan": "/Users/thomashulihan/Projects/TRR/.plan-grader/direct-db-lane-local-hybrid-modal-20260428-021210/REVISED_PLAN.md",
+    "patches": "/Users/thomashulihan/Projects/TRR/.plan-grader/direct-db-lane-local-hybrid-modal-20260428-021210/PATCHES.md",
+    "comparison": "/Users/thomashulihan/Projects/TRR/.plan-grader/direct-db-lane-local-hybrid-modal-20260428-021210/COMPARISON.md",
+    "validation": "/Users/thomashulihan/Projects/TRR/.plan-grader/direct-db-lane-local-hybrid-modal-20260428-021210/VALIDATION.md"
+  },
+  "suggestionsPath": null,
+  "cleanupAfterImplementation": true,
+  "recommendedNextExecutionSkill": "inline",
+  "readyForExecution": true
+}

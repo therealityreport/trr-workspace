@@ -1,0 +1,48 @@
+{
+    "slug": "instagram-queryable-phase0-blockers",
+    "timestamp": "20260428-093114",
+    "sourcePlan": "/Users/thomashulihan/Projects/TRR/docs/codex/plans/2026-04-28-instagram-post-queryable-data-plan.md",
+    "artifactDir": "/Users/thomashulihan/Projects/TRR/.plan-grader/instagram-queryable-phase0-blockers-20260428-093114",
+    "revisedPlan": "/Users/thomashulihan/Projects/TRR/.plan-grader/instagram-queryable-phase0-blockers-20260428-093114/REVISED_PLAN.md",
+    "verdict": "APPROVED_FOR_PHASE_0_ONLY",
+    "score": 97,
+    "readyForExecution": {
+        "phase0": true,
+        "phase1Plus": "conditional_on_phase0_storage_decision",
+        "phase2Plus": "blocked_until_canonical_foundation_job_stage_raw_exposure_and_latest_comments_decisions_are_documented"
+    },
+    "phase0DecisionNote": "/Users/thomashulihan/Projects/TRR/docs/ai/local-status/instagram-queryable-schema-decision-2026-04-28.md",
+    "recommendedNextExecutionSkill": "inline",
+    "cleanupAfterImplementation": true,
+    "supabaseFullstackReview": {
+        "classification": "cross_cutting_security_schema_performance",
+        "usedMcpReadOnly": true,
+        "confirmedCanonicalTablesExist": true,
+        "canonicalFoundationMigrationTrackedInBackendBranch": false,
+        "legacyRawTablesHavePublicSelect": true,
+        "socialPostObservationsServiceRoleOnly": true,
+        "profileSpecificJobTypesCurrentlyAllowed": false
+    },
+    "blockingDecisions": [
+        "canonical_foundation_dependency_proof",
+        "raw_data_exposure_strategy",
+        "profile_following_job_type_or_stage_strategy",
+        "child_table_canonical_post_parent_strategy",
+        "latest_comments_non_persistence",
+        "api_contract_appendix_before_phase5",
+        "index_performance_gate",
+        "phase1_repo_native_instagram_source_field_inventory"
+    ],
+    "filesChanged": [
+        "/Users/thomashulihan/Projects/TRR/docs/ai/local-status/instagram-queryable-schema-decision-2026-04-28.md",
+        "/Users/thomashulihan/Projects/TRR/docs/codex/plans/2026-04-28-instagram-post-queryable-data-plan.md",
+        "/Users/thomashulihan/Projects/TRR/TRR Workspace Brain/sessions/2026-04-28-codex.md",
+        "/Users/thomashulihan/Projects/TRR/.plan-grader/instagram-queryable-phase0-blockers-20260428-093114/REVISED_PLAN.md",
+        "/Users/thomashulihan/Projects/TRR/.plan-grader/instagram-queryable-phase0-blockers-20260428-093114/PATCHES.md",
+        "/Users/thomashulihan/Projects/TRR/.plan-grader/instagram-queryable-phase0-blockers-20260428-093114/COMPARISON.md",
+        "/Users/thomashulihan/Projects/TRR/.plan-grader/instagram-queryable-phase0-blockers-20260428-093114/SCORECARD.md",
+        "/Users/thomashulihan/Projects/TRR/.plan-grader/instagram-queryable-phase0-blockers-20260428-093114/VALIDATION.md",
+        "/Users/thomashulihan/Projects/TRR/.plan-grader/instagram-queryable-phase0-blockers-20260428-093114/SUGGESTIONS.md",
+        "/Users/thomashulihan/Projects/TRR/.plan-grader/instagram-queryable-phase0-blockers-20260428-093114/result.json"
+    ]
+}

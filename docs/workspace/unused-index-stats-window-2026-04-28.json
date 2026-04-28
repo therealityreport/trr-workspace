@@ -1,0 +1,11 @@
+{
+  "captured_at": "2026-04-28T11:06:08.242170+00:00",
+  "connection_source": "TRR_DB_DIRECT_URL",
+  "notes": "Current stats window captured during non-destructive unused-index decision review. Zero-scan approvals require this to be true or explicit owner/canary risk acceptance.",
+  "resolved_db_host": "db.vwxfvzutyufrkhfgoeaa.supabase.co",
+  "source": "pg_stat_database",
+  "stats_reset_at": "2025-12-05T20:00:25.270075+00:00",
+  "stats_window_days": 143.63,
+  "stats_window_hours": 3447.1,
+  "stats_window_is_7_days_or_more": true
+}
