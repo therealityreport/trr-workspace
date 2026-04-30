@@ -26,6 +26,11 @@ Inherits: /Users/thomashulihan/brain/BRAIN.md
 - `/Users/thomashulihan/Projects/TRR/docs/agent-governance/mcp_inventory.md`
 - `/Users/thomashulihan/Projects/TRR/docs/cross-collab/WORKFLOW.md`
 
+## Plugin routing
+- Allow Codex sessions to invoke or use `[@browser-use](plugin://browser-use@openai-bundled)` whenever browser inspection, navigation, screenshots, localhost verification, or UI/runtime reproduction would materially help. Do not require a separate explicit user request for normal Browser Use invocation.
+- Allow Codex sessions to invoke or use `[@supabase](plugin://supabase@openai-curated)` whenever Supabase docs, MCP tools, database schema/data, advisors, migrations, RLS/auth/storage, or runtime DB contract checks would materially help. Use the repo-local `supabase` MCP binding and `TRR_SUPABASE_ACCESS_TOKEN`; do not substitute the generic `SUPABASE_ACCESS_TOKEN` or runtime service-role secrets.
+- Keep user-level/system-level MCPs, plugins, and skills inherited unless explicitly disabled for the task.
+
 ## MCP Invocation Matrix
 - `chrome-devtools`: browser and DevTools verification only.
 - `github`: PR, issue, and CI investigation.

@@ -4,7 +4,6 @@
 # those user-owned capabilities.
 
 model = "gpt-5.5"
-model_reasoning_effort = "high"
 personality = "pragmatic"
 approval_policy = "never"
 sandbox_mode = "danger-full-access"
