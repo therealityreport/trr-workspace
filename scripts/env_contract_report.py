@@ -110,6 +110,7 @@ COMPATIBILITY_PATHS = {
     "TRR-APP/apps/web/tests/postgres-connection-string-resolution.test.ts",
     "TRR-APP/scripts/auto-categorize-flairs.ts",
     "scripts/redact-env-inventory.py",
+    "scripts/lib/preflight-env-drift.sh",
     "scripts/lib/runtime-db-env.sh",
 }
 

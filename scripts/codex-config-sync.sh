@@ -96,6 +96,9 @@ workspace_root = sys.argv[2]
 with path.open("rb") as handle:
     data = tomllib.load(handle)
 
+if "model_reasoning_effort" in data:
+    raise SystemExit(1)
+
 projects = data.get("projects") or {}
 trusted_project = (projects.get(workspace_root) or {}).get("trust_level")
 if trusted_project != "trusted":
@@ -123,12 +126,33 @@ required = {
     "context7": {"command": "npx", "args": ["-y", "@upstash/context7-mcp"], "enabled": True},
 }
 
+def matches_expected(actual, expected):
+    if isinstance(expected, bool):
+        return isinstance(actual, bool) and actual == expected
+    if isinstance(expected, int):
+        return isinstance(actual, int) and not isinstance(actual, bool) and actual == expected
+    if isinstance(expected, str):
+        return isinstance(actual, str) and actual == expected
+    if isinstance(expected, list):
+        return (
+            isinstance(actual, list)
+            and len(actual) == len(expected)
+            and all(matches_expected(item, expected_item) for item, expected_item in zip(actual, expected))
+        )
+    if isinstance(expected, dict):
+        return (
+            isinstance(actual, dict)
+            and set(actual) == set(expected)
+            and all(matches_expected(actual[key], expected[key]) for key in expected)
+        )
+    return actual == expected
+
 for name, expectations in required.items():
     server = servers.get(name)
     if not isinstance(server, dict):
         raise SystemExit(1)
     for key, value in expectations.items():
-        if server.get(key) != value:
+        if not matches_expected(server.get(key), value):
             raise SystemExit(1)
 
 for name in servers:
@@ -209,6 +233,7 @@ def emit_table(lines: list[str], table_path: list[str], mapping: Mapping[str, ob
 
 
 data = load_existing(source)
+data.pop("model_reasoning_effort", None)
 projects = data.get("projects")
 if not isinstance(projects, dict):
     projects = {}
@@ -361,7 +386,6 @@ required_user_servers = {
 }
 required_top_level = {
     "model": "gpt-5.5",
-    "model_reasoning_effort": "high",
     "personality": "pragmatic",
     "approval_policy": "never",
     "sandbox_mode": "danger-full-access",
@@ -382,10 +406,33 @@ errors = []
 servers = data.get("mcp_servers") or {}
 agents = data.get("agents") or {}
 
+def matches_expected(actual, expected):
+    if isinstance(expected, bool):
+        return isinstance(actual, bool) and actual == expected
+    if isinstance(expected, int):
+        return isinstance(actual, int) and not isinstance(actual, bool) and actual == expected
+    if isinstance(expected, str):
+        return isinstance(actual, str) and actual == expected
+    if isinstance(expected, list):
+        return (
+            isinstance(actual, list)
+            and len(actual) == len(expected)
+            and all(matches_expected(item, expected_item) for item, expected_item in zip(actual, expected))
+        )
+    if isinstance(expected, dict):
+        return (
+            isinstance(actual, dict)
+            and set(actual) == set(expected)
+            and all(matches_expected(actual[key], expected[key]) for key in expected)
+        )
+    return actual == expected
+
 for key, value in required_top_level.items():
     actual = data.get(key)
-    if actual != value:
+    if not matches_expected(actual, value):
         errors.append(f"expected {key}={value!r}, found {actual!r}")
+if "model_reasoning_effort" in data:
+    errors.append("top-level model_reasoning_effort must be omitted so chat effort stays selectable")
 
 for name, expectations in required_servers.items():
     server = servers.get(name)
@@ -396,7 +443,7 @@ for name, expectations in required_servers.items():
         actual = server.get(key)
         if key == "env":
             actual = actual or {}
-        if actual != value:
+        if not matches_expected(actual, value):
             errors.append(f"[mcp_servers.{name}] expected {key}={value!r}, found {actual!r}")
 
 legacy_prefix = "".join(["a", "w", "s", "labs-"])
@@ -427,6 +474,8 @@ if not user_config_path.exists():
 else:
     with user_config_path.open("rb") as handle:
         user_data = tomllib.load(handle)
+    if "model_reasoning_effort" in user_data:
+        errors.append("user config must omit top-level model_reasoning_effort so chat effort stays selectable")
     user_projects = user_data.get("projects") or {}
     trusted_project = (user_projects.get(workspace_root) or {}).get("trust_level")
     if trusted_project != "trusted":
@@ -440,7 +489,7 @@ else:
             continue
         for key, value in expectations.items():
             actual = server.get(key)
-            if actual != value:
+            if not matches_expected(actual, value):
                 errors.append(f"user [mcp_servers.{name}] expected {key}={value!r}, found {actual!r}")
 
     user_config_text = user_config_path.read_text(encoding="utf-8")
