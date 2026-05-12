@@ -10,6 +10,7 @@
 
 # Temp/scratch directories
 /.codex-tmp/
+/.codex/config.toml.bak-*
 /.tmp/
 /.artifacts/
 .tmp-codex-bootstrap.*/
