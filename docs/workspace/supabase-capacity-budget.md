@@ -27,6 +27,7 @@ total_possible_sessions =
     default_pool_max
   + social_profile_pool_max
   + social_control_pool_max
+  + social_progress_pool_max
   + health_pool_max
   )
 + screenalytics_instances * screenalytics_pool_max
@@ -49,9 +50,10 @@ the backend general pool can be higher without consuming Supavisor slots:
 | TRR-Backend default pool | 6 |
 | TRR-Backend social profile pool | 4 |
 | TRR-Backend social control pool | 2 |
+| TRR-Backend social progress pool | 2 |
 | TRR-Backend health pool | 1 |
 | Screenalytics DB pool | 0 |
-| **Projected local direct holder budget** | **14** |
+| **Projected local direct holder budget** | **16** |
 
 For session/pooler modes, keep the conservative cloud profile values and let
 `scripts/dev-workspace.sh` warn when the projected holder budget exceeds
@@ -172,6 +174,7 @@ actionable:
 | TRR-Backend default pool | `trr-backend:default` |
 | TRR-Backend social profile pool | `trr-backend:social_profile` |
 | TRR-Backend social control pool | `trr-backend:social_control` |
+| TRR-Backend social progress pool | `trr-backend:social_progress` |
 | TRR-Backend health pool | `trr-backend:health` |
 | Screenalytics API | `screenalytics:api` |
 
@@ -197,6 +200,7 @@ or `blocked` plus the source/date.
 | TRR-Backend default pool max | verified repo default: `2` | Workspace capacity contract, reviewed 2026-04-27; production override still pending. |
 | TRR-Backend social profile pool max | verified local profile default: `4`; production pending | Workspace capacity contract, reviewed 2026-04-27. |
 | TRR-Backend social control pool max | verified local profile default: `2`; production pending | Workspace capacity contract, reviewed 2026-04-27. |
+| TRR-Backend social progress pool max | verified local profile default: `2`; production pending | Workspace capacity contract, reviewed 2026-05-03. |
 | TRR-Backend health pool max | verified local profile default: `1`; production pending | Workspace capacity contract, reviewed 2026-04-27. |
 | Screenalytics instances | pending | Deployment settings. |
 | Screenalytics pool max | verified default disabled unless `SCREENALYTICS_DB_ENABLED=1`; production pending | Workspace capacity contract, reviewed 2026-04-27. |

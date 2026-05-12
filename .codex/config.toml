@@ -3,10 +3,11 @@
 # ~/.codex/config.toml; trusted TRR-local settings live here without shadowing
 # those user-owned capabilities.
 
-model = "gpt-5.5"
 personality = "pragmatic"
 approval_policy = "never"
 sandbox_mode = "danger-full-access"
+model = "gpt-5.5"
+model_reasoning_effort = "xhigh"
 web_search = "cached"
 project_doc_max_bytes = 65536
 project_doc_fallback_filenames = []

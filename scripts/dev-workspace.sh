@@ -118,7 +118,7 @@ WORKSPACE_BROWSER_TAB_SYNC_MODE="${WORKSPACE_BROWSER_TAB_SYNC_MODE:-reuse_no_rel
 WORKSPACE_HEALTH_CURL_MAX_TIME="${WORKSPACE_HEALTH_CURL_MAX_TIME:-8}"
 WORKSPACE_HEALTH_TIMEOUT_BACKEND="${WORKSPACE_HEALTH_TIMEOUT_BACKEND:-30}"
 WORKSPACE_HEALTH_TIMEOUT_APP="${WORKSPACE_HEALTH_TIMEOUT_APP:-60}"
-WORKSPACE_BACKEND_AUTO_RESTART="${WORKSPACE_BACKEND_AUTO_RESTART:-0}"
+WORKSPACE_BACKEND_AUTO_RESTART="${WORKSPACE_BACKEND_AUTO_RESTART:-1}"
 WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS="${WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS:-5}"
 WORKSPACE_BACKEND_HEALTH_FAILURE_THRESHOLD="${WORKSPACE_BACKEND_HEALTH_FAILURE_THRESHOLD:-6}"
 WORKSPACE_BACKEND_HEALTH_CURL_MAX_TIME="${WORKSPACE_BACKEND_HEALTH_CURL_MAX_TIME:-5}"
@@ -688,6 +688,21 @@ process_or_group_alive() {
   kill -0 "$pid" >/dev/null 2>&1
 }
 
+tracked_service_alive() {
+  local name="$1"
+  local pid="$2"
+
+  if process_or_group_alive "$pid"; then
+    return 0
+  fi
+
+  if [[ "$name" == "TRR_APP" && -n "$(port_listeners "$TRR_APP_PORT")" ]]; then
+    return 0
+  fi
+
+  return 1
+}
+
 start_bg() {
   local name="$1"
   local log="$2"
@@ -983,6 +998,25 @@ workspace_local_remote_workers_active() {
   [[ "$WORKSPACE_TRR_REMOTE_WORKERS_ENABLED" == "1" && ! ( "$WORKSPACE_TRR_REMOTE_EXECUTOR" == "modal" && "$WORKSPACE_TRR_MODAL_ENABLED" == "1" ) ]]
 }
 
+workspace_social_queue_enabled() {
+  if workspace_local_social_worker_active; then
+    echo "true"
+    return 0
+  fi
+
+  if workspace_modal_remote_active && [[ "$WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS" == "1" ]]; then
+    echo "true"
+    return 0
+  fi
+
+  if workspace_local_remote_workers_active; then
+    echo "true"
+    return 0
+  fi
+
+  echo "false"
+}
+
 workspace_startup_remote_execution_summary() {
   if [[ "$WORKSPACE_TRR_REMOTE_WORKERS_ENABLED" != "1" ]]; then
     echo "disabled"
@@ -1072,6 +1106,7 @@ workspace_effective_db_holder_budget() {
   local backend_pool
   local social_profile_pool
   local social_control_pool
+  local social_progress_pool
   local health_pool
   local total
 
@@ -1082,14 +1117,16 @@ workspace_effective_db_holder_budget() {
   backend_pool="$(workspace_positive_int_or_default "${TRR_DB_POOL_MAXCONN:-}" "6")"
   social_profile_pool="$(workspace_positive_int_or_default "${TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN:-}" "4")"
   social_control_pool="$(workspace_positive_int_or_default "${TRR_SOCIAL_CONTROL_DB_POOL_MAXCONN:-}" "2")"
+  social_progress_pool="$(workspace_positive_int_or_default "${TRR_SOCIAL_PROGRESS_DB_POOL_MAXCONN:-}" "2")"
   health_pool="$(workspace_positive_int_or_default "${TRR_HEALTH_DB_POOL_MAXCONN:-}" "1")"
-  total=$(( app_pool + backend_pool + social_profile_pool + social_control_pool + health_pool ))
+  total=$(( app_pool + backend_pool + social_profile_pool + social_control_pool + social_progress_pool + health_pool ))
 
-  printf 'app=%s, backend=%s, social_profile=%s, social_control=%s, health=%s, total=%s' \
+  printf 'app=%s, backend=%s, social_profile=%s, social_control=%s, social_progress=%s, health=%s, total=%s' \
     "$app_pool" \
     "$backend_pool" \
     "$social_profile_pool" \
     "$social_control_pool" \
+    "$social_progress_pool" \
     "$health_pool" \
     "$total"
 }
@@ -1100,6 +1137,7 @@ workspace_effective_db_holder_budget_total() {
   local backend_pool
   local social_profile_pool
   local social_control_pool
+  local social_progress_pool
   local health_pool
 
   app_projected_pool="$(workspace_projected_app_postgres_pool_max)"
@@ -1107,9 +1145,10 @@ workspace_effective_db_holder_budget_total() {
   backend_pool="$(workspace_positive_int_or_default "${TRR_DB_POOL_MAXCONN:-}" "6")"
   social_profile_pool="$(workspace_positive_int_or_default "${TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN:-}" "4")"
   social_control_pool="$(workspace_positive_int_or_default "${TRR_SOCIAL_CONTROL_DB_POOL_MAXCONN:-}" "2")"
+  social_progress_pool="$(workspace_positive_int_or_default "${TRR_SOCIAL_PROGRESS_DB_POOL_MAXCONN:-}" "2")"
   health_pool="$(workspace_positive_int_or_default "${TRR_HEALTH_DB_POOL_MAXCONN:-}" "1")"
 
-  echo $(( app_pool + backend_pool + social_profile_pool + social_control_pool + health_pool ))
+  echo $(( app_pool + backend_pool + social_profile_pool + social_control_pool + social_progress_pool + health_pool ))
 }
 
 workspace_check_db_holder_budget_headroom() {
@@ -1215,6 +1254,8 @@ start_trr_backend() {
   local social_stage_comments="$WORKSPACE_SOCIAL_WORKER_COMMENTS"
   local social_stage_media_mirror="$WORKSPACE_SOCIAL_WORKER_MEDIA_MIRROR"
   local social_stage_comment_media_mirror="$WORKSPACE_SOCIAL_WORKER_COMMENT_MEDIA_MIRROR"
+  local social_queue_enabled
+  social_queue_enabled="$(workspace_social_queue_enabled)"
 
   if [[ "$WORKSPACE_TRR_REMOTE_EXECUTOR" == "modal" && "$WORKSPACE_TRR_MODAL_ENABLED" == "1" ]]; then
     social_stage_posts="$WORKSPACE_TRR_REMOTE_SOCIAL_POSTS"
@@ -1240,6 +1281,8 @@ start_trr_backend() {
     TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN=\"${TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN:-4}\" \
     TRR_SOCIAL_CONTROL_DB_POOL_MINCONN=\"${TRR_SOCIAL_CONTROL_DB_POOL_MINCONN:-1}\" \
     TRR_SOCIAL_CONTROL_DB_POOL_MAXCONN=\"${TRR_SOCIAL_CONTROL_DB_POOL_MAXCONN:-2}\" \
+    TRR_SOCIAL_PROGRESS_DB_POOL_MINCONN=\"${TRR_SOCIAL_PROGRESS_DB_POOL_MINCONN:-1}\" \
+    TRR_SOCIAL_PROGRESS_DB_POOL_MAXCONN=\"${TRR_SOCIAL_PROGRESS_DB_POOL_MAXCONN:-2}\" \
     TRR_HEALTH_DB_POOL_MINCONN=\"${TRR_HEALTH_DB_POOL_MINCONN:-1}\" \
     TRR_HEALTH_DB_POOL_MAXCONN=\"${TRR_HEALTH_DB_POOL_MAXCONN:-1}\" \
     SUPABASE_JWT_SECRET=\"${SUPABASE_JWT_SECRET:-}\" \
@@ -1262,7 +1305,7 @@ start_trr_backend() {
     TRR_MODAL_RUNTIME_SECRET_NAME=\"$WORKSPACE_TRR_MODAL_RUNTIME_SECRET_NAME\" \
     TRR_MODAL_SOCIAL_SECRET_NAME=\"$WORKSPACE_TRR_MODAL_SOCIAL_SECRET_NAME\" \
     TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT=\"$social_job_concurrency_limit\" \
-    SOCIAL_QUEUE_ENABLED=true \
+    SOCIAL_QUEUE_ENABLED=\"$social_queue_enabled\" \
     SOCIAL_MODAL_DISPATCH_LIMIT=\"$social_dispatch_limit\" \
     SOCIAL_WORKER_POOL_POSTS=\"$social_stage_posts\" \
     SOCIAL_WORKER_POOL_COMMENTS=\"$social_stage_comments\" \
@@ -1777,7 +1820,7 @@ while true; do
     if [[ -z "$pid" ]]; then
       continue
     fi
-    if ! process_or_group_alive "$pid"; then
+    if ! tracked_service_alive "$name" "$pid"; then
       local_dead="$pid"
       local_dead_name="$name"
       local_dead_idx="$idx"

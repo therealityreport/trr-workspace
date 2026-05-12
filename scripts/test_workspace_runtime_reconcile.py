@@ -40,6 +40,21 @@ def test_compute_overall_state_keeps_advisory_non_blocking() -> None:
     )
 
 
+def test_hybrid_remote_only_history_is_advisory() -> None:
+    artifact = cli.default_artifact()
+    artifact["db"]["state"] = "blocked"
+    artifact["db"]["reason"] = "remote_only_history"
+    artifact["db"]["remediation"] = "Use the migration history repair runbook."
+
+    result = cli.allow_hybrid_startup_for_remote_only_history(artifact, workspace_mode="hybrid")
+    result = cli.compute_overall_state(result)
+
+    assert result["overall_state"] == "advisory"
+    assert result["summary"] == "remote_only_history"
+    assert result["db"]["hybrid_startup_allowed"] is True
+    assert "Hybrid startup is allowed" in result["db"]["remediation"]
+
+
 def test_compute_overall_state_renders_fixed_summary() -> None:
     artifact = cli.default_artifact()
     artifact["db"]["state"] = "fixed"
@@ -89,6 +104,30 @@ def test_runtime_reconcile_runs_modal_in_hybrid_mode(monkeypatch) -> None:
     cli.run_runtime_reconcile()
 
     assert "scripts/modal/reconcile_modal_runtime.py" in calls
+
+
+def test_runtime_reconcile_allows_hybrid_remote_only_history(monkeypatch) -> None:
+    calls: list[str] = []
+
+    def fake_run(script_relpath: str):
+        calls.append(script_relpath)
+        if script_relpath == "scripts/dev/reconcile_runtime_db.py":
+            return 1, {
+                "state": "blocked",
+                "reason": "remote_only_history",
+                "remediation": "Use the migration history repair runbook.",
+            }
+        return 0, {"state": "ok"}
+
+    monkeypatch.setenv("WORKSPACE_DEV_MODE", "hybrid")
+    monkeypatch.setattr(cli, "_run_backend_script", fake_run)
+
+    artifact = cli.run_runtime_reconcile()
+
+    assert "scripts/modal/reconcile_modal_runtime.py" in calls
+    assert artifact["overall_state"] == "advisory"
+    assert artifact["summary"] == "remote_only_history"
+    assert artifact["db"]["hybrid_startup_allowed"] is True
 
 
 def test_main_writes_artifact_and_returns_nonzero_for_blocked(tmp_path, monkeypatch) -> None:

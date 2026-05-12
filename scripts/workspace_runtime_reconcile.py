@@ -149,6 +149,26 @@ def compute_overall_state(artifact: dict[str, Any]) -> dict[str, Any]:
     return artifact
 
 
+def allow_hybrid_startup_for_remote_only_history(
+    artifact: dict[str, Any],
+    *,
+    workspace_mode: str,
+) -> dict[str, Any]:
+    """Keep remote-only migration history visible without blocking hybrid startup."""
+    db = artifact.get("db")
+    if workspace_mode != "hybrid" or not isinstance(db, dict):
+        return artifact
+    if db.get("state") != "blocked" or db.get("reason") != "remote_only_history":
+        return artifact
+
+    db["state"] = "advisory"
+    db["hybrid_startup_allowed"] = True
+    remediation = str(db.get("remediation") or "").strip()
+    suffix = "Hybrid startup is allowed; repair migration history before migration work."
+    db["remediation"] = f"{remediation} {suffix}".strip()
+    return artifact
+
+
 def render_preflight_summary(artifact: dict[str, Any]) -> str:
     state = artifact.get("overall_state")
     summary = str(artifact.get("summary") or "").strip()
@@ -187,6 +207,7 @@ def run_runtime_reconcile() -> dict[str, Any]:
         artifact["modal"]["state"] = "blocked"
         artifact["modal"]["reason"] = artifact["modal"].get("reason") or "runtime_modal_reconcile_failed"
 
+    allow_hybrid_startup_for_remote_only_history(artifact, workspace_mode=workspace_mode)
     return compute_overall_state(artifact)
 
 

@@ -49,6 +49,13 @@ emit_preflight_phase_output() {
     handoff-sync)
       echo "[preflight] Handoffs synced"
       ;;
+    codex-bootstrap)
+      if [[ "$output" == *"Bootstrapped user config"* || "$output" == *"Bootstrapped user AGENTS"* ]]; then
+        echo "[preflight] Codex config reconciled"
+      else
+        echo "[preflight] Codex config OK"
+      fi
+      ;;
     check-policy)
       echo "[preflight] Policy checks OK"
       ;;
@@ -336,6 +343,8 @@ else
   handoff_warning="$(preflight_handle_handoff_sync_result "$WORKSPACE_PREFLIGHT_STRICT" "$handoff_sync_rc" "$handoff_sync_output")"
   printf '%s\n' "$handoff_warning" >&2
 fi
+
+run_preflight_phase "codex-bootstrap" "[preflight] Reconciling Codex config..." bash "$ROOT/scripts/codex-config-sync.sh" bootstrap
 
 run_preflight_phase "check-policy" "[preflight] Checking policy drift rules..." bash "$ROOT/scripts/check-policy.sh"
 

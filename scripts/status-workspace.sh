@@ -529,6 +529,19 @@ if [[ "$HAVE_PIDFILE" -ne 1 ]]; then
   fi
 fi
 
+app_process_state() {
+  local pid="${TRR_APP_PID:-}"
+  if pid_is_running "$pid"; then
+    echo "running (pid=${pid})"
+    return 0
+  fi
+  if [[ "${TRR_APP_LISTENERS}" != "none" ]]; then
+    echo "running (listener=${TRR_APP_LISTENERS}; tracked pid=${pid:-n/a} exited)"
+    return 0
+  fi
+  pid_state "$pid"
+}
+
 if [[ "$OUTPUT_FORMAT" == "json" ]]; then
   cat <<JSON
 {
@@ -674,7 +687,7 @@ echo "  PROFILE: $(runtime_value_or_na "${PROFILE:-}")"
 echo ""
 
 echo "[status] Process states:"
-echo "  TRR_APP: $(pid_state "${TRR_APP_PID:-}")"
+echo "  TRR_APP: $(app_process_state)"
 echo "  TRR_SOCIAL_WORKER: $(pid_state "${TRR_SOCIAL_WORKER_PID:-}")"
 echo "  TRR_REMOTE_WORKERS: $(remote_workers_process_state)"
 echo "  TRR_BACKEND: $(pid_state "${TRR_BACKEND_PID:-}")"
