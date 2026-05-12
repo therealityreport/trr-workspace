@@ -10,6 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DEV_SCRIPT = ROOT / "scripts" / "dev-workspace.sh"
 STATUS_SCRIPT = ROOT / "scripts" / "status-workspace.sh"
+MAKEFILE = ROOT / "Makefile"
 SOCIAL_DEBUG_PROFILE = ROOT / "profiles" / "social-debug.env"
 LOCAL_CLOUD_PROFILE = ROOT / "profiles" / "local-cloud.env"
 ENV_CONTRACT_DOC = ROOT / "docs" / "workspace" / "env-contract.md"
@@ -49,6 +50,33 @@ class WorkspaceAppEnvProjectionTests(unittest.TestCase):
                 values[key] = value
         return values
 
+    def assert_profile_has_unique_keys(self, profile_path: Path) -> None:
+        seen: set[str] = set()
+        duplicates: list[str] = []
+        for raw_line in profile_path.read_text(encoding="utf-8").splitlines():
+            line = raw_line.split("#", 1)[0].strip()
+            if not line or "=" not in line:
+                continue
+            key = line.split("=", 1)[0]
+            if key in seen:
+                duplicates.append(key)
+            seen.add(key)
+        self.assertEqual(duplicates, [], f"{profile_path.name} has duplicate profile keys")
+
+    def test_compatibility_profiles_do_not_duplicate_first_wins_keys(self) -> None:
+        for profile in (
+            ROOT / "profiles" / "local-cloud.env",
+            ROOT / "profiles" / "local-lite.env",
+            ROOT / "profiles" / "local-full.env",
+            ROOT / "profiles" / "local-docker.env",
+        ):
+            with self.subTest(profile=profile.name):
+                self.assert_profile_has_unique_keys(profile)
+
+    def test_dev_workspace_defaults_backend_watchdog_on(self) -> None:
+        text = DEV_SCRIPT.read_text(encoding="utf-8")
+        self.assertIn('WORKSPACE_BACKEND_AUTO_RESTART="${WORKSPACE_BACKEND_AUTO_RESTART:-1}"', text)
+
     def test_dev_workspace_declares_app_pool_projection_defaults(self) -> None:
         text = DEV_SCRIPT.read_text(encoding="utf-8")
         self.assertIn(
@@ -83,15 +111,22 @@ class WorkspaceAppEnvProjectionTests(unittest.TestCase):
         text = SOCIAL_DEBUG_PROFILE.read_text(encoding="utf-8")
         self.assertIn("WORKSPACE_TRR_APP_POSTGRES_POOL_MAX=1", text)
         self.assertIn("WORKSPACE_TRR_APP_POSTGRES_MAX_CONCURRENT_OPERATIONS=1", text)
+        self.assertIn("TRR_SOCIAL_PROGRESS_DB_POOL_MINCONN=1", text)
+        self.assertIn("TRR_SOCIAL_PROGRESS_DB_POOL_MAXCONN=2", text)
         self.assertIn("TRR_HEALTH_DB_POOL_MINCONN=1", text)
         self.assertIn("TRR_HEALTH_DB_POOL_MAXCONN=1", text)
 
     def test_local_cloud_profile_mirrors_default_dedicated_pool_caps(self) -> None:
         text = LOCAL_CLOUD_PROFILE.read_text(encoding="utf-8")
+        self.assertIn("WORKSPACE_BACKEND_AUTO_RESTART=1", text)
+        self.assertIn("TRR_DB_POOL_MINCONN=1", text)
+        self.assertIn("TRR_DB_POOL_MAXCONN=6", text)
         self.assertIn("TRR_SOCIAL_PROFILE_DB_POOL_MINCONN=1", text)
         self.assertIn("TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN=4", text)
         self.assertIn("TRR_SOCIAL_CONTROL_DB_POOL_MINCONN=1", text)
         self.assertIn("TRR_SOCIAL_CONTROL_DB_POOL_MAXCONN=2", text)
+        self.assertIn("TRR_SOCIAL_PROGRESS_DB_POOL_MINCONN=1", text)
+        self.assertIn("TRR_SOCIAL_PROGRESS_DB_POOL_MAXCONN=2", text)
         self.assertIn("TRR_HEALTH_DB_POOL_MINCONN=1", text)
         self.assertIn("TRR_HEALTH_DB_POOL_MAXCONN=1", text)
 
@@ -115,6 +150,8 @@ class WorkspaceAppEnvProjectionTests(unittest.TestCase):
         self.assertIn("TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN=4", text)
         self.assertIn("TRR_SOCIAL_CONTROL_DB_POOL_MINCONN=1", text)
         self.assertIn("TRR_SOCIAL_CONTROL_DB_POOL_MAXCONN=2", text)
+        self.assertIn("TRR_SOCIAL_PROGRESS_DB_POOL_MINCONN=1", text)
+        self.assertIn("TRR_SOCIAL_PROGRESS_DB_POOL_MAXCONN=2", text)
         self.assertIn("TRR_HEALTH_DB_POOL_MINCONN=1", text)
         self.assertIn("TRR_HEALTH_DB_POOL_MAXCONN=1", text)
         self.assertIn("WORKSPACE_TRR_APP_POSTGRES_POOL_MAX=1", text)
@@ -139,6 +176,23 @@ class WorkspaceAppEnvProjectionTests(unittest.TestCase):
             self.assertIn(f'{key}="${{{key}:-{value}}}"', dev_text)
             self.assertIn(f'{key}="${{{key}:-{value}}}"', status_text)
             self.assertIn(f"invalid {key}='${{{key}}}', using {value}.", dev_text)
+
+    def test_dev_hybrid_adopts_social_safe_make_overrides(self) -> None:
+        text = MAKEFILE.read_text(encoding="utf-8")
+        dev_hybrid = text[text.index("\ndev-hybrid:") : text.index("\n# Compatibility alias", text.index("\ndev-hybrid:"))]
+        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS=1", dev_hybrid)
+        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT=12", dev_hybrid)
+        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_POSTS=1", dev_hybrid)
+        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS=8", dev_hybrid)
+        self.assertIn("SOCIAL_POSTS_COMMENTS_PLATFORM_CAP_INSTAGRAM=8", dev_hybrid)
+        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR=3", dev_hybrid)
+        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR=2", dev_hybrid)
+        self.assertIn("WORKSPACE_DEV_MODE=hybrid", dev_hybrid)
+
+        social_safe_alias = text[
+            text.index("\ndev-hybrid-social-safe:") : text.index("\n# Deprecated compatibility alias", text.index("\ndev-hybrid-social-safe:"))
+        ]
+        self.assertIn("dev-hybrid PROFILE=", social_safe_alias)
 
     def test_dev_workspace_prints_effective_db_holder_budget(self) -> None:
         text = DEV_SCRIPT.read_text(encoding="utf-8")
@@ -194,22 +248,29 @@ class WorkspaceAppEnvProjectionTests(unittest.TestCase):
                     "TRR_DB_POOL_MAXCONN": "6",
                     "TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN": "4",
                     "TRR_SOCIAL_CONTROL_DB_POOL_MAXCONN": "2",
+                    "TRR_SOCIAL_PROGRESS_DB_POOL_MAXCONN": "2",
                     "TRR_HEALTH_DB_POOL_MAXCONN": "1",
                 }
             ),
-            "app=4, backend=4, social_profile=4, social_control=2, health=1, total=15",
+            "app=1, backend=6, social_profile=4, social_control=2, social_progress=2, health=1, total=16",
         )
 
     def test_effective_db_holder_budget_uses_default_profile_fallbacks_when_omitted(self) -> None:
         self.assertEqual(
             self.run_workspace_db_holder_budget({}),
-            "app=4, backend=4, social_profile=4, social_control=2, health=1, total=15",
+            "app=1, backend=6, social_profile=4, social_control=2, social_progress=2, health=1, total=16",
         )
 
     def test_effective_db_holder_budget_uses_social_debug_profile_values(self) -> None:
         self.assertEqual(
             self.run_workspace_db_holder_budget(self.read_profile_env(SOCIAL_DEBUG_PROFILE)),
-            "app=2, backend=4, social_profile=4, social_control=2, health=1, total=13",
+            "app=1, backend=4, social_profile=4, social_control=2, social_progress=2, health=1, total=14",
+        )
+
+    def test_effective_db_holder_budget_uses_local_cloud_profile_values(self) -> None:
+        self.assertEqual(
+            self.run_workspace_db_holder_budget(self.read_profile_env(LOCAL_CLOUD_PROFILE)),
+            "app=1, backend=6, social_profile=4, social_control=2, social_progress=2, health=1, total=16",
         )
 
     def test_effective_db_holder_budget_uses_default_profile_fallbacks_when_malformed(self) -> None:
@@ -220,10 +281,11 @@ class WorkspaceAppEnvProjectionTests(unittest.TestCase):
                     "TRR_DB_POOL_MAXCONN": "0",
                     "TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN": "abc",
                     "TRR_SOCIAL_CONTROL_DB_POOL_MAXCONN": "nope",
+                    "TRR_SOCIAL_PROGRESS_DB_POOL_MAXCONN": "nan",
                     "TRR_HEALTH_DB_POOL_MAXCONN": "-1",
                 }
             ),
-            "app=4, backend=4, social_profile=4, social_control=2, health=1, total=15",
+            "app=1, backend=6, social_profile=4, social_control=2, social_progress=2, health=1, total=16",
         )
         self.assertEqual(
             self.run_workspace_helper(

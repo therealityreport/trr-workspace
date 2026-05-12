@@ -1,5 +1,5 @@
 .PHONY: \
-	dev dev-lite dev-cloud dev-hybrid dev-local dev-full \
+	dev dev-lite dev-cloud dev-hybrid dev-hybrid-social-safe dev-local dev-full \
 	preflight preflight-local preflight-cloud preflight-hybrid preflight-strict preflight-diagnostics env-contract env-contract-report check-policy codex-check handoff-check handoff-sync smoke status backend-restart-diagnose stop logs logs-prune cleanup-disk help \
 	app-direct-sql-inventory redacted-env-inventory vercel-project-guard migration-ownership-lint rls-grants-snapshot db-pressure-rehearsal supabase-mcp-access supabase-advisor-snapshot \
 	bootstrap doctor test test-fast test-full test-changed test-env-sensitive \
@@ -15,7 +15,7 @@
 # To override the default profile explicitly:
 # PROFILE=default make dev
 # make dev-cloud                      # explicit cloud/remote worker mode
-# make dev-hybrid                     # local direct app/backend plus remote workers on session/pooler
+# make dev-hybrid                     # local direct app/backend plus remote social-safe workers on session/pooler
 # PROFILE=local-cloud make dev-cloud  # deprecated compatibility alias
 # PROFILE=local-docker make dev-local # deprecated compatibility alias
 # PROFILE=local-full make dev-local   # deprecated compatibility alias
@@ -44,9 +44,22 @@ dev-cloud:
 	@PROFILE="$${PROFILE:-local-cloud}" WORKSPACE_DEV_MODE=cloud bash scripts/dev-workspace.sh
 
 # Explicit hybrid path: local app/backend use direct DB; Modal/remote workers use session/pooler.
+# Social scraping is enabled with conservative post discovery and downstream fan-out.
 dev-hybrid:
 	@$(MAKE) --no-print-directory preflight-hybrid
-	@PROFILE="$${PROFILE:-local-cloud}" WORKSPACE_DEV_MODE=hybrid bash scripts/dev-workspace.sh
+	@WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS=1 \
+	WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT=12 \
+	WORKSPACE_TRR_REMOTE_SOCIAL_POSTS=1 \
+	WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS=8 \
+	SOCIAL_POSTS_COMMENTS_PLATFORM_CAP_INSTAGRAM=8 \
+	WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR=3 \
+	WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR=2 \
+	PROFILE="$${PROFILE:-local-cloud}" WORKSPACE_DEV_MODE=hybrid bash scripts/dev-workspace.sh
+
+# Compatibility alias for older social-safe muscle memory.
+dev-hybrid-social-safe:
+	@echo "[workspace] NOTE: 'make dev-hybrid-social-safe' is now an alias for 'make dev-hybrid'."
+	@$(MAKE) --no-print-directory dev-hybrid PROFILE="$${PROFILE:-local-cloud}"
 
 # Deprecated compatibility alias retained for older local muscle memory.
 dev-local:
@@ -211,7 +224,8 @@ help:
 	@echo "Workspace commands:"
 	@echo "  make dev          - local TRR-APP + local TRR-Backend, direct DB lane, remote workers disabled"
 	@echo "  make dev-cloud    - explicit cloud/remote worker path using session/pooler DB"
-	@echo "  make dev-hybrid   - local direct app/backend plus Modal/remote workers on session/pooler DB"
+	@echo "  make dev-hybrid   - hybrid social mode: posts=1, comments=8, media=3, comment media=2"
+	@echo "  make dev-hybrid-social-safe - alias for make dev-hybrid"
 	@echo "  make dev-local    - deprecated alias for make dev"
 	@echo "  make preflight    - validates the local/direct workspace path"
 	@echo "  make preflight-cloud - validates the explicit cloud/session path"

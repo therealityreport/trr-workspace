@@ -385,7 +385,6 @@ required_user_servers = {
     "context7": {"command": "npx", "args": ["-y", "@upstash/context7-mcp"], "enabled": True},
 }
 required_top_level = {
-    "model": "gpt-5.5",
     "personality": "pragmatic",
     "approval_policy": "never",
     "sandbox_mode": "danger-full-access",
@@ -431,8 +430,6 @@ for key, value in required_top_level.items():
     actual = data.get(key)
     if not matches_expected(actual, value):
         errors.append(f"expected {key}={value!r}, found {actual!r}")
-if "model_reasoning_effort" in data:
-    errors.append("top-level model_reasoning_effort must be omitted so chat effort stays selectable")
 
 for name, expectations in required_servers.items():
     server = servers.get(name)

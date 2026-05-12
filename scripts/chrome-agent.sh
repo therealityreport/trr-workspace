@@ -42,6 +42,11 @@ if [[ -z "${CHROME_AGENT_ADMIN_OVERRIDE:-}" ]] \
 fi
 HEADLESS="${CHROME_AGENT_HEADLESS:-$(default_headless_for_port "$DEBUG_PORT")}"
 DISABLE_GPU="${CHROME_AGENT_DISABLE_GPU:-0}"
+if [[ -z "${CHROME_AGENT_DISABLE_EXTENSIONS:-}" && "$HEADLESS" == "1" ]]; then
+  DISABLE_EXTENSIONS="1"
+else
+  DISABLE_EXTENSIONS="${CHROME_AGENT_DISABLE_EXTENSIONS:-0}"
+fi
 
 PIDFILE="${LOG_DIR}/chrome-agent-${DEBUG_PORT}.pid"
 LOGFILE="${LOG_DIR}/chrome-agent-${DEBUG_PORT}.log"
@@ -59,6 +64,42 @@ clear_stale_headful_owner() {
     return 0
   fi
   rm -f "$HEADFUL_OWNER_FILE"
+}
+
+profile_singleton_pid() {
+  local lockfile="${PROFILE_DIR}/SingletonLock"
+  local lock_target=""
+
+  [[ -e "$lockfile" || -L "$lockfile" ]] || return 0
+  lock_target="$(readlink "$lockfile" 2>/dev/null || true)"
+  if [[ -z "$lock_target" && -f "$lockfile" ]]; then
+    lock_target="$(cat "$lockfile" 2>/dev/null || true)"
+  fi
+  printf '%s\n' "$lock_target" | sed -n 's/.*-\([0-9][0-9]*\)$/\1/p' | head -n 1
+}
+
+clear_stale_profile_singleton() {
+  [[ -d "$PROFILE_DIR" ]] || return 0
+
+  local singleton_pid=""
+  singleton_pid="$(profile_singleton_pid)"
+  if [[ -n "$singleton_pid" ]] && kill -0 "$singleton_pid" >/dev/null 2>&1; then
+    return 0
+  fi
+
+  if [[ -z "$singleton_pid" ]]; then
+    return 0
+  fi
+
+  if [[ -e "${PROFILE_DIR}/SingletonLock" || -L "${PROFILE_DIR}/SingletonLock" ]] \
+     || [[ -e "${PROFILE_DIR}/SingletonSocket" || -L "${PROFILE_DIR}/SingletonSocket" ]] \
+     || [[ -e "${PROFILE_DIR}/SingletonCookie" || -L "${PROFILE_DIR}/SingletonCookie" ]]; then
+    echo "[chrome-agent] Removing stale Chrome profile singleton for ${PROFILE_DIR} (pid=${singleton_pid:-unknown})."
+    rm -f \
+      "${PROFILE_DIR}/SingletonLock" \
+      "${PROFILE_DIR}/SingletonSocket" \
+      "${PROFILE_DIR}/SingletonCookie"
+  fi
 }
 
 claim_headful_owner() {
@@ -199,7 +240,7 @@ if command -v flock >/dev/null 2>&1; then
 fi
 
 launch_chrome() {
-  if [[ "$(uname)" == "Darwin" ]] && [[ "$HEADLESS" != "1" ]] && command -v open >/dev/null 2>&1; then
+  if [[ "$(uname)" == "Darwin" ]] && command -v open >/dev/null 2>&1; then
     nohup open -na "/Applications/Google Chrome.app" --args "${CHROME_FLAGS[@]}" >/dev/null 2>&1 &
   else
     # Use nohup so the browser survives non-interactive shell exit in make/script launches.
@@ -226,6 +267,7 @@ if [[ ! -d "$PROFILE_DIR" ]]; then
   mkdir -p "$PROFILE_DIR"
   echo "[chrome-agent] Created new profile directory: ${PROFILE_DIR}"
 fi
+clear_stale_profile_singleton
 
 # --- Build Chrome flags ---
 CHROME_FLAGS=(
@@ -249,6 +291,16 @@ fi
 
 if [[ "$DISABLE_GPU" == "1" ]]; then
   CHROME_FLAGS+=("--disable-gpu")
+fi
+
+if [[ "$DISABLE_EXTENSIONS" == "1" ]]; then
+  CHROME_FLAGS+=("--disable-extensions")
+fi
+
+if [[ "$HEADLESS" == "1" ]]; then
+  # Chrome 147 can exit immediately after exposing DevTools when headless starts
+  # without an initial target. Keep the managed keeper alive with a blank tab.
+  CHROME_FLAGS+=("about:blank")
 fi
 
 # --- Launch ---
@@ -295,6 +347,7 @@ cat >"$STATEFILE" <<EOF
 DEBUG_PORT=${DEBUG_PORT}
 PROFILE_DIR=${PROFILE_DIR}
 HEADLESS=${HEADLESS}
+DISABLE_EXTENSIONS=${DISABLE_EXTENSIONS}
 PID=${CHROME_PID}
 EOF
 if [[ "$DEBUG_PORT" == "9222" ]]; then
