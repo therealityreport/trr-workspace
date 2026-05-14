@@ -46,7 +46,7 @@ if [[ "$RUN_APP" == "1" ]]; then
     echo "[test-fast]   source ~/.nvm/nvm.sh && nvm install ${REQUIRED_NODE_MAJOR}" >&2
     exit 1
   fi
-  (cd "$ROOT/TRR-APP/apps/web" && pnpm run lint)
+  (cd "$ROOT/TRR-APP/apps/web" && trr_pnpm "$ROOT/TRR-APP" run lint)
 fi
 
 echo "[test-fast] Done."

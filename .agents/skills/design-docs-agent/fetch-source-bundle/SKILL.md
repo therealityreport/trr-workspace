@@ -66,12 +66,28 @@ One of:
    - `browser.evaluate`
    - `browser.screenshot`
 5. Browser fallback must:
+   - for `nytimes.com`, use the Chrome profile signed in as
+     `admin@thereality.report`:
+     `/Users/thomashulihan/Library/Application Support/Google/Chrome/Profile 11/Preferences`
+   - when Profile 11 is already open and the Codex Chrome Extension is
+     connected, reuse the existing Profile 11 window or matching article tab
+     before opening any new Chrome window
+   - set `CODEX_CHROME_PREFERENCES_PATH` to that Preferences path when using
+     the Codex Chrome extension selector for NYT capture
+   - when using DevTools/CDP directly, use Chrome's normal user data root plus
+     `--profile-directory="Profile 11"` if that profile can be attached safely;
+     if the live profile is already running without DevTools, use a temporary
+     profile copy only for capture and delete it after artifacts are saved
    - open the article URL
    - wait for DOM settle
    - inspect visible page structure and blocking overlays
    - remove obvious login or subscribe overlays only when the underlying
      article or interactive content is already present in the DOM
    - serialize `document.documentElement.outerHTML` to a local temporary file
+   - capture a complete MHTML snapshot when DevTools supports
+     `Page.captureSnapshot`
+   - save recoverable CSS, JS, media, and resource-tree files alongside the
+     rendered HTML
    - optionally capture one desktop screenshot
 6. Re-run the helper with the browser-captured HTML:
 
@@ -110,9 +126,12 @@ bundle is trustworthy only when all of these hold:
 Persist recovered artifacts under:
 
 - `.agents/skills/design-docs-agent/source-bundles/<slug>/index.html`
+- `.agents/skills/design-docs-agent/source-bundles/<slug>/page.mhtml`
 - `.agents/skills/design-docs-agent/source-bundles/<slug>/assets/css/`
 - `.agents/skills/design-docs-agent/source-bundles/<slug>/assets/js/`
+- `.agents/skills/design-docs-agent/source-bundles/<slug>/assets/media/`
 - `.agents/skills/design-docs-agent/source-bundles/<slug>/screenshots/`
+- `.agents/skills/design-docs-agent/source-bundles/<slug>/source-bundle.json`
 
 The returned `sourceBundle` must use local saved-artifact paths, not inline
 file contents.

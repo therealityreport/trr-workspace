@@ -8,7 +8,13 @@ import asyncio
 import sys
 import json
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import List
+
+USAGE = "Usage: python batch_crawler.py urls.txt [--max-concurrent 5]"
+
+if any(arg in {"-h", "--help"} for arg in sys.argv[1:]):
+    print(USAGE)
+    sys.exit(0)
 
 # Version check
 MIN_CRAWL4AI_VERSION = "0.7.4"
@@ -18,9 +24,17 @@ try:
     if version.parse(__version__) < version.parse(MIN_CRAWL4AI_VERSION):
         print(f"⚠️  Warning: Crawl4AI {MIN_CRAWL4AI_VERSION}+ recommended (you have {__version__})")
 except ImportError:
-    print(f"ℹ️  Crawl4AI {MIN_CRAWL4AI_VERSION}+ required")
+    __version__ = None
 
-from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode
+try:
+    from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode
+except ImportError:
+    print(
+        f"Crawl4AI {MIN_CRAWL4AI_VERSION}+ is required for this script. "
+        "Install it in the active Python environment or run with the Crawl4AI virtualenv.",
+        file=sys.stderr,
+    )
+    sys.exit(2)
 
 async def crawl_batch(urls: List[str], max_concurrent: int = 5):
     """
@@ -101,10 +115,10 @@ async def crawl_batch(urls: List[str], max_concurrent: int = 5):
                 f.write(f"URL: {result.url}\n\n")
                 f.write(result.markdown)
 
-    print(f"\n📊 Batch Crawl Complete:")
+    print("\n📊 Batch Crawl Complete:")
     print(f"   ✅ Success: {len(results)}")
     print(f"   ❌ Failed: {len(failed)}")
-    print(f"   💾 Results saved to: batch_results.json")
+    print("   💾 Results saved to: batch_results.json")
     print(f"   📁 Markdown files saved to: {markdown_dir}/")
 
     return output
@@ -164,7 +178,7 @@ async def crawl_with_extraction(urls: List[str], schema_file: str = None):
     with open("batch_extracted.json", "w") as f:
         json.dump(extracted_data, f, indent=2)
 
-    print(f"\n💾 Extracted data saved to: batch_extracted.json")
+    print("\n💾 Extracted data saved to: batch_extracted.json")
     return extracted_data
 
 def load_urls(source: str) -> List[str]:

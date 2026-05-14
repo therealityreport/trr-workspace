@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DEV_SCRIPT="$ROOT/scripts/dev-workspace.sh"
+source "$ROOT/scripts/lib/node-baseline.sh"
 PROFILE_FILE="$ROOT/profiles/default.env"
 SOCIAL_DEBUG_PROFILE_FILE="$ROOT/profiles/social-debug.env"
 LOCAL_CLOUD_PROFILE_FILE="$ROOT/profiles/local-cloud.env"
@@ -130,7 +131,13 @@ assert_app_postgres_pool_contract() {
     return 0
   fi
 
-  pnpm -C "$TRR_APP_WEB_DIR" exec vitest run tests/postgres-connection-string-resolution.test.ts --reporter=dot
+  local required_node_major
+  required_node_major="$(trr_node_required_major "$ROOT")"
+  if ! trr_ensure_node_baseline "$ROOT"; then
+    echo "[workspace-contract] ERROR: Node $(trr_node_version_string) does not satisfy required ${required_node_major}.x baseline." >&2
+    exit 1
+  fi
+  trr_pnpm "$ROOT/TRR-APP" -C "$TRR_APP_WEB_DIR" exec vitest run tests/postgres-connection-string-resolution.test.ts --reporter=dot
 }
 
 modal_script_default="$(extract_script_default "WORKSPACE_TRR_MODAL_ADMIN_OPERATION_FUNCTION")"
@@ -237,10 +244,10 @@ assert_equals "profiles/default.env remote workers enabled" "0" "$remote_workers
 assert_equals "docs/workspace/env-contract.md remote workers enabled" "0" "$remote_workers_doc_default"
 assert_equals "profiles/default.env remote social workers" "0" "$remote_social_profile_default"
 assert_equals "docs/workspace/env-contract.md remote social workers" "0" "$remote_social_doc_default"
-assert_equals "profiles/default.env remote social dispatch limit" "6" "$remote_social_dispatch_profile_default"
-assert_equals "docs/workspace/env-contract.md remote social dispatch limit" "6" "$remote_social_dispatch_doc_default"
-assert_equals "profiles/default.env modal social job concurrency limit" "12" "$modal_social_job_concurrency_profile_default"
-assert_equals "docs/workspace/env-contract.md modal social job concurrency limit" "12" "$modal_social_job_concurrency_doc_default"
+assert_equals "profiles/default.env remote social dispatch limit" "4" "$remote_social_dispatch_profile_default"
+assert_equals "docs/workspace/env-contract.md remote social dispatch limit" "4" "$remote_social_dispatch_doc_default"
+assert_equals "profiles/default.env modal social job concurrency limit" "4" "$modal_social_job_concurrency_profile_default"
+assert_equals "docs/workspace/env-contract.md modal social job concurrency limit" "4" "$modal_social_job_concurrency_doc_default"
 assert_equals "profiles/default.env remote social posts" "1" "$remote_social_posts_profile_default"
 assert_equals "docs/workspace/env-contract.md remote social posts" "1" "$remote_social_posts_doc_default"
 assert_equals "profiles/default.env remote social comments" "1" "$remote_social_comments_profile_default"

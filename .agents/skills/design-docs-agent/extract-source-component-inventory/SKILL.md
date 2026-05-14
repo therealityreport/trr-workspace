@@ -49,10 +49,20 @@ See `references/source-html-modes.md` and
 2. If source maps are unavailable, inspect exported DevTools source trees.
 3. If exported source trees are unavailable, enumerate screenshot-backed module
    names and mark them as `screenshot-only`.
-4. Group recovered components by source area such as `foundation`, `shared`,
+4. For NYT article pages, also enumerate rendered component families even when
+   source maps are unavailable:
+   - sticky site header and masthead states
+   - hamburger menu, search panel, account drawer, subscribe/login controls
+   - article header, byline/timestamp, audio/listen, share/save/comment/gift
+     action groups
+   - every content block, paragraph cluster, ad slot, related link, author bio,
+     footer, newsletter/promo, and correction block
+   - every chart/graph/table/media container, including sticky chart states,
+     mobile variants, labels, sources, credits, and render technology
+5. Group recovered components by source area such as `foundation`, `shared`,
    `hub`, and `per-game`.
-5. Record provenance and any related CSS or module references for each entry.
-6. Map recovered components to docs section or anchor targets when the target
+6. Record provenance and any related CSS or module references for each entry.
+7. Map recovered components to docs section or anchor targets when the target
    page structure is known.
 
 ## Validation
@@ -61,6 +71,9 @@ See `references/source-html-modes.md` and
 2. Do not present screenshot-only entries as if they came from source maps.
 3. If component coverage is materially incomplete, report the gap instead of
    inventing unnamed modules.
+4. Missing NYT component families are a degraded or blocking finding; do not
+   mark an article complete with unrepresented charts, sticky headers, menus,
+   action icons, or footer/body sections.
 
 ## Stop And Escalate If
 
