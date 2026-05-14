@@ -7,6 +7,12 @@ Usage: python basic_crawler.py <url>
 import asyncio
 import sys
 
+USAGE = "Usage: python basic_crawler.py <url>"
+
+if any(arg in {"-h", "--help"} for arg in sys.argv[1:]):
+    print(USAGE)
+    sys.exit(0)
+
 # Version check
 MIN_CRAWL4AI_VERSION = "0.7.4"
 try:
@@ -15,9 +21,17 @@ try:
     if version.parse(__version__) < version.parse(MIN_CRAWL4AI_VERSION):
         print(f"⚠️  Warning: Crawl4AI {MIN_CRAWL4AI_VERSION}+ recommended (you have {__version__})")
 except ImportError:
-    print(f"ℹ️  Crawl4AI {MIN_CRAWL4AI_VERSION}+ required")
+    __version__ = None
 
-from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode
+try:
+    from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode
+except ImportError:
+    print(
+        f"Crawl4AI {MIN_CRAWL4AI_VERSION}+ is required for this script. "
+        "Install it in the active Python environment or run with the Crawl4AI virtualenv.",
+        file=sys.stderr,
+    )
+    sys.exit(2)
 
 async def crawl_basic(url: str):
     """Basic crawling with markdown output"""
@@ -73,7 +87,7 @@ async def crawl_basic(url: str):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python basic_crawler.py <url>")
+        print(USAGE)
         sys.exit(1)
 
     url = sys.argv[1]

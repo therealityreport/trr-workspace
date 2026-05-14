@@ -15,7 +15,17 @@ Usage examples:
 import asyncio
 import sys
 import json
-from pathlib import Path
+
+USAGE = """Usage examples:
+  Generate schema: python extraction_pipeline.py --generate-schema <url> "<instruction>"
+  Use generated schema: python extraction_pipeline.py --use-schema <url> schema.json
+  Manual CSS: python extraction_pipeline.py --css <url> "<css_selector>"
+  Direct LLM: python extraction_pipeline.py --llm <url> "<instruction>"
+"""
+
+if any(arg in {"-h", "--help"} for arg in sys.argv[1:]):
+    print(USAGE.strip())
+    sys.exit(0)
 
 # Version check
 MIN_CRAWL4AI_VERSION = "0.7.4"
@@ -25,14 +35,21 @@ try:
     if version.parse(__version__) < version.parse(MIN_CRAWL4AI_VERSION):
         print(f"⚠️  Warning: Crawl4AI {MIN_CRAWL4AI_VERSION}+ recommended (you have {__version__})")
 except ImportError:
-    print(f"ℹ️  Crawl4AI {MIN_CRAWL4AI_VERSION}+ required")
+    __version__ = None
 
-from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig
-from crawl4ai.extraction_strategy import (
-    LLMExtractionStrategy,
-    JsonCssExtractionStrategy,
-    CosineStrategy
-)
+try:
+    from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig
+    from crawl4ai.extraction_strategy import (
+        LLMExtractionStrategy,
+        JsonCssExtractionStrategy,
+    )
+except ImportError:
+    print(
+        f"Crawl4AI {MIN_CRAWL4AI_VERSION}+ is required for this script. "
+        "Install it in the active Python environment or run with the Crawl4AI virtualenv.",
+        file=sys.stderr,
+    )
+    sys.exit(2)
 
 # =============================================================================
 # APPROACH 1: Generate Schema (Most Efficient for Repetitive Patterns)
@@ -104,7 +121,7 @@ async def generate_schema(url: str, instruction: str, output_file: str = "genera
                     json.dump(schema, f, indent=2)
 
                 print(f"✅ Schema generated and saved to: {output_file}")
-                print(f"📋 Schema structure:")
+                print("📋 Schema structure:")
                 print(json.dumps(schema, indent=2))
 
                 return schema
@@ -220,7 +237,7 @@ async def extract_with_manual_schema(url: str, schema: dict = None):
 
             return data
         else:
-            print(f"❌ Extraction failed")
+            print("❌ Extraction failed")
             return None
 
 # =============================================================================
@@ -283,7 +300,7 @@ async def extract_with_llm(url: str, instruction: str):
                 print(result.extracted_content[:500])
                 return None
         else:
-            print(f"❌ LLM extraction failed")
+            print("❌ LLM extraction failed")
             return None
 
 # =============================================================================

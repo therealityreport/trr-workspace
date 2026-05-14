@@ -210,7 +210,7 @@ description_for() {
       echo "Maximum number of queued social jobs the backend will dispatch per Modal sweep."
       ;;
     WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT)
-      echo 'Maximum concurrent Modal containers allowed for `run_social_job`.'
+      echo "Maximum concurrent Modal containers allowed for each social Modal function."
       ;;
     WORKSPACE_TRR_REMOTE_SOCIAL_POSTS)
       echo "Posts-stage cap used by Modal social dispatch and by legacy local social worker mode."

@@ -30,6 +30,60 @@ trr_node_major_version() {
   echo "${raw}" | sed -E 's/^v([0-9]+).*/\1/'
 }
 
+trr_package_manager_spec() {
+  local package_root="${1:-}"
+  local package_json="${package_root%/}/package.json"
+
+  if [[ -z "$package_root" || ! -f "$package_json" ]]; then
+    echo ""
+    return 0
+  fi
+
+  python3 - "$package_json" <<'PY'
+from __future__ import annotations
+
+import json
+import sys
+from pathlib import Path
+
+try:
+    data = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+except Exception:
+    raise SystemExit(0)
+
+value = data.get("packageManager")
+if isinstance(value, str):
+    print(value.strip())
+PY
+}
+
+trr_pnpm_version() {
+  local package_root="${1:-}"
+  local spec
+
+  spec="$(trr_package_manager_spec "$package_root")"
+  if [[ "$spec" =~ ^pnpm@(.+)$ ]]; then
+    echo "${BASH_REMATCH[1]}"
+    return 0
+  fi
+
+  echo ""
+}
+
+trr_pnpm() {
+  local package_root="${1:-}"
+  shift || true
+
+  local pnpm_version
+  pnpm_version="$(trr_pnpm_version "$package_root")"
+  if [[ -n "$pnpm_version" && "$(command -v corepack 2>/dev/null || true)" ]]; then
+    corepack "pnpm@${pnpm_version}" "$@"
+    return $?
+  fi
+
+  pnpm "$@"
+}
+
 trr_try_activate_required_node_with_nvm() {
   local root="${1:-}"
   local nvm_dir nvm_sh target_alias
