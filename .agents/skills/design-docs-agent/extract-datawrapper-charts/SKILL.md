@@ -3,7 +3,7 @@ name: extract-datawrapper-charts
 description: Extract chart data from Datawrapper embeds and generate TypeScript constants.
 user-invocable: false
 metadata:
-  version: 1.0.0
+  version: 1.1.0
 ---
 
 # Extract Datawrapper Charts
@@ -17,11 +17,15 @@ Datawrapper embeds so generated article pages can render working visualizations.
 
 1. The extraction wave finds one or more Datawrapper embeds.
 2. The orchestrator needs chart metadata and data constants for generation.
+3. `classify-publisher-patterns` has positively identified Datawrapper
+   evidence in `chart_provider_inventory`.
 
 ## Do Not Use For
 
 1. Non-Datawrapper chart extraction.
 2. Article config generation.
+3. Generic NYT custom SVG/canvas/image charts. Route those through
+   `extract-visual-contract` and `extract-source-component-inventory`.
 
 ## Inputs
 
@@ -43,6 +47,8 @@ See `references/rendering-contracts.md` and `references/lessons-learned.md`.
 3. Classify the visualization type, including table-style embeds when applicable.
 4. Normalize the recovered data into the TRR renderer contract.
 5. Return a payload that generation can turn into chart-data constants.
+6. If no Datawrapper evidence is present, return a no-op warning naming the
+   detectors checked. Do not claim that a non-Datawrapper chart was extracted.
 
 ## Validation
 
@@ -63,3 +69,4 @@ Return:
 3. `dataset_summary`
 4. `renderer_mappings`
 5. `warnings`
+6. `chartExtractionAttempt`

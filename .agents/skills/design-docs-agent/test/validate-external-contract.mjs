@@ -5,8 +5,13 @@ import { createRequire } from "node:module";
 
 const scriptDir = path.dirname(new URL(import.meta.url).pathname);
 const packageRoot = path.resolve(scriptDir, "..");
-const repoRoot = path.resolve(packageRoot, "..", "..", "..");
-const appPackageJson = path.join(repoRoot, "TRR-APP", "apps", "web", "package.json");
+const repoRoot = process.env.DESIGN_DOCS_REPO_ROOT
+  ? path.resolve(process.env.DESIGN_DOCS_REPO_ROOT)
+  : path.resolve(packageRoot, "..", "..", "..");
+const appWebRoot = process.env.DESIGN_DOCS_APP_WEB_ROOT
+  ? path.resolve(process.env.DESIGN_DOCS_APP_WEB_ROOT)
+  : path.join(repoRoot, "TRR-APP", "apps", "web");
+const appPackageJson = path.join(appWebRoot, "package.json");
 const appRequire = createRequire(appPackageJson);
 const ts = appRequire("typescript");
 const YAML = appRequire("yaml");

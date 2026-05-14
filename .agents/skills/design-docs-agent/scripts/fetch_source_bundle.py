@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -11,8 +12,10 @@ from urllib.parse import urljoin, urlparse
 
 
 PACKAGE_ROOT = Path(__file__).resolve().parents[1]
-REPO_ROOT = PACKAGE_ROOT.parents[2]
-SOURCE_BUNDLES_ROOT = PACKAGE_ROOT / "source-bundles"
+REPO_ROOT = Path(os.environ.get("DESIGN_DOCS_REPO_ROOT", str(PACKAGE_ROOT.parents[2]))).expanduser()
+SOURCE_BUNDLES_ROOT = Path(
+    os.environ.get("DESIGN_DOCS_SOURCE_BUNDLES_ROOT", str(PACKAGE_ROOT / "source-bundles"))
+).expanduser()
 
 HTML_MIN_BYTES = 10 * 1024
 VISIBLE_TEXT_TARGET = 1500

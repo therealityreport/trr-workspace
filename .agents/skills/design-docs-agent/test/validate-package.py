@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -13,8 +14,10 @@ from urllib.parse import urlparse
 import yaml
 
 PACKAGE_ROOT = Path(__file__).resolve().parents[1]
-REPO_ROOT = PACKAGE_ROOT.parents[2]
-APP_WEB_ROOT = REPO_ROOT / "TRR-APP" / "apps" / "web"
+REPO_ROOT = Path(os.environ.get("DESIGN_DOCS_REPO_ROOT", str(PACKAGE_ROOT.parents[2]))).expanduser()
+APP_WEB_ROOT = Path(
+    os.environ.get("DESIGN_DOCS_APP_WEB_ROOT", str(REPO_ROOT / "TRR-APP" / "apps" / "web"))
+).expanduser()
 CONTRACTS_DIR = PACKAGE_ROOT / "contracts"
 ROSTER_PATH = PACKAGE_ROOT / "agents" / "openai.yaml"
 PACKAGE_SKILL_PATH = PACKAGE_ROOT / "SKILL.md"
@@ -470,7 +473,14 @@ def validate_fixture_scenarios(policy: dict) -> None:
         if blocked_assessment["failureReason"] != "server-side-paywall":
             fail("blocked acquisition fixture did not resolve to server-side-paywall")
 
-        repo_bundle_root = PACKAGE_ROOT / "source-bundles" / "__validate-package-fixtures__"
+        repo_bundle_root = (
+            REPO_ROOT
+            / ".agents"
+            / "skills"
+            / "design-docs-agent"
+            / "source-bundles"
+            / "__validate-package-fixtures__"
+        )
         bundle = fetch_module.persist_bundle_from_html(
             "https://www.example.com/story/example-article",
             long_article_html,

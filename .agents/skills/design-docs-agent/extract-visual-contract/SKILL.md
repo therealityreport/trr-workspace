@@ -3,7 +3,7 @@ name: extract-visual-contract
 description: Use when an article needs source-faithful bespoke-interactive extraction for header behavior, charts, typography, and required assets.
 user-invocable: false
 metadata:
-  version: 1.0.0
+  version: 1.1.0
 ---
 
 # Extract Visual Contract
@@ -20,6 +20,8 @@ fidelity requirements.
 1. `classify-publisher-patterns` marks an article as `bespoke_interactive`.
 2. Generic extraction alone is insufficient to preserve source-faithful chrome,
    chart, typography, or asset behavior.
+3. A standard article contains custom SVG, canvas, div, or static-image charts
+   that are not Datawrapper, Birdkit, or ai2html.
 
 ## Do Not Use For
 
@@ -53,6 +55,15 @@ fidelity requirements.
    with provenance and expected destination hints.
 6. Keep unknown bespoke renderer kinds loose with `rawEvidence` instead of
    inventing a rigid contract too early.
+7. For custom/static charts, mine every source-backed data path before allowing
+   degraded output:
+   - figure titles, subtitles, captions, source lines, credits, and notes
+   - `aria-label`, `role="img"`, screen-reader-only prose, SVG `<text>`,
+     axis labels, data attributes, and nearby JSON/script payloads
+   - static image dimensions, filenames, alt text, and screenshot/OCR/vision
+     evidence when available
+8. Emit a per-chart `chartExtractionAttempt` record naming the detectors,
+   extracted evidence, renderer kind, and remaining gap.
 
 ## Validation
 
@@ -60,6 +71,8 @@ fidelity requirements.
    a new pipeline phase.
 2. Blocking findings are reserved for materially misleading output.
 3. Degraded findings cover incomplete but still usable fidelity.
+4. Missing custom-chart extraction attempts are blocking when the source bundle
+   contains enough evidence to run this skill.
 
 ## Completion Contract
 
@@ -69,3 +82,4 @@ Return:
 2. `blocking_findings`
 3. `degraded_findings`
 4. `evidence_notes`
+5. `chart_extraction_attempts`

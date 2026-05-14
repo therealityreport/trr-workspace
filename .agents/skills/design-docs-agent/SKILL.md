@@ -105,6 +105,35 @@ If browser or extension capture is unavailable, list the missing source
 authority in `degraded_findings` and still create placeholder coverage entries
 for every known component family instead of treating the page as complete.
 
+## Chart Extraction Routing Gate
+
+Do not jump from "chart present" directly to a generic placeholder. Before
+generation, classify every chart/graph/table/media figure by source technology
+and run the matching extraction path:
+
+1. Datawrapper embeds (`datawrapper.dwcdn.net`, `iframe[src*="datawrapper"]`,
+   Datawrapper bootstrap scripts) -> the Datawrapper chart extractor in the
+   extraction roster
+2. Birdkit tables or arrow/comparison charts (`g-table`, `g-arrow-chart`,
+   `g-arrow-row`, screen-reader chart prose, or equivalent `g-*` chart
+   wrappers) -> the Birdkit table or arrow-chart extractor in the extraction
+   roster
+3. ai2html output (`ai2html`, `g-ai`, artboard wrappers, generated image
+   artboards with HTML overlays) -> the ai2html artboard extractor in the
+   extraction roster
+4. Custom SVG/canvas/div/image charts, including NYT Upshot custom charts ->
+   the visual-contract and source-component inventory extraction paths
+5. Static chart images -> extract visible title, subtitle, labels, source,
+   credit, dimensions, and image URL from saved HTML, screenshots, accessible
+   text, or OCR/vision evidence when available
+
+Every chart slot must carry a `chartExtractionAttempt` summary naming the
+detectors tried, extractor used, evidence recovered, and remaining gap. A
+degraded placeholder is allowed only after this routing gate has run and must
+state why renderer-ready data could not be recovered. If the source bundle is
+complete enough to run an extractor but the extractor was skipped, treat that
+as a blocking finding.
+
 ## Procedure
 
 ### 1. Validate Inputs And Detect Mode
