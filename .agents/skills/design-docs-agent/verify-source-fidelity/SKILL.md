@@ -3,7 +3,7 @@ name: verify-source-fidelity
 description: Use when verification must compare generated Design Docs output against bespoke source-fidelity requirements.
 user-invocable: false
 metadata:
-  version: 1.0.0
+  version: 1.1.0
 ---
 
 # Verify Source Fidelity
@@ -59,8 +59,12 @@ fallback requirements.
    generated or actively revised article. Treat missing exact copy, exact
    coordinates, or blocked source-map provenance as degraded when the component
    slot is still represented honestly.
-6. Fail only on blocking findings.
-7. Surface degraded findings clearly so users can decide whether to supplement
+6. For every degraded chart slot, verify that `chartExtractionAttempt` or
+   `chart_extraction_attempts` names the detector path and extractor that ran.
+   Missing attempt evidence is blocking, because it means the chart-specific
+   skills were skipped.
+7. Fail only on blocking findings.
+8. Surface degraded findings clearly so users can decide whether to supplement
    the bundle or accept the result.
 
 ## Validation

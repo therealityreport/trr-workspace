@@ -3,7 +3,7 @@ name: generate-article-page
 description: Generate ARTICLES config entry and chart data constants from extraction data.
 user-invocable: false
 metadata:
-  version: 1.1.0
+  version: 1.2.0
 ---
 
 # Generate Article Page
@@ -75,9 +75,18 @@ See `references/rendering-contracts.md`, `references/taxonomy.md`, and
 9. Reuse known publisher primitives by `primitiveId` when a matching shell,
    icon set, popup, drawer, or storyline already exists.
 10. Emit chart and table metadata plus renderer-ready constant bindings for interactive artifacts.
-11. When source evidence requires page-level anchors, TOC controls, or viewport
+11. Before emitting any degraded chart placeholder, consume the chart routing
+   evidence from `classify-publisher-patterns` and extraction outputs:
+   - `chart_provider_inventory`
+   - `follow_up_extractors`
+   - provider-specific extraction payloads
+   - `chartExtractionAttempt` or `chart_extraction_attempts`
+12. A chart placeholder is valid only when the generated config states which
+   provider detectors ran, which extractor was used, what evidence was
+   recovered, and why renderer-ready data is still unavailable.
+13. When source evidence requires page-level anchors, TOC controls, or viewport
    toggles, emit the supporting metadata rather than page-specific JSX hacks.
-12. Emit `crossPopulationCandidates` describing which brand taxonomy sections should update.
+14. Emit `crossPopulationCandidates` describing which brand taxonomy sections should update.
 
 ### Export Naming (mandatory)
 
@@ -145,6 +154,9 @@ When the article contains a `filter-card-tracker`, wide data table, or any
 12. Chart source URLs are emitted only when an external source is evidenced;
     otherwise chart metadata should identify the saved source bundle as the
     reconstruction source.
+13. Degraded chart slots must include a source-backed `chartExtractionAttempt`
+    summary. If the extractor routing evidence is absent, stop generation
+    instead of creating placeholders.
 
 ## Stop And Escalate If
 
