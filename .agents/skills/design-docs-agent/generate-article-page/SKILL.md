@@ -56,18 +56,28 @@ See `references/rendering-contracts.md`, `references/taxonomy.md`, and
 3. Populate `contentBlocks` from extracted source order and supported renderers.
 4. For bespoke interactives, consume `ArticleVisualContract` plus fidelity
    fragments from the extraction outputs before choosing any generic renderer.
-5. Populate `architecture.publicAssets.socialImages` whenever multiple
+5. For every NYT article, compare the generated entry against existing NYT
+   entries and populate the shared inventory surfaces:
+   - `tools.topper`, `tools.charts`, `tools.framework`, and `tools.hosting`
+     for the visible Production Stack panel
+   - header, menu/navigation, headline/deck, byline, share/action chrome,
+     icons, media, component inventory, graphs/charts, and production stack
+     evidence in either `contentBlocks`, `architecture.hierarchy`,
+     `architecture.layoutTokens`, or `architecture.publicAssets`
+   - explicit `none` values for absent toppers, menus, charts, figures, or
+     interactives so a missing artifact is distinguishable from omitted data
+6. Populate `architecture.publicAssets.socialImages` whenever multiple
    source-backed share variants are recoverable.
-6. Populate `architecture.publicAssets.icons`, `images`, and `portraits` when
+7. Populate `architecture.publicAssets.icons`, `images`, and `portraits` when
    those categories are required by extracted fidelity requirements.
-7. Emit `site-header-shell`, `storyline`, and related interactive chrome blocks
+8. Emit `site-header-shell`, `storyline`, and related interactive chrome blocks
    from extracted shell evidence when the saved bundle is complete enough.
-8. Reuse known publisher primitives by `primitiveId` when a matching shell,
+9. Reuse known publisher primitives by `primitiveId` when a matching shell,
    icon set, popup, drawer, or storyline already exists.
-9. Emit chart and table metadata plus renderer-ready constant bindings for interactive artifacts.
-10. When source evidence requires page-level anchors, TOC controls, or viewport
+10. Emit chart and table metadata plus renderer-ready constant bindings for interactive artifacts.
+11. When source evidence requires page-level anchors, TOC controls, or viewport
    toggles, emit the supporting metadata rather than page-specific JSX hacks.
-11. Emit `crossPopulationCandidates` describing which brand taxonomy sections should update.
+12. Emit `crossPopulationCandidates` describing which brand taxonomy sections should update.
 
 ### Export Naming (mandatory)
 
@@ -119,16 +129,20 @@ When the article contains a `filter-card-tracker`, wide data table, or any
 3. Fonts, colors, and URL fields must be grounded in the current article data.
 4. Do not introduce article-specific rendering logic outside data config unless
    the extracted visual contract requires an article-specific component.
-5. Prefer primitive references over inline repeated publisher chrome when a
+5. Standard NYT article entries must not stop at title/URL/image metadata:
+   they must include source-grounded coverage for header, menu/navigation
+   state, headline/deck treatment, icons/action chrome, component blocks,
+   graphs/charts (including explicit none), and Production Stack fields.
+6. Prefer primitive references over inline repeated publisher chrome when a
    matching primitive already exists.
-6. Export name in the data file matches the import in `ArticleDetailPage.tsx`.
-7. First and last entries in any data file are verified against the source.
-8. SVG shape elements are replicated from actual source `points` attributes —
+7. Export name in the data file matches the import in `ArticleDetailPage.tsx`.
+8. First and last entries in any data file are verified against the source.
+9. SVG shape elements are replicated from actual source `points` attributes —
    not approximated with CSS.
-9. Page container `maxWidth` is `"100%"` when any wide component is present.
-10. Page-level anchors or TOC metadata, when emitted, are stable and grounded in
+10. Page container `maxWidth` is `"100%"` when any wide component is present.
+11. Page-level anchors or TOC metadata, when emitted, are stable and grounded in
    the extracted source structure.
-11. Chart source URLs are emitted only when an external source is evidenced;
+12. Chart source URLs are emitted only when an external source is evidenced;
     otherwise chart metadata should identify the saved source bundle as the
     reconstruction source.
 

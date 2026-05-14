@@ -45,8 +45,22 @@ fallback requirements.
 2. If no contract exists for an older article, enter `legacyMode` instead of
    failing automatically.
 3. Check chrome, chart, typography, and asset fidelity expectations.
-4. Fail only on blocking findings.
-5. Surface degraded findings clearly so users can decide whether to supplement
+4. For NYT article pages, compare generated coverage against the complete
+   article inventory:
+   - sticky/global header and site shell
+   - menu, search, account, subscribe/login, and action-icon surfaces
+   - every body, ad, related, newsletter/promo, author, footer, and correction
+     section observed in source
+   - every chart, graph, table, static image, SVG, canvas, sticky chart state,
+     chart label, source, credit, and mobile variant
+   - production stack evidence from source scripts, stylesheets, extension
+     inventories, and framework/runtime markers
+5. Treat a missing whole section or missing whole chart as blocking for a newly
+   generated or actively revised article. Treat missing exact copy, exact
+   coordinates, or blocked source-map provenance as degraded when the component
+   slot is still represented honestly.
+6. Fail only on blocking findings.
+7. Surface degraded findings clearly so users can decide whether to supplement
    the bundle or accept the result.
 
 ## Validation

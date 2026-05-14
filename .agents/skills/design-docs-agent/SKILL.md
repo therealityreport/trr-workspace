@@ -67,8 +67,43 @@ When `sourceBundle` is absent, `fetch-source-bundle` owns acquisition behavior.
 
 1. Attempt shell acquisition first with `curl` and the package helper script.
 2. If shell acquisition is insufficient and browser tooling is available, attempt browser fallback.
+   - For `nytimes.com`, browser fallback must use the `admin@thereality.report`
+     Chrome profile, resolved on this machine as Chrome `Profile 11` under
+     `/Users/thomashulihan/Library/Application Support/Google/Chrome`.
+   - Reuse an already-open Profile 11 Chrome window or tab first when the
+     Codex Chrome Extension is connected. Open a new Profile 11 window only as
+     a recovery step or when the user explicitly approves it.
 3. Return a schema-compliant `sourceBundle` on success.
 4. Return a blocking acquisition report from `contracts/acquisition-report.schema.json` on failure.
+
+## Complete Article Coverage Gate
+
+Article reconstruction is incomplete unless every source-observed page section,
+component family, media item, and interaction surface has a matching Design Docs
+entry. A page may degrade on exact values when capture is partial, but it must
+not silently omit whole sections.
+
+For NYT articles, the inventory must explicitly cover:
+
+1. global shell: sticky header, masthead, hamburger menu, search panel, account
+   drawer, subscribe/login controls, section label, and mobile header variants
+2. article header: kicker/section, headline, deck, byline, timestamp, correction
+   labels, audio/listen control, and every share/save/comment/gift/more action
+3. body structure: every paragraph cluster, subhed, ad slot, newsletter or
+   promotional insert, related link, reporting credit, author bio, and article
+   footer region observed in the source bundle
+4. charts/graphs/tables: every SVG/canvas/image/table/chart container,
+   including sticky or scroll-triggered chart states, titles, subtitles, labels,
+   sources, credits, annotations, mobile variants, and whether the chart is
+   live-rendered or image-backed
+5. assets and stack: all content images, social images, icons, CSS files, JS
+   chunks, framework/runtime signals, hydration markers, analytics/runtime
+   scripts, and extension inventories from Blue Button, CSS Peeper, BuiltWith,
+   or Wappalyzer when provided
+
+If browser or extension capture is unavailable, list the missing source
+authority in `degraded_findings` and still create placeholder coverage entries
+for every known component family instead of treating the page as complete.
 
 ## Procedure
 

@@ -132,8 +132,8 @@ class WorkspaceAppEnvProjectionTests(unittest.TestCase):
 
     def test_default_profile_keeps_low_pressure_modal_social_caps(self) -> None:
         text = DEFAULT_PROFILE.read_text(encoding="utf-8")
-        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT=6", text)
-        self.assertIn("WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT=12", text)
+        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT=4", text)
+        self.assertIn("WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT=4", text)
         self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_POSTS=1", text)
         self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS=1", text)
 
@@ -158,8 +158,8 @@ class WorkspaceAppEnvProjectionTests(unittest.TestCase):
         self.assertIn("WORKSPACE_TRR_APP_POSTGRES_MAX_CONCURRENT_OPERATIONS=1", text)
         self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS=0", text)
         self.assertIn("WORKSPACE_SCREENALYTICS_DB_ENABLED=0", text)
-        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT=6", text)
-        self.assertIn("WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT=12", text)
+        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT=4", text)
+        self.assertIn("WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT=4", text)
         self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_POSTS=1", text)
         self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS=1", text)
 
@@ -167,8 +167,8 @@ class WorkspaceAppEnvProjectionTests(unittest.TestCase):
         dev_text = DEV_SCRIPT.read_text(encoding="utf-8")
         status_text = STATUS_SCRIPT.read_text(encoding="utf-8")
         defaults = {
-            "WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT": "6",
-            "WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT": "12",
+            "WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT": "4",
+            "WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT": "4",
             "WORKSPACE_TRR_REMOTE_SOCIAL_POSTS": "1",
             "WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS": "1",
         }
@@ -181,12 +181,14 @@ class WorkspaceAppEnvProjectionTests(unittest.TestCase):
         text = MAKEFILE.read_text(encoding="utf-8")
         dev_hybrid = text[text.index("\ndev-hybrid:") : text.index("\n# Compatibility alias", text.index("\ndev-hybrid:"))]
         self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS=1", dev_hybrid)
-        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT=12", dev_hybrid)
+        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT=4", dev_hybrid)
+        self.assertIn("WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT=4", dev_hybrid)
         self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_POSTS=1", dev_hybrid)
-        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS=8", dev_hybrid)
-        self.assertIn("SOCIAL_POSTS_COMMENTS_PLATFORM_CAP_INSTAGRAM=8", dev_hybrid)
-        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR=3", dev_hybrid)
-        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR=2", dev_hybrid)
+        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS=3", dev_hybrid)
+        self.assertIn("SOCIAL_POSTS_COMMENTS_PLATFORM_CAP_INSTAGRAM=3", dev_hybrid)
+        self.assertIn("SOCIAL_PLATFORM_CAP_PER_ACCOUNT_SCALING=false", dev_hybrid)
+        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR=1", dev_hybrid)
+        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR=1", dev_hybrid)
         self.assertIn("WORKSPACE_DEV_MODE=hybrid", dev_hybrid)
 
         social_safe_alias = text[

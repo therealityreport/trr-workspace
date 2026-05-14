@@ -29,6 +29,20 @@ shared capability list live in `agents/openai.yaml`.
 | `fs.edit` | normal repo editing flow |
 | `check.typecheck` | repo validation command via shell |
 
+## NYT Capture Profile
+
+For `nytimes.com` source acquisition, select the Chrome profile signed in as
+`admin@thereality.report` before navigating or saving page files:
+
+```bash
+CODEX_CHROME_PREFERENCES_PATH="/Users/thomashulihan/Library/Application Support/Google/Chrome/Profile 11/Preferences"
+```
+
+When Profile 11 is already open and the Codex Chrome Extension is connected,
+reuse the existing Profile 11 window or matching article tab first. Open a new
+Profile 11 window only as a recovery step or when the user explicitly approves
+it. Save complete page evidence when the site and browser tooling allow it.
+
 ## Rule
 
 Codex should consume the canonical shared package directly and should not rely
