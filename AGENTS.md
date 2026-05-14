@@ -49,3 +49,10 @@
 - Inspect local evidence first: source code, config, lockfiles, versions, tests, runtime state, and existing project patterns.
 - If the cause is still unclear, or the failure involves third-party tooling, APIs, packages, browser/runtime behavior, or time-sensitive docs, research current primary sources such as official docs, release notes, and issue trackers. Identify 3-5 plausible causes or fixes before choosing one.
 - Apply the smallest evidence-backed fix one change at a time, then rerun the failing command or workflow to verify. If the best fix is risky or ambiguous, explain the options before editing.
+
+<!-- codex-plugin-profiles:start -->
+## Plugin Profiles
+- For any Codex [@Chrome](plugin://chrome@openai-bundled), [@gmail](plugin://gmail@openai-curated), [@google-drive](plugin://google-drive@openai-curated), or other Google Workspace tool session in this project, use Chrome profile "codex" (Profile 13).
+- Set CODEX_CHROME_PREFERENCES_PATH="/Users/thomashulihan/Library/Application Support/Google/Chrome/Profile 13/Preferences" before launching Chrome-backed tools.
+- This project-level profile assignment applies broadly to @Chrome usage from this project, not only to any one scraper or workflow.
+<!-- codex-plugin-profiles:end -->

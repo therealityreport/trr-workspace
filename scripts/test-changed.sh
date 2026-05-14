@@ -23,21 +23,38 @@ run_backend=0
 run_app=0
 run_baseline=0
 
+run_workspace_checks() {
+  echo "[test-changed] Workspace changes detected; running workspace policy and contract checks."
+  bash "$ROOT/scripts/check-policy.sh"
+  bash "$ROOT/scripts/check-workspace-contract.sh"
+  env CHROME_DEVTOOLS_MCP_STATUS_MODE=summary bash "$ROOT/scripts/chrome-devtools-mcp-status.sh"
+
+  if rg -q '^\.agents/skills/design-docs-agent/' "$changed_tmp"; then
+    echo "[test-changed] design-docs-agent skill changes detected; validating package."
+    python3 "$ROOT/.agents/skills/design-docs-agent/test/validate-package.py" "$ROOT/.agents/skills/design-docs-agent"
+  fi
+
+  if rg -q '^\.agents/skills/crawl4ai/' "$changed_tmp"; then
+    echo "[test-changed] crawl4ai skill changes detected; validating script entrypoints."
+    python3 "$ROOT/.agents/skills/crawl4ai/scripts/basic_crawler.py" --help
+    python3 "$ROOT/.agents/skills/crawl4ai/scripts/batch_crawler.py" --help
+    python3 "$ROOT/.agents/skills/crawl4ai/scripts/extraction_pipeline.py" --help
+  fi
+}
+
 if rg -q '^TRR-Backend/' "$changed_tmp"; then
   run_backend=1
 fi
 if rg -q '^TRR-APP/' "$changed_tmp"; then
   run_app=1
 fi
-if rg -q '^(AGENTS\.md|CLAUDE\.md|Makefile|scripts/|docs/)' "$changed_tmp"; then
+if rg -q '^(AGENTS\.md|CLAUDE\.md|Makefile|scripts/|docs/|profiles/|\.agents/skills/|skills/)' "$changed_tmp"; then
   run_baseline=1
 fi
 
 if [[ "$run_baseline" == "1" ]]; then
   if [[ "$run_backend" == "0" && "$run_app" == "0" ]]; then
-    echo "[test-changed] Workspace-only changes detected; running workspace policy checks."
-    bash "$ROOT/scripts/check-policy.sh"
-    env CHROME_DEVTOOLS_MCP_STATUS_MODE=summary bash "$ROOT/scripts/chrome-devtools-mcp-status.sh"
+    run_workspace_checks
     echo "[test-changed] Done."
     exit 0
   fi

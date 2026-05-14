@@ -48,12 +48,14 @@ dev-cloud:
 dev-hybrid:
 	@$(MAKE) --no-print-directory preflight-hybrid
 	@WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS=1 \
-	WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT=12 \
+	WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT=4 \
+	WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT=4 \
 	WORKSPACE_TRR_REMOTE_SOCIAL_POSTS=1 \
-	WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS=8 \
-	SOCIAL_POSTS_COMMENTS_PLATFORM_CAP_INSTAGRAM=8 \
-	WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR=3 \
-	WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR=2 \
+	WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS=3 \
+	SOCIAL_POSTS_COMMENTS_PLATFORM_CAP_INSTAGRAM=3 \
+	SOCIAL_PLATFORM_CAP_PER_ACCOUNT_SCALING=false \
+	WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR=1 \
+	WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR=1 \
 	PROFILE="$${PROFILE:-local-cloud}" WORKSPACE_DEV_MODE=hybrid bash scripts/dev-workspace.sh
 
 # Compatibility alias for older social-safe muscle memory.
@@ -224,7 +226,7 @@ help:
 	@echo "Workspace commands:"
 	@echo "  make dev          - local TRR-APP + local TRR-Backend, direct DB lane, remote workers disabled"
 	@echo "  make dev-cloud    - explicit cloud/remote worker path using session/pooler DB"
-	@echo "  make dev-hybrid   - hybrid social mode: posts=1, comments=8, media=3, comment media=2"
+	@echo "  make dev-hybrid   - hybrid social mode: posts=1, comments=3, media=1, comment media=1"
 	@echo "  make dev-hybrid-social-safe - alias for make dev-hybrid"
 	@echo "  make dev-local    - deprecated alias for make dev"
 	@echo "  make preflight    - validates the local/direct workspace path"

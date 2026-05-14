@@ -12,7 +12,7 @@ Use these commands from `/Users/thomashulihan/Projects/TRR`.
 ## Daily Commands
 - `make dev` — recommended default workspace startup (local app/backend, direct DB lane, Modal/remote disabled)
 - `make dev-cloud` — explicit cloud/remote worker startup using the session/pooler DB lane
-- `make dev-hybrid` — safe Instagram/social hybrid mode; enables remote social workers with `WORKSPACE_TRR_REMOTE_SOCIAL_POSTS=1`, comments `8`, Instagram posts/comments platform cap `8`, post media mirror `3`, and comment media mirror `2`
+- `make dev-hybrid` — safe Instagram/social hybrid mode; enables remote social workers with `WORKSPACE_TRR_REMOTE_SOCIAL_POSTS=1`, comments `3`, Instagram posts/comments platform cap `3`, post media mirror `1`, and comment media mirror `1`
 - `make dev-hybrid-social-safe` — compatibility alias for `make dev-hybrid`
 - `PROFILE=social-debug make dev` — tracked low-pressure social-profile validation lane; uses the same launcher but projects reduced app pool settings and lighter social dispatch caps without relying on ignored app-local env files
 - Instagram backfill operator runbook: `/Users/thomashulihan/Projects/TRR/docs/workspace/instagram-backfill-runbook.md`
