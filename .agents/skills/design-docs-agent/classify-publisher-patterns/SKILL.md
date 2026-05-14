@@ -3,7 +3,7 @@ name: classify-publisher-patterns
 description: Detect publisher technology stack and classify layout patterns into the 15-section brand taxonomy
 user-invocable: false
 metadata:
-  version: 1.1.0
+  version: 1.2.0
 ---
 
 # Classify Publisher Patterns
@@ -48,9 +48,21 @@ Output shapes are defined in:
    canvas-driven interactive rendering that is not attributable to a known
    provider such as Datawrapper, Birdkit, ai2html, YouTube, or a reusable TRR
    primitive.
-5. Emit `requiresVisualContract` only when bespoke handling is required.
-6. Produce taxonomy hints for likely sections and sub-pages.
-7. Default to a conservative generic classification when evidence is mixed.
+5. Build a chart-provider inventory before extraction routing:
+   - Datawrapper URLs and iframe/script IDs
+   - Birdkit table, arrow-chart, and chart wrapper classes
+   - ai2html artboard containers and generated image assets
+   - custom SVG, canvas, div, or static image charts
+   - chart screenshots or figure images that require OCR/vision fallback
+6. Emit `follow_up_extractors` for each chart family. Datawrapper must route to
+   `extract-datawrapper-charts`; Birdkit to the Birdkit extractors; ai2html to
+   `extract-ai2html-artboards`; custom or static NYT charts to
+   `extract-visual-contract` and `extract-source-component-inventory`.
+7. Emit `requiresVisualContract` when bespoke handling is required or when a
+   standard article contains custom charts that are not covered by a provider
+   extractor.
+8. Produce taxonomy hints for likely sections and sub-pages.
+9. Default to a conservative generic classification when evidence is mixed.
 
 ## Validation
 
@@ -72,3 +84,4 @@ Return:
 4. `bespoke_signals`
 5. `confidence_notes`
 6. `follow_up_extractors`
+7. `chart_provider_inventory`

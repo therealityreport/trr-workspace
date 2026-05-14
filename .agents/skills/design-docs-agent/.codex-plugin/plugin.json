@@ -2,6 +2,7 @@
   "name": "design-docs-agent",
   "version": "1.4.0",
   "description": "Generate or update TRR design-docs pages from article URLs, saved source bundles, HTML captures, and source inventories.",
+  "agents": "./agents/",
   "skills": "./",
   "author": {
     "name": "The Reality Report",
@@ -22,6 +23,20 @@
       "Use design docs to ingest an article URL with an optional saved source bundle.",
       "List the shared Design Docs skill roster.",
       "Validate the design-docs-agent package contracts and runtime roster."
+    ],
+    "includes": [
+      {
+        "kind": "skill",
+        "name": "design-docs",
+        "description": "Design Docs agent — ingest articles, extract design tokens, generate pages, sync brand tabs. Invoke with /design-docs <articleUrl>",
+        "slash": "/design-docs"
+      },
+      {
+        "kind": "skill",
+        "name": "design-docs-agent",
+        "description": "Canonical cross-host Design Docs agent for article ingestion, saved-source bundle extraction, generation, wiring, and brand sync.",
+        "slash": "/design-docs-agent"
+      }
     ],
     "websiteURL": "https://github.com/therealityreport/TRR",
     "privacyPolicyURL": "https://github.com/therealityreport/TRR/blob/main/.agents/skills/design-docs-agent/docs/privacy-policy.md",
