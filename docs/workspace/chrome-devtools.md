@@ -7,6 +7,8 @@ This document describes browser policy only. Actual MCP defaults live in `~/.cod
 ## Chrome Profile Identity
 Codex and Claude Code agents in the TRR Workspace must use the **codex@thereality.report** profile (`~/.chrome-profiles/codex-agent`) for routine browser automation. The admin@thereality.report profile (`~/.chrome-profiles/claude-agent`) is reserved for user-authorized tasks only — for example, accessing paywalled sites like NYTimes where the owner's subscription is required. If a site is inaccessible under the codex profile, stop and ask the user before switching. Set `CHROME_AGENT_ADMIN_OVERRIDE=1` when the user grants permission; return to the codex profile when the authorized task is complete.
 
+The managed `codex-agent` Chrome user-data directory contains multiple Chrome subprofiles. The signed-in Codex identity lives in the subprofile whose Preferences file contains `codex@thereality.report` (currently `Profile 1`), so managed launches must pass that inner `--profile-directory` in addition to `--user-data-dir`.
+
 **Exception:** Claude in Chrome (the Claude desktop app's browser automation) is permitted to use the admin@thereality.report profile. This restriction applies only to Codex and Claude Code agents running within the TRR Workspace context.
 
 ## Default Behavior

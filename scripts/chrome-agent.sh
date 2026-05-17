@@ -2,12 +2,18 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "${ROOT}/scripts/lib/chrome-runtime.sh"
+
 LOG_DIR="${ROOT}/.logs/workspace"
 CODEX_HOME_DIR="${CODEX_HOME:-$HOME/.codex}"
 HEADFUL_OWNER_DIR="${CODEX_CHROME_OWNER_DIR:-${CODEX_HOME_DIR}/tmp/browser-control}"
 HEADFUL_OWNER_FILE="${HEADFUL_OWNER_DIR}/headful-chrome-owner.env"
 
 PROFILE_DIR="${CHROME_AGENT_PROFILE_DIR:-${HOME}/.chrome-profiles/codex-agent}"
+PROFILE_DIRECTORY="${CHROME_AGENT_PROFILE_DIRECTORY:-}"
+if [[ -z "$PROFILE_DIRECTORY" ]]; then
+  PROFILE_DIRECTORY="$(default_chrome_profile_directory_for_profile_dir "$PROFILE_DIR")"
+fi
 DEBUG_PORT="${CHROME_AGENT_DEBUG_PORT:-9422}"
 
 default_headless_for_port() {
@@ -124,6 +130,7 @@ claim_headful_owner() {
 PID=${browser_pid}
 PORT=${DEBUG_PORT}
 PROFILE_DIR=${PROFILE_DIR}
+PROFILE_DIRECTORY=${PROFILE_DIRECTORY}
 HEADLESS=${HEADLESS}
 EOF
 }
@@ -166,6 +173,7 @@ listener_pid=${lsof_pid:-missing}
 pidfile=${pidfile_path}
 pidfile_pid=${file_pid:-missing}
 statefile=${statefile_path}
+profile_directory=$(sed -n 's/^PROFILE_DIRECTORY=//p' "$statefile_path" 2>/dev/null | head -n 1)
 endpoint=${endpoint_state}
 pid_match=${pid_match}
 health=$([[ -n "$lsof_pid" && "$endpoint_state" == "ready" ]] && echo healthy || echo unhealthy)
@@ -252,6 +260,13 @@ launch_chrome() {
 # --- Check if already running on the debugging port ---
 existing_pid="$(port_pid)"
 if [[ -n "$existing_pid" ]]; then
+  existing_profile_directory="$(sed -n 's/^PROFILE_DIRECTORY=//p' "$STATEFILE" 2>/dev/null | head -n 1)"
+  if [[ -n "$PROFILE_DIRECTORY" && "$existing_profile_directory" != "$PROFILE_DIRECTORY" ]]; then
+    echo "[chrome-agent] ERROR: Chrome agent already running on port ${DEBUG_PORT} with profile directory ${existing_profile_directory:-unknown}." >&2
+    echo "[chrome-agent] ERROR: Expected ${PROFILE_DIRECTORY} for ${PROFILE_DIR}." >&2
+    echo "[chrome-agent] Stop the existing managed Chrome before relaunching this profile." >&2
+    exit 1
+  fi
   echo "[chrome-agent] Chrome agent already running on port ${DEBUG_PORT} (pid=${existing_pid})."
   echo "[chrome-agent] DevTools endpoint: http://localhost:${DEBUG_PORT}"
   if [[ "$HEADLESS" != "1" ]]; then
@@ -285,6 +300,10 @@ CHROME_FLAGS=(
   "--enable-features=NetworkService,NetworkServiceInProcess"
 )
 
+if [[ -n "$PROFILE_DIRECTORY" ]]; then
+  CHROME_FLAGS+=("--profile-directory=${PROFILE_DIRECTORY}")
+fi
+
 if [[ "$HEADLESS" == "1" ]]; then
   CHROME_FLAGS+=("--headless=new")
 fi
@@ -307,6 +326,9 @@ fi
 echo "[chrome-agent] Launching Chrome with agent profile..."
 echo "[chrome-agent]   Binary:  ${CHROME_BIN}"
 echo "[chrome-agent]   Profile: ${PROFILE_DIR}"
+if [[ -n "$PROFILE_DIRECTORY" ]]; then
+  echo "[chrome-agent]   Chrome profile directory: ${PROFILE_DIRECTORY}"
+fi
 echo "[chrome-agent]   Port:    ${DEBUG_PORT}"
 
 launch_chrome
@@ -346,6 +368,7 @@ echo "$CHROME_PID" >"$PIDFILE"
 cat >"$STATEFILE" <<EOF
 DEBUG_PORT=${DEBUG_PORT}
 PROFILE_DIR=${PROFILE_DIR}
+PROFILE_DIRECTORY=${PROFILE_DIRECTORY}
 HEADLESS=${HEADLESS}
 DISABLE_EXTENSIONS=${DISABLE_EXTENSIONS}
 PID=${CHROME_PID}
