@@ -66,6 +66,53 @@ menu/search/account shell, action icon group, body/ad/related/footer section,
 and every chart/graph/table/media component. When exact source extraction is
 blocked, preserve the component slot with a warning rather than omitting it.
 
+Carry over the NYT/internal visualization tags used by comparable pages. If a
+source or prior design-doc page identifies a visualization article with
+`vis-design`, `data-vis`, or an equivalent data-visualization tag, add those
+tags to the generated article instead of treating them as article-specific
+topics.
+
+For standard NYT story pages, the header capture must preserve the full
+source-observed story header, not only the H1/deck. Capture and render the
+section brand bar or section SVG, sponsor/support slot, headline, summary,
+audio/listen module, share/gift/save/comment/more controls, byline, author
+headshot, timestamp/date, and the CSS class/test-id evidence for those pieces.
+When the source has a header like `header.css-1qv3lay`, recreate that structure
+as a visible design-doc component.
+
+Every generated article must include a body outline that shows the first
+sentence or lead text for each source paragraph/section/chart lead-in. Do not
+copy full article body text into the design docs; keep the outline to lead
+sentences and component-level labels.
+
+Every generated article must save and display an asset inventory. At minimum,
+mirror or manifest all source-observed images, inline SVG icons, linked
+favicons/app icons, audio/narration sources, Open Graph/Twitter images,
+stylesheets, scripts, figures, and screenshots. If an asset cannot be mirrored,
+record the original URL, role, dimensions, and failure reason in the manifest
+and display the manifest count/details in the article page.
+
+## Editable Chart Requirement
+
+For NYT/Datawrapper chart work, do not leave the design-doc page as iframe-only
+when chart data can be recovered. Match the interactive chart pattern used by
+the Trump economy page: recreate charts as local React/SVG primitives backed by
+editable config data.
+
+For each recovered chart, capture and store:
+
+1. Original embed id, version, iframe URL, source id, and public `data.csv`
+   endpoint when available.
+2. Editable chart spec: title, subtitle/leadin, chart mode, dimensions, axes,
+   ticks, series or bar rows, colors, hover behavior, annotations/callouts,
+   notes, source, credit, and original URL.
+3. A source-backed warning only when a chart cannot be converted. Iframe-only
+   rendering is acceptable as a fallback, not as the target state.
+
+Every chart element that a future TRR chart author would naturally change must
+live in config rather than inside an opaque iframe: marks, labels, scales,
+colors, source/credit lines, notes, and annotations.
+
 ## Validation
 
 1. Confirm `articleUrl` is present.
