@@ -1,0 +1,35 @@
+{
+  "canonicalSourceUrl": "https://www.nytimes.com/2026/04/09/upshot/births-decline-older-mothers.html",
+  "html": {
+    "rendered": ".agents/skills/design-docs-agent/source-bundles/nyt-births-decline-older-mothers-2026/rendered.html",
+    "mhtml": ".agents/skills/design-docs-agent/source-bundles/nyt-births-decline-older-mothers-2026/snapshot.mhtml"
+  },
+  "screenshots": {
+    "desktop": [
+      ".agents/skills/design-docs-agent/source-bundles/nyt-births-decline-older-mothers-2026/screenshots/desktop-full.png"
+    ]
+  },
+  "chartData": {
+    "LPtw8": ".agents/skills/design-docs-agent/source-bundles/nyt-births-decline-older-mothers-2026/charts/LPtw8-v7-data.csv",
+    "ywEMI": ".agents/skills/design-docs-agent/source-bundles/nyt-births-decline-older-mothers-2026/charts/ywEMI-v9-data.csv",
+    "IWlRs": ".agents/skills/design-docs-agent/source-bundles/nyt-births-decline-older-mothers-2026/charts/IWlRs-v12-data.csv",
+    "qz8fa": ".agents/skills/design-docs-agent/source-bundles/nyt-births-decline-older-mothers-2026/charts/qz8fa-v11-data.csv"
+  },
+  "assets": {
+    "manifest": ".agents/skills/design-docs-agent/source-bundles/nyt-births-decline-older-mothers-2026/assets/asset-inventory.json",
+    "imagesDirectory": ".agents/skills/design-docs-agent/source-bundles/nyt-births-decline-older-mothers-2026/assets/images",
+    "iconsDirectory": ".agents/skills/design-docs-agent/source-bundles/nyt-births-decline-older-mothers-2026/assets/icons",
+    "audioDirectory": ".agents/skills/design-docs-agent/source-bundles/nyt-births-decline-older-mothers-2026/assets/audio",
+    "counts": {
+      "images": 30,
+      "inlineSvgs": 29,
+      "linkedIcons": 5,
+      "audio": 1
+    }
+  },
+  "authoritativeViewport": "desktop",
+  "acquisition": {
+    "method": "Raw CDP attached to Chrome Profile 11 admin@thereality.report on port 9555",
+    "capturedAt": "2026-05-14T11:25:46.730Z"
+  }
+}

@@ -48,13 +48,19 @@ print_instance() {
   fi
 
   local profile="unknown"
+  local profile_directory=""
   local headless="unknown"
   if [[ -f "$statefile" ]]; then
     profile="$(sed -n 's/^PROFILE_DIR=//p' "$statefile" | head -n 1)"
+    profile_directory="$(sed -n 's/^PROFILE_DIRECTORY=//p' "$statefile" | head -n 1)"
     headless="$(sed -n 's/^HEADLESS=//p' "$statefile" | head -n 1)"
   else
     profile="$(default_chrome_profile_for_port "$port")"
+    profile_directory="$(chrome_process_profile_directory "$pid")"
     headless="0"
+  fi
+  if [[ -n "$profile_directory" ]]; then
+    profile="${profile} (${profile_directory})"
   fi
 
   local status="stopped"
