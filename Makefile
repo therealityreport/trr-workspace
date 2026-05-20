@@ -1,8 +1,8 @@
 .PHONY: \
 	dev dev-lite dev-cloud dev-hybrid dev-hybrid-social-safe dev-local dev-full \
-	preflight preflight-local preflight-cloud preflight-hybrid preflight-strict preflight-diagnostics env-contract env-contract-report check-policy codex-check handoff-check handoff-sync smoke status backend-restart-diagnose stop logs logs-prune cleanup-disk help \
+	preflight preflight-local preflight-cloud preflight-hybrid preflight-strict preflight-diagnostics env-contract env-contract-report check-policy codex-check handoff-check handoff-sync smoke browser-smoke-admin-details status backend-restart-diagnose stop logs logs-prune cleanup-disk help \
 	app-direct-sql-inventory redacted-env-inventory vercel-project-guard migration-ownership-lint rls-grants-snapshot db-pressure-rehearsal supabase-mcp-access supabase-advisor-snapshot \
-	bootstrap doctor test test-fast test-full test-changed test-env-sensitive \
+	bootstrap doctor app-check test test-fast test-full test-changed test-env-sensitive \
 	workspace-contract-check \
 	cast-screentime-gap-check cast-screentime-live-check \
 	down chrome-devtools-mcp-status chrome-devtools-mcp-clean-stale chrome-devtools-mcp-stop-conflicts \
@@ -137,6 +137,9 @@ handoff-sync:
 smoke:
 	@bash scripts/smoke.sh
 
+browser-smoke-admin-details:
+	@bash scripts/browser-smoke-admin-detail-routes.sh
+
 # Workspace status snapshot (PIDs, ports, health).
 status:
 	@bash scripts/status-workspace.sh
@@ -193,6 +196,9 @@ bootstrap:
 doctor:
 	@bash scripts/doctor.sh
 
+app-check:
+	@bash scripts/app-check.sh
+
 test:
 	@bash scripts/test-full.sh
 
@@ -235,6 +241,7 @@ help:
 	@echo "  make env-contract - refresh docs/workspace/env-contract.md"
 	@echo "  make env-contract-report - refresh env contract inventory/deprecation review docs"
 	@echo "  make codex-check  - validates tracked Codex config, rules, and user bootstrap state"
+	@echo "  make browser-smoke-admin-details - smoke test social account and show detail routes in a browser"
 	@echo "  make supabase-advisor-snapshot - capture dated Supabase advisor JSON artifacts"
 	@echo "  make backend-restart-diagnose - prints backend restart/watchdog attribution state"
 	@echo "  make down         - deprecated no-op retained for compatibility"

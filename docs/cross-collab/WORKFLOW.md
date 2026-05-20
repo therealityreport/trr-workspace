@@ -14,7 +14,7 @@ It complements `AGENTS.md` (workspace root) and each repo's `AGENTS.md`.
 | 3. Implement | Agent | Follow repo order: TRR-Backend → TRR-APP. Run each repo's fast checks after changes. |
 | 4. Update canonical status sources | Agent | Immediately after each completed implementation phase or materially completed plan step, update `STATUS.md` or `docs/ai/local-status/*.md`. These are the only handoff source files; they must carry a `## Handoff Snapshot` block when they should surface in handoff. |
 | 5. Sync generated `HANDOFF.md` | Agent | Run `scripts/handoff-lifecycle.sh post-phase` after each completed implementation phase when current state, blockers, or next action changed. `docs/ai/HANDOFF.md` is generated output only. |
-| 6. Verify | Agent | Per-repo fast checks: TRR-Backend (`ruff check . && ruff format --check . && pytest -q`), TRR-APP (`pnpm -C apps/web run lint && pnpm -C apps/web exec next build --webpack && pnpm -C apps/web run test:ci`). |
+| 6. Verify | Agent | Per-repo fast checks: TRR-Backend (`ruff check . && ruff format --check . && pytest -q`), TRR-APP (`make app-check`, then `pnpm -C TRR-APP/apps/web exec next build --webpack` and `pnpm -C TRR-APP/apps/web run test:ci` when build/full test evidence is required). |
 | 7. Commit + PR | Agent | One PR per repo. Use PR template (Section 3d). Include `docs/cross-collab/` changes in the PR. |
 | 8. Merge | Human/Agent | Merge PRs in implementation order (Backend → APP). |
 | 9. Sync docs + close out | Agent | Update `OTHER_PROJECTS.md` snapshots, add the final `STATUS.md` Recent Activity entry, and run `scripts/handoff-lifecycle.sh closeout` for final generated handoff + policy verification. |
@@ -190,7 +190,8 @@ Rules:
 ## Test plan
 - [ ] `ruff check . && ruff format --check .` (TRR-Backend)
 - [ ] `pytest -q` (TRR-Backend)
-- [ ] `pnpm -C apps/web run lint && pnpm -C apps/web exec next build --webpack && pnpm -C apps/web run test:ci` (TRR-APP)
+- [ ] `make app-check` (TRR-APP lint/typecheck under Node 24)
+- [ ] `pnpm -C TRR-APP/apps/web exec next build --webpack && pnpm -C TRR-APP/apps/web run test:ci` (TRR-APP build/full tests when required)
 - [ ] Cross-repo docs updated (PLAN.md, STATUS.md, OTHER_PROJECTS.md)
 
 ## Cross-collab refs

@@ -110,6 +110,7 @@ def test_local_resolver_derives_direct_uri_from_validated_pooler_url(tmp_path: P
         f"""
         unset TRR_DB_DIRECT_URL TRR_DB_SESSION_URL TRR_DB_URL WORKSPACE_TRR_DB_LANE
         export TRR_SUPABASE_PROJECT_REF=abcdefghijklmnopqrst
+        export WORKSPACE_TRR_DB_LANE=direct
         source "{SCRIPT_PATH}"
         printf '%s\\n%s' "$(trr_runtime_db_resolve_local_app_source "{root}" local)" "$(trr_runtime_db_resolve_local_app_url "{root}" local)"
         """
@@ -119,6 +120,31 @@ def test_local_resolver_derives_direct_uri_from_validated_pooler_url(tmp_path: P
     assert result.stdout == (
         "derived_direct_uri\n"
         "postgresql://postgres:secret@db.abcdefghijklmnopqrst.supabase.co:5432/postgres"
+    )
+
+
+def test_local_resolver_falls_back_to_session_when_derived_direct_host_is_unresolvable(tmp_path: Path) -> None:
+    root = tmp_path
+    app_env = root / "TRR-APP" / "apps" / "web" / ".env.local"
+    app_env.parent.mkdir(parents=True)
+    app_env.write_text(
+        "TRR_DB_URL=postgresql://postgres.abcdefghijklmnopqrst:secret@aws-0-us-east-1.pooler.supabase.com:5432/postgres\n",
+        encoding="utf-8",
+    )
+
+    result = _run_bash(
+        f"""
+        unset TRR_DB_DIRECT_URL TRR_DB_SESSION_URL TRR_DB_URL WORKSPACE_TRR_DB_LANE
+        export TRR_SUPABASE_PROJECT_REF=abcdefghijklmnopqrst
+        source "{SCRIPT_PATH}"
+        printf '%s\\n%s' "$(trr_runtime_db_resolve_local_app_source "{root}" hybrid)" "$(trr_runtime_db_resolve_local_app_url "{root}" hybrid)"
+        """
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == (
+        "TRR_DB_URL\n"
+        "postgresql://postgres.abcdefghijklmnopqrst:secret@aws-0-us-east-1.pooler.supabase.com:5432/postgres"
     )
 
 
@@ -159,6 +185,32 @@ def test_local_resolver_allows_explicit_session_escape_hatch(tmp_path: Path) -> 
 
     assert result.returncode == 0, result.stderr
     assert result.stdout == "TRR_DB_SESSION_URL\npostgresql://session"
+
+
+def test_local_resolver_session_escape_hatch_takes_priority_over_derivation(tmp_path: Path) -> None:
+    root = tmp_path
+    app_env = root / "TRR-APP" / "apps" / "web" / ".env.local"
+    app_env.parent.mkdir(parents=True)
+    app_env.write_text(
+        "TRR_DB_URL=postgresql://postgres.abcdefghijklmnopqrst:secret@aws-0-us-east-1.pooler.supabase.com:5432/postgres\n",
+        encoding="utf-8",
+    )
+
+    result = _run_bash(
+        f"""
+        unset TRR_DB_DIRECT_URL TRR_DB_SESSION_URL TRR_DB_URL
+        export TRR_SUPABASE_PROJECT_REF=abcdefghijklmnopqrst
+        export WORKSPACE_TRR_DB_LANE=session
+        source "{SCRIPT_PATH}"
+        printf '%s\\n%s' "$(trr_runtime_db_resolve_local_app_source "{root}" hybrid)" "$(trr_runtime_db_resolve_local_app_url "{root}" hybrid)"
+        """
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == (
+        "TRR_DB_URL\n"
+        "postgresql://postgres.abcdefghijklmnopqrst:secret@aws-0-us-east-1.pooler.supabase.com:5432/postgres"
+    )
 
 
 def test_remote_worker_resolver_uses_session_lane_not_direct(tmp_path: Path) -> None:

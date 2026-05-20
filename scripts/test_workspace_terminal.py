@@ -101,7 +101,7 @@ def test_preflight_browser_degraded_state_does_not_render_startup_attention(
     assert result.stdout == ""
 
 
-def test_preflight_browser_recoverable_state_still_renders_startup_attention(
+def test_preflight_browser_recoverable_state_does_not_render_startup_attention(
     tmp_path: Path,
 ) -> None:
     attention_file = tmp_path / "attention.log"
@@ -117,12 +117,7 @@ def test_preflight_browser_recoverable_state_still_renders_startup_attention(
     )
 
     assert result.returncode == 0, result.stderr
-    assert result.stdout == (
-        "[workspace] Attention:\n"
-        "  - Browser automation shared Chrome needs recovery on port 9422.\n"
-        "    Impact: chrome-devtools is configured, but the shared browser runtime is not ready for this startup yet.\n"
-        "    Remediation: retry the browser task once; if the shared runtime does not recover, run 'make mcp-clean' and restart the workspace.\n"
-    )
+    assert result.stdout == ""
 
 
 def test_preflight_browser_unavailable_state_still_renders_startup_attention(

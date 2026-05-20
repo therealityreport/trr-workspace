@@ -39,7 +39,7 @@ Scope: TRR-Backend, screenalytics, TRR-APP
 - Revert merge commit:
   - `git revert -m 1 68bccdfe4a52fd2c9717668f57397fdeb213c912`
 - Validate:
-  - `pnpm -C apps/web run lint`
+  - `make app-check`
   - `pnpm -C apps/web run build`
 
 ## Recovery Exit Criteria

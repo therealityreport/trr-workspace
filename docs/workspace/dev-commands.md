@@ -38,7 +38,13 @@ Use these commands from `/Users/thomashulihan/Projects/TRR`.
 - `make dev-local` — deprecated compatibility alias for `make dev`
 - `make down` — retained no-op for old local infra cleanup muscle memory
 - `make bootstrap` — one-time dependency setup
+- `make app-check` — enforce the Node 24 baseline, then run TRR-APP lint and typecheck from the repo root
 - `bash scripts/codex-config-sync.sh bootstrap` — bootstrap minimal user-level `~/.codex` files without reapplying TRR project config there
+
+For app-only validation, prefer `make app-check` over direct
+`pnpm -C TRR-APP/apps/web ...` commands. The Make target sources the workspace
+Node baseline helper and activates `.nvmrc` first; direct `pnpm` commands are
+valid only after the shell is already on Node 24.
 
 ## Social Profile Dashboard Smoke
 
