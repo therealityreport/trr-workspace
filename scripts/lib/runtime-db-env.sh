@@ -119,6 +119,36 @@ else:
 PY
 }
 
+trr_runtime_db_url_resolves_for_local_host() {
+  local url="$1"
+  python3 - "$url" <<'PY'
+import socket
+import sys
+from urllib.parse import urlsplit
+
+try:
+    parsed = urlsplit(sys.argv[1])
+except Exception:
+    raise SystemExit(1)
+
+host = (parsed.hostname or "").strip().lower()
+if not host:
+    raise SystemExit(1)
+if not host.endswith(".supabase.co"):
+    raise SystemExit(0)
+try:
+    port = parsed.port or 5432
+except ValueError:
+    raise SystemExit(1)
+
+try:
+    socket.getaddrinfo(host, port, type=socket.SOCK_STREAM)
+except OSError:
+    raise SystemExit(1)
+raise SystemExit(0)
+PY
+}
+
 trr_runtime_db_derive_direct_url() {
   local url="$1"
   local expected_ref
@@ -198,14 +228,36 @@ trr_runtime_db_resolve_local_app_url() {
   local mode="${2:-local}"
   local value=""
   local derived=""
+  local derived=""
 
   if [[ "$mode" == "local" || "$mode" == "hybrid" ]]; then
+    if [[ "${WORKSPACE_TRR_DB_LANE:-}" == "session" ]]; then
+      trr_runtime_db_resolve_session_url "$root"
+      return $?
+    fi
+
     if value="$(trr_runtime_db_candidate_value "$root" "TRR_DB_DIRECT_URL" 2>/dev/null)"; then
+      if [[ "${WORKSPACE_TRR_DB_LANE:-}" == "direct" ]] || trr_runtime_db_url_resolves_for_local_host "$value"; then
+        printf '%s\n' "$value"
+        return 0
+      fi
+      if trr_runtime_db_resolve_session_url "$root" >/dev/null 2>&1; then
+        trr_runtime_db_resolve_session_url "$root"
+        return $?
+      fi
       printf '%s\n' "$value"
       return 0
     fi
 
     if value="$(trr_runtime_db_resolve_session_url "$root" 2>/dev/null)" && derived="$(trr_runtime_db_derive_direct_url "$value" 2>/dev/null)"; then
+      if [[ "${WORKSPACE_TRR_DB_LANE:-}" == "direct" ]] || trr_runtime_db_url_resolves_for_local_host "$derived"; then
+        printf '%s\n' "$derived"
+        return 0
+      fi
+      if trr_runtime_db_resolve_session_url "$root" >/dev/null 2>&1; then
+        trr_runtime_db_resolve_session_url "$root"
+        return $?
+      fi
       printf '%s\n' "$derived"
       return 0
     fi
@@ -247,14 +299,33 @@ trr_runtime_db_resolve_local_app_source() {
   local value=""
 
   if [[ "$mode" == "local" || "$mode" == "hybrid" ]]; then
+    if [[ "${WORKSPACE_TRR_DB_LANE:-}" == "session" ]]; then
+      trr_runtime_db_resolve_session_source "$root"
+      return $?
+    fi
+
     if trr_runtime_db_candidate_value "$root" "TRR_DB_DIRECT_URL" >/dev/null 2>&1; then
+      value="$(trr_runtime_db_candidate_value "$root" "TRR_DB_DIRECT_URL" 2>/dev/null || true)"
+      if [[ "${WORKSPACE_TRR_DB_LANE:-}" == "direct" ]] || trr_runtime_db_url_resolves_for_local_host "$value"; then
+        echo "TRR_DB_DIRECT_URL"
+        return 0
+      fi
+      if trr_runtime_db_resolve_session_source "$root" >/dev/null 2>&1; then
+        trr_runtime_db_resolve_session_source "$root"
+        return $?
+      fi
       echo "TRR_DB_DIRECT_URL"
       return 0
     fi
 
     if value="$(trr_runtime_db_resolve_session_url "$root" 2>/dev/null)" && trr_runtime_db_derive_direct_url "$value" >/dev/null 2>&1; then
-      echo "derived_direct_uri"
-      return 0
+      derived="$(trr_runtime_db_derive_direct_url "$value" 2>/dev/null || true)"
+      if [[ "${WORKSPACE_TRR_DB_LANE:-}" == "direct" ]] || trr_runtime_db_url_resolves_for_local_host "$derived"; then
+        echo "derived_direct_uri"
+        return 0
+      fi
+      trr_runtime_db_resolve_session_source "$root"
+      return $?
     fi
 
     if [[ "${WORKSPACE_TRR_DB_LANE:-}" == "session" ]]; then

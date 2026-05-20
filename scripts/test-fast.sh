@@ -29,11 +29,12 @@ if [[ "$RUN_BACKEND" == "1" ]]; then
   trr_ensure_repo_runtime "$ROOT/TRR-Backend" "$ROOT/TRR-Backend/requirements.txt"
   "$ROOT/TRR-Backend/.venv/bin/ruff" check "$ROOT/TRR-Backend"
   "$ROOT/TRR-Backend/.venv/bin/ruff" format --check "$ROOT/TRR-Backend"
-  if [[ -f "$ROOT/TRR-Backend/tests/api/test_health.py" ]]; then
-    (cd "$ROOT/TRR-Backend" && "$ROOT/TRR-Backend/.venv/bin/pytest" -q tests/api/test_health.py)
-  else
-    (cd "$ROOT/TRR-Backend" && "$ROOT/TRR-Backend/.venv/bin/pytest" -q -k health --maxfail=1)
+  BACKEND_FAST_HEALTH_TEST="tests/api/test_health.py"
+  if [[ ! -f "$ROOT/TRR-Backend/$BACKEND_FAST_HEALTH_TEST" ]]; then
+    echo "[test-fast] ERROR: expected backend health gate missing: $BACKEND_FAST_HEALTH_TEST" >&2
+    exit 1
   fi
+  (cd "$ROOT/TRR-Backend" && "$ROOT/TRR-Backend/.venv/bin/pytest" -q "$BACKEND_FAST_HEALTH_TEST")
 fi
 
 if [[ "$RUN_APP" == "1" ]]; then

@@ -116,17 +116,17 @@ class WorkspaceAppEnvProjectionTests(unittest.TestCase):
         self.assertIn("TRR_HEALTH_DB_POOL_MINCONN=1", text)
         self.assertIn("TRR_HEALTH_DB_POOL_MAXCONN=1", text)
 
-    def test_local_cloud_profile_mirrors_default_dedicated_pool_caps(self) -> None:
+    def test_local_cloud_profile_uses_session_pool_headroom_caps(self) -> None:
         text = LOCAL_CLOUD_PROFILE.read_text(encoding="utf-8")
         self.assertIn("WORKSPACE_BACKEND_AUTO_RESTART=1", text)
         self.assertIn("TRR_DB_POOL_MINCONN=1", text)
-        self.assertIn("TRR_DB_POOL_MAXCONN=6", text)
+        self.assertIn("TRR_DB_POOL_MAXCONN=3", text)
         self.assertIn("TRR_SOCIAL_PROFILE_DB_POOL_MINCONN=1", text)
-        self.assertIn("TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN=4", text)
+        self.assertIn("TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN=2", text)
         self.assertIn("TRR_SOCIAL_CONTROL_DB_POOL_MINCONN=1", text)
         self.assertIn("TRR_SOCIAL_CONTROL_DB_POOL_MAXCONN=2", text)
         self.assertIn("TRR_SOCIAL_PROGRESS_DB_POOL_MINCONN=1", text)
-        self.assertIn("TRR_SOCIAL_PROGRESS_DB_POOL_MAXCONN=2", text)
+        self.assertIn("TRR_SOCIAL_PROGRESS_DB_POOL_MAXCONN=1", text)
         self.assertIn("TRR_HEALTH_DB_POOL_MINCONN=1", text)
         self.assertIn("TRR_HEALTH_DB_POOL_MAXCONN=1", text)
 
@@ -272,7 +272,7 @@ class WorkspaceAppEnvProjectionTests(unittest.TestCase):
     def test_effective_db_holder_budget_uses_local_cloud_profile_values(self) -> None:
         self.assertEqual(
             self.run_workspace_db_holder_budget(self.read_profile_env(LOCAL_CLOUD_PROFILE)),
-            "app=1, backend=6, social_profile=4, social_control=2, social_progress=2, health=1, total=16",
+            "app=1, backend=3, social_profile=2, social_control=2, social_progress=1, health=1, total=10",
         )
 
     def test_effective_db_holder_budget_uses_default_profile_fallbacks_when_malformed(self) -> None:
