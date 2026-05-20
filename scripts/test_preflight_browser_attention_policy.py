@@ -38,7 +38,7 @@ def test_degraded_browser_pressure_is_not_promoted_to_startup_attention(
     assert result.stdout == ""
 
 
-def test_recoverable_browser_runtime_is_promoted_to_startup_attention(
+def test_recoverable_browser_runtime_is_not_promoted_to_startup_attention(
     tmp_path: Path,
 ) -> None:
     attention_file = tmp_path / "attention.log"
@@ -54,11 +54,7 @@ def test_recoverable_browser_runtime_is_promoted_to_startup_attention(
     )
 
     assert result.returncode == 0, result.stderr
-    assert result.stdout == (
-        "Browser automation shared Chrome needs recovery on port 9422.\t"
-        "Impact: chrome-devtools is configured, but the shared browser runtime is not ready for this startup yet.\t"
-        "Remediation: retry the browser task once; if the shared runtime does not recover, run 'make mcp-clean' and restart the workspace.\n"
-    )
+    assert result.stdout == ""
 
 
 def test_unavailable_browser_runtime_is_promoted_to_startup_attention(

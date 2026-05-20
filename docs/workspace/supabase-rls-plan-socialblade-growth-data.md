@@ -2,7 +2,7 @@
 
 Prepared: 2026-05-14
 
-Status: planning package only. Do not apply DDL from this document without explicit approval.
+Status: applied on 2026-05-17 through Supabase migration tooling as remote version `20260517191631_socialblade_growth_data_rls`. Keep this document as the evidence package and rollback reference.
 
 ## Scope
 
@@ -39,6 +39,14 @@ Live Supabase check on 2026-05-14:
 - `pipeline.socialblade_growth_snapshots`: RLS enabled, 21 rows.
 - No policies currently exist for either `pipeline.socialblade_growth_data` or `pipeline.socialblade_growth_snapshots`.
 - Explicit `information_schema.table_privileges` rows observed for `pipeline.socialblade_growth_data` were only for `postgres`; do not treat that as sufficient protection because the Advisor still flags disabled RLS as critical.
+
+Post-migration Supabase check on 2026-05-17:
+
+- `pipeline.socialblade_growth_data`: RLS enabled.
+- Policy `socialblade_growth_data_service_role_all` exists for `service_role`, command `ALL`, `USING (true)`, `WITH CHECK (true)`.
+- Table privileges now include `service_role` `SELECT`, `INSERT`, `UPDATE`, and `DELETE`, plus the pre-existing `postgres` privileges.
+- Supabase migration history records remote version `20260517191631_socialblade_growth_data_rls`.
+- Supabase Security Advisor no longer reports `rls_disabled` for `pipeline.socialblade_growth_data`.
 
 Local caller inventory:
 
@@ -101,6 +109,16 @@ Live probe results captured on 2026-05-14:
 
 The probe used rollback-safe transactions and isolated fixture handles; no persistent fixture rows or DDL were applied. Because `service_role` is currently blocked at table access, the forward migration must grant `usage` on schema `pipeline` and table-level read/write privileges before the service-role policy can validate the intended backend/worker posture. Do not grant `anon` or `authenticated` access.
 
+Post-migration probe results captured on 2026-05-17:
+
+| Role | `SELECT` | `INSERT` | `UPDATE` | `DELETE` | Result |
+| --- | --- | --- | --- | --- | --- |
+| `anon` | denied | denied | denied | denied | `42501: permission denied for schema pipeline` |
+| `authenticated` | denied | denied | denied | denied | `42501: permission denied for schema pipeline` |
+| `service_role` | allowed | allowed | allowed | allowed | Expected backend/worker access confirmed. |
+
+The post-migration write probes used isolated `rls_probe_do_not_use_*` handles and were cleaned up after execution. A verification query returned `0` leftover probe rows.
+
 Expected results:
 
 | Role | `SELECT` | `INSERT` | `UPDATE` | `DELETE` |
@@ -133,7 +151,7 @@ Add write probes with an isolated handle such as `rls_probe_do_not_use` and roll
 
 ## Draft Forward SQL Shape
 
-This is the intended shape, not an approved migration.
+This is the applied forward SQL shape.
 
 ```sql
 begin;
@@ -233,10 +251,10 @@ order by tablename, policyname;
 
 After migration:
 
-- Rerun the role probes.
-- Rerun the route checks.
-- Rerun Supabase Security Advisor.
-- Update `docs/workspace/supabase-security-posture-ledger.md` with the final posture, applied migration file, and any deferred follow-up.
+- Role probes: completed on 2026-05-17.
+- Supabase Security Advisor: completed on 2026-05-17; `pipeline.socialblade_growth_data` `rls_disabled` finding cleared.
+- Posture ledger: updated in `docs/workspace/supabase-security-posture-ledger.md`.
+- Route checks: app localhost route reproduction was blocked on 2026-05-17 by workspace preflight `direct_db_unreachable`; prior 2026-05-14 smoke showed `GET /admin/social` returned `200` and the warmed landing API returned `200`.
 
 ## First Implementation Slice
 
@@ -245,8 +263,8 @@ Completed first implementation slice before DDL:
 1. Moved the remaining TRR-APP social landing progress-count read for `pipeline.socialblade_growth_data` behind a backend internal-admin endpoint.
 2. Added tests proving the app progress SQL no longer queries this table.
 
-Remaining implementation slice:
+Completed DDL implementation slice:
 
-1. Re-run the caller inventory and role probes.
-2. Write a single backend migration for `pipeline.socialblade_growth_data` only.
-3. Apply only after explicit owner approval.
+1. Re-ran the role probes.
+2. Applied a single backend migration for `pipeline.socialblade_growth_data` only.
+3. Updated the posture ledger with the final posture and probe evidence.
