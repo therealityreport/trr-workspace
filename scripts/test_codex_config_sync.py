@@ -25,34 +25,27 @@ def _run_sync(action: str, home: Path) -> subprocess.CompletedProcess[str]:
     )
 
 
-def test_validate_rejects_user_level_model_reasoning_effort() -> None:
+def test_validate_allows_user_level_model_reasoning_effort() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         home = Path(tmp)
         codex_home = home / ".codex"
         codex_home.mkdir()
-        (codex_home / "AGENTS.md").write_text("# User Codex preferences\n", encoding="utf-8")
-        (codex_home / "config.toml").write_text(
-            f"""
-model = "gpt-5.5"
-personality = "pragmatic"
-approval_policy = "never"
-sandbox_mode = "danger-full-access"
-web_search = "cached"
-project_doc_max_bytes = 65536
-project_doc_fallback_filenames = []
-model_reasoning_effort = "high"
 
-[projects."{ROOT}"]
-trust_level = "trusted"
-""".strip()
-            + "\n",
+        bootstrap = _run_sync("bootstrap", home)
+        assert bootstrap.returncode == 0, bootstrap.stderr
+
+        config = codex_home / "config.toml"
+        config_text = config.read_text(encoding="utf-8")
+        first_table = config_text.index("\n[")
+        config.write_text(
+            config_text[:first_table] + '\nmodel_reasoning_effort = "high"\n' + config_text[first_table:],
             encoding="utf-8",
         )
 
         result = _run_sync("validate", home)
 
-    assert result.returncode == 1
-    assert "user config must omit top-level model_reasoning_effort" in result.stderr
+    assert result.returncode == 0, result.stderr
+    assert "Validation OK" in result.stdout
 
 
 def test_bootstrap_removes_top_level_model_reasoning_effort() -> None:
@@ -84,3 +77,95 @@ memories = true
     assert "model_reasoning_effort" not in config_text
     assert "memories = true" in config_text
     assert f'[projects."{ROOT}"]' in config_text
+
+
+def test_validate_allows_disabled_named_skill_config() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        home = Path(tmp)
+        codex_home = home / ".codex"
+        codex_home.mkdir()
+
+        bootstrap = _run_sync("bootstrap", home)
+        assert bootstrap.returncode == 0, bootstrap.stderr
+
+        config = codex_home / "config.toml"
+        with config.open("a", encoding="utf-8") as handle:
+            handle.write(
+                '\n[skills]\n'
+                'config = [{ name = "andrej-karpathy-skills:karpathy-guidelines", enabled = false }]\n'
+            )
+
+        result = _run_sync("validate", home)
+
+    assert result.returncode == 0, result.stderr
+    assert "Validation OK" in result.stdout
+
+
+def test_validate_rejects_raw_context7_mcp_config() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        home = Path(tmp)
+        codex_home = home / ".codex"
+        codex_home.mkdir()
+
+        bootstrap = _run_sync("bootstrap", home)
+        assert bootstrap.returncode == 0, bootstrap.stderr
+
+        config = codex_home / "config.toml"
+        config_text = config.read_text(encoding="utf-8")
+        wrapper = f'{home}/.codex/plugins/context7/scripts/start-context7-mcp.sh'
+        raw = 'command = "npx"\nargs = ["-y", "@upstash/context7-mcp"]'
+        config.write_text(config_text.replace(f'command = "{wrapper}"', raw), encoding="utf-8")
+
+        result = _run_sync("validate", home)
+
+    assert result.returncode == 1
+    assert "user [mcp_servers.context7] expected command" in result.stderr
+    assert "user [mcp_servers.context7] expected args=[]" not in result.stderr
+
+
+def test_bootstrap_repairs_raw_context7_mcp_config() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        home = Path(tmp)
+        codex_home = home / ".codex"
+        codex_home.mkdir()
+
+        bootstrap = _run_sync("bootstrap", home)
+        assert bootstrap.returncode == 0, bootstrap.stderr
+
+        config = codex_home / "config.toml"
+        config_text = config.read_text(encoding="utf-8")
+        wrapper = f'{home}/.codex/plugins/context7/scripts/start-context7-mcp.sh'
+        raw = 'command = "npx"\nargs = ["-y", "@upstash/context7-mcp"]'
+        config.write_text(config_text.replace(f'command = "{wrapper}"', raw), encoding="utf-8")
+
+        repair = _run_sync("bootstrap", home)
+        repaired_text = config.read_text(encoding="utf-8")
+
+    assert repair.returncode == 0, repair.stderr
+    assert f'command = "{wrapper}"' in repaired_text
+    assert '@upstash/context7-mcp' not in repaired_text
+
+
+def test_bootstrap_repairs_invalid_service_tier() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        home = Path(tmp)
+        codex_home = home / ".codex"
+        codex_home.mkdir()
+
+        bootstrap = _run_sync("bootstrap", home)
+        assert bootstrap.returncode == 0, bootstrap.stderr
+
+        config = codex_home / "config.toml"
+        config_text = config.read_text(encoding="utf-8")
+        first_table = config_text.index("\n[")
+        config.write_text(
+            config_text[:first_table] + '\nservice_tier = "default"\n' + config_text[first_table:],
+            encoding="utf-8",
+        )
+
+        repair = _run_sync("bootstrap", home)
+        repaired_text = config.read_text(encoding="utf-8")
+
+    assert repair.returncode == 0, repair.stderr
+    assert 'service_tier = "fast"' in repaired_text
+    assert 'service_tier = "default"' not in repaired_text

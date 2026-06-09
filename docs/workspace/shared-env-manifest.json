@@ -1,48 +1,324 @@
 {
-  "version": "2026-04-15",
+  "version": "2026-05-28",
+  "owner_aliases": {
+    "workspace-ops": {
+      "scope": "Workspace scripts, profiles, redacted inventories, operator runbooks, and local runtime mode selection.",
+      "source_of_truth": "docs/workspace/ plus root scripts/ and profiles/"
+    },
+    "backend-shared-schema": {
+      "scope": "Backend APIs, auth validation, shared schema access, migrations, and worker DB access.",
+      "source_of_truth": "TRR-Backend code and TRR-Backend/supabase/migrations"
+    },
+    "admin-read-model": {
+      "scope": "TRR-APP server/admin read paths retained until a backend aggregate endpoint exists.",
+      "source_of_truth": "TRR-APP app code plus docs/workspace/api-migration-ledger.md"
+    },
+    "app-local": {
+      "scope": "TRR-APP-only browser, auth, editor, and local authoring flows.",
+      "source_of_truth": "TRR-APP app code plus this workspace contract"
+    }
+  },
+  "authority_surfaces": {
+    "source_of_truth": [
+      "docs/workspace/shared-env-manifest.json",
+      "docs/workspace/env-contract.md",
+      "docs/workspace/env-contract-inventory.md",
+      "docs/workspace/env-deprecations.md"
+    ],
+    "runtime_profile_adapters": [
+      "profiles/default.env",
+      "profiles/local-cloud.env",
+      "profiles/local-docker.env",
+      "profiles/local-full.env",
+      "profiles/local-lite.env",
+      "profiles/social-debug.env"
+    ],
+    "surface_setup_adapters": [
+      "TRR-APP/apps/web/.env.example",
+      "TRR-Backend/.env.example"
+    ],
+    "local_secret_adapters": [
+      "TRR-APP/apps/web/.env.local",
+      "TRR-APP/apps/web/.env.production.local",
+      "TRR-Backend/.env"
+    ],
+    "retired_env_surfaces": [
+      "screenalytics/.env",
+      "screenalytics/.env.*",
+      "screenalytics/web/.env.local",
+      "screenalytics/web/.env.local.*"
+    ],
+    "evidence_snapshots": [
+      ".logs/workspace/*.env",
+      "TRR-APP/.artifacts/env-inventory/**/*.env",
+      "TRR-APP/apps/web/.artifacts/env-inventory/**/*.env",
+      "TRR-APP/apps/web/.vercel/.env.*.local",
+      "TRR-APP/apps/web/.env.vercel.local"
+    ]
+  },
+  "shared_key_patterns": [
+    {
+      "pattern": "WORKSPACE_*",
+      "owner": "workspace-ops",
+      "lifecycle": "canonical"
+    },
+    {
+      "pattern": "TRR_DB_*",
+      "owner": "workspace-ops",
+      "lifecycle": "canonical"
+    },
+    {
+      "pattern": "TRR_CORE_SUPABASE_*",
+      "owner": "admin-read-model",
+      "lifecycle": "canonical"
+    },
+    {
+      "pattern": "TRR_INTERNAL_ADMIN_*",
+      "owner": "workspace-ops",
+      "lifecycle": "canonical"
+    },
+    {
+      "pattern": "TRR_ADMIN_*",
+      "owner": "workspace-ops",
+      "lifecycle": "canonical"
+    },
+    {
+      "pattern": "TRR_BACKEND_*",
+      "owner": "workspace-ops",
+      "lifecycle": "canonical"
+    },
+    {
+      "pattern": "TRR_HEALTH_*",
+      "owner": "backend-shared-schema",
+      "lifecycle": "canonical"
+    },
+    {
+      "pattern": "TRR_SOCIAL_*",
+      "owner": "backend-shared-schema",
+      "lifecycle": "canonical"
+    },
+    {
+      "pattern": "TRR_AUTH_*",
+      "owner": "app-local",
+      "lifecycle": "canonical"
+    },
+    {
+      "pattern": "TRR_GETTY_*",
+      "owner": "backend-shared-schema",
+      "lifecycle": "canonical"
+    },
+    {
+      "pattern": "TRR_REDDIT_*",
+      "owner": "backend-shared-schema",
+      "lifecycle": "canonical"
+    },
+    {
+      "pattern": "TRR_GOOGLE_NEWS_*",
+      "owner": "backend-shared-schema",
+      "lifecycle": "canonical"
+    },
+    {
+      "pattern": "TRR_JOB_*",
+      "owner": "backend-shared-schema",
+      "lifecycle": "canonical"
+    },
+    {
+      "pattern": "TRR_LONG_JOB_*",
+      "owner": "backend-shared-schema",
+      "lifecycle": "canonical"
+    },
+    {
+      "pattern": "TRR_MODAL_*",
+      "owner": "backend-shared-schema",
+      "lifecycle": "canonical"
+    },
+    {
+      "pattern": "TRR_REMOTE_*",
+      "owner": "backend-shared-schema",
+      "lifecycle": "canonical"
+    },
+    {
+      "pattern": "TRR_SCREENALYTICS_*",
+      "owner": "backend-shared-schema",
+      "lifecycle": "retired-screenalytics-compatibility"
+    },
+    {
+      "pattern": "TRR_*",
+      "owner": "backend-shared-schema",
+      "lifecycle": "canonical"
+    },
+    {
+      "pattern": "POSTGRES_*",
+      "owner": "admin-read-model",
+      "lifecycle": "canonical"
+    },
+    {
+      "pattern": "DATABASE_*",
+      "owner": "admin-read-model",
+      "lifecycle": "compatibility-only"
+    },
+    {
+      "pattern": "ADMIN_*",
+      "owner": "admin-read-model",
+      "lifecycle": "canonical"
+    },
+    {
+      "pattern": "SUPABASE_*",
+      "owner": "backend-shared-schema",
+      "lifecycle": "canonical"
+    },
+    {
+      "pattern": "NEXT_PUBLIC_SUPABASE_*",
+      "owner": "app-local",
+      "lifecycle": "explicit-feature-only"
+    },
+    {
+      "pattern": "SCREENALYTICS_*",
+      "owner": "backend-shared-schema",
+      "lifecycle": "legacy-screenalytics-prefix"
+    }
+  ],
   "canonical": {
     "TRR_API_URL": {
       "description": "Canonical backend base URL consumed by TRR-APP and workspace-managed local tooling.",
-      "owner": "TRR-Backend"
+      "owner": "backend-shared-schema",
+      "lifecycle": "canonical"
     },
     "TRR_DB_DIRECT_URL": {
       "description": "Explicit local direct Postgres connection string preferred by make dev before session-pooler lanes.",
-      "owner": "workspace"
+      "owner": "workspace-ops",
+      "lifecycle": "canonical-local-only"
     },
     "TRR_DB_SESSION_URL": {
       "description": "Preferred explicit runtime Postgres session-mode URL for Supavisor/local-compatible workloads.",
-      "owner": "workspace"
+      "owner": "workspace-ops",
+      "lifecycle": "canonical"
     },
     "TRR_DB_URL": {
       "description": "Compatibility runtime Postgres connection string for TRR-compatible reads and writes when TRR_DB_SESSION_URL is not set.",
-      "owner": "workspace"
+      "owner": "workspace-ops",
+      "lifecycle": "canonical-compatibility"
     },
     "TRR_DB_TRANSACTION_URL": {
       "description": "Optional transaction-mode Supavisor URL used only during documented flight tests.",
-      "owner": "workspace"
+      "owner": "workspace-ops",
+      "lifecycle": "flight-test-only"
     },
     "TRR_DB_RUNTIME_LANE": {
       "description": "Runtime DB lane selector. Defaults to session; transaction requires TRR_DB_TRANSACTION_FLIGHT_TEST=1.",
-      "owner": "workspace"
+      "owner": "workspace-ops",
+      "lifecycle": "canonical"
     },
     "TRR_DB_TRANSACTION_FLIGHT_TEST": {
       "description": "Explicit opt-in guard for transaction-mode DB lane testing.",
-      "owner": "workspace"
+      "owner": "workspace-ops",
+      "lifecycle": "flight-test-only"
     },
     "TRR_DB_FALLBACK_URL": {
       "description": "Only intentional runtime fallback for the TRR Postgres lane.",
-      "owner": "workspace"
+      "owner": "workspace-ops",
+      "lifecycle": "canonical"
     },
     "TRR_INTERNAL_ADMIN_SHARED_SECRET": {
-      "description": "Shared internal-admin JWT signing secret across backend, app, and Screenalytics.",
-      "owner": "workspace"
+      "description": "Shared internal-admin JWT signing secret across backend, app, and retained compatibility callbacks.",
+      "owner": "workspace-ops",
+      "lifecycle": "canonical-secret"
+    },
+    "SOCIAL_THREADS_POSTS_SCRAPLING_ENABLED": {
+      "description": "Rollout switch for the Threads posts Scrapling worker lane. Defaults enabled; false values stop the lane safely before session or fetcher work starts.",
+      "owner": "backend-shared-schema",
+      "lifecycle": "canonical-runtime-flag"
+    },
+    "SOCIAL_INSTAGRAM_COMMENTS_PER_POST_CONCURRENCY": {
+      "description": "Per-post Instagram comments fetch overlap. Defaults to serial behavior and clamps to the worker-safe 1..8 range.",
+      "owner": "backend-shared-schema",
+      "lifecycle": "canonical-runtime-flag"
     },
     "SUPABASE_JWT_SECRET": {
       "description": "JWT signing secret required by backend auth validation for deployed runtimes.",
-      "owner": "TRR-Backend"
+      "owner": "backend-shared-schema",
+      "lifecycle": "canonical-secret"
+    },
+    "TRR_CORE_SUPABASE_URL": {
+      "description": "Canonical TRR-APP server/admin Supabase URL for REST/Auth/Storage access.",
+      "owner": "admin-read-model",
+      "lifecycle": "canonical"
+    },
+    "TRR_CORE_SUPABASE_SERVICE_ROLE_KEY": {
+      "description": "Canonical TRR-APP server/admin Supabase service-role credential.",
+      "owner": "admin-read-model",
+      "lifecycle": "canonical-secret"
+    },
+    "SUPABASE_URL": {
+      "description": "Backend Supabase REST/Auth API URL and local tooling URL.",
+      "owner": "backend-shared-schema",
+      "lifecycle": "canonical"
+    },
+    "SUPABASE_ANON_KEY": {
+      "description": "Backend Supabase anon credential for public API/tooling flows.",
+      "owner": "backend-shared-schema",
+      "lifecycle": "canonical-secret"
+    },
+    "SUPABASE_SERVICE_ROLE_KEY": {
+      "description": "Backend Supabase service-role credential. TRR-APP uses TRR_CORE_SUPABASE_SERVICE_ROLE_KEY instead.",
+      "owner": "backend-shared-schema",
+      "lifecycle": "backend-only-secret"
+    },
+    "DATABASE_URL": {
+      "description": "Deprecated runtime name retained only for explicit migration/tooling compatibility.",
+      "owner": "workspace-ops",
+      "lifecycle": "compatibility-only"
+    },
+    "SUPABASE_DB_URL": {
+      "description": "Deprecated runtime name retained only for explicit transitional compatibility shims.",
+      "owner": "workspace-ops",
+      "lifecycle": "deprecated-removable"
     }
   },
   "transitional": {},
+  "retired_screenalytics_env": {
+    "status": "screenalytics env files are protected local evidence, not current TRR workspace authority",
+    "retain": [
+      "TRR_API_URL",
+      "TRR_DB_DIRECT_URL",
+      "TRR_DB_SESSION_URL",
+      "TRR_DB_URL",
+      "TRR_DB_FALLBACK_URL",
+      "TRR_INTERNAL_ADMIN_SHARED_SECRET",
+      "SCREENALYTICS_UNAVAILABLE_COOLDOWN_SECONDS"
+    ],
+    "rename": [
+      {
+        "key": "SCREENALYTICS_OBJECT_STORAGE_BUCKET",
+        "replacement": "TRR_CAST_SCREENTIME_ARTIFACT_BUCKET"
+      },
+      {
+        "key": "SCREENALYTICS_OBJECT_STORE_BUCKET",
+        "replacement": "TRR_CAST_SCREENTIME_ARTIFACT_BUCKET"
+      },
+      {
+        "key": "SCREENALYTICS_S3_BUCKET",
+        "replacement": "TRR_CAST_SCREENTIME_ARTIFACT_BUCKET"
+      },
+      {
+        "key": "SCREENALYTICS_VISION_SIM",
+        "replacement": "TRR_VISION_SIM"
+      }
+    ],
+    "retire": [
+      "SCREENALYTICS_API_URL",
+      "SCREENALYTICS_ENV",
+      "SCREENALYTICS_OBJECT_STORE_ENDPOINT",
+      "SCREENALYTICS_SERVICE_TOKEN",
+      "TRR_SCREENALYTICS_ALLOW_SERVICE_TOKEN_FALLBACK",
+      "DB_URL",
+      "SUPABASE_DB_HOST",
+      "SUPABASE_DB_PORT",
+      "SUPABASE_DB_NAME",
+      "SUPABASE_DB_USER",
+      "SUPABASE_DB_PASSWORD"
+    ]
+  },
   "repo_validation": {
     "TRR-APP": {
       "env_example": "TRR-APP/apps/web/.env.example",
@@ -72,23 +348,6 @@
         "SUPABASE_JWT_SECRET"
       ],
       "transitional_compat": []
-    },
-    "screenalytics": {
-      "db_any_of": [
-        "TRR_DB_DIRECT_URL",
-        "TRR_DB_SESSION_URL",
-        "TRR_DB_URL",
-        "TRR_DB_FALLBACK_URL"
-      ],
-      "auth_required": [
-        "TRR_INTERNAL_ADMIN_SHARED_SECRET"
-      ],
-      "auth_transitional": [
-        "SCREENALYTICS_SERVICE_TOKEN"
-      ],
-      "recommended": [
-        "TRR_API_URL"
-      ]
     }
   }
 }

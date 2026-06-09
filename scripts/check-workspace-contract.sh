@@ -11,6 +11,11 @@ ENV_CONTRACT_FILE="$ROOT/docs/workspace/env-contract.md"
 TRR_APP_WEB_DIR="$ROOT/TRR-APP/apps/web"
 TRR_APP_ENV_FILE="$TRR_APP_WEB_DIR/.env.example"
 TRR_APP_POSTGRES_CONTRACT_TEST="$TRR_APP_WEB_DIR/tests/postgres-connection-string-resolution.test.ts"
+WORKSPACE_HYGIENE_DOC="$ROOT/docs/workspace/workspace-hygiene.md"
+TEST_SKIP_INVENTORY_DOC="$ROOT/docs/workspace/test-skip-inventory.md"
+WORKSPACE_HYGIENE_REPORT_SCRIPT="$ROOT/scripts/workspace/hygiene_report.sh"
+WORKSPACE_HYGIENE_CLEAN_SCRIPT="$ROOT/scripts/workspace/hygiene_clean.sh"
+WORKSPACE_ENV_HYGIENE_SCRIPT="$ROOT/scripts/workspace/env_hygiene.py"
 
 extract_script_default() {
   local key="$1"
@@ -138,6 +143,120 @@ assert_app_postgres_pool_contract() {
     exit 1
   fi
   trr_pnpm "$ROOT/TRR-APP" -C "$TRR_APP_WEB_DIR" exec vitest run tests/postgres-connection-string-resolution.test.ts --reporter=dot
+}
+
+assert_root_path_trackable() {
+  local path="$1"
+  local label="$2"
+  local rel="${path#$ROOT/}"
+
+  if [[ "$rel" == "$path" ]]; then
+    echo "[workspace-contract] ERROR: ${label} is not under workspace root: ${path}" >&2
+    exit 1
+  fi
+
+  if git -C "$ROOT" ls-files --error-unmatch "$rel" >/dev/null 2>&1; then
+    return 0
+  fi
+
+  if git -C "$ROOT" ls-files --others --exclude-standard -- "$rel" | grep -qxF "$rel"; then
+    return 0
+  fi
+
+  echo "[workspace-contract] ERROR: ${label} is hidden by git excludes or missing from trackable status: ${rel}" >&2
+  exit 1
+}
+
+assert_workspace_hygiene_contract() {
+  local missing=0
+
+  for path in "$WORKSPACE_HYGIENE_DOC" "$TEST_SKIP_INVENTORY_DOC" "$WORKSPACE_HYGIENE_REPORT_SCRIPT" "$WORKSPACE_HYGIENE_CLEAN_SCRIPT" "$WORKSPACE_ENV_HYGIENE_SCRIPT"; do
+    if [[ ! -f "$path" ]]; then
+      echo "[workspace-contract] ERROR: missing workspace hygiene contract file: ${path}" >&2
+      missing=1
+    fi
+  done
+  if [[ "$missing" -ne 0 ]]; then
+    exit 1
+  fi
+
+  bash -n "$WORKSPACE_HYGIENE_REPORT_SCRIPT"
+  bash -n "$WORKSPACE_HYGIENE_CLEAN_SCRIPT"
+  bash "$WORKSPACE_HYGIENE_REPORT_SCRIPT" >/dev/null
+  bash "$WORKSPACE_HYGIENE_CLEAN_SCRIPT" --dry-run >/dev/null
+  assert_root_path_trackable "$WORKSPACE_HYGIENE_DOC" "workspace hygiene doc"
+  assert_root_path_trackable "$TEST_SKIP_INVENTORY_DOC" "test skip inventory doc"
+  assert_root_path_trackable "$WORKSPACE_HYGIENE_REPORT_SCRIPT" "workspace hygiene report script"
+  assert_root_path_trackable "$WORKSPACE_HYGIENE_CLEAN_SCRIPT" "workspace hygiene clean script"
+  assert_root_path_trackable "$WORKSPACE_ENV_HYGIENE_SCRIPT" "workspace env hygiene script"
+
+  if ! grep -q '^workspace-hygiene-report:' "$ROOT/Makefile"; then
+    echo "[workspace-contract] ERROR: Makefile is missing workspace-hygiene-report target." >&2
+    exit 1
+  fi
+  if ! grep -q '^workspace-hygiene-clean-dry-run:' "$ROOT/Makefile"; then
+    echo "[workspace-contract] ERROR: Makefile is missing workspace-hygiene-clean-dry-run target." >&2
+    exit 1
+  fi
+  if ! grep -q 'No files were deleted' "$WORKSPACE_HYGIENE_REPORT_SCRIPT"; then
+    echo "[workspace-contract] ERROR: hygiene report must explicitly state that no files were deleted." >&2
+    exit 1
+  fi
+  if ! grep -q 'Dry-run complete. No files were deleted.' "$WORKSPACE_HYGIENE_CLEAN_SCRIPT"; then
+    echo "[workspace-contract] ERROR: hygiene clean script must explicitly remain dry-run only." >&2
+    exit 1
+  fi
+  if grep -Eq 'rm -rf|rm -f' "$WORKSPACE_HYGIENE_CLEAN_SCRIPT"; then
+    echo "[workspace-contract] ERROR: hygiene clean script must not contain deletion commands." >&2
+    exit 1
+  fi
+  if ! git -C "$ROOT/TRR-Backend" check-ignore -q -- .locks/social-auth-refresh/instagram.json; then
+    echo "[workspace-contract] ERROR: TRR-Backend/.locks/ must remain ignored runtime lock state." >&2
+    exit 1
+  fi
+  if ! grep -q 'TRR-Backend/.locks/' "$WORKSPACE_HYGIENE_DOC"; then
+    echo "[workspace-contract] ERROR: workspace hygiene doc must explain TRR-Backend/.locks/ protection." >&2
+    exit 1
+  fi
+}
+
+assert_env_hygiene_contract() {
+  if [[ ! -f "$WORKSPACE_ENV_HYGIENE_SCRIPT" ]]; then
+    echo "[workspace-contract] ERROR: missing env hygiene script: ${WORKSPACE_ENV_HYGIENE_SCRIPT}" >&2
+    exit 1
+  fi
+
+  python3 "$WORKSPACE_ENV_HYGIENE_SCRIPT" --check
+
+  if ! grep -q 'values are never printed' "$WORKSPACE_ENV_HYGIENE_SCRIPT"; then
+    echo "[workspace-contract] ERROR: env hygiene script must state that values are never printed." >&2
+    exit 1
+  fi
+  if ! grep -q 'Env File Authority Classes' "$ROOT/docs/workspace/env-contract-inventory.md"; then
+    echo "[workspace-contract] ERROR: env contract inventory must document env file authority classes." >&2
+    exit 1
+  fi
+}
+
+assert_runtime_failure_lane_contract() {
+  local debug_log_enabled_doc_default
+  debug_log_enabled_doc_default="$(extract_env_contract_default "TRR_REMOTE_DEBUG_LOG_ENABLED")"
+  assert_equals "docs/workspace/env-contract.md remote debug log kill switch default" "0" "$debug_log_enabled_doc_default"
+
+  for phrase in \
+    "## Operator Failure Lanes" \
+    "Direct URL" \
+    "Pooler URL" \
+    "Health pool" \
+    "Social pools" \
+    "Local fallback" \
+    "Auth" \
+    "Modal deployment state"; do
+    if ! grep -qF "$phrase" "$ENV_CONTRACT_FILE"; then
+      echo "[workspace-contract] ERROR: env contract missing operator failure lane phrase: ${phrase}" >&2
+      exit 1
+    fi
+  done
 }
 
 modal_script_default="$(extract_script_default "WORKSPACE_TRR_MODAL_ADMIN_OPERATION_FUNCTION")"
@@ -331,5 +450,8 @@ else
 fi
 assert_workspace_app_projection_behavior
 assert_app_postgres_pool_contract
+assert_workspace_hygiene_contract
+assert_env_hygiene_contract
+assert_runtime_failure_lane_contract
 
 echo "[workspace-contract] OK"

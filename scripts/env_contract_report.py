@@ -112,6 +112,8 @@ COMPATIBILITY_PATHS = {
     "scripts/redact-env-inventory.py",
     "scripts/lib/preflight-env-drift.sh",
     "scripts/lib/runtime-db-env.sh",
+    "scripts/test_env_hygiene.py",
+    "scripts/workspace/env_hygiene.py",
 }
 
 COMPATIBILITY_PREFIXES = (
@@ -308,7 +310,7 @@ def _env_keys(path: Path) -> set[str]:
 
 
 def _run_rg(pattern: str) -> list[str]:
-    command = ["rg", "-n", pattern, "TRR-Backend", "TRR-APP", "scripts", "docs"]
+    command = ["rg", "--sort", "path", "-n", pattern, "TRR-Backend", "TRR-APP", "scripts", "docs"]
     for glob in EXCLUDE_GLOBS:
         command.extend(["--glob", glob])
     result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, check=False)
@@ -373,6 +375,16 @@ def _classify_deprecation_hit(
             text=text,
             classification="compatibility-only",
             rationale="Reviewed deployment-governance exception retained intentionally for the active Vercel project.",
+        )
+
+    if path == "docs/workspace/shared-env-manifest.json":
+        return DeprecationHit(
+            name=name,
+            path=path,
+            line_number=line_number,
+            text=text,
+            classification="compatibility-only",
+            rationale="Canonical env ownership manifest entry for deprecated or compatibility-only names.",
         )
 
     if path in DATABASE_URL_TOOLING_PATHS:
@@ -440,6 +452,8 @@ def _collect_deprecation_hits() -> list[DeprecationHit]:
 
 
 def _build_inventory_markdown() -> str:
+    manifest = _load_shared_env_manifest()
+    authority = manifest.get("authority_surfaces", {})
     lines = [
         "# Canonical Env Contract Inventory",
         "",
@@ -462,6 +476,49 @@ def _build_inventory_markdown() -> str:
             "| `backend-shared-schema` | Shared schema, backend APIs, migrations, auth validation, and worker DB access. | `TRR-Backend` code and `TRR-Backend/supabase/migrations`. |",
             "| `admin-read-model` | TRR-APP admin read paths retained until a backend aggregate endpoint exists. | `docs/workspace/api-migration-ledger.md`. |",
             "| `app-local` | TRR-APP-only authoring/editor flows that intentionally remain app-local. | TRR-APP app code plus this workspace contract. |",
+            "",
+            "## Env File Authority Classes",
+            "",
+            "| Class | Meaning | Surfaces |",
+            "|---|---|---|",
+            "| source of truth | Env ownership Interface and generated human projections. | "
+            + ", ".join(f"`{item}`" for item in authority.get("source_of_truth", []))
+            + " |",
+            "| runtime profile adapter | Checked-in workspace mode inputs. | "
+            + ", ".join(f"`{item}`" for item in authority.get("runtime_profile_adapters", []))
+            + " |",
+            "| surface setup adapter | Checked-in setup examples for one runtime surface. | "
+            + ", ".join(f"`{item}`" for item in authority.get("surface_setup_adapters", []))
+            + " |",
+            "| local secret adapter | Ignored operator secrets and overrides. Read key names only; never print values. | "
+            + ", ".join(f"`{item}`" for item in authority.get("local_secret_adapters", []))
+            + " |",
+            "| retired env surface | Protected retired env files. Read key names only; not current authority. | "
+            + ", ".join(f"`{item}`" for item in authority.get("retired_env_surfaces", []))
+            + " |",
+            "| evidence snapshot | Generated or pulled env evidence. Not implementation authority. | "
+            + ", ".join(f"`{item}`" for item in authority.get("evidence_snapshots", []))
+            + " |",
+            "",
+            "## Retired Screenalytics Env Governance",
+            "",
+            "`screenalytics/.env*` files are protected local evidence and are not current TRR env authority surfaces.",
+            "",
+            "| Classification | Keys |",
+            "|---|---|",
+            "| retain | "
+            + ", ".join(f"`{item}`" for item in manifest.get("retired_screenalytics_env", {}).get("retain", []))
+            + " |",
+            "| rename | "
+            + ", ".join(
+                f"`{item.get('key')}` -> `{item.get('replacement')}`"
+                for item in manifest.get("retired_screenalytics_env", {}).get("rename", [])
+                if isinstance(item, dict)
+            )
+            + " |",
+            "| retire | "
+            + ", ".join(f"`{item}`" for item in manifest.get("retired_screenalytics_env", {}).get("retire", []))
+            + " |",
             "",
             "## Supabase Runtime Ownership Matrix",
             "",
@@ -533,7 +590,7 @@ def _build_deprecations_markdown() -> str:
         lines.extend(["", "| Deprecated name | Location | Rationale |", "|---|---|---|"])
         for hit in grouped[classification]:
             lines.append(
-                f"| `{hit.name}` | `{hit.path}:{hit.line_number}:{hit.text}` | {hit.rationale} |"
+                f"| `{hit.name}` | `{hit.path}:{hit.line_number}` | {hit.rationale} |"
             )
         lines.append("")
 
@@ -609,6 +666,32 @@ def _write_if_changed(path: Path, content: str) -> bool:
 
 def _validate_contract() -> list[ValidationError]:
     errors: list[ValidationError] = []
+    manifest = _load_shared_env_manifest()
+    owner_aliases = set(manifest.get("owner_aliases", {}))
+    for group_name in ("canonical", "transitional"):
+        group = manifest.get(group_name, {})
+        if isinstance(group, dict):
+            for key, metadata in group.items():
+                owner = metadata.get("owner") if isinstance(metadata, dict) else None
+                if owner and owner not in owner_aliases:
+                    errors.append(
+                        ValidationError(
+                            f"manifest-owner-{key.lower()}",
+                            f"{key} owner {owner!r} is not declared in owner_aliases.",
+                        )
+                    )
+    for index, rule in enumerate(manifest.get("shared_key_patterns", []), start=1):
+        owner = rule.get("owner") if isinstance(rule, dict) else None
+        pattern = rule.get("pattern") if isinstance(rule, dict) else None
+        if not pattern or not owner:
+            errors.append(ValidationError(f"manifest-pattern-{index}", "Each shared_key_patterns entry must define pattern and owner."))
+        elif owner not in owner_aliases:
+            errors.append(
+                ValidationError(
+                    f"manifest-pattern-owner-{index}",
+                    f"shared_key_patterns entry {pattern!r} owner {owner!r} is not declared in owner_aliases.",
+                )
+            )
 
     launcher = _read_text(ROOT / "scripts/dev-workspace.sh")
     if 'TRR_LOCAL_DEV=1 \\' not in launcher:
@@ -623,7 +706,6 @@ def _validate_contract() -> list[ValidationError]:
     if "SUPABASE_DB_URL" in backend_keys:
         errors.append(ValidationError("backend-deprecated-supabase-db-url", "TRR-Backend/.env.example must not advertise SUPABASE_DB_URL."))
 
-    manifest = _load_shared_env_manifest()
     app_required_keys = tuple(manifest["repo_validation"]["TRR-APP"]["required_env_example_keys"])
 
     app_keys = _env_keys(ROOT / "TRR-APP/apps/web/.env.example")

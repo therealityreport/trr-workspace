@@ -6,6 +6,53 @@ chrome_devtools_status_emit_field() {
   printf '%s=%s\n' "$key" "$value"
 }
 
+chrome_devtools_status_value() {
+  local output="$1"
+  local key="$2"
+  printf '%s\n' "$output" | sed -n "s/^${key}=//p" | head -n 1
+}
+
+chrome_devtools_transport_repair_classify() {
+  local output="${1:-}"
+  local overall_state
+  local attention_kind
+  local shared_runtime_state
+  local pressure_state
+  local shared_port
+  local repair_action="none"
+  local repair_reason="ready"
+
+  overall_state="$(chrome_devtools_status_value "$output" "overall_state")"
+  attention_kind="$(chrome_devtools_status_value "$output" "attention_kind")"
+  shared_runtime_state="$(chrome_devtools_status_value "$output" "shared_runtime_state")"
+  pressure_state="$(chrome_devtools_status_value "$output" "pressure_state")"
+  shared_port="$(chrome_devtools_status_value "$output" "shared_port")"
+
+  if [[ "$attention_kind" == "unavailable" || "$overall_state" == "unavailable" || "$shared_runtime_state" == "unavailable" ]]; then
+    repair_action="repair"
+    repair_reason="shared_runtime_unavailable"
+  elif [[ "$pressure_state" == "unsafe" ]]; then
+    repair_action="repair"
+    repair_reason="unsafe_stale_runtime"
+  elif [[ "$overall_state" == "recoverable" || "$shared_runtime_state" == "recoverable" ]]; then
+    repair_reason="recoverable_auto_launch"
+  elif [[ "$overall_state" == "degraded" ]]; then
+    repair_reason="degraded_nonblocking"
+  elif [[ -n "$overall_state" ]]; then
+    repair_reason="$overall_state"
+  else
+    repair_reason="unknown"
+  fi
+
+  chrome_devtools_status_emit_field "repair_action" "$repair_action"
+  chrome_devtools_status_emit_field "repair_reason" "$repair_reason"
+  chrome_devtools_status_emit_field "overall_state" "$overall_state"
+  chrome_devtools_status_emit_field "attention_kind" "$attention_kind"
+  chrome_devtools_status_emit_field "shared_runtime_state" "$shared_runtime_state"
+  chrome_devtools_status_emit_field "pressure_state" "$pressure_state"
+  chrome_devtools_status_emit_field "shared_port" "$shared_port"
+}
+
 chrome_devtools_status_classify() {
   local wrapper_mode="$1"
   local shared_endpoint_state="$2"

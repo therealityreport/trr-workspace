@@ -2,6 +2,8 @@
 
 Date: 2026-05-19
 
+Updated: 2026-05-21
+
 Scope:
 - `TRR-Backend/api`
 - `TRR-Backend/trr_backend`
@@ -11,6 +13,36 @@ This is an ownership inventory for future backend cleanup. It does not authorize
 behavior refactors, route moves, package moves, SQL moves, or test rewrites by
 itself. Later slices should deepen Modules behind current Interfaces before any
 file reorganization.
+
+## Current Cleanup State
+
+The backend cleanup plan is no longer inventory-only. The active backend slice
+is social route Interface deepening.
+
+Changes now present in the dirty backend checkout:
+
+- `api/routers/socials/__init__.py` remains the public route aggregator but now
+  imports cache helpers from `_analytics_cache.py` and `_profile_cache.py`.
+- `api/routers/socials/analytics_read.py` is a route-family helper for
+  analytics include/path normalization and week-detail payload shaping.
+- `api/routers/socials/reddit.py` now owns Reddit refresh/backfill request
+  serialization helpers while preserving route paths in the public aggregator.
+- `trr_backend/socials/social_season_analytics_impl.py` still owns the durable
+  analytics implementation and received a narrow hosted-media SQL percent
+  escaping fix.
+- Backend dirty state also includes broad auth refresh, Modal readiness, request
+  timeout, health, and test changes. Treat these as behavior changes requiring
+  review before promotion.
+
+Current cleanup priority:
+
+1. Fix or split the Instagram auth repair regressions found in backend dirty-diff
+   review before promoting the broader backend behavior changes.
+2. Finish validation for the narrow Reddit route helper extraction.
+3. Keep migration cleanup forward-only; SocialBlade migration history is clean
+   after reconcile, and stale RLS/grants evidence has been regenerated.
+4. Start any further route cleanup only after the current helper extraction has
+   focused Ruff/pytest evidence.
 
 ## Backend Ownership Map
 
@@ -94,6 +126,9 @@ file reorganization.
 | `TRR-Backend/api/main.py` | One app Module registers all routers and middleware. | FastAPI app, middleware behavior, `/api/v1` route inclusion. | High-risk. Keep stable unless route registration itself is the slice. |
 | `TRR-Backend/api/routers/admin_person_images.py` | Very large route Module with request parsing, response shaping, orchestration, media calls, and identity/source policy work. | Admin person image endpoints plus route-local helper names used in tests. | High-risk but good deepening candidate. Start with route-local private Modules. |
 | `TRR-Backend/api/routers/socials/__init__.py` | Very large social route aggregator despite nearby route package files. | Admin/social route paths, route helper names, imports from `trr_backend.repositories.social_season_analytics` and `trr_backend.repositories.reddit_refresh`. | High-risk. Deepen by route family and preserve route inventory tests. |
+| `TRR-Backend/api/routers/socials/_analytics_cache.py` | Route-family cache helper Module extracted from the social route aggregator. | Cache key builders, TTL cache accessors, invalidation helpers, and analytics/week cache storage. | Active cleanup output. Keep route-local; do not promote to domain until callers and tests prove a stable Interface. |
+| `TRR-Backend/api/routers/socials/_profile_cache.py` | Route-family account-profile cache helper Module extracted from the social route aggregator. | Account profile cache keys, singleflight/freshness/progress cache helpers, and cache invalidation. | Active cleanup output. Review as behavior-adjacent because cache TTL and invalidation shape can affect visible admin freshness. |
+| `TRR-Backend/api/routers/socials/analytics_read.py` | Route-family read/payload helper Module. | Analytics include parsing, logging extra, week-detail pagination/sort, and cache-count response shaping. | Active cleanup output. Good pattern for route-local helper depth if tests cover the same helper Interface routes use. |
 | `TRR-Backend/api/routers/admin_show_links.py` | Large route Module that mixes show links, Fandom/Wikipedia scraping, operation streams, and repository calls. | Admin show link routes and `fandom_router` registered separately in `api/main.py`. | High-risk. Split only behind current tests and route inventory. |
 | `TRR-Backend/trr_backend/socials/social_season_analytics_impl.py` | Extremely large social analytics/control-plane implementation. | Compatibility Interface via `TRR-Backend/trr_backend/repositories/social_season_analytics.py`; direct canonical imports also exist. | Highest-risk. Do not move first. Create stable Interface/Adapter seams before extraction. |
 | `TRR-Backend/trr_backend/repositories/social_season_analytics.py` | Compatibility alias that replaces its module object with `social_season_analytics_impl`. | Legacy repository import path used by routes, tests, and social workers. | High-risk Interface. Preserve during all Module deepening. |
@@ -166,8 +201,16 @@ file reorganization.
 
 Practical result: the largest social route file becomes easier to change without moving route paths or social implementation code.
 
+Status: active. The first extraction has focused Ruff/pytest, `make test-fast`,
+`make app-check`, and Browser evidence recorded. The next narrow extraction has
+started with Reddit request serialization helpers; keep it inside the existing
+social route Interface before opening a second cleanup surface.
+
 - Files involved:
   - `TRR-Backend/api/routers/socials/__init__.py`
+  - `TRR-Backend/api/routers/socials/_analytics_cache.py`
+  - `TRR-Backend/api/routers/socials/_profile_cache.py`
+  - `TRR-Backend/api/routers/socials/analytics_read.py`
   - `TRR-Backend/api/routers/socials/_surfaces.py`
   - Existing package siblings under `TRR-Backend/api/routers/socials/`
   - Tests under `TRR-Backend/tests/api/routers/test_socials_route_shape.py`
@@ -186,6 +229,10 @@ Practical result: the largest social route file becomes easier to change without
 - Validation:
   - `cd TRR-Backend && ./.venv/bin/python -m pytest tests/api/routers/test_socials_route_shape.py tests/api/routers/test_socials_reddit_refresh_routes.py tests/api/routers/test_socials_season_analytics.py`
   - Add narrower platform route tests when the touched route family requires them.
+  - Include `tests/repositories/test_social_hosted_media_sql.py` when validating
+    the hosted-media SQL escaping fix.
+  - Escalate to `make test-fast` and `make app-check` before completion because
+    this slice now crosses backend route behavior and admin app verification.
 
 ### Slice 2: Person image route orchestration deepening
 

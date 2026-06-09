@@ -132,8 +132,8 @@ class WorkspaceAppEnvProjectionTests(unittest.TestCase):
 
     def test_default_profile_keeps_low_pressure_modal_social_caps(self) -> None:
         text = DEFAULT_PROFILE.read_text(encoding="utf-8")
-        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT=4", text)
-        self.assertIn("WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT=4", text)
+        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT=8", text)
+        self.assertIn("WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT=8", text)
         self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_POSTS=1", text)
         self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS=1", text)
 
@@ -157,9 +157,8 @@ class WorkspaceAppEnvProjectionTests(unittest.TestCase):
         self.assertIn("WORKSPACE_TRR_APP_POSTGRES_POOL_MAX=1", text)
         self.assertIn("WORKSPACE_TRR_APP_POSTGRES_MAX_CONCURRENT_OPERATIONS=1", text)
         self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS=0", text)
-        self.assertIn("WORKSPACE_SCREENALYTICS_DB_ENABLED=0", text)
-        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT=4", text)
-        self.assertIn("WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT=4", text)
+        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT=8", text)
+        self.assertIn("WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT=8", text)
         self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_POSTS=1", text)
         self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS=1", text)
 
@@ -167,8 +166,8 @@ class WorkspaceAppEnvProjectionTests(unittest.TestCase):
         dev_text = DEV_SCRIPT.read_text(encoding="utf-8")
         status_text = STATUS_SCRIPT.read_text(encoding="utf-8")
         defaults = {
-            "WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT": "4",
-            "WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT": "4",
+            "WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT": "8",
+            "WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT": "8",
             "WORKSPACE_TRR_REMOTE_SOCIAL_POSTS": "1",
             "WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS": "1",
         }
@@ -181,11 +180,11 @@ class WorkspaceAppEnvProjectionTests(unittest.TestCase):
         text = MAKEFILE.read_text(encoding="utf-8")
         dev_hybrid = text[text.index("\ndev-hybrid:") : text.index("\n# Compatibility alias", text.index("\ndev-hybrid:"))]
         self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS=1", dev_hybrid)
-        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT=4", dev_hybrid)
-        self.assertIn("WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT=4", dev_hybrid)
+        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT=8", dev_hybrid)
+        self.assertIn("WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT=8", dev_hybrid)
         self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_POSTS=1", dev_hybrid)
-        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS=3", dev_hybrid)
-        self.assertIn("SOCIAL_POSTS_COMMENTS_PLATFORM_CAP_INSTAGRAM=3", dev_hybrid)
+        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS=8", dev_hybrid)
+        self.assertIn("SOCIAL_POSTS_COMMENTS_PLATFORM_CAP_INSTAGRAM=8", dev_hybrid)
         self.assertIn("SOCIAL_PLATFORM_CAP_PER_ACCOUNT_SCALING=false", dev_hybrid)
         self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR=1", dev_hybrid)
         self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR=1", dev_hybrid)
@@ -195,6 +194,33 @@ class WorkspaceAppEnvProjectionTests(unittest.TestCase):
             text.index("\ndev-hybrid-social-safe:") : text.index("\n# Deprecated compatibility alias", text.index("\ndev-hybrid-social-safe:"))
         ]
         self.assertIn("dev-hybrid PROFILE=", social_safe_alias)
+
+    def test_modal_instagram_auth_status_target_is_bounded(self) -> None:
+        text = MAKEFILE.read_text(encoding="utf-8")
+        target = text[
+            text.index("\nmodal-instagram-auth-status:")
+            : text.index("\nmodal-instagram-auth-repair:", text.index("\nmodal-instagram-auth-status:"))
+        ]
+
+        self.assertIn("--probe-remote-auth instagram", target)
+        self.assertIn("--remote-probe-timeout-seconds", target)
+        self.assertIn("--modal-lookup-timeout-seconds", target)
+        self.assertIn("MODAL_INSTAGRAM_AUTH_STATUS_TIMEOUT_SECONDS:-45", target)
+        self.assertIn("MODAL_INSTAGRAM_AUTH_LOOKUP_TIMEOUT_SECONDS:-30", target)
+
+    def test_modal_instagram_auth_repair_target_runs_owner_guardrail(self) -> None:
+        text = MAKEFILE.read_text(encoding="utf-8")
+        target = text[
+            text.index("\nmodal-instagram-auth-repair:")
+            : text.index("\n# Compatibility alias", text.index("\nmodal-instagram-auth-repair:"))
+        ]
+
+        self.assertIn("./scripts/modal-billing-guardrail.sh", target)
+        self.assertIn('backend_dir="$${TRR_MODAL_BACKEND_DIR:-$(CURDIR)/TRR-Backend}"', target)
+        self.assertIn('TRR_MODAL_BACKEND_DIR="$$backend_dir"', target)
+        self.assertIn("TRR_MODAL_SOURCE_ENV=\"$$source_env\"", target)
+        self.assertIn('python_cmd="$${TRR_BACKEND_PYTHON:-$(CURDIR)/TRR-Backend/.venv/bin/python}"', target)
+        self.assertIn("scripts/modal/repair_instagram_auth.py --json", target)
 
     def test_dev_workspace_prints_effective_db_holder_budget(self) -> None:
         text = DEV_SCRIPT.read_text(encoding="utf-8")
@@ -207,10 +233,19 @@ class WorkspaceAppEnvProjectionTests(unittest.TestCase):
         self.assertIn("DB source:", text)
         self.assertIn("Remote workers:", text)
         self.assertIn("Modal dispatch:", text)
-        self.assertIn("Screenalytics DB:", text)
+        self.assertNotIn("Screenalytics DB:", text)
+        self.assertNotIn("WORKSPACE_SCREENALYTICS_DB_ENABLED", text)
         self.assertIn('WORKSPACE_TRR_MODAL_ENABLED_DEFAULT="0"', text)
         self.assertIn('WORKSPACE_TRR_REMOTE_WORKERS_ENABLED_DEFAULT="0"', text)
         self.assertIn('WORKSPACE_TRR_MODAL_ENABLED_DEFAULT="1"', text)
+
+    def test_profiles_do_not_set_retired_screenalytics_db_toggle(self) -> None:
+        for profile in (DEFAULT_PROFILE, LOCAL_CLOUD_PROFILE, SOCIAL_DEBUG_PROFILE):
+            with self.subTest(profile=profile.name):
+                self.assertNotIn(
+                    "WORKSPACE_SCREENALYTICS_DB_ENABLED",
+                    profile.read_text(encoding="utf-8"),
+                )
 
     def test_dev_workspace_has_explicit_hybrid_mode_and_remote_db_projection(self) -> None:
         text = DEV_SCRIPT.read_text(encoding="utf-8")

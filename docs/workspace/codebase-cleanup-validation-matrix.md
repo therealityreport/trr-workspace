@@ -2,9 +2,51 @@
 
 Use this matrix for cleanup slices from
 `.plan-work/plan-architect/trr-codebase-cleanup-20260519/REVISED_PLAN.md`.
+That `.plan-work` artifact is context only; revalidate it against the current
+branch, dirty tree, and active user request before using it as implementation
+authority.
 The goal is small but adequate validation for each task. Do not run broad
 workspace validation unless the slice crosses ownership boundaries or the
 targeted checks leave behavior uncertain.
+
+## Current Validation Status: 2026-05-21
+
+The current active cleanup slice is backend social route Interface deepening.
+Use this status before claiming completion:
+
+- The original inventory/hygiene docs-only slice is complete.
+- Backend social route cleanup now includes route-local cache/helper Modules and
+  a hosted-media SQL escaping fix.
+- Focused backend Ruff passed for the active social route scope.
+- Focused route-shape, season-analytics route, repository behavior, and
+  hosted-media SQL tests passed: 1,139 tests in the focused backend social set.
+- `TRR-Backend/tests/repositories/test_social_season_analytics.py` no longer
+  blocks the focused backend pytest command.
+- `make test-fast` and `make app-check` pass after the workspace
+  package-manager helper fix and backend repository test cleanup.
+- Browser route/API verification through `make dev-hybrid` reached
+  `http://admin.localhost:3000/southern-charm/s11/social`. The page route,
+  slug resolution, season lookup, social analytics, season episodes
+  `limit=500`, and week-detail requests returned HTTP 200.
+- Playwright visual verification through the same `make dev-hybrid` stack
+  captured `/tmp/trr-admin-social-visual-after-timeout.png` and confirmed the
+  admin social page no longer shows timeout/degraded analytics copy.
+- The earlier `x-trr-social-analytics-source: backend-timeout-degraded`
+  response is not acceptable as the normal admin page state. Normal analytics
+  now uses the default proxy timeout tier, and the client snapshot timeout now
+  allows the bounded backend request window to complete.
+- The season episodes proxy 500 was fixed by aligning the backend route limit
+  with the app's `limit=500` request.
+- The social week-detail timeout mismatch was fixed by giving the backend
+  week-detail route a route-specific 45s cap, keeping server work bounded
+  while the app proxy's 40s timeout tier owns the operator-facing timeout.
+- SocialBlade migration drift is resolved for the inspected RLS chain:
+  migration ownership lint passes, runtime reconcile reports no pending local or
+  remote-only migrations, and the live DB has applied `20260517191631`,
+  `20260518005750`, and `20260518124500`.
+- Static backend dirty-diff review found blocking Instagram repair regressions
+  outside the route cleanup extraction. Treat those auth/ops changes as
+  blockers before promoting the broader backend dirty diff.
 
 ## Selection Rules
 
@@ -26,7 +68,7 @@ the app and backend local while using the safe hybrid social-worker caps.
 
 | Cleanup work type | Examples | Minimum validation target | Add when relevant | Evidence to capture |
 |---|---|---|---|---|
-| Backend route or domain extraction | Moving route-local parsing, response shaping, social orchestration, repository calls, or media helpers inside `TRR-Backend/api` or `TRR-Backend/trr_backend` | `cd TRR-Backend && ./.venv/bin/python -m pytest tests/api tests/repositories tests/socials -q` scoped further when a narrower test file proves the touched Interface | `cd TRR-Backend && make repo-map-check` after backend file moves or package ownership changes | Touched Interface, pytest target, pass/fail, and whether route shapes stayed unchanged |
+| Backend route or domain extraction | Moving route-local parsing, response shaping, social orchestration, repository calls, or media helpers inside `TRR-Backend/api` or `TRR-Backend/trr_backend` | Focused Ruff plus the narrowest pytest target that proves the touched Interface. For the active social route slice: `cd TRR-Backend && ./.venv/bin/ruff check api/routers/socials trr_backend/socials/social_season_analytics_impl.py tests/api/routers tests/repositories` and `cd TRR-Backend && ./.venv/bin/python -m pytest tests/api/routers/test_socials_route_shape.py tests/api/routers/test_socials_season_analytics.py tests/repositories/test_social_season_analytics.py` | Add `tests/repositories/test_social_hosted_media_sql.py` when present; add `cd TRR-Backend && make repo-map-check` after backend file moves or package ownership changes; escalate to `make test-fast` before completing a broad route cleanup slice | Touched Interface, pytest target, pass/fail, and whether route shapes stayed unchanged |
 | Backend repository or DB-lane cleanup | Repository module cleanup, SQL call path cleanup, direct/session DB lane handling, env-sensitive backend behavior | `make test-env-sensitive` when runtime DB lane behavior is touched; otherwise run the focused backend pytest target for the repository area | `make preflight-strict` if workspace startup/runtime env contracts changed | DB lane involved, env contract impact, target database class if any, and command result |
 | Web-app route or feature extraction | Splitting large admin pages, route handlers, feature components, or server proxy modules under `TRR-APP/apps/web` | `make app-check` | `pnpm -C TRR-APP/apps/web run test -- <focused test>` when touched code has matching Vitest coverage; `pnpm -C TRR-APP/apps/web run test` when several web feature areas changed | Visible URL preserved, focused test target if used, app-check result |
 | Route or browser-visible behavior | Admin/public route folders, route aliases, page shell, component state visible in browser, status text, browser smoke scripts | Start with `make dev-hybrid`, then run `make browser-smoke-admin-details` for covered admin detail routes | Add a manual Browser smoke for routes not covered by `make browser-smoke-admin-details`; add `make app-check` if web code changed | Startup target, route URLs checked, visible result, smoke command result |
@@ -45,10 +87,34 @@ claiming completion.
 
 | Follow-up lane | Acceptance check | Required validation evidence |
 |---|---|---|
-| Backend ownership inventory and first Module-deepening slices | Inventory names current route/domain owners before code moves, and the first two slices identify the Interface under test | Focused backend pytest target chosen from `tests/api`, `tests/repositories`, or `tests/socials`; `cd TRR-Backend && make repo-map-check` if files move |
+| Backend ownership inventory and first Module-deepening slices | Inventory names current route/domain owners before code moves, and the first social route slice finishes before another backend route slice starts | Focused backend Ruff/pytest for `api/routers/socials`, hosted-media SQL test when present, `make test-fast`, `make app-check`, and `cd TRR-Backend && make repo-map-check` if files move |
 | Web-app route-to-feature inventory and first extraction slices | Inventory maps routes to feature owners, preserves all visible URLs, and the first two slices split behavior without route renames | `make app-check`; focused `pnpm -C TRR-APP/apps/web run test` target when coverage exists; browser smoke through `make dev-hybrid` when visible behavior changes |
-| Workspace hygiene follow-up | Top-level `apps/web` fragment reference check is recorded, `.DS_Store` cleanup is limited to proven stray files, and generated/runtime artifact policy says what not to hand-edit | `rg "apps/web/src/lib/fonts/brand-fonts/glyph-comparison" .`; `make codex-check`; `make workspace-contract-check` |
+| Workspace hygiene follow-up | Top-level `apps/web` fragment reference check is recorded, `.DS_Store` cleanup is limited to proven stray files, backend `.locks/` are protected, and generated/runtime artifact policy says what not to hand-edit | `rg "apps/web/src/lib/fonts/brand-fonts/glyph-comparison" .`; `make codex-check`; `make workspace-contract-check` |
 | Validation matrix follow-up | Matrix maps cleanup work types to small validation targets and names escalation rules | Documentation review only; no code validation required for this doc-only slice |
+
+## Active Backend Social Slice Evidence Checklist
+
+Record these before marking the current social route cleanup complete:
+
+- Focused Ruff result for `api/routers/socials`,
+  `trr_backend/socials/social_season_analytics_impl.py`, and focused tests.
+- Focused pytest result for social route shape, season analytics route behavior,
+  social analytics repository behavior, and hosted-media SQL escaping when the
+  test file exists.
+- Resolution or explicit split of the
+  `tests/repositories/test_social_season_analytics.py` failure cluster.
+  Status: resolved for the focused backend social route acceptance gate.
+- `make test-fast` final result after the repository blocker is resolved or
+  split.
+  Status: passed.
+- `make app-check` final result after the latest backend/app contract changes.
+  Status: passed.
+- Browser result for the admin social page with startup target `make dev-hybrid`.
+  Status: passed with Playwright screenshot-backed verification.
+- Explicit disposition for the episodes proxy HTTP 500 and week-detail timeout:
+  fixed, split into a runtime bug slice, or documented as unrelated data/runtime
+  state. Status: both fixed in the active cleanup slice and verified as HTTP
+  200 in the Browser route/API pass.
 
 ## Escalation Triggers
 

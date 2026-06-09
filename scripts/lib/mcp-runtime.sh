@@ -2,11 +2,16 @@
 
 # ── PATH bootstrap ──────────────────────────────────────────────────────
 # Claude Code ships a minimal PATH (/usr/bin:/bin:/usr/sbin:/sbin) that
-# excludes Homebrew and nvm.  Add well-known tool directories so that
-# python3, node, npm, and npx are discoverable in every script that
-# sources this library.
+# excludes Homebrew and nvm. Add well-known tool directories without
+# displacing an already-active project Node from nvm.
 for _mcp_dir in /opt/homebrew/bin /usr/local/bin; do
-  [[ -d "$_mcp_dir" ]] && [[ ":$PATH:" != *":$_mcp_dir:"* ]] && export PATH="$_mcp_dir:$PATH"
+  if [[ -d "$_mcp_dir" && ":$PATH:" != *":$_mcp_dir:"* ]]; then
+    if command -v node >/dev/null 2>&1 || command -v npm >/dev/null 2>&1; then
+      export PATH="$PATH:$_mcp_dir"
+    else
+      export PATH="$_mcp_dir:$PATH"
+    fi
+  fi
 done
 unset _mcp_dir
 # ────────────────────────────────────────────────────────────────────────

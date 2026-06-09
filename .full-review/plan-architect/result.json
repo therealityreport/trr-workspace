@@ -1,0 +1,22 @@
+{
+  "skill": "plan-architect",
+  "date": "2026-05-29",
+  "mode": "targeted existing_plan_review (focused refinement)",
+  "canonical_plan": ".full-review/REMEDIATION_PLAN.md",
+  "initial_snapshot": ".full-review/plan-architect/INITIAL_PLAN.md",
+  "artifacts": [
+    "INITIAL_PLAN.md", "VALIDATION.md", "AUDIT.md", "IMPROVEMENTS.md",
+    "SCORECARD.md", "REVISED_PLAN.md", "HANDOFF.md", "result.json"
+  ],
+  "score": 8.9,
+  "ready_for_execution": true,
+  "execution_handoff": "orchestrate-subagents",
+  "requires_human_checkpoint": true,
+  "default_auto_scope": ["G0:WorkstreamV", "Wave1:0A-cron", "Wave1:0A-modal", "Wave1:W1.1", "Wave1:W1.2", "Wave1:W1.4", "Wave1:W1.6", "Wave1:W1.7", "Wave2:W1.3", "Wave2:W1.5"],
+  "excluded_from_subagents": {
+    "wave0_human_locked": ["anon_grant_revoke", "keys_remove_and_rotate", "branch_protection", "destructive_or_rls_migrations"],
+    "wave3_human_scheduled_refactors": ["W1.S1_admin_person_images", "W1.S2_social_monolith", "W1.S3_showId_page"]
+  },
+  "verify_first_gate": ["migration_testing_uncertain", "requirements_lock_no_hash_pins", "trr_app_no_secret_scan", "destructive_flashback_migration", "missing_database_types_ts"],
+  "top_audit_risks": ["A1_monolith_concurrent_edit", "A4_irreversible_auto_apply", "A5_credential_slice_lockout", "A9_branch_protection_before_green_ci"]
+}

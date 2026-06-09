@@ -87,3 +87,60 @@ def test_classify_unavailable_when_wrapper_smoke_check_fails() -> None:
     assert result.returncode == 0, result.stderr
     assert "overall_state=unavailable" in result.stdout
     assert "attention_kind=unavailable" in result.stdout
+
+
+def test_transport_repair_classifies_unavailable_shared_runtime_as_repair() -> None:
+    result = _run_bash(
+        f"""
+        source "{SCRIPT_PATH}"
+        status_output=$'overall_state=unavailable\\nattention_kind=unavailable\\nshared_runtime_state=unavailable\\npressure_state=safe\\nshared_port=9422'
+        chrome_devtools_transport_repair_classify "$status_output"
+        """
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "repair_action=repair" in result.stdout
+    assert "repair_reason=shared_runtime_unavailable" in result.stdout
+    assert "shared_port=9422" in result.stdout
+
+
+def test_transport_repair_leaves_recoverable_auto_launch_alone() -> None:
+    result = _run_bash(
+        f"""
+        source "{SCRIPT_PATH}"
+        status_output=$'overall_state=recoverable\\nattention_kind=none\\nshared_runtime_state=recoverable\\npressure_state=safe\\nshared_port=9422'
+        chrome_devtools_transport_repair_classify "$status_output"
+        """
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "repair_action=none" in result.stdout
+    assert "repair_reason=recoverable_auto_launch" in result.stdout
+
+
+def test_transport_repair_classifies_unsafe_pressure_as_repair() -> None:
+    result = _run_bash(
+        f"""
+        source "{SCRIPT_PATH}"
+        status_output=$'overall_state=degraded\\nattention_kind=pressure\\nshared_runtime_state=ready\\npressure_state=unsafe\\nshared_port=9222'
+        chrome_devtools_transport_repair_classify "$status_output"
+        """
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "repair_action=repair" in result.stdout
+    assert "repair_reason=unsafe_stale_runtime" in result.stdout
+
+
+def test_transport_repair_leaves_degraded_nonblocking_pressure_alone() -> None:
+    result = _run_bash(
+        f"""
+        source "{SCRIPT_PATH}"
+        status_output=$'overall_state=degraded\\nattention_kind=pressure\\nshared_runtime_state=ready\\npressure_state=degraded\\nshared_port=9422'
+        chrome_devtools_transport_repair_classify "$status_output"
+        """
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "repair_action=none" in result.stdout
+    assert "repair_reason=degraded_nonblocking" in result.stdout

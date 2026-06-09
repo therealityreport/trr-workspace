@@ -96,12 +96,13 @@ workspace_root = sys.argv[2]
 with path.open("rb") as handle:
     data = tomllib.load(handle)
 
-if "model_reasoning_effort" in data:
-    raise SystemExit(1)
-
 projects = data.get("projects") or {}
 trusted_project = (projects.get(workspace_root) or {}).get("trust_level")
 if trusted_project != "trusted":
+    raise SystemExit(1)
+
+service_tier = data.get("service_tier")
+if service_tier is not None and service_tier not in {"fast", "flex"}:
     raise SystemExit(1)
 
 servers = data.get("mcp_servers") or {}
@@ -123,7 +124,7 @@ required = {
     "figma-desktop": {"url": "http://127.0.0.1:3845/mcp", "enabled": False},
     "playwright": {"command": "npx", "args": ["-y", "@playwright/mcp", "--isolated"], "enabled": False},
     "github": {"url": "https://api.githubcopilot.com/mcp", "bearer_token_env_var": "GITHUB_PAT"},
-    "context7": {"command": "npx", "args": ["-y", "@upstash/context7-mcp"], "enabled": True},
+    "context7": {"command": str(pathlib.Path.home() / ".codex" / "plugins" / "context7" / "scripts" / "start-context7-mcp.sh"), "enabled": True},
 }
 
 def matches_expected(actual, expected):
@@ -234,6 +235,8 @@ def emit_table(lines: list[str], table_path: list[str], mapping: Mapping[str, ob
 
 data = load_existing(source)
 data.pop("model_reasoning_effort", None)
+if data.get("service_tier") not in {None, "fast", "flex"}:
+    data["service_tier"] = "fast"
 projects = data.get("projects")
 if not isinstance(projects, dict):
     projects = {}
@@ -270,13 +273,14 @@ required_servers = {
     "figma-desktop": {"url": "http://127.0.0.1:3845/mcp", "enabled": False},
     "playwright": {"command": "npx", "args": ["-y", "@playwright/mcp", "--isolated"], "enabled": False},
     "github": {"url": "https://api.githubcopilot.com/mcp", "bearer_token_env_var": "GITHUB_PAT"},
-    "context7": {"command": "npx", "args": ["-y", "@upstash/context7-mcp"], "enabled": True},
+    "context7": {"command": f"{pathlib.Path.home()}/.codex/plugins/context7/scripts/start-context7-mcp.sh", "enabled": True},
 }
 for name, required in required_servers.items():
     server = servers.get(name)
     if not isinstance(server, dict):
         server = {}
         servers[name] = server
+    server.clear()
     server.update(required)
 
 lines: list[str] = [
@@ -364,6 +368,16 @@ required_servers = {
         "url": "https://mcp.supabase.com/mcp?project_ref=vwxfvzutyufrkhfgoeaa&features=docs%2Caccount%2Cdatabase%2Cdebugging%2Cdevelopment%2Cfunctions%2Cbranching%2Cstorage",
         "bearer_token_env_var": "TRR_SUPABASE_ACCESS_TOKEN",
     },
+    "modal-ops": {
+        "command": f"{workspace_root}/TRR-Backend/.venv/bin/python",
+        "args": [f"{workspace_root}/TRR-Backend/scripts/modal/modal_ops_mcp.py"],
+        "env": {
+            "MODAL_PROFILE": "admin-56995",
+            "MODAL_PROFILE_NAME": "admin-56995",
+            "MODAL_PROFILE_LABEL": "TRR Backend Jobs",
+            "TRR_MODAL_APP_NAME": "trr-backend-jobs",
+        },
+    },
 }
 required_user_servers = {
     "figma": {"url": "https://mcp.figma.com/mcp", "enabled": True},
@@ -382,7 +396,7 @@ required_user_servers = {
     },
     "playwright": {"command": "npx", "args": ["-y", "@playwright/mcp", "--isolated"], "enabled": False},
     "github": {"url": "https://api.githubcopilot.com/mcp", "bearer_token_env_var": "GITHUB_PAT"},
-    "context7": {"command": "npx", "args": ["-y", "@upstash/context7-mcp"], "enabled": True},
+    "context7": {"command": f"{pathlib.Path.home()}/.codex/plugins/context7/scripts/start-context7-mcp.sh", "enabled": True},
 }
 required_top_level = {
     "personality": "pragmatic",
@@ -471,14 +485,15 @@ if not user_config_path.exists():
 else:
     with user_config_path.open("rb") as handle:
         user_data = tomllib.load(handle)
-    if "model_reasoning_effort" in user_data:
-        errors.append("user config must omit top-level model_reasoning_effort so chat effort stays selectable")
     user_projects = user_data.get("projects") or {}
     trusted_project = (user_projects.get(workspace_root) or {}).get("trust_level")
     if trusted_project != "trusted":
         errors.append(f"user config must trust {workspace_root!r}; found {trusted_project!r}")
 
     user_servers = user_data.get("mcp_servers") or {}
+    user_service_tier = user_data.get("service_tier")
+    if user_service_tier is not None and user_service_tier not in {"fast", "flex"}:
+        errors.append(f"user config service_tier must be one of 'fast' or 'flex'; found {user_service_tier!r}")
     for name, expectations in required_user_servers.items():
         server = user_servers.get(name)
         if not isinstance(server, dict):
@@ -500,8 +515,13 @@ else:
             errors.append("user skills.config entries must be objects")
             continue
         skill_path = entry.get("path")
+        skill_name = entry.get("name")
+        if skill_path is None:
+            if not isinstance(skill_name, str):
+                errors.append("user skills.config entries must include string paths or names")
+            continue
         if not isinstance(skill_path, str):
-            errors.append("user skills.config entries must include string paths")
+            errors.append("user skills.config path entries must be strings")
             continue
 
 for name in sorted(name for name in servers if name.startswith(legacy_prefix) or name in {legacy_knowledge, legacy_iac}):
