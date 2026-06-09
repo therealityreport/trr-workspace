@@ -4,6 +4,24 @@ Scope: `TRR-APP/apps/web/src/app`, `TRR-APP/apps/web/src/components`, `TRR-APP/a
 
 This inventory is for the TRR cleanup plan slice. It is a map only: preserve all URLs, keep `src/app` as route ownership, and do not move route files until redirect coverage and browser smoke coverage exist.
 
+Updated: 2026-05-21
+
+Current status: keep this inventory as the next web cleanup map, but do not start
+large web-app extraction until the active backend social route cleanup slice has
+clean validation. Browser verification of the admin social page found backend
+runtime/API issues that should be triaged before splitting social-week or admin
+social web components.
+
+Backend-gated web follow-ups:
+
+- The admin social page at
+  `http://admin.localhost:3000/southern-charm/s11/social` rendered the analytics
+  section after the backend SQL fix.
+- The season episodes proxy returned HTTP 500.
+- The social week-detail endpoint can time out through the app proxy.
+- Treat social-week web cleanup as blocked until those backend/runtime issues
+  are fixed or explicitly split into their own bug backlog.
+
 ## Route Ownership Map
 
 Route files should remain thin Adapters from URL params/search params into feature Modules. The cleanup target is to move Depth out of route files while keeping the public/admin route contract stable.

@@ -9,6 +9,9 @@ RUNTIME_RECONCILE_FILE="${LOG_DIR}/runtime-reconcile.json"
 source "${ROOT}/scripts/lib/mcp-runtime.sh"
 source "${ROOT}/scripts/lib/workspace-runtime-reconcile-contract.sh"
 source "${ROOT}/scripts/lib/workspace-health.sh"
+source "${ROOT}/scripts/lib/chrome-devtools-status.sh"
+source "${ROOT}/scripts/lib/context7-status.sh"
+source "${ROOT}/scripts/lib/doctor-plugin-registry.sh"
 
 OUTPUT_FORMAT="text"
 if [[ "${1:-}" == "--json" ]]; then
@@ -43,11 +46,10 @@ WORKSPACE_TRR_REMOTE_ADMIN_WORKERS="${WORKSPACE_TRR_REMOTE_ADMIN_WORKERS:-1}"
 WORKSPACE_TRR_REMOTE_REDDIT_WORKERS="${WORKSPACE_TRR_REMOTE_REDDIT_WORKERS:-1}"
 WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS="${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS:-1}"
 WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS="${WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS:-0}"
-WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT="${WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT:-4}"
-WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT="${WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT:-4}"
+WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT="${WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT:-8}"
+WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT="${WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT:-8}"
 WORKSPACE_SUPAVISOR_SESSION_POOL_SIZE="${WORKSPACE_SUPAVISOR_SESSION_POOL_SIZE:-15}"
 WORKSPACE_ENFORCE_DB_HOLDER_BUDGET="${WORKSPACE_ENFORCE_DB_HOLDER_BUDGET:-0}"
-WORKSPACE_SCREENALYTICS_DB_ENABLED="${WORKSPACE_SCREENALYTICS_DB_ENABLED:-0}"
 WORKSPACE_TRR_REMOTE_SOCIAL_POSTS="${WORKSPACE_TRR_REMOTE_SOCIAL_POSTS:-1}"
 WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS="${WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS:-1}"
 WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR="${WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR:-1}"
@@ -62,6 +64,18 @@ WORKSPACE_BACKEND_RESTART_COUNT="${WORKSPACE_BACKEND_RESTART_COUNT:-0}"
 WORKSPACE_BACKEND_LAST_RESTART_REASON="${WORKSPACE_BACKEND_LAST_RESTART_REASON:-}"
 WORKSPACE_BACKEND_LAST_RESTART_AT="${WORKSPACE_BACKEND_LAST_RESTART_AT:-}"
 WORKSPACE_BACKEND_LAST_RESTART_PROBE_RC="${WORKSPACE_BACKEND_LAST_RESTART_PROBE_RC:-}"
+WORKSPACE_OPEN_BROWSER="${WORKSPACE_OPEN_BROWSER:-0}"
+WORKSPACE_OPEN_ADMIN_BROWSER="${WORKSPACE_OPEN_ADMIN_BROWSER:-1}"
+WORKSPACE_BROWSER_TAB_SYNC_MODE="${WORKSPACE_BROWSER_TAB_SYNC_MODE:-reuse_no_reload}"
+WORKSPACE_BROWSER_TRANSPORT_REPAIR_STATE="${WORKSPACE_BROWSER_TRANSPORT_REPAIR_STATE:-not_checked}"
+WORKSPACE_BROWSER_TRANSPORT_REPAIR_REASON="${WORKSPACE_BROWSER_TRANSPORT_REPAIR_REASON:-not_checked}"
+WORKSPACE_BROWSER_TRANSPORT_REPAIR_CLEANED="${WORKSPACE_BROWSER_TRANSPORT_REPAIR_CLEANED:-0}"
+WORKSPACE_BROWSER_TRANSPORT_REPAIR_BROKEN_LIVE_SESSIONS="${WORKSPACE_BROWSER_TRANSPORT_REPAIR_BROKEN_LIVE_SESSIONS:-0}"
+WORKSPACE_IN_APP_BROWSER_REPAIR_STATE="${WORKSPACE_IN_APP_BROWSER_REPAIR_STATE:-not_checked}"
+WORKSPACE_IN_APP_BROWSER_REPAIR_REASON="${WORKSPACE_IN_APP_BROWSER_REPAIR_REASON:-not_checked}"
+WORKSPACE_IN_APP_BROWSER_REPAIR_CLEANED="${WORKSPACE_IN_APP_BROWSER_REPAIR_CLEANED:-0}"
+WORKSPACE_IN_APP_BROWSER_REPAIR_RETAINED_LIVE="${WORKSPACE_IN_APP_BROWSER_REPAIR_RETAINED_LIVE:-0}"
+WORKSPACE_IN_APP_BROWSER_REPAIR_RETIRED_PROJECT_OWNED="${WORKSPACE_IN_APP_BROWSER_REPAIR_RETIRED_PROJECT_OWNED:-0}"
 
 if ! [[ "$WORKSPACE_STATUS_BACKEND_HEALTH_CURL_MAX_TIME" =~ ^[1-9][0-9]*$ ]]; then
   WORKSPACE_STATUS_BACKEND_HEALTH_CURL_MAX_TIME="5"
@@ -514,6 +528,11 @@ APP_HEALTH_URL="http://${TRR_APP_HOST}:${TRR_APP_PORT}/"
 BACKEND_READINESS_STATUS="$(backend_health_status "${BACKEND_READINESS_URL}" "${BACKEND_LIVENESS_URL}" "${TRR_BACKEND_PID:-}")"
 BACKEND_LIVENESS_STATUS="$(health_status "${BACKEND_LIVENESS_URL}" "${TRR_BACKEND_PID:-}")"
 APP_HEALTH_STATUS="$(health_status "${APP_HEALTH_URL}" "${TRR_APP_PID:-}")"
+CONTEXT7_STATUS="$(context7_config_status)"
+CONTEXT7_CACHE_PARITY_STATUS="$(context7_cache_parity_status)"
+CONTEXT7_STALE_CACHE_COUNT="$(context7_stale_cache_count)"
+PLUGIN_REGISTRY_JSON="$(doctor_plugin_registry_json 0)"
+PLUGIN_REGISTRY_OVERALL="$(printf '%s' "$PLUGIN_REGISTRY_JSON" | "${MCP_RUNTIME_PYTHON_BIN:-python3}" -c 'import json,sys; print((json.load(sys.stdin) or {}).get("overall_status", "unknown"))' 2>/dev/null || echo "unknown")"
 
 TRR_APP_LISTENERS="$(port_listeners "${TRR_APP_PORT}")"
 TRR_BACKEND_LISTENERS="$(port_listeners "${TRR_BACKEND_PORT}")"
@@ -555,7 +574,17 @@ if [[ "$OUTPUT_FORMAT" == "json" ]]; then
   "modes": {
     "workspace_dev_mode": "$(json_escape "$(workspace_dev_mode_value)")",
     "workspace_open_browser": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_OPEN_BROWSER:-}")")",
+    "workspace_open_admin_browser": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_OPEN_ADMIN_BROWSER:-}")")",
     "workspace_browser_tab_sync_mode": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_BROWSER_TAB_SYNC_MODE:-}")")",
+    "workspace_browser_transport_repair_state": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_BROWSER_TRANSPORT_REPAIR_STATE:-}")")",
+    "workspace_browser_transport_repair_reason": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_BROWSER_TRANSPORT_REPAIR_REASON:-}")")",
+    "workspace_browser_transport_repair_cleaned": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_BROWSER_TRANSPORT_REPAIR_CLEANED:-}")")",
+    "workspace_browser_transport_repair_broken_live_sessions": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_BROWSER_TRANSPORT_REPAIR_BROKEN_LIVE_SESSIONS:-}")")",
+    "workspace_in_app_browser_repair_state": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_IN_APP_BROWSER_REPAIR_STATE:-}")")",
+    "workspace_in_app_browser_repair_reason": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_IN_APP_BROWSER_REPAIR_REASON:-}")")",
+    "workspace_in_app_browser_repair_cleaned": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_IN_APP_BROWSER_REPAIR_CLEANED:-}")")",
+    "workspace_in_app_browser_repair_retained_live": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_IN_APP_BROWSER_REPAIR_RETAINED_LIVE:-}")")",
+    "workspace_in_app_browser_repair_retired_project_owned": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_IN_APP_BROWSER_REPAIR_RETIRED_PROJECT_OWNED:-}")")",
     "workspace_strict": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_STRICT:-}")")",
     "workspace_backend_auto_restart": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_BACKEND_AUTO_RESTART:-}")")",
     "workspace_backend_health_interval_seconds": "$(json_escape "$(runtime_value_or_na "${WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS:-}")")",
@@ -628,7 +657,19 @@ if [[ "$OUTPUT_FORMAT" == "json" ]]; then
   },
   "runtime_reconcile": $(runtime_reconcile_json),
   "codex_runtime": {
-    "app_servers": $(build_codex_runtime_json)
+    "app_servers": $(build_codex_runtime_json),
+    "context7": {
+      "status": "$(json_escape "$CONTEXT7_STATUS")",
+      "label": "$(json_escape "$(context7_status_label "$CONTEXT7_STATUS")")",
+      "repair_command": "make context7-repair",
+      "plugin_root": "$(json_escape "$(context7_plugin_root)")",
+      "cache_root": "$(json_escape "$(context7_cache_root)")",
+      "cache_version": "$(json_escape "$(context7_cache_version)")",
+      "cache_plugin_root": "$(json_escape "$(context7_cache_plugin_root)")",
+      "cache_parity": "$(json_escape "$CONTEXT7_CACHE_PARITY_STATUS")",
+      "stale_cache_copies": "$(json_escape "$CONTEXT7_STALE_CACHE_COUNT")"
+    },
+    "plugin_registry": ${PLUGIN_REGISTRY_JSON}
   },
   "timestamp_utc": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 }
@@ -650,7 +691,17 @@ echo ""
 echo "[status] Workspace modes:"
 echo "  WORKSPACE_DEV_MODE: $(workspace_dev_mode_label)"
 echo "  WORKSPACE_OPEN_BROWSER: $(runtime_value_or_na "${WORKSPACE_OPEN_BROWSER:-}")"
+echo "  WORKSPACE_OPEN_ADMIN_BROWSER: $(runtime_value_or_na "${WORKSPACE_OPEN_ADMIN_BROWSER:-}")"
 echo "  WORKSPACE_BROWSER_TAB_SYNC_MODE: $(runtime_value_or_na "${WORKSPACE_BROWSER_TAB_SYNC_MODE:-}")"
+echo "  WORKSPACE_BROWSER_TRANSPORT_REPAIR_STATE: $(runtime_value_or_na "${WORKSPACE_BROWSER_TRANSPORT_REPAIR_STATE:-}")"
+echo "  WORKSPACE_BROWSER_TRANSPORT_REPAIR_REASON: $(runtime_value_or_na "${WORKSPACE_BROWSER_TRANSPORT_REPAIR_REASON:-}")"
+echo "  WORKSPACE_BROWSER_TRANSPORT_REPAIR_CLEANED: $(runtime_value_or_na "${WORKSPACE_BROWSER_TRANSPORT_REPAIR_CLEANED:-}")"
+echo "  WORKSPACE_BROWSER_TRANSPORT_REPAIR_BROKEN_LIVE_SESSIONS: $(runtime_value_or_na "${WORKSPACE_BROWSER_TRANSPORT_REPAIR_BROKEN_LIVE_SESSIONS:-}")"
+echo "  WORKSPACE_IN_APP_BROWSER_REPAIR_STATE: $(runtime_value_or_na "${WORKSPACE_IN_APP_BROWSER_REPAIR_STATE:-}")"
+echo "  WORKSPACE_IN_APP_BROWSER_REPAIR_REASON: $(runtime_value_or_na "${WORKSPACE_IN_APP_BROWSER_REPAIR_REASON:-}")"
+echo "  WORKSPACE_IN_APP_BROWSER_REPAIR_CLEANED: $(runtime_value_or_na "${WORKSPACE_IN_APP_BROWSER_REPAIR_CLEANED:-}")"
+echo "  WORKSPACE_IN_APP_BROWSER_REPAIR_RETAINED_LIVE: $(runtime_value_or_na "${WORKSPACE_IN_APP_BROWSER_REPAIR_RETAINED_LIVE:-}")"
+echo "  WORKSPACE_IN_APP_BROWSER_REPAIR_RETIRED_PROJECT_OWNED: $(runtime_value_or_na "${WORKSPACE_IN_APP_BROWSER_REPAIR_RETIRED_PROJECT_OWNED:-}")"
 echo "  WORKSPACE_STRICT: $(runtime_value_or_na "${WORKSPACE_STRICT:-}")"
 echo "  WORKSPACE_BACKEND_AUTO_RESTART: $(runtime_value_or_na "${WORKSPACE_BACKEND_AUTO_RESTART:-}")"
 echo "  WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS: $(runtime_value_or_na "${WORKSPACE_BACKEND_HEALTH_INTERVAL_SECONDS:-}")"
@@ -720,6 +771,9 @@ echo ""
 runtime_reconcile_text
 echo ""
 echo "[status] Codex shared-state runtime:"
+echo "  Context7: $(context7_status_label "$CONTEXT7_STATUS")"
+echo "    cache_parity: ${CONTEXT7_CACHE_PARITY_STATUS}; stale_cache_copies: ${CONTEXT7_STALE_CACHE_COUNT}"
+echo "  plugin_registry: ${PLUGIN_REGISTRY_OVERALL}"
 if [[ "$CODEX_APP_SERVER_COUNT" == "0" ]]; then
   echo "  app_servers: none detected"
 else

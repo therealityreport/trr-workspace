@@ -1,10 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Ensure Homebrew paths are available — Claude Code ships a minimal PATH
-# (/usr/bin:/bin:/usr/sbin:/sbin) that excludes Homebrew.
+# Ensure Homebrew paths are available without displacing an already-active
+# project Node from nvm. Claude Code ships a minimal PATH that excludes
+# Homebrew, while Codex/TRR shells may already have the .nvmrc Node first.
 for _dir in /opt/homebrew/bin /usr/local/bin; do
-  [[ -d "$_dir" ]] && [[ ":$PATH:" != *":$_dir:"* ]] && export PATH="$_dir:$PATH"
+  if [[ -d "$_dir" && ":$PATH:" != *":$_dir:"* ]]; then
+    if command -v node >/dev/null 2>&1 || command -v npm >/dev/null 2>&1; then
+      export PATH="$PATH:$_dir"
+    else
+      export PATH="$_dir:$PATH"
+    fi
+  fi
 done
 unset _dir
 

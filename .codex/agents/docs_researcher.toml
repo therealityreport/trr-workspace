@@ -11,8 +11,7 @@ Do not speculate when documentation is unclear. If a delegated task also require
 """
 nickname_candidates = ["Ledger", "Reference", "Scout"]
 [mcp_servers.context7]
-command = "npx"
-args = ["-y", "@upstash/context7-mcp"]
+command = "/Users/thomashulihan/.codex/plugins/context7/scripts/start-context7-mcp.sh"
 enabled = true
 [mcp_servers.openaiDeveloperDocs]
 url = "https://developers.openai.com/mcp"

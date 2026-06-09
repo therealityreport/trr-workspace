@@ -10,6 +10,8 @@ source "$ROOT/scripts/lib/backend-restart-diagnostics.sh"
 source "$ROOT/scripts/lib/workspace-health.sh"
 source "$ROOT/scripts/lib/workspace-port-cleanup.sh"
 source "$ROOT/scripts/lib/workspace-terminal.sh"
+source "$ROOT/scripts/lib/chrome-devtools-status.sh"
+source "$ROOT/scripts/lib/context7-status.sh"
 
 # Optional profile defaults.
 # Usage: PROFILE=default make dev
@@ -97,11 +99,201 @@ ATTENTION_FILE="$(workspace_attention_file "$ROOT")"
 if [[ ! -f "$ATTENTION_FILE" ]]; then
   workspace_attention_reset "$ATTENTION_FILE"
 fi
+WORKSPACE_BROWSER_TRANSPORT_REPAIR_STATE="not_checked"
+WORKSPACE_BROWSER_TRANSPORT_REPAIR_REASON="not_checked"
+WORKSPACE_BROWSER_TRANSPORT_REPAIR_CLEANED="0"
+WORKSPACE_BROWSER_TRANSPORT_REPAIR_BROKEN_LIVE_SESSIONS="0"
+WORKSPACE_IN_APP_BROWSER_REPAIR_STATE="not_checked"
+WORKSPACE_IN_APP_BROWSER_REPAIR_REASON="not_checked"
+WORKSPACE_IN_APP_BROWSER_REPAIR_CLEANED="0"
+WORKSPACE_IN_APP_BROWSER_REPAIR_RETAINED_LIVE="0"
+WORKSPACE_IN_APP_BROWSER_REPAIR_RETIRED_PROJECT_OWNED="0"
+WORKSPACE_CONTEXT7_STATUS="not_checked"
+WORKSPACE_CONTEXT7_CACHE_PARITY="not_checked"
+WORKSPACE_CONTEXT7_STALE_CACHE_COPIES="0"
+
+workspace_context7_status_once() {
+  WORKSPACE_CONTEXT7_STATUS="$(context7_config_status)"
+  WORKSPACE_CONTEXT7_CACHE_PARITY="$(context7_cache_parity_status)"
+  WORKSPACE_CONTEXT7_STALE_CACHE_COPIES="$(context7_stale_cache_count)"
+}
+
+workspace_context7_print_startup_status() {
+  workspace_context7_status_once
+  echo "[workspace] Context7:"
+  echo "  config: $(context7_status_label "$WORKSPACE_CONTEXT7_STATUS")"
+  echo "  cache: parity=${WORKSPACE_CONTEXT7_CACHE_PARITY}, stale_copies=${WORKSPACE_CONTEXT7_STALE_CACHE_COPIES}"
+}
+
+workspace_browser_transport_status_once() {
+  env CHROME_DEVTOOLS_MCP_STATUS_MODE=structured bash "$ROOT/scripts/chrome-devtools-mcp-status.sh"
+}
+
+workspace_browser_transport_record_blocked_attention() {
+  local title="$1"
+  local impact="$2"
+  local remediation="$3"
+
+  workspace_attention_remove_title_prefix "$ATTENTION_FILE" "Browser automation shared Chrome is not responding"
+  workspace_attention_remove_title_prefix "$ATTENTION_FILE" "Browser transport health repair"
+  workspace_attention_remove_title_prefix "$ATTENTION_FILE" "In-app Browser transport health repair"
+  workspace_attention_add "$ATTENTION_FILE" "$title" "$impact" "$remediation"
+}
+
+workspace_browser_transport_health_repair() {
+  local status_output status_rc decision action reason shared_port
+  local cleanup_output cleanup_rc cleaned broken_live_sessions
+  local post_status_output post_status_rc post_decision post_action post_reason
+
+  set +e
+  status_output="$(workspace_browser_transport_status_once 2>&1)"
+  status_rc="$?"
+  set -e
+
+  if [[ "$status_rc" != "0" ]]; then
+    WORKSPACE_BROWSER_TRANSPORT_REPAIR_STATE="blocked"
+    WORKSPACE_BROWSER_TRANSPORT_REPAIR_REASON="status_check_failed"
+    workspace_browser_transport_record_blocked_attention \
+      "Browser transport health repair could not run." \
+      "Impact: startup could not confirm whether chrome-devtools transport is available before services started." \
+      "Remediation: run 'make chrome-devtools-mcp-status' or 'make mcp-clean' before cookie capture or manual checkpoint work."
+    echo "[workspace] Browser transport health repair could not run; startup attention recorded."
+    return 0
+  fi
+
+  decision="$(chrome_devtools_transport_repair_classify "$status_output")"
+  action="$(chrome_devtools_status_value "$decision" "repair_action")"
+  reason="$(chrome_devtools_status_value "$decision" "repair_reason")"
+  shared_port="$(chrome_devtools_status_value "$decision" "shared_port")"
+  WORKSPACE_BROWSER_TRANSPORT_REPAIR_REASON="$reason"
+
+  if [[ "$action" != "repair" ]]; then
+    WORKSPACE_BROWSER_TRANSPORT_REPAIR_STATE="checked"
+    workspace_attention_remove_title_prefix "$ATTENTION_FILE" "Browser automation shared Chrome is not responding"
+    workspace_attention_remove_title_prefix "$ATTENTION_FILE" "Browser transport health repair"
+    return 0
+  fi
+
+  set +e
+  cleanup_output="$(bash "$ROOT/scripts/chrome-devtools-mcp-clean-stale.sh" 2>&1)"
+  cleanup_rc="$?"
+  set -e
+
+  cleaned="$(printf '%s\n' "$cleanup_output" | sed -n 's/.*Stale managed runtime artifacts cleaned: \([0-9][0-9]*\).*/\1/p' | head -n 1)"
+  broken_live_sessions="$(printf '%s\n' "$cleanup_output" | sed -n 's/.*broken_live_sessions=\([0-9][0-9]*\).*/\1/p' | head -n 1)"
+  cleaned="${cleaned:-0}"
+  broken_live_sessions="${broken_live_sessions:-0}"
+  WORKSPACE_BROWSER_TRANSPORT_REPAIR_CLEANED="$cleaned"
+  WORKSPACE_BROWSER_TRANSPORT_REPAIR_BROKEN_LIVE_SESSIONS="$broken_live_sessions"
+
+  if [[ "$cleanup_rc" != "0" ]]; then
+    WORKSPACE_BROWSER_TRANSPORT_REPAIR_STATE="blocked"
+    WORKSPACE_BROWSER_TRANSPORT_REPAIR_REASON="${reason}:clean_stale_failed"
+    workspace_browser_transport_record_blocked_attention \
+      "Browser transport health repair was blocked${shared_port:+ on port ${shared_port}}." \
+      "Impact: startup detected stale or unavailable chrome-devtools transport, but safe stale cleanup failed." \
+      "Remediation: run 'make mcp-clean' before cookie capture or manual checkpoint work."
+    echo "[workspace] Browser transport health repair was blocked; startup attention recorded."
+    return 0
+  fi
+
+  set +e
+  post_status_output="$(workspace_browser_transport_status_once 2>&1)"
+  post_status_rc="$?"
+  set -e
+
+  if [[ "$post_status_rc" != "0" ]]; then
+    WORKSPACE_BROWSER_TRANSPORT_REPAIR_STATE="blocked"
+    WORKSPACE_BROWSER_TRANSPORT_REPAIR_REASON="${reason}:post_status_failed"
+    workspace_browser_transport_record_blocked_attention \
+      "Browser transport health repair could not confirm recovery." \
+      "Impact: startup cleaned safe stale chrome-devtools artifacts, but the follow-up status check failed." \
+      "Remediation: run 'make chrome-devtools-mcp-status' before cookie capture or manual checkpoint work."
+    echo "[workspace] Browser transport health repair could not confirm recovery; startup attention recorded."
+    return 0
+  fi
+
+  post_decision="$(chrome_devtools_transport_repair_classify "$post_status_output")"
+  post_action="$(chrome_devtools_status_value "$post_decision" "repair_action")"
+  post_reason="$(chrome_devtools_status_value "$post_decision" "repair_reason")"
+  if [[ "$post_action" == "repair" ]]; then
+    WORKSPACE_BROWSER_TRANSPORT_REPAIR_STATE="blocked"
+    WORKSPACE_BROWSER_TRANSPORT_REPAIR_REASON="${reason}:still_${post_reason}"
+    workspace_browser_transport_record_blocked_attention \
+      "Browser transport health repair could not restore shared Chrome${shared_port:+ on port ${shared_port}}." \
+      "Impact: startup cleaned safe stale chrome-devtools artifacts, but Browser transport is still unavailable." \
+      "Remediation: run 'make chrome-devtools-mcp-status' or 'make mcp-clean' before cookie capture or manual checkpoint work."
+    echo "[workspace] Browser transport health repair could not restore shared Chrome; startup attention recorded."
+    return 0
+  fi
+
+  workspace_attention_remove_title_prefix "$ATTENTION_FILE" "Browser automation shared Chrome is not responding"
+  workspace_attention_remove_title_prefix "$ATTENTION_FILE" "Browser transport health repair"
+  if [[ "$cleaned" != "0" || "$broken_live_sessions" != "0" ]]; then
+    WORKSPACE_BROWSER_TRANSPORT_REPAIR_STATE="repaired"
+    echo "[workspace] Browser transport repaired stale managed artifacts (cleaned=${cleaned}, broken_live_sessions=${broken_live_sessions})."
+  else
+    WORKSPACE_BROWSER_TRANSPORT_REPAIR_STATE="checked"
+    echo "[workspace] Browser transport health recovered after stale-state check."
+  fi
+}
+
+workspace_in_app_browser_transport_health_repair() {
+  local cleanup_output cleanup_rc cleaned retained_live unreadable retired_project_owned
+
+  if [[ ! -x "$ROOT/scripts/node-repl-mcp-clean-stale.sh" ]]; then
+    WORKSPACE_IN_APP_BROWSER_REPAIR_STATE="skipped"
+    WORKSPACE_IN_APP_BROWSER_REPAIR_REASON="cleanup_script_missing"
+    return 0
+  fi
+
+  set +e
+  cleanup_output="$(NODE_REPL_CLEAN_PROJECT_OWNED=1 NODE_REPL_PROJECT_ROOT="$ROOT" bash "$ROOT/scripts/node-repl-mcp-clean-stale.sh" 2>&1)"
+  cleanup_rc="$?"
+  set -e
+
+  cleaned="$(printf '%s\n' "$cleanup_output" | sed -n 's/.*Stale in-app Browser exec markers cleaned: \([0-9][0-9]*\).*/\1/p' | head -n 1)"
+  retained_live="$(printf '%s\n' "$cleanup_output" | sed -n 's/.*retained_live=\([0-9][0-9]*\).*/\1/p' | head -n 1)"
+  unreadable="$(printf '%s\n' "$cleanup_output" | sed -n 's/.*unreadable=\([0-9][0-9]*\).*/\1/p' | head -n 1)"
+  retired_project_owned="$(printf '%s\n' "$cleanup_output" | sed -n 's/.*retired_project_owned=\([0-9][0-9]*\).*/\1/p' | head -n 1)"
+  cleaned="${cleaned:-0}"
+  retained_live="${retained_live:-0}"
+  unreadable="${unreadable:-0}"
+  retired_project_owned="${retired_project_owned:-0}"
+  WORKSPACE_IN_APP_BROWSER_REPAIR_CLEANED="$cleaned"
+  WORKSPACE_IN_APP_BROWSER_REPAIR_RETAINED_LIVE="$retained_live"
+  WORKSPACE_IN_APP_BROWSER_REPAIR_RETIRED_PROJECT_OWNED="$retired_project_owned"
+
+  if [[ "$cleanup_rc" != "0" ]]; then
+    WORKSPACE_IN_APP_BROWSER_REPAIR_STATE="blocked"
+    WORKSPACE_IN_APP_BROWSER_REPAIR_REASON="cleanup_failed"
+    workspace_browser_transport_record_blocked_attention \
+      "In-app Browser transport health repair could not run." \
+      "Impact: startup could not clean stale browser execution markers before services started." \
+      "Remediation: run 'make node-repl-mcp-clean-stale' or restart Codex before browser-controlled local verification."
+    echo "[workspace] In-app Browser transport health repair could not run; startup attention recorded."
+    return 0
+  fi
+
+  workspace_attention_remove_title_prefix "$ATTENTION_FILE" "In-app Browser transport health repair"
+  if [[ "$cleaned" != "0" || "$retired_project_owned" != "0" ]]; then
+    WORKSPACE_IN_APP_BROWSER_REPAIR_STATE="repaired"
+    WORKSPACE_IN_APP_BROWSER_REPAIR_REASON="stale_exec_markers_cleaned"
+    echo "[workspace] In-app Browser transport repaired stale execution markers (cleaned=${cleaned}, retained_live=${retained_live}, unreadable=${unreadable}, retired_project_owned=${retired_project_owned})."
+    return 0
+  fi
+
+  WORKSPACE_IN_APP_BROWSER_REPAIR_STATE="checked"
+  WORKSPACE_IN_APP_BROWSER_REPAIR_REASON="no_stale_exec_markers"
+}
 
 # Clean stale Chrome/MCP processes from prior sessions.
 if [[ -x "$ROOT/scripts/codex-mcp-session-reaper.sh" ]]; then
   bash "$ROOT/scripts/codex-mcp-session-reaper.sh" reap 2>/dev/null || true
 fi
+workspace_browser_transport_health_repair
+workspace_in_app_browser_transport_health_repair
+workspace_context7_print_startup_status
 
 # Workspace toggles
 WORKSPACE_STRICT="${WORKSPACE_STRICT:-0}"
@@ -112,8 +304,8 @@ WORKSPACE_TRR_APP_POSTGRES_POOL_MAX="${WORKSPACE_TRR_APP_POSTGRES_POOL_MAX:-}"
 WORKSPACE_TRR_APP_POSTGRES_MAX_CONCURRENT_OPERATIONS="${WORKSPACE_TRR_APP_POSTGRES_MAX_CONCURRENT_OPERATIONS:-}"
 WORKSPACE_SUPAVISOR_SESSION_POOL_SIZE="${WORKSPACE_SUPAVISOR_SESSION_POOL_SIZE:-15}"
 WORKSPACE_ENFORCE_DB_HOLDER_BUDGET="${WORKSPACE_ENFORCE_DB_HOLDER_BUDGET:-0}"
-WORKSPACE_SCREENALYTICS_DB_ENABLED="${WORKSPACE_SCREENALYTICS_DB_ENABLED:-0}"
 WORKSPACE_OPEN_BROWSER="${WORKSPACE_OPEN_BROWSER:-0}"
+WORKSPACE_OPEN_ADMIN_BROWSER="${WORKSPACE_OPEN_ADMIN_BROWSER:-1}"
 WORKSPACE_BROWSER_TAB_SYNC_MODE="${WORKSPACE_BROWSER_TAB_SYNC_MODE:-reuse_no_reload}"
 WORKSPACE_HEALTH_CURL_MAX_TIME="${WORKSPACE_HEALTH_CURL_MAX_TIME:-8}"
 WORKSPACE_HEALTH_TIMEOUT_BACKEND="${WORKSPACE_HEALTH_TIMEOUT_BACKEND:-30}"
@@ -149,8 +341,8 @@ WORKSPACE_TRR_REMOTE_ADMIN_WORKERS="${WORKSPACE_TRR_REMOTE_ADMIN_WORKERS:-1}"
 WORKSPACE_TRR_REMOTE_REDDIT_WORKERS="${WORKSPACE_TRR_REMOTE_REDDIT_WORKERS:-1}"
 WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS="${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS:-1}"
 WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS="${WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS:-0}"
-WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT="${WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT:-4}"
-WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT="${WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT:-4}"
+WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT="${WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT:-8}"
+WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT="${WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT:-8}"
 WORKSPACE_TRR_REMOTE_SOCIAL_POSTS="${WORKSPACE_TRR_REMOTE_SOCIAL_POSTS:-1}"
 WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS="${WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS:-1}"
 WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR="${WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR:-1}"
@@ -160,7 +352,7 @@ WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_LEASE_SECONDS="${WORKSPACE_TRR_REMOTE_GOOGLE_NE
 TRR_BACKEND_RELOAD="${TRR_BACKEND_RELOAD:-0}"
 TRR_ADMIN_ROUTE_CACHE_DISABLED="${TRR_ADMIN_ROUTE_CACHE_DISABLED:-0}"
 TRR_BACKEND_WORKERS="${TRR_BACKEND_WORKERS:-1}"
-TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER="${TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER:-0}"
+TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER="${TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER:-1}"
 TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS="${TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS:-10000}"
 TRR_SOCIAL_PROXY_DEFAULT_TIMEOUT_MS="${TRR_SOCIAL_PROXY_DEFAULT_TIMEOUT_MS:-25000}"
 TRR_SOCIAL_PROXY_LONG_TIMEOUT_MS="${TRR_SOCIAL_PROXY_LONG_TIMEOUT_MS:-60000}"
@@ -274,12 +466,12 @@ if ! [[ "$WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS" =~ ^[01]$ ]]; then
   WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS="0"
 fi
 if ! [[ "$WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT" =~ ^[1-9][0-9]*$ ]]; then
-  echo "[workspace] WARNING: invalid WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT='${WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT}', using 4." >&2
-  WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT="4"
+  echo "[workspace] WARNING: invalid WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT='${WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT}', using 8." >&2
+  WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT="8"
 fi
 if ! [[ "$WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT" =~ ^[1-9][0-9]*$ ]]; then
-  echo "[workspace] WARNING: invalid WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT='${WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT}', using 4." >&2
-  WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT="4"
+  echo "[workspace] WARNING: invalid WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT='${WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT}', using 8." >&2
+  WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT="8"
 fi
 if [[ "$WORKSPACE_TRR_JOB_PLANE_MODE" == "remote" && "$WORKSPACE_SOCIAL_WORKER_ENABLED" == "1" && "$WORKSPACE_SOCIAL_WORKER_FORCE_LOCAL" != "1" ]]; then
   echo "[workspace] Remote job plane selected; disabling local social worker pool. Set WORKSPACE_SOCIAL_WORKER_FORCE_LOCAL=1 to override." >&2
@@ -330,8 +522,8 @@ if ! [[ "$TRR_BACKEND_WORKERS" =~ ^[1-9][0-9]*$ ]]; then
   TRR_BACKEND_WORKERS="1"
 fi
 if ! [[ "$TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER" =~ ^[01]$ ]]; then
-  echo "[workspace] WARNING: invalid TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER='${TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER}', using 0." >&2
-  TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER="0"
+  echo "[workspace] WARNING: invalid TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER='${TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER}', using 1." >&2
+  TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER="1"
 fi
 if ! [[ "$TRR_BACKEND_RELOAD" =~ ^[01]$ ]]; then
   echo "[workspace] WARNING: invalid TRR_BACKEND_RELOAD='${TRR_BACKEND_RELOAD}', using 0." >&2
@@ -369,11 +561,6 @@ if ! [[ "$WORKSPACE_ENFORCE_DB_HOLDER_BUDGET" =~ ^[01]$ ]]; then
   echo "[workspace] WARNING: invalid WORKSPACE_ENFORCE_DB_HOLDER_BUDGET='${WORKSPACE_ENFORCE_DB_HOLDER_BUDGET}', using 0." >&2
   WORKSPACE_ENFORCE_DB_HOLDER_BUDGET="0"
 fi
-if ! [[ "$WORKSPACE_SCREENALYTICS_DB_ENABLED" =~ ^[01]$ ]]; then
-  echo "[workspace] WARNING: invalid WORKSPACE_SCREENALYTICS_DB_ENABLED='${WORKSPACE_SCREENALYTICS_DB_ENABLED}', using 0." >&2
-  WORKSPACE_SCREENALYTICS_DB_ENABLED="0"
-fi
-
 # Avoid relying on `#!/usr/bin/env bash` (or the `env` command) in sub-scripts.
 # If PATH contains a slow/unavailable entry, `/usr/bin/env` can hang while
 # searching for `bash`, leaving services "started" but with no listeners.
@@ -1230,10 +1417,12 @@ print_workspace_ready_summary() {
   fi
   echo "  Remote workers: $(workspace_enabled_label "$WORKSPACE_TRR_REMOTE_WORKERS_ENABLED")"
   echo "  Modal dispatch: $(workspace_enabled_label "$WORKSPACE_TRR_MODAL_ENABLED")"
-  echo "  Screenalytics DB: $(workspace_enabled_label "$WORKSPACE_SCREENALYTICS_DB_ENABLED")"
   echo "  Local DB holders: $(workspace_effective_db_holder_budget)"
   workspace_check_db_holder_budget_headroom
   echo "  Runtime reconcile: $(runtime_reconcile_startup_summary)"
+  echo "  Context7: $(context7_status_label "$WORKSPACE_CONTEXT7_STATUS") (cache=${WORKSPACE_CONTEXT7_CACHE_PARITY}, stale=${WORKSPACE_CONTEXT7_STALE_CACHE_COPIES})"
+  echo "  Browser transport repair: ${WORKSPACE_BROWSER_TRANSPORT_REPAIR_STATE} (${WORKSPACE_BROWSER_TRANSPORT_REPAIR_REASON})"
+  echo "  In-app Browser repair: ${WORKSPACE_IN_APP_BROWSER_REPAIR_STATE} (${WORKSPACE_IN_APP_BROWSER_REPAIR_REASON}, retired_project_owned=${WORKSPACE_IN_APP_BROWSER_REPAIR_RETIRED_PROJECT_OWNED})"
   echo "  Logs:"
   echo "    ${TRR_APP_LOG}"
   echo "    ${TRR_BACKEND_LOG}"
@@ -1576,7 +1765,19 @@ write_backend_watchdog_state
   echo "WORKSPACE_TRR_REMOTE_DB_LANE=$(workspace_selected_db_lane remote)"
   echo "WORKSPACE_TRR_APP_DEV_BUNDLER=${WORKSPACE_TRR_APP_DEV_BUNDLER}"
   echo "WORKSPACE_OPEN_BROWSER=${WORKSPACE_OPEN_BROWSER}"
+  echo "WORKSPACE_OPEN_ADMIN_BROWSER=${WORKSPACE_OPEN_ADMIN_BROWSER}"
   echo "WORKSPACE_BROWSER_TAB_SYNC_MODE=${WORKSPACE_BROWSER_TAB_SYNC_MODE}"
+  echo "WORKSPACE_BROWSER_TRANSPORT_REPAIR_STATE=${WORKSPACE_BROWSER_TRANSPORT_REPAIR_STATE}"
+  echo "WORKSPACE_BROWSER_TRANSPORT_REPAIR_REASON=${WORKSPACE_BROWSER_TRANSPORT_REPAIR_REASON}"
+  echo "WORKSPACE_BROWSER_TRANSPORT_REPAIR_CLEANED=${WORKSPACE_BROWSER_TRANSPORT_REPAIR_CLEANED}"
+  echo "WORKSPACE_BROWSER_TRANSPORT_REPAIR_BROKEN_LIVE_SESSIONS=${WORKSPACE_BROWSER_TRANSPORT_REPAIR_BROKEN_LIVE_SESSIONS}"
+  echo "WORKSPACE_IN_APP_BROWSER_REPAIR_STATE=${WORKSPACE_IN_APP_BROWSER_REPAIR_STATE}"
+  echo "WORKSPACE_IN_APP_BROWSER_REPAIR_REASON=${WORKSPACE_IN_APP_BROWSER_REPAIR_REASON}"
+  echo "WORKSPACE_IN_APP_BROWSER_REPAIR_CLEANED=${WORKSPACE_IN_APP_BROWSER_REPAIR_CLEANED}"
+  echo "WORKSPACE_IN_APP_BROWSER_REPAIR_RETAINED_LIVE=${WORKSPACE_IN_APP_BROWSER_REPAIR_RETAINED_LIVE}"
+  echo "WORKSPACE_CONTEXT7_STATUS=${WORKSPACE_CONTEXT7_STATUS}"
+  echo "WORKSPACE_CONTEXT7_CACHE_PARITY=${WORKSPACE_CONTEXT7_CACHE_PARITY}"
+  echo "WORKSPACE_CONTEXT7_STALE_CACHE_COPIES=${WORKSPACE_CONTEXT7_STALE_CACHE_COPIES}"
   echo "WORKSPACE_HEALTH_CURL_MAX_TIME=${WORKSPACE_HEALTH_CURL_MAX_TIME}"
   echo "WORKSPACE_HEALTH_TIMEOUT_BACKEND=${WORKSPACE_HEALTH_TIMEOUT_BACKEND}"
   echo "WORKSPACE_HEALTH_TIMEOUT_APP=${WORKSPACE_HEALTH_TIMEOUT_APP}"
@@ -1619,7 +1820,6 @@ write_backend_watchdog_state
   echo "WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR=${WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR}"
   echo "WORKSPACE_SUPAVISOR_SESSION_POOL_SIZE=${WORKSPACE_SUPAVISOR_SESSION_POOL_SIZE}"
   echo "WORKSPACE_ENFORCE_DB_HOLDER_BUDGET=${WORKSPACE_ENFORCE_DB_HOLDER_BUDGET}"
-  echo "WORKSPACE_SCREENALYTICS_DB_ENABLED=${WORKSPACE_SCREENALYTICS_DB_ENABLED}"
   echo "WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS=${WORKSPACE_TRR_REMOTE_WORKER_POLL_SECONDS}"
   echo "WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_LEASE_SECONDS=${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_LEASE_SECONDS}"
   echo "WORKSPACE_RUNTIME_RECONCILE_ENABLED=${WORKSPACE_RUNTIME_RECONCILE_ENABLED}"
@@ -1724,7 +1924,11 @@ APP_DEV_URL="http://${TRR_APP_HOST}:${TRR_APP_PORT}"
 if [[ "$WORKSPACE_OPEN_BROWSER" == "1" ]]; then
   echo "[workspace] Syncing workspace browser tabs..."
   echo "[workspace] Browser tab sync mode: ${WORKSPACE_BROWSER_TAB_SYNC_MODE}"
-  bash "$ROOT/scripts/open-workspace-dev-window.sh" "$APP_DEV_URL"
+  if [[ "$WORKSPACE_OPEN_ADMIN_BROWSER" == "1" ]]; then
+    bash "$ROOT/scripts/open-workspace-dev-window.sh" "$APP_DEV_URL" "$ADMIN_APP_ORIGIN"
+  else
+    bash "$ROOT/scripts/open-workspace-dev-window.sh" "$APP_DEV_URL"
+  fi
 fi
 
 # Delay the runtime health watchdog to avoid false-positive warnings during

@@ -82,6 +82,35 @@ def test_attention_render_keeps_degraded_snapshot_details(tmp_path: Path) -> Non
     )
 
 
+def test_attention_remove_title_prefix_prunes_stale_browser_warning(tmp_path: Path) -> None:
+    attention_file = tmp_path / "attention.log"
+
+    result = _run_bash(
+        f"""
+        source "{SCRIPT_PATH}"
+        workspace_attention_reset "{attention_file}"
+        workspace_attention_add "{attention_file}" \
+          "Browser automation shared Chrome is not responding on port 9422." \
+          "Impact: chrome-devtools registration is present, but the shared browser runtime is unavailable." \
+          "Remediation: run 'make mcp-clean' and retry the workspace startup."
+        workspace_attention_add "{attention_file}" \
+          "Runtime reconcile needs attention." \
+          "Impact: remote checks are advisory." \
+          "Remediation: inspect status."
+        workspace_attention_remove_title_prefix "{attention_file}" "Browser automation shared Chrome is not responding"
+        workspace_attention_render "{attention_file}" "[workspace]"
+        """
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == (
+        "[workspace] Attention:\n"
+        "  - Runtime reconcile needs attention.\n"
+        "    Impact: remote checks are advisory.\n"
+        "    Remediation: inspect status.\n"
+    )
+
+
 def test_preflight_browser_degraded_state_does_not_render_startup_attention(
     tmp_path: Path,
 ) -> None:

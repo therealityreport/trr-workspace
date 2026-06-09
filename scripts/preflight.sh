@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
+source "$ROOT/scripts/lib/mcp-runtime.sh"
 source "$ROOT/scripts/lib/node-baseline.sh"
 source "$ROOT/scripts/lib/preflight-diagnostics.sh"
 source "$ROOT/scripts/lib/preflight-browser-attention.sh"
@@ -283,6 +284,9 @@ if [[ "$WORKSPACE_DEV_MODE" == "cloud" || "$WORKSPACE_DEV_MODE" == "hybrid" ]]; 
     exit 1
   fi
 fi
+
+run_preflight_phase "modal-billing-guardrail" "[preflight] Checking Modal billing guardrails..." bash "$ROOT/scripts/modal-billing-guardrail.sh"
+run_preflight_phase "instagram-auth-freshness" "[preflight] Checking Instagram auth freshness..." python3 "$ROOT/scripts/instagram_auth_freshness.py"
 
 run_preflight_phase "doctor" "[preflight] Running workspace doctor..." env WORKSPACE_DEV_MODE="$WORKSPACE_DEV_MODE" WORKSPACE_PREFLIGHT_STRICT="$WORKSPACE_PREFLIGHT_STRICT" bash "$ROOT/scripts/doctor.sh"
 

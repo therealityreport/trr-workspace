@@ -4,7 +4,23 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
+source "$ROOT/scripts/lib/mcp-runtime.sh"
 source "$ROOT/scripts/lib/node-baseline.sh"
+source "$ROOT/scripts/lib/chrome-devtools-status.sh"
+source "$ROOT/scripts/lib/context7-status.sh"
+source "$ROOT/scripts/lib/doctor-plugin-registry.sh"
+
+OUTPUT_FORMAT="text"
+if [[ "${1:-}" == "--json" ]]; then
+  OUTPUT_FORMAT="json"
+elif [[ -n "${1:-}" ]]; then
+  echo "Usage: $0 [--json]" >&2
+  exit 1
+fi
+
+if ! command -v npm >/dev/null 2>&1 || ! command -v pnpm >/dev/null 2>&1; then
+  trr_try_activate_required_node_with_nvm "$ROOT" || true
+fi
 
 need() {
   local cmd="$1"
@@ -131,6 +147,11 @@ if [[ -z "$NODE_MAJOR" ]] || ! [[ "$NODE_MAJOR" =~ ^[0-9]+$ ]] || (( NODE_MAJOR 
   exit 1
 fi
 
+if [[ "$OUTPUT_FORMAT" == "json" ]]; then
+  doctor_plugin_registry_json "$WORKSPACE_DOCTOR_PLUGIN_REPAIR"
+  exit 0
+fi
+
 echo "[doctor] Versions:"
 echo "  node: $(trr_node_version_string)"
 echo "  pnpm: $({ pnpm --version; } 2>/dev/null)"
@@ -140,6 +161,8 @@ if [[ -n "${VIRTUAL_ENV:-}" ]]; then
   echo "  shell_venv: ${VIRTUAL_ENV}"
   echo "[doctor] NOTE: your activated Python environment is only used for these checks. The workspace still starts each service with its own project setup." >&2
 fi
+
+doctor_plugin_registry_run
 
 if [[ "${WORKSPACE_DOCKER_DIAGNOSTICS:-0}" == "1" ]]; then
   if command -v docker >/dev/null 2>&1; then

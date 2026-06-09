@@ -1,0 +1,57 @@
+{
+  "target": "the workspace /workflows \u2014 entire TRR monorepo (TRR-Backend + TRR-APP + workspace tooling), via Workflow tool",
+  "status": "complete",
+  "run_mode": "workflow",
+  "flags": {
+    "security_focus": false,
+    "performance_critical": false,
+    "strict_mode": false,
+    "framework": "auto: FastAPI + Next.js 16"
+  },
+  "scope_notes": {
+    "screenalytics_excluded": true,
+    "screenalytics_reason": "retired 2026-05-28; code migrated into TRR-Backend; folder removed from workspace",
+    "repos_in_scope": [
+      "TRR-Backend",
+      "TRR-APP",
+      "workspace tooling (scripts/profiles/Makefile/docs/.github)"
+    ]
+  },
+  "current_step": 5,
+  "current_phase": 5,
+  "completed_steps": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    "verification",
+    "completeness"
+  ],
+  "files_created": [
+    "00-scope.md",
+    "state.json",
+    "01-quality-architecture.md",
+    "02-security-performance.md",
+    "03-testing-documentation.md",
+    "04-best-practices.md",
+    "05-final-report.md",
+    "_raw-findings.json",
+    "_be-bestprac.json"
+  ],
+  "started_at": "2026-05-29T00:55:12-04:00",
+  "last_updated": "2026-05-29T01:56:45.673942-04:00",
+  "findings_summary": {
+    "critical": 2,
+    "high": 32,
+    "medium": 53,
+    "low": 37,
+    "completeness_pass_added": 4,
+    "ch_verification": {
+      "confirmed": 29,
+      "refuted": 1,
+      "uncertain": 1
+    }
+  }
+}

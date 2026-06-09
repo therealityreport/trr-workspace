@@ -13,6 +13,16 @@ When a source snapshot ages past its freshness window, the generator keeps the s
 - `blocked` older than 14 days
 - `recent` older than 7 days
 
+## Plan Authority
+
+Old handoffs, saved notes, and `.plan-work/plan-architect/*` artifacts are not
+automatic implementation authority. Read them when the current task names them
+or depends on previous plan evidence, then revalidate against the current
+branch, current files, and relevant checks before continuing the work.
+
+For workspace cleanup boundaries and dry-run hygiene commands, see
+`docs/workspace/workspace-hygiene.md`.
+
 ## Lifecycle Commands
 - `scripts/handoff-lifecycle.sh pre-plan` before any formal `<proposed_plan>` or documented multi-phase implementation plan
 - `scripts/handoff-lifecycle.sh post-phase` after a completed implementation phase when current state, blockers, or next action changed

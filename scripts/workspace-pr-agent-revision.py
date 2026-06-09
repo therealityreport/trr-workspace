@@ -168,7 +168,21 @@ def codex_assist(repo_path: Path, reason: str, context_file: Path) -> None:
         raise RuntimeError("WORKSPACE_PR_AGENT_REVISION_REQUIRE_GITHUB_MCP=1 but GITHUB_PAT is not set")
     prompt = codex_prompt(reason, context_file)
     # full-auto enables non-interactive agent execution with workspace-write sandbox.
-    run(["codex", "exec", "--full-auto", "-C", str(repo_path), prompt], cwd=repo_path, check=True)
+    service_tier = os.environ.get("WORKSPACE_PR_AGENT_CODEX_SERVICE_TIER", "fast")
+    run(
+        [
+            "codex",
+            "exec",
+            "-c",
+            f"service_tier={json.dumps(service_tier)}",
+            "--full-auto",
+            "-C",
+            str(repo_path),
+            prompt,
+        ],
+        cwd=repo_path,
+        check=True,
+    )
 
 
 def main() -> int:

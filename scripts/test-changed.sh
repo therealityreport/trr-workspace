@@ -2,6 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "$ROOT/scripts/lib/workspace-test-contracts.sh"
 
 cd "$ROOT"
 
@@ -40,6 +41,9 @@ run_workspace_checks() {
     python3 "$ROOT/.agents/skills/crawl4ai/scripts/batch_crawler.py" --help
     python3 "$ROOT/.agents/skills/crawl4ai/scripts/extraction_pipeline.py" --help
   fi
+
+  echo "[test-changed] Root script contract tests..."
+  trr_workspace_pytest_contracts "$ROOT"
 }
 
 if rg -q '^TRR-Backend/' "$changed_tmp"; then

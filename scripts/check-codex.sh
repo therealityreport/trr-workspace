@@ -125,6 +125,7 @@ WORKSPACE_REQUIRED = GLOBAL_EXPECTED | {"supabase"}
 DISALLOWED = {"awsknowledge", "awsiac", "supabase"}
 GLOBAL_CHROME_COMMAND = f"{pathlib.Path.home()}/.codex/bin/codex-chrome-devtools-mcp-global.sh"
 WORKSPACE_CHROME_COMMAND = GLOBAL_CHROME_COMMAND
+GLOBAL_CONTEXT7_COMMAND = f"{pathlib.Path.home()}/.codex/plugins/context7/scripts/start-context7-mcp.sh"
 CODEX_PROFILE_DIR = str(pathlib.Path.home() / ".chrome-profiles" / "codex-agent")
 USER_CONFIG_FILE = pathlib.Path.home() / ".codex" / "config.toml"
 BROWSER_AGENT_FILE = pathlib.Path.cwd() / ".codex" / "agents" / "browser_debugger.toml"
@@ -173,16 +174,29 @@ if unexpected_workspace:
 
 global_chrome = global_servers.get("chrome-devtools") or {}
 workspace_chrome = workspace_servers.get("chrome-devtools") or {}
+global_context7 = global_servers.get("context7") or {}
+workspace_context7 = workspace_servers.get("context7") or {}
 
 global_command = (((global_chrome.get("transport") or {}).get("command")) if isinstance(global_chrome, dict) else None)
 workspace_command = (((workspace_chrome.get("transport") or {}).get("command")) if isinstance(workspace_chrome, dict) else None)
+global_context7_command = (((global_context7.get("transport") or {}).get("command")) if isinstance(global_context7, dict) else None)
+workspace_context7_command = (((workspace_context7.get("transport") or {}).get("command")) if isinstance(workspace_context7, dict) else None)
 if global_command != GLOBAL_CHROME_COMMAND:
     raise SystemExit(f"[check-codex] ERROR: global chrome-devtools command mismatch: expected {GLOBAL_CHROME_COMMAND!r}, found {global_command!r}")
 if workspace_command != WORKSPACE_CHROME_COMMAND:
     raise SystemExit(f"[check-codex] ERROR: workspace chrome-devtools command mismatch: expected {WORKSPACE_CHROME_COMMAND!r}, found {workspace_command!r}")
+if global_context7_command != GLOBAL_CONTEXT7_COMMAND:
+    raise SystemExit(f"[check-codex] ERROR: global context7 command mismatch: expected {GLOBAL_CONTEXT7_COMMAND!r}, found {global_context7_command!r}")
+if workspace_context7_command != GLOBAL_CONTEXT7_COMMAND:
+    raise SystemExit(f"[check-codex] ERROR: workspace context7 command mismatch: expected {GLOBAL_CONTEXT7_COMMAND!r}, found {workspace_context7_command!r}")
 
 with USER_CONFIG_FILE.open("rb") as handle:
     user_config = tomllib.load(handle)
+user_context7 = ((user_config.get("mcp_servers") or {}).get("context7") or {})
+if user_context7.get("command") != GLOBAL_CONTEXT7_COMMAND:
+    raise SystemExit(f"[check-codex] ERROR: ~/.codex/config.toml context7 command mismatch: expected {GLOBAL_CONTEXT7_COMMAND!r}, found {user_context7.get('command')!r}")
+if user_context7.get("args"):
+    raise SystemExit(f"[check-codex] ERROR: ~/.codex/config.toml context7 must not use raw args: {user_context7.get('args')!r}")
 user_chrome_env = (((user_config.get("mcp_servers") or {}).get("chrome-devtools") or {}).get("env") or {})
 expected_chrome_env = {
     "CODEX_CHROME_MODE": "shared",
