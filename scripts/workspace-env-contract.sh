@@ -31,20 +31,26 @@ extract_var_rows() {
     printf 'TRR_HEALTH_DB_POOL_MINCONN\t\n'
     printf 'TRR_HEALTH_DB_POOL_MAXCONN\t\n'
     printf 'ADMIN_AUTH_EXTERNAL_TIMEOUT_MS\t3000\n'
+    printf 'SOCIAL_INSTAGRAM_COMMENTS_PER_POST_CONCURRENCY\t1\n'
     printf 'TRR_INTERNAL_ADMIN_ALLOW_RAW_SECRET_FALLBACK\t\n'
     printf 'TRR_ADMIN_ALLOW_SERVICE_ROLE\t\n'
     printf 'TRR_INTERNAL_ADMIN_ALLOW_SERVICE_ROLE\t\n'
+    printf 'TRR_REMOTE_DEBUG_LOG_ENABLED\t0\n'
+    printf 'REDIS_URL\t\n'
   } | awk -F '\t' '!seen[$1]++' | sort
 }
 
 visibility_tier() {
   local key="$1"
   case "$key" in
-    WORKSPACE_OPEN_BROWSER|WORKSPACE_CLEAN_NEXT_CACHE|WORKSPACE_BROWSER_TAB_SYNC_MODE|WORKSPACE_TRR_JOB_PLANE_MODE|WORKSPACE_TRR_REMOTE_EXECUTOR|WORKSPACE_TRR_MODAL_ENABLED|WORKSPACE_TRR_REMOTE_WORKERS_ENABLED|WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS|WORKSPACE_SUPAVISOR_SESSION_POOL_SIZE|WORKSPACE_ENFORCE_DB_HOLDER_BUDGET|WORKSPACE_SCREENALYTICS_DB_ENABLED|WORKSPACE_BACKEND_AUTO_RESTART|TRR_BACKEND_RELOAD|TRR_ADMIN_ROUTE_CACHE_DISABLED)
+    WORKSPACE_OPEN_BROWSER|WORKSPACE_CLEAN_NEXT_CACHE|WORKSPACE_BROWSER_TAB_SYNC_MODE|WORKSPACE_TRR_JOB_PLANE_MODE|WORKSPACE_TRR_REMOTE_EXECUTOR|WORKSPACE_TRR_MODAL_ENABLED|WORKSPACE_TRR_REMOTE_WORKERS_ENABLED|WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS|WORKSPACE_SUPAVISOR_SESSION_POOL_SIZE|WORKSPACE_ENFORCE_DB_HOLDER_BUDGET|WORKSPACE_BACKEND_AUTO_RESTART|TRR_BACKEND_RELOAD|TRR_ADMIN_ROUTE_CACHE_DISABLED)
       echo "common"
       ;;
     WORKSPACE_RUNTIME_RECONCILE_ENABLED|WORKSPACE_RUNTIME_DB_AUTO_APPLY_ENABLED|WORKSPACE_RUNTIME_MODAL_AUTO_DEPLOY|WORKSPACE_RUNTIME_EXTERNAL_VERIFY_ENABLED)
       echo "common"
+      ;;
+    REDIS_URL|SOCIAL_INSTAGRAM_COMMENTS_PER_POST_CONCURRENCY)
+      echo "advanced"
       ;;
     WORKSPACE_*)
       echo "advanced"
@@ -63,6 +69,12 @@ accepted_values() {
       ;;
     ADMIN_AUTH_EXTERNAL_TIMEOUT_MS)
       echo "integer milliseconds"
+      ;;
+    SOCIAL_INSTAGRAM_COMMENTS_PER_POST_CONCURRENCY)
+      echo 'integer `1` through `8`'
+      ;;
+    REDIS_URL)
+      echo "Redis connection URL"
       ;;
     TRR_DB_POOL_MINCONN|TRR_DB_POOL_MAXCONN|TRR_SOCIAL_PROFILE_DB_POOL_MINCONN|TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN|TRR_SOCIAL_CONTROL_DB_POOL_MINCONN|TRR_SOCIAL_CONTROL_DB_POOL_MAXCONN|TRR_SOCIAL_PROGRESS_DB_POOL_MINCONN|TRR_SOCIAL_PROGRESS_DB_POOL_MAXCONN|TRR_HEALTH_DB_POOL_MINCONN|TRR_HEALTH_DB_POOL_MAXCONN)
       echo "integer"
@@ -119,9 +131,6 @@ description_for() {
     WORKSPACE_ENFORCE_DB_HOLDER_BUDGET)
       echo "When set to 1, contract checks fail if projected local DB holders exceed the configured Supavisor pool size minus five slots."
       ;;
-    WORKSPACE_SCREENALYTICS_DB_ENABLED)
-      echo "Enable Screenalytics DB-backed metadata in workspace dev. Default is off so Screenalytics does not consume production Supabase sessions during normal TRR runs."
-      ;;
     TRR_DB_POOL_MINCONN)
       echo "Backend default psycopg2 pool minimum for local workspace runs. Keep conservative when using the Supabase session pooler."
       ;;
@@ -163,6 +172,15 @@ description_for() {
       ;;
     TRR_INTERNAL_ADMIN_ALLOW_SERVICE_ROLE)
       echo "Dev-only backend escape hatch that allows service-role tokens through internal-admin routes. Leave unset in production."
+      ;;
+    TRR_REMOTE_DEBUG_LOG_ENABLED)
+      echo "Hard kill switch for remote /api/debug-log writes. Localhost logging remains admin-gated; remote hosts require this to be explicitly enabled."
+      ;;
+    SOCIAL_INSTAGRAM_COMMENTS_PER_POST_CONCURRENCY)
+      echo "Overlaps per-post Instagram comments fetches while preserving one serialized persistence/progress consumer. Keep at 1 unless running a controlled backfill validation."
+      ;;
+    REDIS_URL)
+      echo "Optional Redis connection URL for ephemeral realtime pub/sub, presence/typing, short TTL state, and cross-instance invalidation. Required before enabling multi-worker or multi-instance realtime; do not use for durable job truth."
       ;;
     WORKSPACE_OPEN_BROWSER)
       echo "Enable automatic browser tab sync/open after startup."
@@ -239,6 +257,12 @@ description_for() {
     TRR_ADMIN_ROUTE_CACHE_DISABLED)
       echo "Disable Next.js in-memory admin route caching during managed local workspace runs."
       ;;
+    TRR_BACKEND_WORKERS)
+      echo "Number of FastAPI worker processes requested by the backend launcher. Keep at 1 unless Redis-backed realtime is configured."
+      ;;
+    TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER)
+      echo "When set to 1, requires REDIS_URL before multi-worker FastAPI can run. Local/dev launchers fall back to one worker; deployed launchers fail fast."
+      ;;
     *)
       echo 'Workspace runtime variable consumed by `scripts/dev-workspace.sh`.'
       ;;
@@ -253,6 +277,18 @@ used_by() {
       ;;
     ADMIN_AUTH_EXTERNAL_TIMEOUT_MS)
       echo '`TRR-APP/apps/web/src/lib/server/auth.ts`, `TRR-APP/apps/web/.env.example`'
+      ;;
+    TRR_REMOTE_DEBUG_LOG_ENABLED)
+      echo '`TRR-APP/apps/web/src/app/api/debug-log/route.ts`'
+      ;;
+    SOCIAL_INSTAGRAM_COMMENTS_PER_POST_CONCURRENCY)
+      echo '`TRR-Backend/trr_backend/socials/instagram/comments_scrapling/job_runner.py`, `TRR-Backend/.env.example`'
+      ;;
+    REDIS_URL)
+      echo '`TRR-Backend/api/realtime/broker.py`, `TRR-Backend/start-api.sh`, `TRR-Backend/docs/api/run.md`'
+      ;;
+    TRR_BACKEND_WORKERS|TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER)
+      echo '`scripts/dev-workspace.sh`, `TRR-Backend/start-api.sh`, `TRR-Backend/docs/api/run.md`'
       ;;
     TRR_INTERNAL_ADMIN_ALLOW_RAW_SECRET_FALLBACK|TRR_ADMIN_ALLOW_SERVICE_ROLE|TRR_INTERNAL_ADMIN_ALLOW_SERVICE_ROLE)
       echo '`TRR-Backend/api/auth.py`, `TRR-Backend/.env.example`'
@@ -319,7 +355,6 @@ generate_contract() {
     echo "|---|---|---|---|"
     echo "| TRR-APP | \`POSTGRES_APPLICATION_NAME\` | \`trr-app:web\` | Must be a label only; URLs, tokens, passwords, and keys fall back to the app default. |"
     echo "| TRR-Backend | \`TRR_DB_APPLICATION_NAME\` | \`trr-backend:<pool>\` | Backend named pools append their lane, such as \`default\`, \`social_profile\`, \`social_control\`, or \`health\`. |"
-    echo "| Screenalytics | \`SCREENALYTICS_DB_APPLICATION_NAME\` | \`screenalytics:api\` | Only relevant when Screenalytics DB usage is enabled. |"
     echo
     echo "Do not use secret-bearing values as application names. The value appears in"
     echo "\`pg_stat_activity\` and in non-secret health/pressure diagnostics."
@@ -335,6 +370,26 @@ generate_contract() {
     echo "| \`TRR_DB_URL\` | Compatibility session/local | Used when \`TRR_DB_SESSION_URL\` is absent or set only inside a tightly scoped local child-process env for legacy direct-lane compatibility. | Do not globally overwrite this with the direct URL. |"
     echo "| \`TRR_DB_TRANSACTION_URL\` | Supavisor transaction | Used only when \`TRR_DB_RUNTIME_LANE=transaction\` and \`TRR_DB_TRANSACTION_FLIGHT_TEST=1\`. | Use \`pooler.supabase.com:6543\`; route-by-route flight tests only. |"
     echo "| \`TRR_DB_FALLBACK_URL\` | Operator fallback | Used after primary lane candidates or when explicit fallback controls engage. | Keep on session/local unless a separate reviewed test says otherwise. |"
+    echo
+    echo "## Realtime Redis Lane"
+    echo
+    echo "The FastAPI realtime broker uses \`REDIS_URL\` when it is set and otherwise falls back to an in-process broker for local single-worker development. Redis owns only ephemeral realtime pub/sub, presence/typing, short TTL state, and cross-instance invalidation signals. Durable jobs, runs, locks, retries, analytics outputs, persisted cache state, and migration history stay in Postgres/Supabase; long-running execution stays in Modal. See \`docs/workspace/backend-runtime-ownership.md\`."
+    echo
+    echo "Multi-worker or multi-instance FastAPI must set \`REDIS_URL\`. The default workspace guard is \`TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER=1\`: local/dev launchers fall back to one worker when Redis is missing, while deployed multi-worker launchers fail fast."
+    echo
+    echo "## Operator Failure Lanes"
+    echo
+    echo "When a runtime check fails, classify it by the first concrete lane named in logs, health payloads, or readiness output:"
+    echo
+    echo "| Lane | Primary signals | Where to verify |"
+    echo "|---|---|---|"
+    echo "| Direct URL | \`url_lane=direct_url\`, \`source=TRR_DB_DIRECT_URL\`, direct Supabase host, local-only direct lane messages. | Backend startup logs, \`/health\` \`database_lane\`, \`/admin/health/db-pressure\` \`operator_failure_lanes.database\`. |"
+    echo "| Pooler URL | \`url_lane=pooler_url\`, \`TRR_DB_SESSION_URL\`, \`TRR_DB_URL\`, \`pooler.supabase.com:5432\`, or session pool sizing warnings. | Backend startup logs, DB pool logs, and \`/admin/health/db-pressure\`. |"
+    echo "| Health pool | \`pool_name=health\`, \`pool_lane=health_pool\`, or \`health-probe\` failures. | \`/health\` and \`/admin/health/db-pressure\`. |"
+    echo "| Social pools | \`social_profile_pool\`, \`social_control_pool\`, \`social_progress_pool\`, social profile/catalog/control saturation, or named \`trr-backend:social_*\` application names. | \`/admin/health/db-pressure\` and backend social route logs. |"
+    echo "| Local fallback | \`url_lane=local_fallback\`, \`TRR_DB_FALLBACK_URL\`, or local Postgres/Supabase status resolution. | Backend startup logs and DB resolution summary. |"
+    echo "| Auth | \`401\`, \`403\`, \`AUTH_REQUIRED\`, \`FORBIDDEN\`, missing admin/shared-secret/service-role allowlist flags. | App/admin responses and backend auth logs. |"
+    echo "| Modal deployment state | Missing Modal app, secret, function, web endpoint, runtime probe, or social auth probe. | \`cd TRR-Backend && python3.11 scripts/modal/verify_modal_readiness.py\`. |"
     echo
     echo "| Variable | Default | Accepted Values | Used By | Visibility | Notes |"
     echo "|---|---|---|---|---|---|"

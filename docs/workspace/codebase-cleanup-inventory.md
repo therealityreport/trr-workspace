@@ -6,6 +6,28 @@ This inventory supports Workstream 1 from
 `/.plan-work/plan-architect/trr-codebase-cleanup-20260519/REVISED_PLAN.md`.
 It is a cleanup guardrail, not permission to move active source code.
 
+Updated: 2026-05-21
+
+## Current Plan State
+
+Workstream 1 is complete for the first cleanup slice. The current active cleanup
+work is backend-first and should not reopen workspace clutter cleanup unless a
+new source/runtime ownership issue is found.
+
+Current state:
+
+- The obsolete top-level `apps/web` fragment has been removed.
+- Cleanup docs under `docs/workspace/` are the tracked, project-facing plan
+  artifacts.
+- `.plan-work/` remains local execution output unless a specific artifact is
+  approved for tracking.
+- The backend social route cleanup slice is active and should finish validation
+  before the next backend or web-app cleanup slice starts.
+- `make workspace-contract-check` and `make app-check` currently pass after the
+  workspace Node/pnpm helper fix in `scripts/lib/node-baseline.sh`.
+- Runtime/browser issues found during backend social verification are follow-up
+  work, not evidence that route cleanup should keep expanding in the same slice.
+
 ## Ownership Classes
 
 | Class | Current paths | Owner / status | Cleanup rule |
@@ -14,6 +36,7 @@ It is a cleanup guardrail, not permission to move active source code.
 | Backend | `TRR-Backend/api/`, `TRR-Backend/trr_backend/`, `TRR-Backend/tests/`, `TRR-Backend/supabase/` | Active backend/API/data owner | Backend-first for schema, API, auth, scraper, repository, Modal, and shared contract changes. Keep SQL in repository or migration-owned surfaces. |
 | Web app | `TRR-APP/apps/web/src/app/`, `TRR-APP/apps/web/src/components/`, `TRR-APP/apps/web/src/lib/`, `TRR-APP/apps/web/tests/` | Active Next.js app owner | Preserve public/admin URLs. Move route-heavy implementation behind feature modules only with app checks and browser smoke when visible behavior changes. |
 | Generated artifacts | `TRR-APP/apps/web/src/lib/admin/api-references/generated/`, `TRR-APP/apps/web/src/lib/fonts/**/generated/`, backend repo maps, schema docs, advisor snapshots, `.logs/`, `.artifacts/`, `output/` | Generated or runtime evidence | Regenerate from source commands where available. Do not hand-edit generated output as a cleanup fix. Runtime evidence should stay ignored unless explicitly captured as a reviewed artifact. |
+| Runtime lock state | `TRR-Backend/.locks/` | Local backend coordination state | Ignore in git and keep out of cleanup deletion. Lock JSON files prevent overlapping local/background jobs, such as social auth refreshes, from stepping on each other. |
 | Adjacent workspaces | `screenalytics/`, `BRAVOTV/`, `.external/`, `data/`, nested repo checkouts under `TRR-APP/` and `TRR-Backend/` | Out of scope for this slice | Leave untouched unless a follow-up explicitly includes them. Treat them as separate ownership domains, not clutter inside the TRR workspace. |
 | High-risk contracts | route aliases, auth/session handling, Supabase migrations and DB lanes, Modal worker dispatch, Vercel/Next.js runtime, admin API references, env contract docs | Active behavior contracts | Rename or remove only with explicit redirects, focused tests, and browser/runtime validation. Cosmetic cleanup is not enough proof. |
 
@@ -29,6 +52,21 @@ It is a cleanup guardrail, not permission to move active source code.
   shown.
 - `screenalytics/` and `BRAVOTV/` are adjacent workspaces and remain out of
   scope for cleanup unless specifically included.
+- `docs/workspace/workspace-hygiene.md` is the current default workspace
+  hygiene contract for report-only status checks, adjacent workspace boundaries,
+  stale plan authority, and dry-run cleanup safety.
+
+## Workspace Hygiene Commands
+
+- `make workspace-hygiene-report` prints a read-only status and artifact
+  summary. It does not delete files.
+- `make workspace-hygiene-clean-dry-run` lists conservative ignored cleanup
+  candidates and deletes nothing.
+- Hygiene cleanup is dry-run only in this phase. It lists ignored
+  `__pycache__/`, `*.pyc`, and `.DS_Store` clutter and deletes nothing.
+- Do not use hygiene cleanup for `.logs/`, `.plan-work/`, `screenalytics/`,
+  `TRR-Backend/.locks/`, env files, cookies, secrets, or evidence directories.
+  Backend `.locks/` files are runtime coordination state, not cleanup targets.
 
 ## Top-Level `apps/web` Fragment
 

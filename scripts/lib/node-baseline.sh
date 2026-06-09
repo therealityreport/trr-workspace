@@ -74,6 +74,14 @@ trr_pnpm() {
   local package_root="${1:-}"
   shift || true
 
+  if ! trr_ensure_node_baseline "$package_root"; then
+    return 1
+  fi
+
+  if [[ -z "$(command -v corepack 2>/dev/null || true)" && -z "$(command -v pnpm 2>/dev/null || true)" ]]; then
+    trr_try_activate_required_node_with_nvm "$package_root" || true
+  fi
+
   local pnpm_version
   pnpm_version="$(trr_pnpm_version "$package_root")"
   if [[ -n "$pnpm_version" && "$(command -v corepack 2>/dev/null || true)" ]]; then
@@ -81,7 +89,14 @@ trr_pnpm() {
     return $?
   fi
 
-  pnpm "$@"
+  if [[ "$(command -v pnpm 2>/dev/null || true)" ]]; then
+    pnpm "$@"
+    return $?
+  fi
+
+  echo "[pnpm] ERROR: pnpm is not available on PATH and corepack is unavailable." >&2
+  echo "[pnpm] Remediation: source ~/.nvm/nvm.sh && nvm use $(trr_node_required_major "$package_root")" >&2
+  return 127
 }
 
 trr_try_activate_required_node_with_nvm() {
@@ -136,4 +151,21 @@ trr_ensure_node_baseline() {
   fi
 
   return 1
+}
+
+trr_ensure_node_baseline_or_exit() {
+  local label="${1:-node}"
+  local root="${2:-}"
+  local required_major
+
+  required_major="$(trr_node_required_major "$root")"
+  if trr_ensure_node_baseline "$root"; then
+    return 0
+  fi
+
+  echo "[${label}] ERROR: Node $(trr_node_version_string) does not satisfy required ${required_major}.x baseline." >&2
+  echo "[${label}] Remediation:" >&2
+  echo "[${label}]   source ~/.nvm/nvm.sh && nvm use ${required_major}" >&2
+  echo "[${label}]   source ~/.nvm/nvm.sh && nvm install ${required_major}" >&2
+  exit 1
 }

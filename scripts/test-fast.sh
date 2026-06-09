@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "$ROOT/scripts/lib/node-baseline.sh"
 source "$ROOT/scripts/lib/python-venv.sh"
+source "$ROOT/scripts/lib/workspace-test-contracts.sh"
 RUN_BACKEND=1
 RUN_APP=1
 
@@ -37,16 +38,12 @@ if [[ "$RUN_BACKEND" == "1" ]]; then
   (cd "$ROOT/TRR-Backend" && "$ROOT/TRR-Backend/.venv/bin/pytest" -q "$BACKEND_FAST_HEALTH_TEST")
 fi
 
+echo "[test-fast] Workspace script contracts..."
+trr_workspace_pytest_contracts "$ROOT"
+
 if [[ "$RUN_APP" == "1" ]]; then
   echo "[test-fast] TRR-APP..."
-  REQUIRED_NODE_MAJOR="$(trr_node_required_major "$ROOT")"
-  if ! trr_ensure_node_baseline "$ROOT"; then
-    echo "[test-fast] ERROR: Node $(trr_node_version_string) does not satisfy required ${REQUIRED_NODE_MAJOR}.x baseline." >&2
-    echo "[test-fast] Remediation:" >&2
-    echo "[test-fast]   source ~/.nvm/nvm.sh && nvm use ${REQUIRED_NODE_MAJOR}" >&2
-    echo "[test-fast]   source ~/.nvm/nvm.sh && nvm install ${REQUIRED_NODE_MAJOR}" >&2
-    exit 1
-  fi
+  trr_ensure_node_baseline_or_exit "test-fast" "$ROOT"
   (cd "$ROOT/TRR-APP/apps/web" && trr_pnpm "$ROOT/TRR-APP" run lint)
 fi
 

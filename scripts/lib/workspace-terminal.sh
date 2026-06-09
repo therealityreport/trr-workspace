@@ -21,6 +21,18 @@ workspace_attention_add() {
   printf '%s\t%s\t%s\n' "$title" "$impact" "$remediation" >>"$file"
 }
 
+workspace_attention_remove_title_prefix() {
+  local file="$1"
+  local prefix="$2"
+  local tmp_file
+
+  [[ -f "$file" ]] || return 0
+
+  tmp_file="${file}.$$"
+  awk -F '\t' -v prefix="$prefix" 'index($1, prefix) != 1 { print }' "$file" >"$tmp_file"
+  mv "$tmp_file" "$file"
+}
+
 workspace_attention_render() {
   local file="$1"
   local prefix="$2"

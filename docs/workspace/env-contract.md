@@ -27,7 +27,6 @@ Use these defaults unless a task needs a more specific lane label:
 |---|---|---|---|
 | TRR-APP | `POSTGRES_APPLICATION_NAME` | `trr-app:web` | Must be a label only; URLs, tokens, passwords, and keys fall back to the app default. |
 | TRR-Backend | `TRR_DB_APPLICATION_NAME` | `trr-backend:<pool>` | Backend named pools append their lane, such as `default`, `social_profile`, `social_control`, or `health`. |
-| Screenalytics | `SCREENALYTICS_DB_APPLICATION_NAME` | `screenalytics:api` | Only relevant when Screenalytics DB usage is enabled. |
 
 Do not use secret-bearing values as application names. The value appears in
 `pg_stat_activity` and in non-secret health/pressure diagnostics.
@@ -44,6 +43,26 @@ Local `make dev` requires the direct DB lane. Resolver order is: explicit `TRR_D
 | `TRR_DB_TRANSACTION_URL` | Supavisor transaction | Used only when `TRR_DB_RUNTIME_LANE=transaction` and `TRR_DB_TRANSACTION_FLIGHT_TEST=1`. | Use `pooler.supabase.com:6543`; route-by-route flight tests only. |
 | `TRR_DB_FALLBACK_URL` | Operator fallback | Used after primary lane candidates or when explicit fallback controls engage. | Keep on session/local unless a separate reviewed test says otherwise. |
 
+## Realtime Redis Lane
+
+The FastAPI realtime broker uses `REDIS_URL` when it is set and otherwise falls back to an in-process broker for local single-worker development. Redis owns only ephemeral realtime pub/sub, presence/typing, short TTL state, and cross-instance invalidation signals. Durable jobs, runs, locks, retries, analytics outputs, persisted cache state, and migration history stay in Postgres/Supabase; long-running execution stays in Modal. See `docs/workspace/backend-runtime-ownership.md`.
+
+Multi-worker or multi-instance FastAPI must set `REDIS_URL`. The default workspace guard is `TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER=1`: local/dev launchers fall back to one worker when Redis is missing, while deployed multi-worker launchers fail fast.
+
+## Operator Failure Lanes
+
+When a runtime check fails, classify it by the first concrete lane named in logs, health payloads, or readiness output:
+
+| Lane | Primary signals | Where to verify |
+|---|---|---|
+| Direct URL | `url_lane=direct_url`, `source=TRR_DB_DIRECT_URL`, direct Supabase host, local-only direct lane messages. | Backend startup logs, `/health` `database_lane`, `/admin/health/db-pressure` `operator_failure_lanes.database`. |
+| Pooler URL | `url_lane=pooler_url`, `TRR_DB_SESSION_URL`, `TRR_DB_URL`, `pooler.supabase.com:5432`, or session pool sizing warnings. | Backend startup logs, DB pool logs, and `/admin/health/db-pressure`. |
+| Health pool | `pool_name=health`, `pool_lane=health_pool`, or `health-probe` failures. | `/health` and `/admin/health/db-pressure`. |
+| Social pools | `social_profile_pool`, `social_control_pool`, `social_progress_pool`, social profile/catalog/control saturation, or named `trr-backend:social_*` application names. | `/admin/health/db-pressure` and backend social route logs. |
+| Local fallback | `url_lane=local_fallback`, `TRR_DB_FALLBACK_URL`, or local Postgres/Supabase status resolution. | Backend startup logs and DB resolution summary. |
+| Auth | `401`, `403`, `AUTH_REQUIRED`, `FORBIDDEN`, missing admin/shared-secret/service-role allowlist flags. | App/admin responses and backend auth logs. |
+| Modal deployment state | Missing Modal app, secret, function, web endpoint, runtime probe, or social auth probe. | `cd TRR-Backend && python3.11 scripts/modal/verify_modal_readiness.py`. |
+
 | Variable | Default | Accepted Values | Used By | Visibility | Notes |
 |---|---|---|---|---|---|
 | `ADMIN_APP_HOSTS` | `admin.localhost,localhost,127.0.0.1,[::1]` | string | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
@@ -51,15 +70,18 @@ Local `make dev` requires the direct DB lane. Resolver order is: explicit `TRR_D
 | `ADMIN_AUTH_EXTERNAL_TIMEOUT_MS` | `3000` | integer milliseconds | `TRR-APP/apps/web/src/lib/server/auth.ts`, `TRR-APP/apps/web/.env.example` | `internal` | Timeout for external auth fallbacks in TRR-APP, including Identity Toolkit lookup and Supabase token shadow verification. |
 | `ADMIN_ENFORCE_HOST` | `true` | `true` or `false` | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `ADMIN_STRICT_HOST_ROUTING` | `false` | `true` or `false` | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
+| `BACKEND_RESTART_SEGMENT_KEEP` | `10` | string | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `PROFILE` | `` | string | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
+| `REDIS_URL` | `` | Redis connection URL | `TRR-Backend/api/realtime/broker.py`, `TRR-Backend/start-api.sh`, `TRR-Backend/docs/api/run.md` | `advanced` | Optional Redis connection URL for ephemeral realtime pub/sub, presence/typing, short TTL state, and cross-instance invalidation. Required before enabling multi-worker or multi-instance realtime; do not use for durable job truth. |
+| `SOCIAL_INSTAGRAM_COMMENTS_PER_POST_CONCURRENCY` | `1` | integer `1` through `8` | `TRR-Backend/trr_backend/socials/instagram/comments_scrapling/job_runner.py`, `TRR-Backend/.env.example` | `advanced` | Overlaps per-post Instagram comments fetches while preserving one serialized persistence/progress consumer. Keep at 1 unless running a controlled backfill validation. |
 | `TRR_ADMIN_ALLOW_SERVICE_ROLE` | `` | `0` or `1` | `TRR-Backend/api/auth.py`, `TRR-Backend/.env.example` | `internal` | Dev-only backend escape hatch that allows service-role tokens through human-admin routes. Leave unset in production. |
 | `TRR_ADMIN_ROUTE_CACHE_DISABLED` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Disable Next.js in-memory admin route caching during managed local workspace runs. |
 | `TRR_APP_HOST` | `127.0.0.1` | string | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `TRR_APP_PORT` | `3000` | integer port | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `TRR_BACKEND_PORT` | `8000` | integer port | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `TRR_BACKEND_RELOAD` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable backend reload mode (1) instead of non-reload server mode (0). |
-| `TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
-| `TRR_BACKEND_WORKERS` | `1` | integer | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
+| `TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER` | `1` | `0` or `1` | `scripts/dev-workspace.sh`, `TRR-Backend/start-api.sh`, `TRR-Backend/docs/api/run.md` | `internal` | When set to 1, requires REDIS_URL before multi-worker FastAPI can run. Local/dev launchers fall back to one worker; deployed launchers fail fast. |
+| `TRR_BACKEND_WORKERS` | `1` | integer | `scripts/dev-workspace.sh`, `TRR-Backend/start-api.sh`, `TRR-Backend/docs/api/run.md` | `internal` | Number of FastAPI worker processes requested by the backend launcher. Keep at 1 unless Redis-backed realtime is configured. |
 | `TRR_DB_POOL_MAXCONN` | `6` | integer | `TRR-Backend/trr_backend/db/pg.py`, `profiles/default.env` | `internal` | Backend default psycopg2 pool maximum for local workspace runs. Default local direct lane uses more headroom than cloud/session; explicit cloud/session profiles keep this conservative. |
 | `TRR_DB_POOL_MINCONN` | `1` | integer | `TRR-Backend/trr_backend/db/pg.py`, `profiles/default.env` | `internal` | Backend default psycopg2 pool minimum for local workspace runs. Keep conservative when using the Supabase session pooler. |
 | `TRR_HEALTH_DB_POOL_MAXCONN` | `1` | integer | `TRR-Backend/trr_backend/db/pg.py`, `profiles/default.env` | `internal` | Dedicated TRR-Backend health-check pool maximum for local workspace runs. |
@@ -68,10 +90,13 @@ Local `make dev` requires the direct DB lane. Resolver order is: explicit `TRR_D
 | `TRR_INTERNAL_ADMIN_ALLOW_SERVICE_ROLE` | `` | `0` or `1` | `TRR-Backend/api/auth.py`, `TRR-Backend/.env.example` | `internal` | Dev-only backend escape hatch that allows service-role tokens through internal-admin routes. Leave unset in production. |
 | `TRR_REDDIT_CACHE_LOOKUP_RETRIES` | `1` | integer | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `TRR_REDDIT_CACHE_LOOKUP_TIMEOUT_MS` | `20000` | integer | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
+| `TRR_REMOTE_DEBUG_LOG_ENABLED` | `0` | `0` or `1` | `TRR-APP/apps/web/src/app/api/debug-log/route.ts` | `internal` | Hard kill switch for remote /api/debug-log writes. Localhost logging remains admin-gated; remote hosts require this to be explicitly enabled. |
 | `TRR_SOCIAL_CONTROL_DB_POOL_MAXCONN` | `2` | integer | `TRR-Backend/trr_backend/db/pg.py`, `profiles/default.env` | `internal` | Maximum Postgres pool connections reserved for social run/finalize/status control-plane reads. |
 | `TRR_SOCIAL_CONTROL_DB_POOL_MINCONN` | `1` | integer | `TRR-Backend/trr_backend/db/pg.py`, `profiles/default.env` | `internal` | Minimum Postgres pool connections reserved for social run/finalize/status control-plane reads. |
 | `TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN` | `4` | integer | `TRR-Backend/trr_backend/db/pg.py`, `profiles/default.env` | `internal` | Dedicated TRR-Backend social-profile read pool maximum for local workspace runs. This local lane may be higher than the general backend pool to keep social admin pages responsive. |
 | `TRR_SOCIAL_PROFILE_DB_POOL_MINCONN` | `1` | integer | `TRR-Backend/trr_backend/db/pg.py`, `profiles/default.env` | `internal` | Dedicated TRR-Backend social-profile read pool minimum for local workspace runs. |
+| `TRR_SOCIAL_PROGRESS_DB_POOL_MAXCONN` | `2` | integer | `TRR-Backend/trr_backend/db/pg.py`, `profiles/default.env` | `internal` | Maximum Postgres pool connections reserved for catalog and comments progress polling. |
+| `TRR_SOCIAL_PROGRESS_DB_POOL_MINCONN` | `1` | integer | `TRR-Backend/trr_backend/db/pg.py`, `profiles/default.env` | `internal` | Minimum Postgres pool connections reserved for catalog and comments progress polling. |
 | `TRR_SOCIAL_PROXY_DEFAULT_TIMEOUT_MS` | `25000` | integer | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `TRR_SOCIAL_PROXY_LONG_TIMEOUT_MS` | `60000` | integer | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `TRR_SOCIAL_PROXY_SHORT_TIMEOUT_MS` | `10000` | integer | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
@@ -98,7 +123,6 @@ Local `make dev` requires the direct DB lane. Resolver order is: explicit `TRR_D
 | `WORKSPACE_RUNTIME_MODAL_AUTO_DEPLOY` | `1` | string | `scripts/dev-workspace.sh`, `Makefile` | `common` | Allow startup to auto-apply Modal secrets and redeploy the app when readiness or fingerprint drift is detected. |
 | `WORKSPACE_RUNTIME_RECONCILE_ENABLED` | `1` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable the startup runtime reconcile phase that checks hosted DB, Modal, Render, and Decodo contracts. |
 | `WORKSPACE_RUNTIME_RENDER_VERIFY_ONLY` | `1` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Keep Render checks advisory-only during startup. |
-| `WORKSPACE_SCREENALYTICS_DB_ENABLED` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable Screenalytics DB-backed metadata in workspace dev. Default is off so Screenalytics does not consume production Supabase sessions during normal TRR runs. |
 | `WORKSPACE_SOCIAL_WORKER_COMMENTS` | `1` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_SOCIAL_WORKER_COMMENT_MEDIA_MIRROR` | `0` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_SOCIAL_WORKER_ENABLED` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
@@ -120,7 +144,7 @@ Local `make dev` requires the direct DB lane. Resolver order is: explicit `TRR_D
 | `WORKSPACE_TRR_MODAL_GOOGLE_NEWS_FUNCTION` | `run_google_news_sync` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_TRR_MODAL_REDDIT_REFRESH_FUNCTION` | `run_reddit_refresh` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_TRR_MODAL_RUNTIME_SECRET_NAME` | `trr-backend-runtime` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
-| `WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT` | `12` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Maximum concurrent Modal containers allowed for `run_social_job`. |
+| `WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT` | `8` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Maximum concurrent Modal containers allowed for each social Modal function. |
 | `WORKSPACE_TRR_MODAL_SOCIAL_JOB_FUNCTION` | `run_social_job` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_TRR_MODAL_SOCIAL_RECOVERY_FUNCTION` | `sweep_social_dispatch_queue` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_TRR_MODAL_SOCIAL_SECRET_NAME` | `trr-social-auth` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
@@ -131,7 +155,7 @@ Local `make dev` requires the direct DB lane. Resolver order is: explicit `TRR_D
 | `WORKSPACE_TRR_REMOTE_REDDIT_WORKERS` | `1` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS` | `1` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Comments-stage cap used by Modal social dispatch and by legacy local social worker mode. |
 | `WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR` | `1` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Comment media mirror stage cap used by Modal social dispatch and by legacy local social worker mode. |
-| `WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT` | `6` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Maximum number of queued social jobs the backend will dispatch per Modal sweep. |
+| `WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT` | `8` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Maximum number of queued social jobs the backend will dispatch per Modal sweep. |
 | `WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR` | `1` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Post media mirror stage cap used by Modal social dispatch and by legacy local social worker mode. |
 | `WORKSPACE_TRR_REMOTE_SOCIAL_POSTS` | `1` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Posts-stage cap used by Modal social dispatch and by legacy local social worker mode. |
 | `WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable or disable the Modal social lane in the remote execution contract; this is not a worker-count knob. |

@@ -39,6 +39,8 @@ NON_ACTIONABLE_BOT_FEEDBACK_RE = re.compile(
     r"\\b(lgtm|looks\\s+good|approved|thank\\s+you|thanks|no\\s+changes\\s+required)\\b",
     re.IGNORECASE,
 )
+CODERABBIT_AUTHOR_RE = re.compile(r"coderabbit", re.IGNORECASE)
+CODERABBIT_SKIPPED_RE = re.compile(r"(review\\s+skipped|skip\\s+review|too\\s+many\\s+files)", re.IGNORECASE)
 EXCLUDED_DIR_NAMES = {
     ".git",
     ".logs",
@@ -310,27 +312,9 @@ def push_branch(repo: RepoTarget, branch_name: str) -> None:
 
 
 def get_or_create_pr(repo: RepoTarget, branch_name: str, base_branch: str) -> tuple[int, str]:
-    existing = run_cmd(
-        [
-            "gh",
-            "pr",
-            "list",
-            "--repo",
-            _repo_slug(repo),
-            "--head",
-            branch_name,
-            "--base",
-            base_branch,
-            "--state",
-            "open",
-            "--json",
-            "number,url",
-        ]
-    )
-    items = parse_json(existing.stdout or "[]", [])
-    if items:
-        item = items[0]
-        return int(item["number"]), str(item["url"])
+    existing_pr = find_open_pr(repo, branch_name, base_branch)
+    if existing_pr:
+        return existing_pr
 
     title = f"chore: workspace sync for {repo.name}"
     body = (
@@ -360,6 +344,31 @@ def get_or_create_pr(repo: RepoTarget, branch_name: str, base_branch: str) -> tu
     )
     url = (created.stdout or "").strip().splitlines()[-1].strip()
     return parse_pr_number(url), url
+
+
+def find_open_pr(repo: RepoTarget, branch_name: str, base_branch: str) -> tuple[int, str] | None:
+    existing = run_cmd(
+        [
+            "gh",
+            "pr",
+            "list",
+            "--repo",
+            _repo_slug(repo),
+            "--head",
+            branch_name,
+            "--base",
+            base_branch,
+            "--state",
+            "open",
+            "--json",
+            "number,url",
+        ]
+    )
+    items = parse_json(existing.stdout or "[]", [])
+    if items:
+        item = items[0]
+        return int(item["number"]), str(item["url"])
+    return None
 
 
 def fetch_checks(repo: RepoTarget, pr_number: int) -> list[dict[str, Any]]:
@@ -786,6 +795,59 @@ def fetch_bot_feedback(repo: RepoTarget, pr_number: int) -> list[dict[str, Any]]
     return out
 
 
+def fetch_coderabbit_gate(repo: RepoTarget, pr_number: int, checks: list[dict[str, Any]]) -> dict[str, Any]:
+    slug = _repo_slug(repo)
+    response = run_cmd(["gh", "api", f"repos/{slug}/issues/{pr_number}/comments?per_page=100"], check=False)
+    if response.returncode != 0:
+        return {
+            "result": "unknown",
+            "reason": "coderabbit_comments_unavailable",
+            "error": ((response.stderr or "") + "\n" + (response.stdout or "")).strip() or f"exit {response.returncode}",
+        }
+
+    payload = parse_json(response.stdout or "[]", [])
+    latest_comment: dict[str, Any] | None = None
+    if isinstance(payload, list):
+        for item in payload:
+            if not isinstance(item, dict):
+                continue
+            user = item.get("user") if isinstance(item.get("user"), dict) else {}
+            login = str(user.get("login") or "")
+            if not CODERABBIT_AUTHOR_RE.search(login):
+                continue
+            if latest_comment is None or str(item.get("created_at") or "") >= str(latest_comment.get("created_at") or ""):
+                latest_comment = item
+
+    check_names = [str(check.get("name") or "") for check in checks]
+    coderabbit_checks = [check for check in checks if CODERABBIT_AUTHOR_RE.search(str(check.get("name") or ""))]
+    if latest_comment:
+        body = str(latest_comment.get("body") or "")
+        if CODERABBIT_SKIPPED_RE.search(body):
+            return {
+                "result": "blocked",
+                "reason": "coderabbit_review_skipped",
+                "author": str((latest_comment.get("user") or {}).get("login") or ""),
+                "created_at": latest_comment.get("created_at"),
+                "url": latest_comment.get("html_url"),
+                "check_names": check_names,
+            }
+        return {
+            "result": "passed",
+            "reason": "coderabbit_review_comment_present",
+            "author": str((latest_comment.get("user") or {}).get("login") or ""),
+            "created_at": latest_comment.get("created_at"),
+            "url": latest_comment.get("html_url"),
+            "check_names": check_names,
+        }
+
+    if coderabbit_checks:
+        if all(check.get("completed") and check.get("success") for check in coderabbit_checks):
+            return {"result": "passed", "reason": "coderabbit_check_passed", "check_names": check_names}
+        return {"result": "pending", "reason": "coderabbit_check_not_passed", "check_names": check_names}
+
+    return {"result": "absent", "reason": "no_coderabbit_signal", "check_names": check_names}
+
+
 def list_unmerged_files(repo: RepoTarget) -> list[str]:
     raw = run_cmd(["git", "-C", str(repo.path), "diff", "--name-only", "--diff-filter=U"], check=False)
     return [line.strip() for line in (raw.stdout or "").splitlines() if line.strip()]
@@ -1054,22 +1116,28 @@ def process_repo(
         return result
 
     ensure_branch(repo, branch_name, base_branch)
-    commit_outcome = stage_and_commit(
-        repo,
-        create_noop=args.create_noop_pr_for_clean,
-        commit_message=f"chore: workspace sync updates ({repo.name})",
-        noop_commit_message="chore: no-op sync PR for repository alignment",
-    )
+    pr_number: int
+    pr_url: str
+    existing_pr = find_open_pr(repo, branch_name, base_branch) if not working_tree_dirty(repo) else None
+    if existing_pr:
+        commit_outcome = {"created_commit": False, "noop_commit": False, "reused_clean_pr": True}
+        pr_number, pr_url = existing_pr
+    else:
+        commit_outcome = stage_and_commit(
+            repo,
+            create_noop=args.create_noop_pr_for_clean,
+            commit_message=f"chore: workspace sync updates ({repo.name})",
+            noop_commit_message="chore: no-op sync PR for repository alignment",
+        )
+        if commit_outcome.get("skipped_clean"):
+            result["commit"] = commit_outcome
+            result["status"] = "skipped_clean"
+            return result
+        push_branch(repo, branch_name)
+        pr_number, pr_url = get_or_create_pr(repo, branch_name, base_branch)
+
     result["commit"] = commit_outcome
-
-    if commit_outcome.get("skipped_clean"):
-        result["status"] = "skipped_clean"
-        return result
-
     result["commit_sha"] = run_cmd(["git", "-C", str(repo.path), "rev-parse", "HEAD"]).stdout.strip()
-    push_branch(repo, branch_name)
-
-    pr_number, pr_url = get_or_create_pr(repo, branch_name, base_branch)
     result["pr_number"] = pr_number
     result["pr_url"] = pr_url
 
@@ -1127,6 +1195,13 @@ def process_repo(
 
         metadata = fetch_pr_metadata(repo, pr_number)
         result["pr_metadata"] = metadata
+
+        coderabbit_gate = fetch_coderabbit_gate(repo, pr_number, check_outcome.get("checks") or [])
+        result["coderabbit_gate"] = coderabbit_gate
+        if coderabbit_gate.get("result") == "blocked":
+            result["status"] = "coderabbit_gate_blocked"
+            result["blocking_reason"] = coderabbit_gate.get("reason")
+            return result
 
         bot_feedback = fetch_bot_feedback(repo, pr_number)
         result["latest_bot_feedback"] = bot_feedback
@@ -1321,6 +1396,7 @@ def main(argv: list[str]) -> int:
                 cycle_payload["repos"].append(repo_result)
 
                 if repo_result["status"] in {
+                    "coderabbit_gate_blocked",
                     "needs_fix",
                     "needs_bot_revision",
                     "conflict_needs_fix",
@@ -1329,7 +1405,6 @@ def main(argv: list[str]) -> int:
                     "merge_failed",
                 }:
                     had_blocking_issue = True
-                    break
 
             if had_blocking_issue:
                 report["success"] = False

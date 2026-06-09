@@ -14,6 +14,7 @@ shared_wrapper_killed=0
 shared_client_killed=0
 reaper_output=""
 chrome_clean_output=""
+node_repl_clean_output=""
 
 cleanup_chrome_dock_recents_if_requested() {
   [[ "${CHROME_AGENT_CLEAN_DOCK_RECENTS:-0}" == "1" ]] || return 0
@@ -119,6 +120,7 @@ emit_cleanup_results() {
   echo "[mcp-clean] Orphan shared clients killed: ${shared_client_killed}"
   echo "${reaper_output}"
   echo "${chrome_clean_output}"
+  echo "${node_repl_clean_output}"
 
   dock_clean_output="$(cleanup_chrome_dock_recents_if_requested)"
   if [[ -n "$dock_clean_output" ]]; then
@@ -130,6 +132,7 @@ run_cleanup_cycle() {
   run_cleanup_once
   reaper_output="$(bash "${ROOT}/scripts/codex-mcp-session-reaper.sh" reap)"
   chrome_clean_output="$(bash "${ROOT}/scripts/chrome-devtools-mcp-clean-stale.sh")"
+  node_repl_clean_output="$(NODE_REPL_CLEAN_PROJECT_OWNED=1 NODE_REPL_PROJECT_ROOT="$ROOT" bash "${ROOT}/scripts/node-repl-mcp-clean-stale.sh")"
   emit_cleanup_results
 }
 

@@ -2,6 +2,7 @@
 set -euo pipefail
 
 PRIMARY_URL="${1:-}"
+ADMIN_URL="${2:-}"
 TAB_SYNC_MODE="${WORKSPACE_BROWSER_TAB_SYNC_MODE:-reuse_no_reload}"
 
 if [[ -z "$PRIMARY_URL" ]]; then
@@ -48,7 +49,10 @@ open_or_refresh() {
   open_with_default "$url"
 }
 
-open_or_refresh "$PRIMARY_URL" "TRR APP/Admin"
+open_or_refresh "$PRIMARY_URL" "TRR APP"
+if [[ -n "$ADMIN_URL" && "$ADMIN_URL" != "$PRIMARY_URL" ]]; then
+  open_or_refresh "$ADMIN_URL" "TRR APP Admin"
+fi
 
 echo "[open-workspace-dev-window] Browser tab sync complete (mode=${TAB_SYNC_MODE}); reused matching tabs and opened missing URLs."
 exit 0

@@ -17,6 +17,30 @@ TRR_BACKEND_ROOT = WORKSPACE_ROOT / "TRR-Backend"
 TRR_APP_ROOT = WORKSPACE_ROOT / "TRR-APP"
 SCREENALYTICS_ROOT = WORKSPACE_ROOT / "screenalytics"
 SCREENALYTICS_DATA_ROOT = SCREENALYTICS_ROOT / "data"
+SCREENALYTICS_PROTECTED_PATH_DESCRIPTIONS = (
+    "screenalytics/.env and screenalytics/.env.* (local secrets)",
+    "screenalytics/.git (nested repository history)",
+    "screenalytics/data/ (local data)",
+    "dirty nested Screenalytics source files (never selected by this script)",
+)
+SCREENALYTICS_GENERATED_ARTIFACTS = (
+    (".venv", "python virtual environment"),
+    (".venv-crawl4ai", "crawl4ai python virtual environment"),
+    ("web/node_modules", "web dependency install"),
+    ("web/.next", "Next.js build output"),
+    (".pytest_cache", "pytest cache"),
+    (".ruff_cache", "ruff cache"),
+    (".logs", "local logs"),
+    ("tmp", "temporary generated output"),
+    (".cache", "local cache"),
+    ("web/.cache", "web cache"),
+    ("web/.turbo", "Turborepo cache"),
+    ("web/test-results", "web test output"),
+    ("web/dist", "web distribution output"),
+    ("web/build", "web build output"),
+    ("outputs", "generated output"),
+    ("output", "generated output"),
+)
 REPO_ROOTS = {
     name: path
     for name, path in {
@@ -44,7 +68,7 @@ MEDIA_EXTENSIONS = {
 EPISODE_ID_RE = re.compile(r".+-s\d+e\d+$", re.IGNORECASE)
 
 
-@dataclass(slots=True)
+@dataclass
 class CleanupCandidate:
     category: str
     path: Path
@@ -125,6 +149,35 @@ def build_cache_candidates() -> list[CleanupCandidate]:
                     reason="workspace cache/log artifact",
                 )
             )
+    return candidates
+
+
+def is_screenalytics_protected_path(path: Path) -> bool:
+    try:
+        relative_path = path.resolve().relative_to(SCREENALYTICS_ROOT.resolve())
+    except ValueError:
+        return False
+    if relative_path.parts in {(".git",), ("data",)}:
+        return True
+    if relative_path.parts and relative_path.parts[0] in {".git", "data"}:
+        return True
+    return path.name == ".env" or path.name.startswith(".env.")
+
+
+def screenalytics_generated_artifact_candidates() -> list[CleanupCandidate]:
+    candidates: list[CleanupCandidate] = []
+    for relative_path, reason in SCREENALYTICS_GENERATED_ARTIFACTS:
+        path = SCREENALYTICS_ROOT / relative_path
+        if not path.exists() or is_screenalytics_protected_path(path):
+            continue
+        candidates.append(
+            CleanupCandidate(
+                category="screenalytics-generated",
+                path=path,
+                size_bytes=dir_size(path),
+                reason=reason,
+            )
+        )
     return candidates
 
 
@@ -262,6 +315,8 @@ def screenalytics_episode_sizes() -> list[tuple[str, int]]:
 
 
 def delete_candidate(candidate: CleanupCandidate) -> None:
+    if is_screenalytics_protected_path(candidate.path):
+        raise RuntimeError(f"refusing to delete protected path: {candidate.path}")
     if candidate.path.is_dir():
         shutil.rmtree(candidate.path)
     elif candidate.path.exists():
@@ -269,14 +324,32 @@ def delete_candidate(candidate: CleanupCandidate) -> None:
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Audit and clean workspace disk usage.")
-    parser.add_argument("--dry-run", action="store_true", help="Preview cleanup targets (default behavior).")
-    parser.add_argument("--apply", action="store_true", help="Delete the selected targets.")
+    parser = argparse.ArgumentParser(
+        description="Audit and clean workspace disk usage.",
+        epilog=(
+            "Protected by default: "
+            + "; ".join(SCREENALYTICS_PROTECTED_PATH_DESCRIPTIONS)
+            + ". Apply mode requires both --apply and --confirm-delete-local-artifacts."
+        ),
+    )
+    mode_group = parser.add_mutually_exclusive_group()
+    mode_group.add_argument("--dry-run", action="store_true", help="Preview cleanup targets (default behavior).")
+    mode_group.add_argument("--apply", action="store_true", help="Delete the selected targets; requires --confirm-delete-local-artifacts.")
+    parser.add_argument(
+        "--confirm-delete-local-artifacts",
+        action="store_true",
+        help="Required with --apply so destructive cleanup cannot be triggered accidentally.",
+    )
     parser.add_argument("--keep-days", type=int, default=14, help="Retention window for legacy screenalytics episode artifacts.")
+    parser.add_argument(
+        "--include-screenalytics-local-generated",
+        action="store_true",
+        help="Include generated Screenalytics local artifacts such as .venv, web/node_modules, web/.next, caches, and logs.",
+    )
     parser.add_argument(
         "--include-screenalytics-artifacts",
         action="store_true",
-        help="Include old legacy screenalytics episode artifact directories in cleanup targets.",
+        help="Report old legacy screenalytics episode artifact directories; screenalytics/data/ remains protected by default.",
     )
     parser.add_argument(
         "--include-build-caches",
@@ -294,25 +367,44 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         default=20,
         help="Minimum size for large-media offender reporting (default: 20MB).",
     )
-    return parser.parse_args(argv)
+    args = parser.parse_args(argv)
+    if args.apply and not args.confirm_delete_local_artifacts:
+        parser.error("--apply requires --confirm-delete-local-artifacts")
+    return args
+
+
+def dedupe_candidates(candidates: list[CleanupCandidate]) -> list[CleanupCandidate]:
+    seen: set[Path] = set()
+    deduped: list[CleanupCandidate] = []
+    for candidate in candidates:
+        try:
+            key = candidate.path.resolve()
+        except OSError:
+            key = candidate.path
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(candidate)
+    return deduped
 
 
 def main(argv: list[str] | None = None) -> int:
-    args = parse_args(argv or sys.argv[1:])
+    args = parse_args(argv if argv is not None else sys.argv[1:])
     apply = bool(args.apply)
     keep_days = max(int(args.keep_days), 0)
     min_media_bytes = max(int(args.min_media_mb), 1) * 1024 * 1024
 
     if not any(
         (
+            args.include_screenalytics_local_generated,
             args.include_screenalytics_artifacts,
             args.include_build_caches,
             args.include_download_dumps,
         )
     ):
-        args.include_screenalytics_artifacts = SCREENALYTICS_ROOT.exists()
+        args.include_screenalytics_local_generated = SCREENALYTICS_ROOT.exists()
         args.include_build_caches = True
-        args.include_download_dumps = True
+        args.include_download_dumps = False
 
     print("== Top Offenders ==")
     for repo_name, repo_root in REPO_ROOTS.items():
@@ -336,7 +428,13 @@ def main(argv: list[str] | None = None) -> int:
     else:
         print("  none")
 
+    print("\n== Protected Paths ==")
+    for description in SCREENALYTICS_PROTECTED_PATH_DESCRIPTIONS:
+        print(f"  - {description}")
+
     cleanup_targets: list[CleanupCandidate] = []
+    if args.include_screenalytics_local_generated:
+        cleanup_targets.extend(screenalytics_generated_artifact_candidates())
     if args.include_build_caches:
         cleanup_targets.extend(build_cache_candidates())
     if args.include_download_dumps:
@@ -347,6 +445,10 @@ def main(argv: list[str] | None = None) -> int:
         deletable, preserved = screenalytics_artifact_candidates(keep_days=keep_days)
         cleanup_targets.extend(deletable)
 
+    cleanup_targets = [
+        candidate for candidate in dedupe_candidates(cleanup_targets)
+        if not is_screenalytics_protected_path(candidate.path)
+    ]
     cleanup_targets.sort(key=lambda item: item.size_bytes, reverse=True)
     total_bytes = sum(item.size_bytes for item in cleanup_targets)
     print("\n== Cleanup Targets ==")

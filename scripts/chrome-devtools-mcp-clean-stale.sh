@@ -91,14 +91,30 @@ if [[ -f "$visible_browser_owner_file" ]]; then
   owner_wrapper_pid="$(visible_owner_field WRAPPER_PID)"
   owner_port="$(visible_owner_field PORT)"
   listener_pid=""
+  owner_pid_alive=0
+  owner_wrapper_alive=0
+  endpoint_alive=0
   if [[ -n "$owner_port" ]]; then
     listener_pid="$(chrome_listener_pid "$owner_port")"
+    if chrome_endpoint_reachable "$owner_port"; then
+      endpoint_alive=1
+    fi
   fi
   if [[ -n "$owner_pid" ]] && kill -0 "$owner_pid" >/dev/null 2>&1; then
+    owner_pid_alive=1
+  fi
+  if [[ -n "$owner_wrapper_pid" ]] && kill -0 "$owner_wrapper_pid" >/dev/null 2>&1; then
+    owner_wrapper_alive=1
+  fi
+
+  if [[ -n "$owner_wrapper_pid" && "$owner_wrapper_alive" == "0" ]]; then
+    rm -f "$visible_browser_owner_file"
+    cleaned=$((cleaned + 1))
+  elif [[ "$owner_pid_alive" == "1" ]]; then
     :
-  elif [[ -n "$listener_pid" ]]; then
+  elif [[ -n "$listener_pid" && "$endpoint_alive" == "1" ]]; then
     :
-  elif [[ -n "$owner_wrapper_pid" ]] && kill -0 "$owner_wrapper_pid" >/dev/null 2>&1; then
+  elif [[ "$owner_wrapper_alive" == "1" ]]; then
     :
   else
     rm -f "$visible_browser_owner_file"
