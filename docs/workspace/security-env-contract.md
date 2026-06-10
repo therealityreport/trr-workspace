@@ -2,8 +2,9 @@
 
 Hand-maintained companion to the generated `docs/workspace/env-contract.md`. These variables decide whether
 admin auth in `TRR-APP/apps/web` fails **closed** (safe) or **open** (exposed). Source of truth:
-`apps/web/src/lib/server/auth.ts`, `apps/web/src/lib/server/trr-api/internal-admin-auth.ts`, and
-`apps/web/src/app/api/cron/*/route.ts`. Last verified: 2026-06-10 (Phase 0 of the admin remediation roadmap).
+paths are relative to the `TRR-APP` repo root: `apps/web/src/lib/server/auth.ts`,
+`apps/web/src/lib/server/trr-api/internal-admin-auth.ts`, and `apps/web/src/app/api/cron/*/route.ts`.
+Last verified: 2026-06-10 (Phase 0 of the admin remediation roadmap).
 
 ## Production requirements (Vercel `production` environment)
 
@@ -14,7 +15,7 @@ admin auth in `TRR-APP/apps/web` fails **closed** (safe) or **open** (exposed). 
 | `NEXT_PUBLIC_DEV_ADMIN_BYPASS` | **Unset** | Client-side only: makes browsers *send* the bypass token. Harmless while the server gate is closed, but keep unset in prod builds to avoid noise/confusion. |
 | `ADMIN_ENFORCE_HOST` | **Unset or `true`** | `false` disables the admin host allowlist in `requireAdmin`/`requireAdminContext`; identity allowlists remain, but host isolation is lost. |
 | `ADMIN_APP_HOSTS` / `ADMIN_APP_ORIGIN` | Set to the canonical admin host(s) | Empty allowlist degrades the host gate to allow-any-host. |
-| `FIREBASE_SERVICE_ACCOUNT` | **Set** | Without it, token verification falls back to signature-less decode + Google Identity Toolkit lookup (weaker; see roadmap item F-10 to make this fail-closed). |
+| `FIREBASE_SERVICE_ACCOUNT` | **Set in production; no fallback allowed operationally** | Missing service-account credentials currently trigger a weaker signature-less decode + Google Identity Toolkit lookup. Treat this as a production deploy blocker until roadmap item F-10 makes verification fail-closed in code. |
 | `TRR_INTERNAL_ADMIN_SHARED_SECRET` | **Set, ≥32 random bytes, rotated** | Holder can mint 120s full-admin JWTs (HS256). Host allowlist now applies to this path too (fixed 2026-06-10), but the secret remains the crown jewel: never log it, rotate on any suspicion. Unset disables internal-admin propagation entirely (safe). |
 | `ADMIN_EMAIL_ALLOWLIST` / `ADMIN_UID_ALLOWLIST` | Set to owner emails/uids | These + Firebase custom claim `admin: true` are the only authorization legs. **Display names no longer authorize** (removed 2026-06-10; they were user-settable). Email leg also requires the Firebase `email_verified` claim. |
 
@@ -30,8 +31,9 @@ admin auth in `TRR-APP/apps/web` fails **closed** (safe) or **open** (exposed). 
 
 ## Operational checklist (run on each prod deploy review)
 
-- [ ] Vercel prod env: `CRON_SECRET` present; `TRR_DEV_ADMIN_BYPASS` and `NEXT_PUBLIC_DEV_ADMIN_BYPASS` absent; `ADMIN_ENFORCE_HOST` not `false`; `FIREBASE_SERVICE_ACCOUNT` present; allowlists populated.
-- [ ] Rotate `TRR_INTERNAL_ADMIN_SHARED_SECRET` (last rotation: pending — flagged in Phase 0, 2026-06-10) and update the matching TRR-Backend secret.
+- [ ] Vercel prod env: `CRON_SECRET` present; `TRR_DEV_ADMIN_BYPASS` and `NEXT_PUBLIC_DEV_ADMIN_BYPASS` absent; `ADMIN_ENFORCE_HOST` not `false`; `FIREBASE_SERVICE_ACCOUNT` present as a blocking requirement until F-10 removes the fallback; allowlists populated.
+- [ ] Rotate `TRR_INTERNAL_ADMIN_SHARED_SECRET` before the next production deploy and update the matching TRR-Backend secret. Tracked in therealityreport/trr-workspace#50 until completed with a rotation date.
+- [ ] Confirm `DEFAULT_ADMIN_UIDS` owner UID seeding and backend internal-admin secret sync before any production deploy that uses the rotated shared secret.
 - [ ] Firebase console: decide/record whether email/password self-signup stays enabled; with displayName authorization removed, self-signup no longer grants admin, but it still creates accounts.
 - [ ] Owner access: owner uid is seeded in `DEFAULT_ADMIN_UIDS` (`apps/web/src/lib/admin/constants.ts`); owner email must be **verified** in Firebase for the email leg to work.
 

@@ -116,7 +116,7 @@ When a runtime check fails, classify it by the first concrete lane named in logs
 | `WORKSPACE_HEALTH_CURL_MAX_TIME` | `8` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_HEALTH_TIMEOUT_APP` | `60` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_HEALTH_TIMEOUT_BACKEND` | `30` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
-| `WORKSPACE_OPEN_ADMIN_BROWSER` | `1` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
+| `WORKSPACE_OPEN_ADMIN_BROWSER` | `1` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_OPEN_BROWSER` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable automatic browser tab sync/open after startup. |
 | `WORKSPACE_RUNTIME_DB_AUTO_APPLY_ENABLED` | `1` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Allow startup to auto-apply a bounded allowlisted Supabase migration suffix. |
 | `WORKSPACE_RUNTIME_DB_MAX_AUTO_APPLY` | `3` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Maximum number of allowlisted pending migrations startup may auto-apply. |
