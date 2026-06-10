@@ -107,7 +107,7 @@ accepted_values() {
     *TIMEOUT*|*INTERVAL*|*WORKERS|*RETRIES|*_SECONDS|*_MAX_TIME)
       echo "integer"
       ;;
-    *ENABLED|*AUTO_RESTART|*FORCE_KILL_PORT_CONFLICTS|*CLEAN_NEXT_CACHE|*OPEN_BROWSER|*RELOAD|*DISABLED|*REQUIRE_REDIS_FOR_MULTI_WORKER|*LONG_JOB_ENFORCE_REMOTE|*STRICT)
+    WORKSPACE_OPEN_ADMIN_BROWSER|*ENABLED|*AUTO_RESTART|*FORCE_KILL_PORT_CONFLICTS|*CLEAN_NEXT_CACHE|*OPEN_BROWSER|*RELOAD|*DISABLED|*REQUIRE_REDIS_FOR_MULTI_WORKER|*LONG_JOB_ENFORCE_REMOTE|*STRICT)
       echo '`0` or `1`'
       ;;
     *)
@@ -345,6 +345,7 @@ generate_contract() {
     echo "- Glossary: \`docs/workspace/supabase-glossary.md\`"
     echo "- Capacity/runbook: \`docs/workspace/supabase-capacity-budget.md\` and \`docs/workspace/db-pressure-runbook.md\`"
     echo "- Ownership inventory: \`docs/workspace/env-contract-inventory.md\`"
+    echo "- Security-critical env semantics (fail-open vs fail-closed): \`docs/workspace/security-env-contract.md\`"
     echo
     echo "## Runtime DB Application Names"
     echo
