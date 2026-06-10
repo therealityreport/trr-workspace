@@ -345,6 +345,7 @@ generate_contract() {
     echo "- Glossary: \`docs/workspace/supabase-glossary.md\`"
     echo "- Capacity/runbook: \`docs/workspace/supabase-capacity-budget.md\` and \`docs/workspace/db-pressure-runbook.md\`"
     echo "- Ownership inventory: \`docs/workspace/env-contract-inventory.md\`"
+    echo "- Security-critical env semantics (fail-open vs fail-closed): \`docs/workspace/security-env-contract.md\`"
     echo
     echo "## Runtime DB Application Names"
     echo

@@ -17,6 +17,7 @@ Related Supabase docs:
 - Glossary: `docs/workspace/supabase-glossary.md`
 - Capacity/runbook: `docs/workspace/supabase-capacity-budget.md` and `docs/workspace/db-pressure-runbook.md`
 - Ownership inventory: `docs/workspace/env-contract-inventory.md`
+- Security-critical env semantics (fail-open vs fail-closed): `docs/workspace/security-env-contract.md`
 
 ## Runtime DB Application Names
 
