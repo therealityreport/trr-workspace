@@ -65,8 +65,8 @@ When a runtime check fails, classify it by the first concrete lane named in logs
 
 | Variable | Default | Accepted Values | Used By | Visibility | Notes |
 |---|---|---|---|---|---|
-| `ADMIN_APP_HOSTS` | `admin.localhost,localhost,127.0.0.1,[::1]` | string | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
-| `ADMIN_APP_ORIGIN` | `http://admin.localhost:3000` | string | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
+| `ADMIN_APP_HOSTS` | `admin.trr.localhost,trr.localhost,localhost,127.0.0.1,[::1]` | string | `scripts/dev-workspace.sh`, `Makefile`, `TRR-APP/package.json` | `internal` | Workspace runtime variable consumed by local launchers. Portless uses `admin.trr.localhost,trr.localhost` for clean browser routing; add legacy hosts only when testing the legacy fallback flag. |
+| `ADMIN_APP_ORIGIN` | `https://admin.trr.localhost` | string | `scripts/dev-workspace.sh`, `Makefile`, `TRR-APP/package.json` | `internal` | Workspace runtime variable consumed by local launchers. Portless uses `https://admin.trr.localhost` so admin/browser tooling does not depend on numeric Next.js ports. |
 | `ADMIN_AUTH_EXTERNAL_TIMEOUT_MS` | `3000` | integer milliseconds | `TRR-APP/apps/web/src/lib/server/auth.ts`, `TRR-APP/apps/web/.env.example` | `internal` | Timeout for external auth fallbacks in TRR-APP, including Identity Toolkit lookup and Supabase token shadow verification. |
 | `ADMIN_ENFORCE_HOST` | `true` | `true` or `false` | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `ADMIN_STRICT_HOST_ROUTING` | `false` | `true` or `false` | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
@@ -88,6 +88,7 @@ When a runtime check fails, classify it by the first concrete lane named in logs
 | `TRR_HEALTH_DB_POOL_MINCONN` | `1` | integer | `TRR-Backend/trr_backend/db/pg.py`, `profiles/default.env` | `internal` | Dedicated TRR-Backend health-check pool minimum for local workspace runs. |
 | `TRR_INTERNAL_ADMIN_ALLOW_RAW_SECRET_FALLBACK` | `` | `0` or `1` | `TRR-Backend/api/auth.py`, `TRR-Backend/.env.example` | `internal` | Dev-only backend escape hatch that allows raw shared-secret internal admin requests. Leave unset in production. |
 | `TRR_INTERNAL_ADMIN_ALLOW_SERVICE_ROLE` | `` | `0` or `1` | `TRR-Backend/api/auth.py`, `TRR-Backend/.env.example` | `internal` | Dev-only backend escape hatch that allows service-role tokens through internal-admin routes. Leave unset in production. |
+| `TRR_LEGACY_LOCAL_ADMIN_FALLBACK` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Dev-only compatibility flag that re-enables classic portful local admin fallback routing when Portless/configured admin origins are absent. Leave off for clean Portless URL defaults. |
 | `TRR_REDDIT_CACHE_LOOKUP_RETRIES` | `1` | integer | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `TRR_REDDIT_CACHE_LOOKUP_TIMEOUT_MS` | `20000` | integer | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `TRR_REMOTE_DEBUG_LOG_ENABLED` | `0` | `0` or `1` | `TRR-APP/apps/web/src/app/api/debug-log/route.ts` | `internal` | Hard kill switch for remote /api/debug-log writes. Localhost logging remains admin-gated; remote hosts require this to be explicitly enabled. |
@@ -115,6 +116,7 @@ When a runtime check fails, classify it by the first concrete lane named in logs
 | `WORKSPACE_HEALTH_CURL_MAX_TIME` | `8` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_HEALTH_TIMEOUT_APP` | `60` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_HEALTH_TIMEOUT_BACKEND` | `30` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
+| `WORKSPACE_OPEN_ADMIN_BROWSER` | `1` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_OPEN_BROWSER` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable automatic browser tab sync/open after startup. |
 | `WORKSPACE_RUNTIME_DB_AUTO_APPLY_ENABLED` | `1` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Allow startup to auto-apply a bounded allowlisted Supabase migration suffix. |
 | `WORKSPACE_RUNTIME_DB_MAX_AUTO_APPLY` | `3` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Maximum number of allowlisted pending migrations startup may auto-apply. |

@@ -35,6 +35,7 @@ extract_var_rows() {
     printf 'TRR_INTERNAL_ADMIN_ALLOW_RAW_SECRET_FALLBACK\t\n'
     printf 'TRR_ADMIN_ALLOW_SERVICE_ROLE\t\n'
     printf 'TRR_INTERNAL_ADMIN_ALLOW_SERVICE_ROLE\t\n'
+    printf 'TRR_LEGACY_LOCAL_ADMIN_FALLBACK\t0\n'
     printf 'TRR_REMOTE_DEBUG_LOG_ENABLED\t0\n'
     printf 'REDIS_URL\t\n'
   } | awk -F '\t' '!seen[$1]++' | sort
@@ -79,7 +80,7 @@ accepted_values() {
     TRR_DB_POOL_MINCONN|TRR_DB_POOL_MAXCONN|TRR_SOCIAL_PROFILE_DB_POOL_MINCONN|TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN|TRR_SOCIAL_CONTROL_DB_POOL_MINCONN|TRR_SOCIAL_CONTROL_DB_POOL_MAXCONN|TRR_SOCIAL_PROGRESS_DB_POOL_MINCONN|TRR_SOCIAL_PROGRESS_DB_POOL_MAXCONN|TRR_HEALTH_DB_POOL_MINCONN|TRR_HEALTH_DB_POOL_MAXCONN)
       echo "integer"
       ;;
-    TRR_INTERNAL_ADMIN_ALLOW_RAW_SECRET_FALLBACK|TRR_ADMIN_ALLOW_SERVICE_ROLE|TRR_INTERNAL_ADMIN_ALLOW_SERVICE_ROLE|WORKSPACE_ENFORCE_DB_HOLDER_BUDGET)
+    TRR_INTERNAL_ADMIN_ALLOW_RAW_SECRET_FALLBACK|TRR_ADMIN_ALLOW_SERVICE_ROLE|TRR_INTERNAL_ADMIN_ALLOW_SERVICE_ROLE|TRR_LEGACY_LOCAL_ADMIN_FALLBACK|WORKSPACE_ENFORCE_DB_HOLDER_BUDGET)
       echo '`0` or `1`'
       ;;
     WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS)
@@ -164,6 +165,12 @@ description_for() {
     ADMIN_AUTH_EXTERNAL_TIMEOUT_MS)
       echo "Timeout for external auth fallbacks in TRR-APP, including Identity Toolkit lookup and Supabase token shadow verification."
       ;;
+    ADMIN_APP_HOSTS)
+      echo 'Workspace runtime variable consumed by local launchers. Portless uses `admin.trr.localhost,trr.localhost` for clean browser routing; add legacy hosts only when testing the legacy fallback flag.'
+      ;;
+    ADMIN_APP_ORIGIN)
+      echo 'Workspace runtime variable consumed by local launchers. Portless uses `https://admin.trr.localhost` so admin/browser tooling does not depend on numeric Next.js ports.'
+      ;;
     TRR_INTERNAL_ADMIN_ALLOW_RAW_SECRET_FALLBACK)
       echo "Dev-only backend escape hatch that allows raw shared-secret internal admin requests. Leave unset in production."
       ;;
@@ -172,6 +179,9 @@ description_for() {
       ;;
     TRR_INTERNAL_ADMIN_ALLOW_SERVICE_ROLE)
       echo "Dev-only backend escape hatch that allows service-role tokens through internal-admin routes. Leave unset in production."
+      ;;
+    TRR_LEGACY_LOCAL_ADMIN_FALLBACK)
+      echo "Dev-only compatibility flag that re-enables classic portful local admin fallback routing when Portless/configured admin origins are absent. Leave off for clean Portless URL defaults."
       ;;
     TRR_REMOTE_DEBUG_LOG_ENABLED)
       echo "Hard kill switch for remote /api/debug-log writes. Localhost logging remains admin-gated; remote hosts require this to be explicitly enabled."
@@ -277,6 +287,9 @@ used_by() {
       ;;
     ADMIN_AUTH_EXTERNAL_TIMEOUT_MS)
       echo '`TRR-APP/apps/web/src/lib/server/auth.ts`, `TRR-APP/apps/web/.env.example`'
+      ;;
+    ADMIN_APP_HOSTS|ADMIN_APP_ORIGIN)
+      echo '`scripts/dev-workspace.sh`, `Makefile`, `TRR-APP/package.json`'
       ;;
     TRR_REMOTE_DEBUG_LOG_ENABLED)
       echo '`TRR-APP/apps/web/src/app/api/debug-log/route.ts`'
@@ -403,6 +416,14 @@ generate_contract() {
           effective_default="$profile_default"
         fi
       fi
+      case "$key" in
+        ADMIN_APP_HOSTS)
+          effective_default="admin.trr.localhost,trr.localhost,localhost,127.0.0.1,[::1]"
+          ;;
+        ADMIN_APP_ORIGIN)
+          effective_default="https://admin.trr.localhost"
+          ;;
+      esac
 
       printf '| `%s` | `%s` | %s | %s | `%s` | %s |\n' \
         "$key" \
