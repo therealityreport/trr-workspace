@@ -1,5 +1,5 @@
 .PHONY: \
-	dev dev-lite dev-cloud dev-hybrid dev-hybrid-bg dev-hybrid-social-safe dev-portless dev-local dev-full dev-redis \
+	dev dev-lite dev-cloud dev-hybrid dev-hybrid-bg dev-hybrid-social-safe dev-portless stop-portless portless-repair open-admin dev-local dev-full dev-redis \
 	preflight preflight-local preflight-cloud preflight-hybrid preflight-strict preflight-diagnostics env-contract env-contract-report env-hygiene check-policy codex-check handoff-check handoff-sync smoke browser-smoke-admin-details status status-json backend-restart-diagnose stop logs logs-prune cleanup-disk help \
 	app-direct-sql-inventory redacted-env-inventory vercel-project-guard migration-ownership-lint rls-grants-snapshot db-pressure-rehearsal supabase-mcp-access supabase-advisor-snapshot \
 	bootstrap doctor doctor-json app-check app-validate-quick test test-fast test-full test-changed test-env-sensitive \
@@ -21,7 +21,9 @@ REDIS_COMPOSE_PROJECT ?= trr-local-redis
 # PROFILE=default make dev
 # make dev-cloud                      # explicit cloud/remote worker mode
 # make dev-hybrid                     # local direct app/backend plus remote social-safe workers on session/pooler
-# make dev-portless                   # app and API through stable Portless HTTPS names
+# make dev-portless                   # app and API through stable Portless HTTPS names in separate managed sessions
+# make stop-portless                  # stop managed Portless app/API sessions
+# make portless-repair                # repair Portless proxy state and remove stale static TRR aliases
 # PROFILE=local-cloud make dev-cloud  # deprecated compatibility alias
 # PROFILE=local-docker make dev-local # deprecated compatibility alias
 # PROFILE=local-full make dev-local   # deprecated compatibility alias
@@ -90,8 +92,19 @@ dev-hybrid-bg:
 
 # Stable local HTTPS names through Portless. This target intentionally skips the
 # workspace process manager because Portless owns the public local route names.
+# Web and API run in separate managed screen sessions so one side exiting does
+# not tear down the other.
 dev-portless:
-	@bash -lc 'set -euo pipefail; export PATH="/opt/homebrew/bin:$$PATH"; if ! command -v portless >/dev/null 2>&1; then echo "[workspace] portless CLI was not found. Install/start Portless, then rerun make dev-portless." >&2; exit 127; fi; source "$(CURDIR)/scripts/lib/node-baseline.sh"; cd "$(CURDIR)/TRR-APP"; trr_pnpm "$(CURDIR)/TRR-APP" run dev:portless:all'
+	@bash scripts/dev-portless-managed.sh start
+
+stop-portless:
+	@bash scripts/dev-portless-managed.sh stop
+
+portless-repair:
+	@bash scripts/portless-repair.sh
+
+open-admin:
+	@open "https://admin.trr.localhost/admin"
 
 modal-instagram-auth-status:
 	@cd TRR-Backend && \
@@ -365,7 +378,10 @@ help:
 	@echo "  make dev-hybrid   - hybrid social mode: dispatch=8, concurrency=8, posts=1, comments=8, media=1, comment media=1"
 	@echo "  make dev-hybrid-bg - starts Modal-capable make dev-hybrid detached, writing .logs/workspace/dev-hybrid-background.log"
 	@echo "  make dev-hybrid-social-safe - alias for make dev-hybrid"
-	@echo "  make dev-portless - app and API through stable Portless HTTPS names"
+	@echo "  make dev-portless - app and API through stable Portless HTTPS names in managed sessions"
+	@echo "  make stop-portless - stop managed Portless app/API sessions"
+	@echo "  make portless-repair - ensure Portless wildcard routing and remove stale TRR static aliases"
+	@echo "  make open-admin   - open the clean Portless admin dashboard"
 	@echo "  make modal-instagram-auth-status - bounded Instagram Modal auth probe (ACCOUNT_HANDLE=... adds posts/comments probes)"
 	@echo "  make modal-instagram-auth-repair - bounded Instagram auth repair, secret refresh, deploy, and remote verify (DRY_RUN=1 plans only)"
 	@echo "  make instagram-backfill-preflight - account-scoped posts/comments auth preflight (ACCOUNT_HANDLE=...)"

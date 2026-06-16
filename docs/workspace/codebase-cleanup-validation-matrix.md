@@ -25,7 +25,7 @@ Use this status before claiming completion:
 - `make test-fast` and `make app-check` pass after the workspace
   package-manager helper fix and backend repository test cleanup.
 - Browser route/API verification through `make dev-hybrid` reached
-  `http://admin.localhost:3000/southern-charm/s11/social`. The page route,
+  `https://admin.trr.localhost/southern-charm/s11/social`. The page route,
   slug resolution, season lookup, social analytics, season episodes
   `limit=500`, and week-detail requests returned HTTP 200.
 - Playwright visual verification through the same `make dev-hybrid` stack

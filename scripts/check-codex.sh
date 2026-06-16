@@ -126,9 +126,29 @@ DISALLOWED = {"awsknowledge", "awsiac", "supabase"}
 GLOBAL_CHROME_COMMAND = f"{pathlib.Path.home()}/.codex/bin/codex-chrome-devtools-mcp-global.sh"
 WORKSPACE_CHROME_COMMAND = GLOBAL_CHROME_COMMAND
 GLOBAL_CONTEXT7_COMMAND = f"{pathlib.Path.home()}/.codex/plugins/context7/scripts/start-context7-mcp.sh"
-CODEX_PROFILE_DIR = str(pathlib.Path.home() / ".chrome-profiles" / "codex-agent")
+OPENAI_AGENT_PROFILE_DIR = str(pathlib.Path.home() / ".chrome-profiles" / "openai-agent")
+OPENAI_AGENT_DEVTOOLS_PROFILE_DIR = str(pathlib.Path.home() / ".chrome-profiles" / "openai-agent-devtools")
 USER_CONFIG_FILE = pathlib.Path.home() / ".codex" / "config.toml"
 BROWSER_AGENT_FILE = pathlib.Path.cwd() / ".codex" / "agents" / "browser_debugger.toml"
+CHROME_NAMING_SCAN_ROOTS = (
+    pathlib.Path.cwd() / "AGENTS.md",
+    pathlib.Path.cwd() / ".codex",
+    pathlib.Path.cwd() / "docs" / "workspace",
+    pathlib.Path.cwd() / "scripts",
+    pathlib.Path.cwd() / "TRR-Backend" / "scripts",
+    pathlib.Path.cwd() / "TRR-Backend" / "tests",
+    pathlib.Path.cwd() / "TRR-Backend" / "trr_backend",
+)
+CHROME_NAMING_FORBIDDEN = ("codex" + "-agent", "codex" + "-agent-devtools")
+CHROME_NAMING_SKIP_DIRS = {
+    ".git",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    "__pycache__",
+    "node_modules",
+}
+CHROME_NAMING_SKIP_SUFFIXES = {".pyc", ".pyo", ".png", ".jpg", ".jpeg", ".gif", ".webp", ".ico", ".pdf"}
 
 def extract_servers(payload: str) -> dict[str, dict]:
     data = json.loads(payload)
@@ -151,8 +171,52 @@ def extract_servers(payload: str) -> dict[str, dict]:
                 servers[name] = entry
     return servers
 
+def iter_chrome_naming_files() -> list[pathlib.Path]:
+    files: list[pathlib.Path] = []
+    for root in CHROME_NAMING_SCAN_ROOTS:
+        if root.is_file():
+            files.append(root)
+            continue
+        if not root.is_dir():
+            continue
+        for path in root.rglob("*"):
+            if not path.is_file():
+                continue
+            if any(part in CHROME_NAMING_SKIP_DIRS for part in path.parts):
+                continue
+            if path.suffix.lower() in CHROME_NAMING_SKIP_SUFFIXES:
+                continue
+            files.append(path)
+    return sorted(set(files))
+
+def validate_chrome_profile_naming() -> None:
+    violations: list[str] = []
+    for path in iter_chrome_naming_files():
+        try:
+            text = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            continue
+        for forbidden in CHROME_NAMING_FORBIDDEN:
+            if forbidden in text:
+                try:
+                    display = path.relative_to(pathlib.Path.cwd())
+                except ValueError:
+                    display = path
+                violations.append(f"{display}: contains retired Chrome profile name {forbidden!r}")
+                break
+    if violations:
+        rendered = "\n  ".join(violations[:20])
+        extra = "" if len(violations) <= 20 else f"\n  ... {len(violations) - 20} more"
+        raise SystemExit(
+            "[check-codex] ERROR: retired Chrome profile names found in active project files. "
+            "Use openai-agent for managed automation, and codex@thereality.report only for the real Chrome profile.\n  "
+            + rendered
+            + extra
+        )
+
 global_servers = extract_servers(sys.argv[1])
 workspace_servers = extract_servers(sys.argv[2])
+validate_chrome_profile_naming()
 global_names = set(global_servers)
 workspace_names = set(workspace_servers)
 
@@ -202,7 +266,8 @@ expected_chrome_env = {
     "CODEX_CHROME_MODE": "shared",
     "CODEX_CHROME_HEADLESS": "1",
     "CODEX_CHROME_AUTO_LAUNCH": "1",
-    "CODEX_CHROME_SEED_PROFILE_DIR": CODEX_PROFILE_DIR,
+    "CODEX_CHROME_SEED_PROFILE_DIR": OPENAI_AGENT_PROFILE_DIR,
+    "CODEX_CHROME_PROFILE_DIR": OPENAI_AGENT_DEVTOOLS_PROFILE_DIR,
 }
 for key, value in expected_chrome_env.items():
     if user_chrome_env.get(key) != value:

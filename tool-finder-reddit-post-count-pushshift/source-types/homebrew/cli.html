@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Homebrew CLI - Reddit Archive Count Tool Options</title>
+<link rel="icon" href="https://www.google.com/s2/favicons?domain=brew.sh&amp;sz=64">
+<style>
+
+:root {
+  color-scheme: light;
+  --bg: #f6f7f9;
+  --panel: #ffffff;
+  --panel-soft: #f0f4f7;
+  --text: #172026;
+  --muted: #5c6973;
+  --line: #d8e0e6;
+  --accent: #0f766e;
+  --accent-soft: #dff4f1;
+  --warn: #a16207;
+  --warn-soft: #fff7d6;
+  --bad: #b42318;
+  --bad-soft: #ffe7e4;
+  --shadow: 0 18px 45px rgba(23, 32, 38, 0.08);
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+.page {
+  width: min(1180px, calc(100vw - 40px));
+  margin: 0 auto;
+  padding: 32px 0 56px;
+}
+.hero {
+  display: grid;
+  gap: 14px;
+  padding: 30px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+.hero-row,
+.source-row,
+.card-head,
+.source-card,
+.type-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.hero-icon,
+.source-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: var(--panel-soft);
+  padding: 6px;
+}
+.mini-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  vertical-align: middle;
+}
+h1,
+h2,
+h3 {
+  margin: 0;
+  line-height: 1.18;
+}
+h1 {
+  font-size: 34px;
+}
+h2 {
+  font-size: 22px;
+  margin-bottom: 14px;
+}
+h3 {
+  font-size: 18px;
+}
+p {
+  margin: 0;
+}
+code {
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: var(--panel-soft);
+  color: #25313a;
+}
+.section {
+  margin-top: 26px;
+}
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+.metric,
+.source-card,
+.type-card,
+.result-card,
+.status-card {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+}
+.metric {
+  padding: 14px;
+}
+.metric strong {
+  display: block;
+  font-size: 22px;
+}
+.metric span,
+.muted {
+  color: var(--muted);
+}
+.source-grid,
+.type-grid,
+.status-grid,
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+}
+.source-card,
+.type-card {
+  padding: 14px;
+}
+.source-card:hover,
+.type-card:hover {
+  text-decoration: none;
+  border-color: #9fcfca;
+}
+.source-card strong,
+.type-card strong {
+  display: block;
+  color: var(--text);
+}
+.source-card span,
+.type-card span {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+}
+.category {
+  margin-top: 24px;
+}
+.result-card {
+  padding: 18px;
+}
+.card-head {
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.card-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.card-title a,
+.card-title span {
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 38px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 700;
+}
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 24px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--panel-soft);
+  color: #25313a;
+  font-size: 12px;
+}
+.badge.good {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.badge.warn {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+.badge.bad {
+  background: var(--bad-soft);
+  color: var(--bad);
+}
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+.detail {
+  padding: 10px;
+  border-radius: 10px;
+  background: var(--panel-soft);
+}
+.detail span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+}
+ul {
+  margin: 10px 0 0;
+  padding-left: 20px;
+}
+.status-card {
+  padding: 14px;
+}
+.status-card h3 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.top-nav {
+  margin-bottom: 18px;
+}
+.empty {
+  padding: 16px;
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  color: var(--muted);
+}
+@media (max-width: 640px) {
+  .page {
+    width: min(100vw - 24px, 1180px);
+    padding-top: 18px;
+  }
+  .hero {
+    padding: 20px;
+  }
+  h1 {
+    font-size: 28px;
+  }
+  .card-head {
+    display: grid;
+  }
+}
+
+</style>
+</head>
+<body>
+<main class="page">
+<nav class="top-nav"><a href="../../TOOLS.html">Back to TOOLS.html</a></nav>
+<header class="hero">
+<div class="hero-row">
+<img class="hero-icon" src="https://www.google.com/s2/favicons?domain=brew.sh&amp;sz=64" width="44" height="44" alt="Homebrew favicon">
+<div>
+<h1>Homebrew: CLI</h1>
+<p>CLI results from <a href="https://brew.sh">Homebrew</a> for <code>Pushshift Arctic Shift Reddit submissions dataset subreddit submission count CLI repository</code>.</p>
+</div>
+</div>
+<div class="metrics">
+<div class="metric"><strong>5</strong><span>results</span></div>
+<div class="metric"><strong>homebrew</strong><span>source key</span></div>
+<div class="metric"><strong>CLI</strong><span>type key</span></div>
+</div>
+</header>
+<section class="section">
+<h2>Provider Status</h2>
+<div class="status-grid"><article class="status-card">
+<h3><span>homebrew:search (queried)</span><span class="badge good">queried</span></h3>
+<div class="detail-grid">
+<div class="detail"><span>Results</span>5</div>
+<div class="detail"><span>Requires auth</span>no</div>
+</div>
+<p class="muted">homebrew provider completed.</p>
+
+</article></div>
+</section>
+<section class="section">
+<h2>Results</h2>
+<div class="card-grid">
+<article class="result-card">
+<div class="card-head">
+<div class="card-title">
+<img class="mini-icon" src="https://www.google.com/s2/favicons?domain=brew.sh&amp;sz=64" width="26" height="26" alt="Homebrew favicon">
+<div><a href="https://formulae.brew.sh/formula/adr-tools">adr-tools</a></div>
+</div>
+<span class="rank">#3</span>
+</div>
+<div class="badges">
+<span class="badge">Type: cli</span>
+<span class="badge">Score: 45</span>
+<span class="badge warn">Bucket: reference</span>
+<span class="badge">Consider as: Partially integrate</span>
+<span class="badge">Action: dry-run-install-plan</span>
+</div>
+<div class="detail-grid">
+<div class="detail"><span>Use path</span><code>brew install adr-tools</code></div>
+<div class="detail"><span>Rank reason</span>Ranked #3 after final scoring across all providers, dedupe, availability, provider source, safety, and maintenance signals.</div>
+</div>
+<div class="section">
+<h3>Why it matched</h3>
+<ul><li>CLI tool for working with Architecture Decision Records</li><li>Stable version: 3.0.0.</li><li>Executables: _adr_add_link, _adr_autocomplete, _adr_commands, _adr_dir, _adr_file.</li><li>License: CC-BY-4.0.</li></ul>
+</div>
+<div class="section"><h3>Capabilities</h3><div class="badges"><span class="badge">CLI tool for working with Architecture Decision Records</span><span class="badge">executables: _adr_add_link, _adr_autocomplete, _adr_commands, _adr_dir, _adr_file, _adr_generate_graph, _adr_generate_toc, _adr_help, _adr_help_new, _adr_links, _adr_remove_status, _adr_status, _adr_title, adr, adr-config, adr-generate, adr-help, adr-init, adr-link, adr-list, adr-new, adr-upgrade-repository</span></div></div>
+<div class="section">
+<h3>Risk notes</h3>
+<ul><li>Homebrew install is not executed automatically.</li></ul>
+</div>
+</article>
+<article class="result-card">
+<div class="card-head">
+<div class="card-title">
+<img class="mini-icon" src="https://www.google.com/s2/favicons?domain=brew.sh&amp;sz=64" width="26" height="26" alt="Homebrew favicon">
+<div><a href="https://formulae.brew.sh/formula/argus-clients">argus-clients</a></div>
+</div>
+<span class="rank">#4</span>
+</div>
+<div class="badges">
+<span class="badge">Type: cli</span>
+<span class="badge">Score: 45</span>
+<span class="badge warn">Bucket: reference</span>
+<span class="badge">Consider as: Partially integrate</span>
+<span class="badge">Action: dry-run-install-plan</span>
+</div>
+<div class="detail-grid">
+<div class="detail"><span>Use path</span><code>brew install argus-clients</code></div>
+<div class="detail"><span>Rank reason</span>Ranked #4 after final scoring across all providers, dedupe, availability, provider source, safety, and maintenance signals.</div>
+</div>
+<div class="section">
+<h3>Why it matched</h3>
+<ul><li>Audit Record Generation and Utilization System clients</li><li>Stable version: 5.0.0.</li><li>Executables: argusclientbug, ra, rabins, racluster, racount.</li><li>License: GPL-3.0-or-later.</li></ul>
+</div>
+<div class="section"><h3>Capabilities</h3><div class="badges"><span class="badge">Audit Record Generation and Utilization System clients</span><span class="badge">executables: argusclientbug, ra, rabins, racluster, racount, radium, ramanage, ranonymize, rasort, rastream</span><span class="badge">dependencies: readline, rrdtool</span></div></div>
+<div class="section">
+<h3>Risk notes</h3>
+<ul><li>Homebrew install is not executed automatically.</li></ul>
+</div>
+</article>
+<article class="result-card">
+<div class="card-head">
+<div class="card-title">
+<img class="mini-icon" src="https://www.google.com/s2/favicons?domain=brew.sh&amp;sz=64" width="26" height="26" alt="Homebrew favicon">
+<div><a href="https://formulae.brew.sh/formula/awsweeper">awsweeper</a></div>
+</div>
+<span class="rank">#5</span>
+</div>
+<div class="badges">
+<span class="badge">Type: cli</span>
+<span class="badge">Score: 45</span>
+<span class="badge warn">Bucket: reference</span>
+<span class="badge">Consider as: Partially integrate</span>
+<span class="badge">Action: dry-run-install-plan</span>
+</div>
+<div class="detail-grid">
+<div class="detail"><span>Use path</span><code>brew install awsweeper</code></div>
+<div class="detail"><span>Rank reason</span>Ranked #5 after final scoring across all providers, dedupe, availability, provider source, safety, and maintenance signals.</div>
+</div>
+<div class="section">
+<h3>Why it matched</h3>
+<ul><li>CLI tool for cleaning your AWS account</li><li>Stable version: 0.12.0.</li><li>Executables: awsweeper.</li><li>License: MPL-2.0.</li></ul>
+</div>
+<div class="section"><h3>Capabilities</h3><div class="badges"><span class="badge">CLI tool for cleaning your AWS account</span><span class="badge">executables: awsweeper</span></div></div>
+<div class="section">
+<h3>Risk notes</h3>
+<ul><li>Homebrew install is not executed automatically.</li></ul>
+</div>
+</article>
+<article class="result-card">
+<div class="card-head">
+<div class="card-title">
+<img class="mini-icon" src="https://www.google.com/s2/favicons?domain=brew.sh&amp;sz=64" width="26" height="26" alt="Homebrew favicon">
+<div><a href="https://formulae.brew.sh/formula/backplane-cli">backplane-cli</a></div>
+</div>
+<span class="rank">#6</span>
+</div>
+<div class="badges">
+<span class="badge">Type: cli</span>
+<span class="badge">Score: 45</span>
+<span class="badge warn">Bucket: reference</span>
+<span class="badge">Consider as: Partially integrate</span>
+<span class="badge">Action: dry-run-install-plan</span>
+</div>
+<div class="detail-grid">
+<div class="detail"><span>Use path</span><code>brew install backplane-cli</code></div>
+<div class="detail"><span>Rank reason</span>Ranked #6 after final scoring across all providers, dedupe, availability, provider source, safety, and maintenance signals.</div>
+</div>
+<div class="section">
+<h3>Why it matched</h3>
+<ul><li>CLI for interacting with the OpenShift Backplane API</li><li>Stable version: 0.10.1.</li><li>Executables: ocm-backplane.</li><li>License: Apache-2.0.</li></ul>
+</div>
+<div class="section"><h3>Capabilities</h3><div class="badges"><span class="badge">CLI for interacting with the OpenShift Backplane API</span><span class="badge">executables: ocm-backplane</span></div></div>
+<div class="section">
+<h3>Risk notes</h3>
+<ul><li>Homebrew install is not executed automatically.</li></ul>
+</div>
+</article>
+<article class="result-card">
+<div class="card-head">
+<div class="card-title">
+<img class="mini-icon" src="https://www.google.com/s2/favicons?domain=brew.sh&amp;sz=64" width="26" height="26" alt="Homebrew favicon">
+<div><a href="https://formulae.brew.sh/formula/execline">execline</a></div>
+</div>
+<span class="rank">#7</span>
+</div>
+<div class="badges">
+<span class="badge">Type: cli</span>
+<span class="badge">Score: 45</span>
+<span class="badge warn">Bucket: reference</span>
+<span class="badge">Consider as: Partially integrate</span>
+<span class="badge">Action: dry-run-install-plan</span>
+</div>
+<div class="detail-grid">
+<div class="detail"><span>Use path</span><code>brew install execline</code></div>
+<div class="detail"><span>Rank reason</span>Ranked #7 after final scoring across all providers, dedupe, availability, provider source, safety, and maintenance signals.</div>
+</div>
+<div class="section">
+<h3>Why it matched</h3>
+<ul><li>Interpreter-less scripting language</li><li>Stable version: 2.9.8.1.</li><li>Executables: background, backtick, case, cd, define.</li><li>License: ISC.</li></ul>
+</div>
+<div class="section"><h3>Capabilities</h3><div class="badges"><span class="badge">Interpreter-less scripting language</span><span class="badge">executables: background, backtick, case, cd, define, dollarat, elgetopt, elgetpositionals, elglob, eltest, emptyenv, envfile, exec, execline-cd, execline-umask, execlineb, exit, export, export-array, fdblock, fdclose, fdmove, fdreserve, fdswap, forbacktickx, foreground, forstdin, forx, getcwd, getpid, heredoc, homeof, if, ifelse, ifte, ifthenelse, importas, loopwhilex, multidefine, multisubstitute, pipeline, piperw, posix-cd, posix-umask, redirfd, runblock, shift, trap, tryexec, umask, unexport, wait, withstdinas</span><span class="badge">dependencies: skalibs</span></div></div>
+<div class="section">
+<h3>Risk notes</h3>
+<ul><li>Homebrew install is not executed automatically.</li></ul>
+</div>
+</article>
+</div>
+</section>
+</main>
+</body>
+</html>

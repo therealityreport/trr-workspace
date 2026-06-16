@@ -118,6 +118,25 @@ trr_try_activate_required_node_with_nvm() {
   fi
 
   nvm use --silent "$target_alias" >/dev/null 2>&1 || return 1
+  if [[ -n "${NVM_BIN:-}" && -x "${NVM_BIN}/node" ]]; then
+    export PATH="${NVM_BIN}:$PATH"
+  fi
+  hash -r
+  return 0
+}
+
+trr_try_activate_required_node_with_homebrew() {
+  local root="${1:-}"
+  local target_alias brew_node_bin
+
+  target_alias="$(trr_node_required_major "$root")"
+  brew_node_bin="/opt/homebrew/opt/node@${target_alias}/bin"
+
+  if [[ ! -x "${brew_node_bin}/node" ]]; then
+    return 1
+  fi
+
+  export PATH="${brew_node_bin}:$PATH"
   hash -r
   return 0
 }
@@ -137,7 +156,7 @@ trr_ensure_node_baseline() {
     return 0
   fi
 
-  if ! trr_try_activate_required_node_with_nvm "$root"; then
+  if ! trr_try_activate_required_node_with_nvm "$root" && ! trr_try_activate_required_node_with_homebrew "$root"; then
     return 1
   fi
 
@@ -167,5 +186,6 @@ trr_ensure_node_baseline_or_exit() {
   echo "[${label}] Remediation:" >&2
   echo "[${label}]   source ~/.nvm/nvm.sh && nvm use ${required_major}" >&2
   echo "[${label}]   source ~/.nvm/nvm.sh && nvm install ${required_major}" >&2
+  echo "[${label}]   brew install node@${required_major}" >&2
   exit 1
 }

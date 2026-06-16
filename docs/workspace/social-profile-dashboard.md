@@ -34,7 +34,11 @@ Open catalog diagnostics when profile totals and catalog totals disagree, when a
 
 ## Dogpile Checks
 
-Use browser network inspection on `http://admin.localhost:3000/social/instagram/thetraitorsus` and reload the stats tab. The initial burst should contain exactly one social profile `/snapshot` request and zero initial `/summary`, `/posts`, `/comments`, `/hashtags`, or `/gap-analysis` requests.
+Use the shared Portless URL runbook in `docs/workspace/portless-clean-urls.md`,
+then inspect `https://admin.trr.localhost/social/instagram/thetraitorsus` and
+reload the stats tab. The initial burst should contain exactly one social
+profile `/snapshot` request and zero initial `/summary`, `/posts`, `/comments`,
+`/hashtags`, or `/gap-analysis` requests.
 
 The app snapshot route also emits `social_profile_dashboard_budget` with `initialRequestCount`, `cacheStatus`, `freshnessStatus`, `stale`, `cacheAgeMs`, and `staleCacheHit`. There is no metrics counter yet; use this structured log until dashboard telemetry is promoted into a shared metrics helper.
 

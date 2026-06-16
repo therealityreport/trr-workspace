@@ -7,7 +7,10 @@ Use these commands from `/Users/thomashulihan/Projects/TRR`.
 - `make dev-cloud` is the explicit cloud/remote-worker path and remains on the session/pooler DB lane.
 - `make dev-hybrid` runs local app/backend on the direct DB lane while allowing Modal/remote workers on the session/pooler lane, with the social-safe worker caps applied by default.
 - Codex browser verification with `[@Browser](plugin://browser-use@openai-bundled)` defaults to `make dev-hybrid` unless the user specifies another startup target.
-- `make dev-portless` starts the app and API through Portless when stable local HTTPS names are more important than the workspace process manager.
+- `make dev-portless` starts the app and API through Portless in separate managed sessions when stable local HTTPS names are more important than the workspace process manager.
+- `make stop-portless` stops the managed Portless app/API sessions.
+- `make portless-repair` ensures the Portless proxy is in wildcard mode, removes stale static TRR aliases, syncs hosts, and prints the clean routes.
+- `make open-admin` opens the clean Portless admin dashboard at `https://admin.trr.localhost/admin`.
 - `PROFILE=default` is the canonical profile behind `make dev`. `local-cloud`, `local-lite`, and `local-full` remain compatibility profiles only.
 
 ## Daily Commands
@@ -17,7 +20,10 @@ Use these commands from `/Users/thomashulihan/Projects/TRR`.
 - `make dev-cloud` — explicit cloud/remote worker startup using the session/pooler DB lane
 - `make dev-hybrid` — safe Instagram/social hybrid mode; enables remote social workers with `WORKSPACE_TRR_REMOTE_SOCIAL_POSTS=1`, comments `8`, Instagram posts/comments platform cap `8`, post media mirror `1`, and comment media mirror `1`
 - `make dev-hybrid-social-safe` — compatibility alias for `make dev-hybrid`
-- `make dev-portless` — start the Next.js app and FastAPI backend through Portless (`https://trr.localhost`, `https://api.trr.localhost`)
+- `make dev-portless` — start the Next.js app and FastAPI backend through separate Portless-managed sessions (`https://trr.localhost`, admin at `https://admin.trr.localhost/admin`, backend at `https://api.trr.localhost`)
+- `make stop-portless` — stop the managed Portless web/API sessions
+- `make portless-repair` — repair clean local URL routing by removing stale TRR static aliases and preserving admin routing through Portless wildcard forwarding
+- `make open-admin` — open the clean Portless admin dashboard (`https://admin.trr.localhost/admin`)
 - `PROFILE=social-debug make dev` — tracked low-pressure social-profile validation lane; uses the same launcher but projects reduced app pool settings and lighter social dispatch caps without relying on ignored app-local env files
 - Instagram backfill operator runbook: `/Users/thomashulihan/Projects/TRR/docs/workspace/instagram-backfill-runbook.md`
 - Social profile dashboard runbook: `/Users/thomashulihan/Projects/TRR/docs/workspace/social-profile-dashboard.md`
@@ -158,11 +164,17 @@ If your task is ordinary backend/app development or milestone verification witho
 
 Use `make dev-portless` when you need stable HTTPS local names, cookie/origin behavior tied to `trr.localhost`, or a browser flow that should not depend on changing numeric ports. Portless does not replace `make dev-hybrid` for Modal or remote-worker validation; it is the named-host local route for app/API checks.
 
+Use `/Users/thomashulihan/Projects/TRR/docs/workspace/portless-clean-urls.md` as the shared Portless runbook snippet. It owns the current clean app, admin, API, and repair URLs.
+
 ## Quick URLs
-- TRR-APP: `http://127.0.0.1:3000`
-- TRR-Backend: `http://127.0.0.1:8000`
 - Portless app: `https://trr.localhost`
+- Portless admin: `https://admin.trr.localhost/admin` (`https://admin.trr.localhost/` redirects here)
 - Portless backend: `https://api.trr.localhost`
+- Direct backend health for local API debugging: `http://127.0.0.1:8000/health/live`
+
+Classic portful app/admin URLs are legacy compatibility paths only. Do not use
+them as active runbook examples unless the task explicitly enables
+`TRR_LEGACY_LOCAL_ADMIN_FALLBACK=1`.
 
 The default `make dev` profile now launches only TRR-APP and TRR-Backend. Screenalytics remains an admin feature label in the app, not a separately managed local runtime.
 

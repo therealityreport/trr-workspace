@@ -15,7 +15,7 @@ social web components.
 Backend-gated web follow-ups:
 
 - The admin social page at
-  `http://admin.localhost:3000/southern-charm/s11/social` rendered the analytics
+  `https://admin.trr.localhost/southern-charm/s11/social` rendered the analytics
   section after the backend SQL fix.
 - The season episodes proxy returned HTTP 500.
 - The social week-detail endpoint can time out through the app proxy.

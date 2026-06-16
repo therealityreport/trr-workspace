@@ -9,7 +9,7 @@ CODEX_HOME_DIR="${CODEX_HOME:-$HOME/.codex}"
 HEADFUL_OWNER_DIR="${CODEX_CHROME_OWNER_DIR:-${CODEX_HOME_DIR}/tmp/browser-control}"
 HEADFUL_OWNER_FILE="${HEADFUL_OWNER_DIR}/headful-chrome-owner.env"
 
-PROFILE_DIR="${CHROME_AGENT_PROFILE_DIR:-${HOME}/.chrome-profiles/codex-agent}"
+PROFILE_DIR="${CHROME_AGENT_PROFILE_DIR:-${HOME}/.chrome-profiles/openai-agent}"
 PROFILE_DIRECTORY="${CHROME_AGENT_PROFILE_DIRECTORY:-}"
 if [[ -z "$PROFILE_DIRECTORY" ]]; then
   PROFILE_DIRECTORY="$(default_chrome_profile_directory_for_profile_dir "$PROFILE_DIR")"
@@ -32,7 +32,8 @@ default_headless_for_port() {
 # Claude in Chrome (desktop app browser automation) is permitted to use
 # the admin@thereality.report profile and should NOT trigger this warning.
 #
-# Default agent work must use codex@thereality.report (codex-agent profile).
+# Default managed agent work must use the openai-agent profile clone.
+# The real Codex Chrome profile means codex@thereality.report, not this clone.
 # The claude-agent profile contains admin@thereality.report and is reserved
 # for user-authorized tasks only (e.g., paywalled sites like NYTimes).
 # CHROME_AGENT_ADMIN_OVERRIDE=1 signals explicit user permission was granted.
@@ -42,7 +43,7 @@ if [[ -z "${CHROME_AGENT_ADMIN_OVERRIDE:-}" ]] \
    && [[ -z "${CHROME_AGENT_SKIP_PROFILE_GUARD:-}" ]] \
    && [[ "$PROFILE_DIR" == *"${ADMIN_PROFILE_PATTERN}"* ]]; then
   echo "[chrome-agent] WARNING: Launching with admin-capable profile (${PROFILE_DIR})." >&2
-  echo "[chrome-agent] Policy: TRR Workspace agents should use codex-agent profile for routine work." >&2
+  echo "[chrome-agent] Policy: TRR Workspace agents should use the openai-agent managed clone for routine work." >&2
   echo "[chrome-agent] Set CHROME_AGENT_ADMIN_OVERRIDE=1 if user granted permission." >&2
   echo "[chrome-agent] Set CHROME_AGENT_SKIP_PROFILE_GUARD=1 for non-Codex callers (e.g., Claude in Chrome)." >&2
 fi
