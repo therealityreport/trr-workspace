@@ -43,7 +43,7 @@ Current validation state:
 - `make app-check` passed after the workspace package-manager helper was fixed.
 - `make test-fast` passed after the repository blocker was resolved.
 - Browser verification used `make dev-hybrid` and reached
-  `http://admin.localhost:3000/southern-charm/s11/social`; Playwright visual
+  `https://admin.trr.localhost/southern-charm/s11/social`; Playwright visual
   verification confirmed the page no longer shows timeout/degraded analytics
   copy after the analytics timeout-tier fix.
 

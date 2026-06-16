@@ -102,7 +102,7 @@ if trusted_project != "trusted":
     raise SystemExit(1)
 
 service_tier = data.get("service_tier")
-if service_tier is not None and service_tier not in {"fast", "flex"}:
+if service_tier is not None and service_tier not in {"fast", "flex", "priority"}:
     raise SystemExit(1)
 
 servers = data.get("mcp_servers") or {}
@@ -114,7 +114,8 @@ required = {
             "CODEX_CHROME_MODE": "shared",
             "CODEX_CHROME_HEADLESS": "1",
             "CODEX_CHROME_AUTO_LAUNCH": "1",
-            "CODEX_CHROME_SEED_PROFILE_DIR": str(pathlib.Path.home() / ".chrome-profiles" / "codex-agent"),
+            "CODEX_CHROME_SEED_PROFILE_DIR": str(pathlib.Path.home() / ".chrome-profiles" / "openai-agent"),
+            "CODEX_CHROME_PROFILE_DIR": str(pathlib.Path.home() / ".chrome-profiles" / "openai-agent-devtools"),
         },
         "enabled": True,
         "startup_timeout_sec": 45,
@@ -235,7 +236,7 @@ def emit_table(lines: list[str], table_path: list[str], mapping: Mapping[str, ob
 
 data = load_existing(source)
 data.pop("model_reasoning_effort", None)
-if data.get("service_tier") not in {None, "fast", "flex"}:
+if data.get("service_tier") not in {None, "fast", "flex", "priority"}:
     data["service_tier"] = "fast"
 projects = data.get("projects")
 if not isinstance(projects, dict):
@@ -263,7 +264,8 @@ required_servers = {
             "CODEX_CHROME_MODE": "shared",
             "CODEX_CHROME_HEADLESS": "1",
             "CODEX_CHROME_AUTO_LAUNCH": "1",
-            "CODEX_CHROME_SEED_PROFILE_DIR": str(pathlib.Path.home() / ".chrome-profiles" / "codex-agent"),
+            "CODEX_CHROME_SEED_PROFILE_DIR": str(pathlib.Path.home() / ".chrome-profiles" / "openai-agent"),
+            "CODEX_CHROME_PROFILE_DIR": str(pathlib.Path.home() / ".chrome-profiles" / "openai-agent-devtools"),
         },
         "enabled": True,
         "startup_timeout_sec": 45,
@@ -388,7 +390,8 @@ required_user_servers = {
             "CODEX_CHROME_MODE": "shared",
             "CODEX_CHROME_HEADLESS": "1",
             "CODEX_CHROME_AUTO_LAUNCH": "1",
-            "CODEX_CHROME_SEED_PROFILE_DIR": str(pathlib.Path.home() / ".chrome-profiles" / "codex-agent"),
+            "CODEX_CHROME_SEED_PROFILE_DIR": str(pathlib.Path.home() / ".chrome-profiles" / "openai-agent"),
+            "CODEX_CHROME_PROFILE_DIR": str(pathlib.Path.home() / ".chrome-profiles" / "openai-agent-devtools"),
         },
         "enabled": True,
         "startup_timeout_sec": 45,
@@ -492,8 +495,8 @@ else:
 
     user_servers = user_data.get("mcp_servers") or {}
     user_service_tier = user_data.get("service_tier")
-    if user_service_tier is not None and user_service_tier not in {"fast", "flex"}:
-        errors.append(f"user config service_tier must be one of 'fast' or 'flex'; found {user_service_tier!r}")
+    if user_service_tier is not None and user_service_tier not in {"fast", "flex", "priority"}:
+        errors.append(f"user config service_tier must be one of 'fast', 'flex', or 'priority'; found {user_service_tier!r}")
     for name, expectations in required_user_servers.items():
         server = user_servers.get(name)
         if not isinstance(server, dict):

@@ -32,9 +32,15 @@ extract_var_rows() {
     printf 'TRR_HEALTH_DB_POOL_MAXCONN\t\n'
     printf 'ADMIN_AUTH_EXTERNAL_TIMEOUT_MS\t3000\n'
     printf 'SOCIAL_INSTAGRAM_COMMENTS_PER_POST_CONCURRENCY\t1\n'
+    printf 'INSTAGRAM_BROWSER_NETWORK_POLICY_ENABLED\ttrue\n'
+    printf 'INSTAGRAM_BROWSER_BLOCK_STATIC_ASSETS\ttrue\n'
+    printf 'INSTAGRAM_BROWSER_DISABLE_EXTRA_RESOURCES\ttrue\n'
+    printf 'INSTAGRAM_BROWSER_NETWORK_POLICY_REPORT_ONLY\tfalse\n'
+    printf 'DECODO_PROXY_URL\t\n'
     printf 'TRR_INTERNAL_ADMIN_ALLOW_RAW_SECRET_FALLBACK\t\n'
     printf 'TRR_ADMIN_ALLOW_SERVICE_ROLE\t\n'
     printf 'TRR_INTERNAL_ADMIN_ALLOW_SERVICE_ROLE\t\n'
+    printf 'TRR_LEGACY_LOCAL_ADMIN_FALLBACK\t0\n'
     printf 'TRR_REMOTE_DEBUG_LOG_ENABLED\t0\n'
     printf 'REDIS_URL\t\n'
   } | awk -F '\t' '!seen[$1]++' | sort
@@ -49,7 +55,7 @@ visibility_tier() {
     WORKSPACE_RUNTIME_RECONCILE_ENABLED|WORKSPACE_RUNTIME_DB_AUTO_APPLY_ENABLED|WORKSPACE_RUNTIME_MODAL_AUTO_DEPLOY|WORKSPACE_RUNTIME_EXTERNAL_VERIFY_ENABLED)
       echo "common"
       ;;
-    REDIS_URL|SOCIAL_INSTAGRAM_COMMENTS_PER_POST_CONCURRENCY)
+    REDIS_URL|SOCIAL_INSTAGRAM_COMMENTS_PER_POST_CONCURRENCY|INSTAGRAM_BROWSER_NETWORK_POLICY_ENABLED|INSTAGRAM_BROWSER_BLOCK_STATIC_ASSETS|INSTAGRAM_BROWSER_DISABLE_EXTRA_RESOURCES|INSTAGRAM_BROWSER_NETWORK_POLICY_REPORT_ONLY)
       echo "advanced"
       ;;
     WORKSPACE_*)
@@ -73,13 +79,16 @@ accepted_values() {
     SOCIAL_INSTAGRAM_COMMENTS_PER_POST_CONCURRENCY)
       echo 'integer `1` through `8`'
       ;;
+    INSTAGRAM_BROWSER_NETWORK_POLICY_ENABLED|INSTAGRAM_BROWSER_BLOCK_STATIC_ASSETS|INSTAGRAM_BROWSER_DISABLE_EXTRA_RESOURCES|INSTAGRAM_BROWSER_NETWORK_POLICY_REPORT_ONLY)
+      echo 'boolean (`true`/`false`)'
+      ;;
     REDIS_URL)
       echo "Redis connection URL"
       ;;
     TRR_DB_POOL_MINCONN|TRR_DB_POOL_MAXCONN|TRR_SOCIAL_PROFILE_DB_POOL_MINCONN|TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN|TRR_SOCIAL_CONTROL_DB_POOL_MINCONN|TRR_SOCIAL_CONTROL_DB_POOL_MAXCONN|TRR_SOCIAL_PROGRESS_DB_POOL_MINCONN|TRR_SOCIAL_PROGRESS_DB_POOL_MAXCONN|TRR_HEALTH_DB_POOL_MINCONN|TRR_HEALTH_DB_POOL_MAXCONN)
       echo "integer"
       ;;
-    TRR_INTERNAL_ADMIN_ALLOW_RAW_SECRET_FALLBACK|TRR_ADMIN_ALLOW_SERVICE_ROLE|TRR_INTERNAL_ADMIN_ALLOW_SERVICE_ROLE|WORKSPACE_ENFORCE_DB_HOLDER_BUDGET)
+    TRR_INTERNAL_ADMIN_ALLOW_RAW_SECRET_FALLBACK|TRR_ADMIN_ALLOW_SERVICE_ROLE|TRR_INTERNAL_ADMIN_ALLOW_SERVICE_ROLE|TRR_LEGACY_LOCAL_ADMIN_FALLBACK|WORKSPACE_ENFORCE_DB_HOLDER_BUDGET)
       echo '`0` or `1`'
       ;;
     WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS)
@@ -164,6 +173,12 @@ description_for() {
     ADMIN_AUTH_EXTERNAL_TIMEOUT_MS)
       echo "Timeout for external auth fallbacks in TRR-APP, including Identity Toolkit lookup and Supabase token shadow verification."
       ;;
+    ADMIN_APP_HOSTS)
+      echo 'Workspace runtime variable consumed by local launchers. Portless uses `admin.trr.localhost,trr.localhost` for clean browser routing; add legacy hosts only when testing the legacy fallback flag.'
+      ;;
+    ADMIN_APP_ORIGIN)
+      echo 'Workspace runtime variable consumed by local launchers. Portless uses `https://admin.trr.localhost` so admin/browser tooling does not depend on numeric Next.js ports.'
+      ;;
     TRR_INTERNAL_ADMIN_ALLOW_RAW_SECRET_FALLBACK)
       echo "Dev-only backend escape hatch that allows raw shared-secret internal admin requests. Leave unset in production."
       ;;
@@ -173,11 +188,29 @@ description_for() {
     TRR_INTERNAL_ADMIN_ALLOW_SERVICE_ROLE)
       echo "Dev-only backend escape hatch that allows service-role tokens through internal-admin routes. Leave unset in production."
       ;;
+    TRR_LEGACY_LOCAL_ADMIN_FALLBACK)
+      echo "Dev-only compatibility flag that re-enables classic portful local admin fallback routing when Portless/configured admin origins are absent. Leave off for clean Portless URL defaults."
+      ;;
     TRR_REMOTE_DEBUG_LOG_ENABLED)
       echo "Hard kill switch for remote /api/debug-log writes. Localhost logging remains admin-gated; remote hosts require this to be explicitly enabled."
       ;;
     SOCIAL_INSTAGRAM_COMMENTS_PER_POST_CONCURRENCY)
       echo "Overlaps per-post Instagram comments fetches while preserving one serialized persistence/progress consumer. Keep at 1 unless running a controlled backfill validation."
+      ;;
+    INSTAGRAM_BROWSER_NETWORK_POLICY_ENABLED)
+      echo "Enable Instagram browser warmup traffic controls before Scrapling browser requests."
+      ;;
+    INSTAGRAM_BROWSER_BLOCK_STATIC_ASSETS)
+      echo "Block known Instagram/Facebook static CDN and ad hosts during browser warmups to reduce proxy traffic."
+      ;;
+    INSTAGRAM_BROWSER_DISABLE_EXTRA_RESOURCES)
+      echo "Disable nonessential browser resources such as images, media, fonts, stylesheets, and beacons during Instagram warmups."
+      ;;
+    INSTAGRAM_BROWSER_NETWORK_POLICY_REPORT_ONLY)
+      echo "Record Instagram network-policy decisions without enforcing blocks. Keep false before broad reruns."
+      ;;
+    DECODO_PROXY_URL)
+      echo "Optional explicit Decodo Residential proxy URL for TRR custom scrapers. Prefer the Decodo dashboard-generated endpoint and keep Web Scraping API tokens out of this path."
       ;;
     REDIS_URL)
       echo "Optional Redis connection URL for ephemeral realtime pub/sub, presence/typing, short TTL state, and cross-instance invalidation. Required before enabling multi-worker or multi-instance realtime; do not use for durable job truth."
@@ -278,6 +311,9 @@ used_by() {
     ADMIN_AUTH_EXTERNAL_TIMEOUT_MS)
       echo '`TRR-APP/apps/web/src/lib/server/auth.ts`, `TRR-APP/apps/web/.env.example`'
       ;;
+    ADMIN_APP_HOSTS|ADMIN_APP_ORIGIN)
+      echo '`scripts/dev-workspace.sh`, `Makefile`, `TRR-APP/package.json`'
+      ;;
     TRR_REMOTE_DEBUG_LOG_ENABLED)
       echo '`TRR-APP/apps/web/src/app/api/debug-log/route.ts`'
       ;;
@@ -346,6 +382,14 @@ generate_contract() {
     echo "- Capacity/runbook: \`docs/workspace/supabase-capacity-budget.md\` and \`docs/workspace/db-pressure-runbook.md\`"
     echo "- Ownership inventory: \`docs/workspace/env-contract-inventory.md\`"
     echo
+    echo "## Decodo Residential Proxy"
+    echo
+    echo "TRR social scraping uses custom TRR scraper code. Decodo is only the residential proxy provider for those custom lanes."
+    echo
+    echo "Required proxy surface: set \`DECODO_PROXY_URL\`, or set \`DECODO_USERNAME\`, \`DECODO_PASSWORD\`, and \`DECODO_GATEWAY\`. \`SCRAPER_API_TOKEN\` and the Decodo Web Scraping API are not required for TRR Instagram, Threads, TikTok, SocialBlade, or browser warmup scraping."
+    echo
+    echo "Use \`cd TRR-Backend && python3 scripts/dev/smoke_decodo_residential_proxy.py --dry-run --json\` for config shape, then add \`--live\` for one explicit residential proxy CONNECT probe."
+    echo
     echo "## Runtime DB Application Names"
     echo
     echo "Connection holder snapshots rely on stable non-secret \`application_name\` values."
@@ -403,6 +447,14 @@ generate_contract() {
           effective_default="$profile_default"
         fi
       fi
+      case "$key" in
+        ADMIN_APP_HOSTS)
+          effective_default="admin.trr.localhost,trr.localhost,localhost,127.0.0.1,[::1]"
+          ;;
+        ADMIN_APP_ORIGIN)
+          effective_default="https://admin.trr.localhost"
+          ;;
+      esac
 
       printf '| `%s` | `%s` | %s | %s | `%s` | %s |\n' \
         "$key" \

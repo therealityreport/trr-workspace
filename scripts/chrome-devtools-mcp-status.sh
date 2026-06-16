@@ -152,7 +152,7 @@ validate_chrome_registration() {
   local enabled="$3"
   local startup_timeout
   local tool_timeout
-  local expected_seed="${HOME}/.chrome-profiles/codex-agent"
+  local expected_seed="${HOME}/.chrome-profiles/openai-agent"
 
   if [[ "$enabled" != "true" ]]; then
     fail "chrome-devtools MCP is not enabled in ${source}"
@@ -920,7 +920,7 @@ fi
 
 validate_chrome_registration "$config_source" "$configured_command" "$configured_enabled"
 
-seed_profile="$(configured_env_value "CODEX_CHROME_SEED_PROFILE_DIR" "${HOME}/.chrome-profiles/codex-agent")"
+seed_profile="$(configured_env_value "CODEX_CHROME_SEED_PROFILE_DIR" "${HOME}/.chrome-profiles/openai-agent")"
 wrapper_mode="$(configured_mode)"
 SHARED_PORT="$(configured_shared_port)"
 shared_singleton="$(configured_shared_singleton)"
@@ -1087,7 +1087,7 @@ fi
 if ! is_summary_mode && ! is_structured_mode && [[ "$wrapper_mode" == "shared" && "$shared_endpoint_state" != "reachable" ]]; then
   echo "[chrome-devtools-mcp] Shared Chrome is not running, but the MCP wrapper will auto-launch it at session start." >&2
   echo "[chrome-devtools-mcp] To start it manually now:" >&2
-  echo "[chrome-devtools-mcp]   CHROME_AGENT_DEBUG_PORT=${SHARED_PORT} CHROME_AGENT_PROFILE_DIR=\${HOME}/.chrome-profiles/codex-agent CHROME_AGENT_HEADLESS=$(default_chrome_headless_for_port "${SHARED_PORT}") bash ${ROOT}/scripts/chrome-agent.sh" >&2
+  echo "[chrome-devtools-mcp]   CHROME_AGENT_DEBUG_PORT=${SHARED_PORT} CHROME_AGENT_PROFILE_DIR=\${HOME}/.chrome-profiles/openai-agent CHROME_AGENT_HEADLESS=$(default_chrome_headless_for_port "${SHARED_PORT}") bash ${ROOT}/scripts/chrome-agent.sh" >&2
 elif ! is_summary_mode && ! is_structured_mode && [[ "$conflict_count" != "0" && "$wrapper_mode" == "shared" ]]; then
   echo "[chrome-devtools-mcp] Recommended next action: inspect or stop conflicting non-Codex browser-control clients:" >&2
   echo "[chrome-devtools-mcp]   bash ${ROOT}/scripts/chrome-devtools-mcp-stop-conflicts.sh" >&2
