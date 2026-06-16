@@ -12,7 +12,7 @@ shared_profile_for_port() {
   local port="$1"
   case "$port" in
     9222|9422)
-      echo "${CHROME_AGENT_PROFILE_DIR:-${HOME}/.chrome-profiles/codex-agent}"
+      echo "${CHROME_AGENT_PROFILE_DIR:-${HOME}/.chrome-profiles/openai-agent}"
       ;;
     *)
       echo "${CHROME_AGENT_PROFILE_DIR:-${HOME}/.chrome-profiles/codex-chat-${port}}"
@@ -60,7 +60,7 @@ shared_remediation() {
 [ensure-managed-chrome] Shared managed Chrome is not available on http://127.0.0.1:${SHARED_PORT}.
 [ensure-managed-chrome] Shared mode will not auto-launch Chrome.
 [ensure-managed-chrome] Start it explicitly:
-[ensure-managed-chrome]   CHROME_AGENT_DEBUG_PORT=${SHARED_PORT} CHROME_AGENT_PROFILE_DIR=\${HOME}/.chrome-profiles/codex-agent CHROME_AGENT_PROFILE_DIRECTORY='$(shared_profile_directory_for_port "${SHARED_PORT}")' CHROME_AGENT_HEADLESS=$(shared_headless_for_port "${SHARED_PORT}") bash "${ROOT}/scripts/chrome-agent.sh"
+[ensure-managed-chrome]   CHROME_AGENT_DEBUG_PORT=${SHARED_PORT} CHROME_AGENT_PROFILE_DIR=\${HOME}/.chrome-profiles/openai-agent CHROME_AGENT_PROFILE_DIRECTORY='$(shared_profile_directory_for_port "${SHARED_PORT}")' CHROME_AGENT_HEADLESS=$(shared_headless_for_port "${SHARED_PORT}") bash "${ROOT}/scripts/chrome-agent.sh"
 EOF
 }
 
@@ -72,8 +72,8 @@ case "$MODE" in
     fi
     if ! shared_ready; then
       if curl -sf "http://127.0.0.1:${SHARED_PORT}/json/version" >/dev/null 2>&1; then
-        echo "[ensure-managed-chrome] ERROR: Shared Chrome on ${SHARED_PORT} is reachable but not using the expected codex profile." >&2
-        echo "[ensure-managed-chrome] Stop it, then relaunch with scripts/chrome-agent.sh so SocialBlade uses codex@thereality.report." >&2
+        echo "[ensure-managed-chrome] ERROR: Shared Chrome on ${SHARED_PORT} is reachable but not using the expected openai-agent managed clone." >&2
+        echo "[ensure-managed-chrome] Stop it, then relaunch with scripts/chrome-agent.sh so SocialBlade uses the openai-agent managed clone." >&2
         exit 1
       fi
       echo "[ensure-managed-chrome] Shared Chrome not running on ${SHARED_PORT}; auto-launching..." >&2

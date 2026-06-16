@@ -1,13 +1,13 @@
 # Managed Chrome and Chrome DevTools MCP
 
-`chrome-devtools` is the browser automation path for workspace browser tasks. Codex inherits the default shared headless configuration from `~/.codex/config.toml`; explicit isolated/debug launches are exceptions. The active global wrapper seeds managed Chrome sessions from `~/.chrome-profiles/codex-agent` by default so auth-related browser tasks inherit the `codex@thereality.report` login unless the user explicitly authorizes an admin-profile override.
+`chrome-devtools` is the browser automation path for workspace browser tasks. Codex inherits the default shared headless configuration from `~/.codex/config.toml`; explicit isolated/debug launches are exceptions. The active global wrapper seeds managed Chrome sessions from `~/.chrome-profiles/openai-agent` by default. This managed clone is not the real Codex Chrome profile.
 
 This document describes browser policy only. Actual MCP defaults live in `~/.codex/config.toml` for Codex and in `~/.claude.json` for Claude.
 
 ## Chrome Profile Identity
-Codex and Claude Code agents in the TRR Workspace must use the **codex@thereality.report** profile (`~/.chrome-profiles/codex-agent`) for routine browser automation. The admin@thereality.report profile (`~/.chrome-profiles/claude-agent`) is reserved for user-authorized tasks only — for example, accessing paywalled sites like NYTimes where the owner's subscription is required. If a site is inaccessible under the codex profile, stop and ask the user before switching. Set `CHROME_AGENT_ADMIN_OVERRIDE=1` when the user grants permission; return to the codex profile when the authorized task is complete.
+Codex and Claude Code agents in the TRR Workspace use the `openai-agent` managed clone for routine browser automation. The real Codex Chrome profile means the saved Chrome profile signed in as `codex@thereality.report` and should be used when the user explicitly asks for the Codex profile. The admin@thereality.report profile (`~/.chrome-profiles/claude-agent`) is reserved for user-authorized tasks only — for example, accessing paywalled sites like NYTimes where the owner's subscription is required. If a site is inaccessible under the routine managed clone, stop and ask the user before switching. Set `CHROME_AGENT_ADMIN_OVERRIDE=1` when the user grants permission; return to the managed clone when the authorized task is complete.
 
-The managed `codex-agent` Chrome user-data directory contains multiple Chrome subprofiles. The signed-in Codex identity lives in the subprofile whose Preferences file contains `codex@thereality.report` (currently `Profile 1`), so managed launches must pass that inner `--profile-directory` in addition to `--user-data-dir`.
+The managed `openai-agent` Chrome user-data directory may contain multiple Chrome subprofiles. Managed launches must pass the detected inner `--profile-directory` in addition to `--user-data-dir`.
 
 **Exception:** Claude in Chrome (the Claude desktop app's browser automation) is permitted to use the admin@thereality.report profile. This restriction applies only to Codex and Claude Code agents running within the TRR Workspace context.
 
@@ -89,7 +89,7 @@ The visible-browser owner file was also tracking the wrapper PID instead of the 
 `make dev` now runs the session reaper on startup, cleaning orphaned Chrome from prior sessions before spawning new ones. If you notice overheating or stale Chrome between `make dev` restarts, run `make mcp-clean` manually.
 
 Use the status command to separate keepers from leaks:
-- `9222` is the managed shared headful keeper for visible/manual work.
+- `9222` is the managed shared headful keeper for visible/manual work. Do not confuse it with the real Codex Chrome profile.
 - `9422` is the managed shared headless keeper for system-wide browser automation.
 - `stale-wrapper` means the wrapper died but the browser is still present.
 - `stale-browser` means the wrapper metadata exists but the browser itself is gone.

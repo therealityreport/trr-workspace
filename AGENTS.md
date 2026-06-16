@@ -60,6 +60,7 @@
 Project Settings manages these plugin account defaults for TRR.
 - [@Chrome](plugin://chrome@openai-bundled): prefer one of these saved Chrome profiles for this project: "admin@thereality.report" (Profile 11), "codex@thereality.report" (Profile 13).
 - Set CODEX_CHROME_PREFERENCES_PATH="/Users/thomashulihan/Library/Application Support/Google/Chrome/Profile 11/Preferences" before launching Chrome-backed tools unless the user asks for a different Chrome profile.
+- The managed automation clone is `openai-agent`. If the user asks for the Codex profile, use the real `codex@thereality.report` Chrome profile, not `openai-agent`.
 - This project-level profile preference chooses the default browser identity for new tool launches; it does not block other Chrome profiles from reaching local servers or pages.
 - [@modal-platform](plugin://modal-platform@local-plugins): use admin-56995 / trr-backend-jobs for Modal work in this project.
 <!-- codex-plugin-profiles:end -->

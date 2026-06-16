@@ -83,7 +83,7 @@ default_chrome_profile_for_port() {
   local port="$1"
   case "$port" in
     9222|9422)
-      echo "${HOME}/.chrome-profiles/codex-agent"
+      echo "${HOME}/.chrome-profiles/openai-agent"
       ;;
     *)
       echo "${HOME}/.chrome-profiles/codex-chat-${port}"
