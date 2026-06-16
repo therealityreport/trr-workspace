@@ -33,10 +33,11 @@ SHARED_SINGLETON="${CODEX_CHROME_SHARED_SINGLETON:-0}"
 START_PORT="${CODEX_CHROME_PORT_RANGE_START:-9333}"
 END_PORT="${CODEX_CHROME_PORT_RANGE_END:-9399}"
 FORCED_PORT="${CODEX_CHROME_PORT:-}"
-# Default seed profile is codex-agent (codex@thereality.report).
+# Default seed profile is the openai-agent managed clone.
+# The real Codex Chrome profile means codex@thereality.report.
 # The claude-agent profile (admin@thereality.report) is prohibited for agent use.
 # Override with CODEX_CHROME_SEED_PROFILE_DIR only with explicit user permission.
-SEED_PROFILE_DIR="${CODEX_CHROME_SEED_PROFILE_DIR:-${HOME}/.chrome-profiles/codex-agent}"
+SEED_PROFILE_DIR="${CODEX_CHROME_SEED_PROFILE_DIR:-${HOME}/.chrome-profiles/openai-agent}"
 ISOLATED_HEADLESS="${CODEX_CHROME_ISOLATED_HEADLESS:-1}"
 SHARED_HEADLESS="${CODEX_CHROME_SHARED_HEADLESS:-1}"
 SKIP_BROWSER_BOOT="${CODEX_CHROME_SKIP_BROWSER_BOOT:-0}"
@@ -564,7 +565,7 @@ shared_browser_remediation() {
 [codex-chrome-mcp] Shared managed Chrome is not available on http://127.0.0.1:${port}.
 [codex-chrome-mcp] Shared mode attempted to auto-launch Chrome, but the DevTools endpoint never became ready.
 [codex-chrome-mcp] Remediation:
-[codex-chrome-mcp]   CHROME_AGENT_DEBUG_PORT=${port} CHROME_AGENT_PROFILE_DIR=\${HOME}/.chrome-profiles/codex-agent bash "${ROOT}/scripts/chrome-agent.sh"
+[codex-chrome-mcp]   CHROME_AGENT_DEBUG_PORT=${port} CHROME_AGENT_PROFILE_DIR=\${HOME}/.chrome-profiles/openai-agent bash "${ROOT}/scripts/chrome-agent.sh"
 [codex-chrome-mcp] Then run: make chrome-devtools-mcp-status
 [codex-chrome-mcp] If the tool is still missing in this chat after that, restart the Codex session.
 EOF

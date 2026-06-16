@@ -118,6 +118,9 @@ trr_try_activate_required_node_with_nvm() {
   fi
 
   nvm use --silent "$target_alias" >/dev/null 2>&1 || return 1
+  if [[ -n "${NVM_BIN:-}" && -x "${NVM_BIN}/node" ]]; then
+    export PATH="${NVM_BIN}:$PATH"
+  fi
   hash -r
   return 0
 }

@@ -32,6 +32,11 @@ extract_var_rows() {
     printf 'TRR_HEALTH_DB_POOL_MAXCONN\t\n'
     printf 'ADMIN_AUTH_EXTERNAL_TIMEOUT_MS\t3000\n'
     printf 'SOCIAL_INSTAGRAM_COMMENTS_PER_POST_CONCURRENCY\t1\n'
+    printf 'INSTAGRAM_BROWSER_NETWORK_POLICY_ENABLED\ttrue\n'
+    printf 'INSTAGRAM_BROWSER_BLOCK_STATIC_ASSETS\ttrue\n'
+    printf 'INSTAGRAM_BROWSER_DISABLE_EXTRA_RESOURCES\ttrue\n'
+    printf 'INSTAGRAM_BROWSER_NETWORK_POLICY_REPORT_ONLY\tfalse\n'
+    printf 'DECODO_PROXY_URL\t\n'
     printf 'TRR_INTERNAL_ADMIN_ALLOW_RAW_SECRET_FALLBACK\t\n'
     printf 'TRR_ADMIN_ALLOW_SERVICE_ROLE\t\n'
     printf 'TRR_INTERNAL_ADMIN_ALLOW_SERVICE_ROLE\t\n'
@@ -50,7 +55,7 @@ visibility_tier() {
     WORKSPACE_RUNTIME_RECONCILE_ENABLED|WORKSPACE_RUNTIME_DB_AUTO_APPLY_ENABLED|WORKSPACE_RUNTIME_MODAL_AUTO_DEPLOY|WORKSPACE_RUNTIME_EXTERNAL_VERIFY_ENABLED)
       echo "common"
       ;;
-    REDIS_URL|SOCIAL_INSTAGRAM_COMMENTS_PER_POST_CONCURRENCY)
+    REDIS_URL|SOCIAL_INSTAGRAM_COMMENTS_PER_POST_CONCURRENCY|INSTAGRAM_BROWSER_NETWORK_POLICY_ENABLED|INSTAGRAM_BROWSER_BLOCK_STATIC_ASSETS|INSTAGRAM_BROWSER_DISABLE_EXTRA_RESOURCES|INSTAGRAM_BROWSER_NETWORK_POLICY_REPORT_ONLY)
       echo "advanced"
       ;;
     WORKSPACE_*)
@@ -73,6 +78,9 @@ accepted_values() {
       ;;
     SOCIAL_INSTAGRAM_COMMENTS_PER_POST_CONCURRENCY)
       echo 'integer `1` through `8`'
+      ;;
+    INSTAGRAM_BROWSER_NETWORK_POLICY_ENABLED|INSTAGRAM_BROWSER_BLOCK_STATIC_ASSETS|INSTAGRAM_BROWSER_DISABLE_EXTRA_RESOURCES|INSTAGRAM_BROWSER_NETWORK_POLICY_REPORT_ONLY)
+      echo 'boolean (`true`/`false`)'
       ;;
     REDIS_URL)
       echo "Redis connection URL"
@@ -188,6 +196,21 @@ description_for() {
       ;;
     SOCIAL_INSTAGRAM_COMMENTS_PER_POST_CONCURRENCY)
       echo "Overlaps per-post Instagram comments fetches while preserving one serialized persistence/progress consumer. Keep at 1 unless running a controlled backfill validation."
+      ;;
+    INSTAGRAM_BROWSER_NETWORK_POLICY_ENABLED)
+      echo "Enable Instagram browser warmup traffic controls before Scrapling browser requests."
+      ;;
+    INSTAGRAM_BROWSER_BLOCK_STATIC_ASSETS)
+      echo "Block known Instagram/Facebook static CDN and ad hosts during browser warmups to reduce proxy traffic."
+      ;;
+    INSTAGRAM_BROWSER_DISABLE_EXTRA_RESOURCES)
+      echo "Disable nonessential browser resources such as images, media, fonts, stylesheets, and beacons during Instagram warmups."
+      ;;
+    INSTAGRAM_BROWSER_NETWORK_POLICY_REPORT_ONLY)
+      echo "Record Instagram network-policy decisions without enforcing blocks. Keep false before broad reruns."
+      ;;
+    DECODO_PROXY_URL)
+      echo "Optional explicit Decodo Residential proxy URL for TRR custom scrapers. Prefer the Decodo dashboard-generated endpoint and keep Web Scraping API tokens out of this path."
       ;;
     REDIS_URL)
       echo "Optional Redis connection URL for ephemeral realtime pub/sub, presence/typing, short TTL state, and cross-instance invalidation. Required before enabling multi-worker or multi-instance realtime; do not use for durable job truth."
@@ -358,6 +381,14 @@ generate_contract() {
     echo "- Glossary: \`docs/workspace/supabase-glossary.md\`"
     echo "- Capacity/runbook: \`docs/workspace/supabase-capacity-budget.md\` and \`docs/workspace/db-pressure-runbook.md\`"
     echo "- Ownership inventory: \`docs/workspace/env-contract-inventory.md\`"
+    echo
+    echo "## Decodo Residential Proxy"
+    echo
+    echo "TRR social scraping uses custom TRR scraper code. Decodo is only the residential proxy provider for those custom lanes."
+    echo
+    echo "Required proxy surface: set \`DECODO_PROXY_URL\`, or set \`DECODO_USERNAME\`, \`DECODO_PASSWORD\`, and \`DECODO_GATEWAY\`. \`SCRAPER_API_TOKEN\` and the Decodo Web Scraping API are not required for TRR Instagram, Threads, TikTok, SocialBlade, or browser warmup scraping."
+    echo
+    echo "Use \`cd TRR-Backend && python3 scripts/dev/smoke_decodo_residential_proxy.py --dry-run --json\` for config shape, then add \`--live\` for one explicit residential proxy CONNECT probe."
     echo
     echo "## Runtime DB Application Names"
     echo

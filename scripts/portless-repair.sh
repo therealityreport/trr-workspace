@@ -30,6 +30,14 @@ portless hosts sync
 
 routes="$(portless list || true)"
 if ! grep -Eq 'https://trr[.]localhost[[:space:]]+->[[:space:]]+localhost:[0-9]+' <<<"$routes"; then
+  if [[ "${PORTLESS_REPAIR_ALLOW_NO_ACTIVE_ROUTES:-0}" == "1" ]]; then
+    cat <<EOF
+[portless-repair] No active trr.localhost app route is running yet.
+[portless-repair] Proxy, stale aliases, and hosts were prepared for a managed cold start.
+EOF
+    exit 0
+  fi
+
   cat >&2 <<EOF
 [portless-repair] ERROR: no active trr.localhost app route is running.
 [portless-repair] Portless can repair hosts and proxy state, but admin.trr.localhost has no app target until the app route is registered.

@@ -18,6 +18,14 @@ Related Supabase docs:
 - Capacity/runbook: `docs/workspace/supabase-capacity-budget.md` and `docs/workspace/db-pressure-runbook.md`
 - Ownership inventory: `docs/workspace/env-contract-inventory.md`
 
+## Decodo Residential Proxy
+
+TRR social scraping uses custom TRR scraper code. Decodo is only the residential proxy provider for those custom lanes.
+
+Required proxy surface: set `DECODO_PROXY_URL`, or set `DECODO_USERNAME`, `DECODO_PASSWORD`, and `DECODO_GATEWAY`. `SCRAPER_API_TOKEN` and the Decodo Web Scraping API are not required for TRR Instagram, Threads, TikTok, SocialBlade, or browser warmup scraping.
+
+Use `cd TRR-Backend && python3 scripts/dev/smoke_decodo_residential_proxy.py --dry-run --json` for config shape, then add `--live` for one explicit residential proxy CONNECT probe.
+
 ## Runtime DB Application Names
 
 Connection holder snapshots rely on stable non-secret `application_name` values.
@@ -71,6 +79,11 @@ When a runtime check fails, classify it by the first concrete lane named in logs
 | `ADMIN_ENFORCE_HOST` | `true` | `true` or `false` | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `ADMIN_STRICT_HOST_ROUTING` | `false` | `true` or `false` | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `BACKEND_RESTART_SEGMENT_KEEP` | `10` | string | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
+| `DECODO_PROXY_URL` | `` | string | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Optional explicit Decodo Residential proxy URL for TRR custom scrapers. Prefer the Decodo dashboard-generated endpoint and keep Web Scraping API tokens out of this path. |
+| `INSTAGRAM_BROWSER_BLOCK_STATIC_ASSETS` | `true` | boolean (`true`/`false`) | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Block known Instagram/Facebook static CDN and ad hosts during browser warmups to reduce proxy traffic. |
+| `INSTAGRAM_BROWSER_DISABLE_EXTRA_RESOURCES` | `true` | boolean (`true`/`false`) | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Disable nonessential browser resources such as images, media, fonts, stylesheets, and beacons during Instagram warmups. |
+| `INSTAGRAM_BROWSER_NETWORK_POLICY_ENABLED` | `true` | boolean (`true`/`false`) | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Enable Instagram browser warmup traffic controls before Scrapling browser requests. |
+| `INSTAGRAM_BROWSER_NETWORK_POLICY_REPORT_ONLY` | `false` | boolean (`true`/`false`) | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Record Instagram network-policy decisions without enforcing blocks. Keep false before broad reruns. |
 | `PROFILE` | `` | string | `scripts/dev-workspace.sh`, `Makefile` | `internal` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `REDIS_URL` | `` | Redis connection URL | `TRR-Backend/api/realtime/broker.py`, `TRR-Backend/start-api.sh`, `TRR-Backend/docs/api/run.md` | `advanced` | Optional Redis connection URL for ephemeral realtime pub/sub, presence/typing, short TTL state, and cross-instance invalidation. Required before enabling multi-worker or multi-instance realtime; do not use for durable job truth. |
 | `SOCIAL_INSTAGRAM_COMMENTS_PER_POST_CONCURRENCY` | `1` | integer `1` through `8` | `TRR-Backend/trr_backend/socials/instagram/comments_scrapling/job_runner.py`, `TRR-Backend/.env.example` | `advanced` | Overlaps per-post Instagram comments fetches while preserving one serialized persistence/progress consumer. Keep at 1 unless running a controlled backfill validation. |

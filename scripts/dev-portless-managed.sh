@@ -33,7 +33,9 @@ require_command() {
 
 screen_session_running() {
   local session="$1"
-  screen -ls 2>/dev/null | grep -Eq "[[:space:]][0-9]+\\.${session}[[:space:]]"
+  local sessions
+  sessions="$(screen -ls 2>/dev/null || true)"
+  grep -Eq "[[:space:]][0-9]+\\.${session}[[:space:]]" <<<"$sessions"
 }
 
 stop_screen_session() {
@@ -178,7 +180,7 @@ start_sessions() {
   stop_stale_next_lock_holder
 
   echo "[dev-portless] Repairing Portless wildcard route state..."
-  bash "$ROOT_DIR/scripts/portless-repair.sh"
+  PORTLESS_REPAIR_ALLOW_NO_ACTIVE_ROUTES=1 bash "$ROOT_DIR/scripts/portless-repair.sh"
 
   # shellcheck disable=SC1091
   source "$ROOT_DIR/scripts/lib/node-baseline.sh"
