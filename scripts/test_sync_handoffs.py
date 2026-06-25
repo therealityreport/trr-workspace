@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import sys
 import tempfile
 import textwrap
@@ -147,6 +148,50 @@ class SyncHandoffsTests(unittest.TestCase):
             recent_completions = self.extract_section(rendered, "Recent Completions", "Older Plans")
             self.assertIn("Workspace Closeout", recent_completions)
             self.assertIn("docs/ai/local-status/workspace-closeout.md", recent_completions)
+        finally:
+            MODULE.ROOT = original_root
+
+    def test_workspace_scope_renders_vercel_preview_readiness_artifact(self) -> None:
+        original_root = MODULE.ROOT
+        MODULE.ROOT = self.root
+        try:
+            artifact = self.root / ".logs/workspace/vercel-preview-ready/latest.json"
+            artifact.parent.mkdir(parents=True, exist_ok=True)
+            artifact.write_text(
+                json.dumps(
+                    {
+                        "generatedAt": "2026-06-23T19:14:16+00:00",
+                        "projectName": "trr-app",
+                        "teamSlug": "the-reality-reports-projects",
+                        "latestDeploymentUrl": "https://trr-example-the-reality-reports-projects.vercel.app",
+                        "activeProjectDir": "/Users/thomashulihan/Projects/TRR/TRR-APP",
+                        "checks": {
+                            "webAnalytics": {
+                                "status": 0,
+                                "stdout": 'Vercel CLI 48.10.0\n{"enabled":true}',
+                                "stderr": "",
+                            },
+                            "speedInsights": {
+                                "status": 0,
+                                "stdout": 'Vercel CLI 48.10.0\n{"enabled":true}',
+                                "stderr": "",
+                            },
+                        },
+                    },
+                    indent=2,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            scope = MODULE.build_scopes(self.root)["workspace"]
+            rendered = MODULE.render_scope(scope, MODULE.dt.date(2026, 6, 23))
+            readiness = self.extract_section(rendered, "Workspace Readiness Snapshot", "Current Active Work")
+
+            self.assertIn("project `trr-app` / team `the-reality-reports-projects`", readiness)
+            self.assertIn("Web Analytics: `enabled`; Speed Insights: `enabled`.", readiness)
+            self.assertIn("Latest deployment: `https://trr-example-the-reality-reports-projects.vercel.app`", readiness)
+            self.assertIn(".logs/workspace/vercel-preview-ready/latest.json", readiness)
         finally:
             MODULE.ROOT = original_root
 

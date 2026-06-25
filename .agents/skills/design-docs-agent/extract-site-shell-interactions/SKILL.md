@@ -3,7 +3,7 @@ name: extract-site-shell-interactions
 description: Extract masthead spacers, shell chrome, storyline rails, drawers, menus, and popup interaction surfaces from saved source bundles.
 user-invocable: false
 metadata:
-  version: 1.0.0
+  version: 2.0.0
 ---
 
 # Extract Site Shell Interactions
@@ -30,6 +30,9 @@ search panels, storyline rails, and account drawers.
 - `articleUrl`
 - `sourceBundle.html`
 - optional `PublisherClassification`
+- optional rendered browser session from `capture-rendered-source` plus the
+  capabilities `browser.snapshot`, `browser.click`, `browser.hover`,
+  `browser.evaluate` for stateful interaction capture
 
 Typed outputs land in:
 
@@ -39,6 +42,9 @@ Typed outputs land in:
 
 - `siteShell`
 - `interactionCoverage`
+- `statefulInteractionSequences` — ordered open/close capture steps per surface
+- `uiPrimitiveRecords` — typed shell/menu/drawer primitives keyed by publisher +
+  layout family + role + variant
 - reusable-primitive match candidates for shell and storyline surfaces
 
 ## Procedure
@@ -47,11 +53,30 @@ Typed outputs land in:
 2. Detect hydrated menu overlays, search panels, account drawers, and popup/dialog bodies.
 3. Capture visible labels, link lists, section groupings, button affordances,
    and coverage booleans for each recovered interaction surface.
-4. Match recovered shell or storyline surfaces against known reusable
+
+### Stateful interaction capture (rendered session)
+
+When a rendered browser session from `capture-rendered-source` is available,
+capture each interaction surface in BOTH its closed and open states rather than
+only the static initial DOM:
+
+4. For each affordance (hamburger menu, search panel, account drawer,
+   share/gift menu, dialog), record the closed-state snapshot, then `browser.click`
+   or `browser.hover` to open it and `browser.snapshot` the opened state.
+5. For each captured state, harvest the markup, the transition/animation classes,
+   and the ARIA state attributes (`aria-expanded`, `aria-hidden`, `role`,
+   `aria-modal`) via `browser.evaluate`.
+6. Persist these as `statefulInteractionSequences` (ordered open/close steps) and
+   `uiPrimitiveRecords` keyed by publisher + layout family + role + variant for
+   `extract-reusable-ui-primitives` to consume.
+
+### Match and emit
+
+7. Match recovered shell or storyline surfaces against known reusable
    primitives when publisher, layout family, interaction role, and visible
    structure align.
-5. Emit source-backed shell/storyline records only when the saved bundle
-   contains enough content to reproduce them safely.
+8. Emit source-backed shell/storyline records only when the saved bundle (or the
+   stateful capture) contains enough content to reproduce them safely.
 
 ## Validation
 
@@ -72,5 +97,7 @@ Return:
 
 1. `site_shell`
 2. `interaction_coverage`
-3. `primitive_matches`
-4. `warnings`
+3. `stateful_interaction_sequences`
+4. `ui_primitive_records`
+5. `primitive_matches`
+6. `warnings`

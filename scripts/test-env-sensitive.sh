@@ -6,7 +6,7 @@ source "$ROOT/scripts/lib/node-baseline.sh"
 source "$ROOT/scripts/lib/python-venv.sh"
 
 echo "[env-sensitive] backend targeted regression..."
-trr_ensure_repo_runtime "$ROOT/TRR-Backend" "$ROOT/TRR-Backend/requirements.txt"
+trr_ensure_repo_runtime "$ROOT/TRR-Backend" "$ROOT/TRR-Backend/requirements.lock.txt"
 (cd "$ROOT/TRR-Backend" && "$ROOT/TRR-Backend/.venv/bin/pytest" -q \
   tests/repositories/test_social_season_analytics.py::test_load_twikit_credentials_falls_back_to_browser_cookies)
 

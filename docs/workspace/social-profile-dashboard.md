@@ -18,6 +18,24 @@ The app route keeps the existing snapshot envelope for `SocialAccountProfilePage
 
 Admins should treat stale data as degraded, not failed. The page should still show profile totals and recent catalog state while diagnostics retry separately.
 
+## Instagram Comments Summary Contract
+
+`summary.comments_saved_summary` is the shared contract for Instagram comments totals on the top cards, comments tab, lite header stats, and detail rollups.
+
+- `reported_comments`: total comments reported by stored Instagram post details before subtracting known external surfaces.
+- `external_facebook_comments`: known Facebook-side comments attached to Instagram/Facebook crossposts. These remain visible, but they are not Instagram scrape debt.
+- `instagram_fetchable_comments`: expected Instagram comments that the scraper can still target. Formula: `max(reported_comments - external_facebook_comments, 0)`.
+- `active_saved_comment_rows`: active rows in `social.instagram_comments`; this is Instagram-only captured comment storage and must not include Facebook comments.
+- `classified_missing_comments`: Instagram comments already classified as unavailable or terminally missing, so they are accounted outside active scrape debt.
+- `accounted_instagram_comments`: captured plus classified Instagram comments. Formula: `active_saved_comment_rows + classified_missing_comments`.
+- `comment_gap`: remaining Instagram scrape gap. Formula: `max(instagram_fetchable_comments - accounted_instagram_comments, 0)`.
+- `latest_post_detail_scraped_at`: newest stored post-detail scrape timestamp that can move the expected total.
+- `latest_comment_saved_at`: newest comment-row save timestamp.
+- `latest_comment_seen_at`: newest observed Instagram comment timestamp in active saved rows.
+- `saved_comments` and `retrieved_comments`: compatibility aliases only. New UI should read the explicit fields above.
+
+The gap can rise during a healthy refresh. Post-detail scraping updates expected Instagram totals first; comment scraping then reduces `comment_gap` as rows are saved or classified.
+
 ## Initial Render Budget
 
 Initial render is allowed to issue:

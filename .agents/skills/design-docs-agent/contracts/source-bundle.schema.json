@@ -88,6 +88,31 @@
       "type": "string",
       "description": "Viewport that the saved bundle most accurately represents.",
       "enum": ["desktop", "mobile", "both"]
+    },
+    "captureMethod": {
+      "type": "string",
+      "description": "Acquisition tier that produced this bundle.",
+      "enum": ["rendered", "curl", "browser", "stealth"]
+    },
+    "computedStyles": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Local saved-artifact path for computed-styles.json from rendered capture."
+    },
+    "screenshotsManifest": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Local saved-artifact path for screenshots-manifest.json (golden parity baselines)."
+    },
+    "networkAssetManifest": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Local saved-artifact path for network-asset-manifest.json of resolved CDN/webfont URLs."
+    },
+    "figmaReference": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Local saved-artifact path for figma-reference.json when a Figma capture was produced."
     }
   }
 }

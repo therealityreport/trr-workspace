@@ -19,6 +19,12 @@ project_doc_fallback_filenames = []
 max_threads = 6
 max_depth = 1
 
+[git_policy]
+default_branch = "main"
+create_branches = "only_when_user_says_create_a_new_branch_named_branch_in_current_chat"
+cleanup = "merge_desired_changes_to_main_then_delete_redundant_local_and_remote_refs"
+preflight = "run_git_status_short_branch_and_make_git_branch_report_before_branch_ref_changes"
+
 [agents.pr_explorer]
 description = "Repo and PR discovery, changed-surface mapping, merge-order context, and blocker identification."
 config_file = "./agents/pr_explorer.toml"
@@ -51,3 +57,4 @@ bearer_token_env_var = "TRR_SUPABASE_ACCESS_TOKEN"
 command = "/Users/thomashulihan/Projects/TRR/TRR-Backend/.venv/bin/python"
 args = ["/Users/thomashulihan/Projects/TRR/TRR-Backend/scripts/modal/modal_ops_mcp.py"]
 env = { MODAL_PROFILE = "admin-56995", MODAL_PROFILE_NAME = "admin-56995", MODAL_PROFILE_LABEL = "TRR Backend Jobs", TRR_MODAL_APP_NAME = "trr-backend-jobs" }
+

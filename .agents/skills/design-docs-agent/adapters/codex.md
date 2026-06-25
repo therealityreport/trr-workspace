@@ -25,6 +25,17 @@ shared capability list live in `agents/openai.yaml`.
 | `browser.network.list` | Codex network request listing |
 | `browser.network.get` | Codex network request inspection |
 | `browser.screenshot` | Codex screenshot capture |
+| `browser.resize` | Codex viewport resize/emulation |
+| `browser.click` | Codex element click for stateful capture |
+| `browser.hover` | Codex element hover for stateful capture |
+| `figma.create_file` | Figma MCP `create_new_file` (preload `/figma-create-new-file`) |
+| `figma.generate_design` | Figma MCP `generate_figma_design` HTML/URL-to-Figma capture |
+| `figma.use` | Figma MCP `use_figma` write API (preload `/figma-use`) |
+| `figma.search_design_system` | Figma MCP `search_design_system` (read-only) |
+| `figma.get_variable_defs` | Figma MCP `get_variable_defs` token read (read-only) |
+| `figma.get_design_context` | Figma MCP `get_design_context` round-trip (read-only) |
+| `scrapling.stealthy_fetch` | Scrapling MCP `stealthy_fetch` for WAF/paywall fallback |
+| `scrapling.screenshot` | Scrapling MCP full-page screenshot fallback |
 | `delegate.parallel` | Codex delegation when useful, otherwise sequential execution |
 | `fs.edit` | normal repo editing flow |
 | `check.typecheck` | repo validation command via shell |

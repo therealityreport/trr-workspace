@@ -239,6 +239,7 @@ def persist_bundle_from_html(
     *,
     fetch_assets: bool = True,
     screenshot_paths: list[Path] | None = None,
+    capture_method: str = "curl",
 ) -> dict:
     slug = derive_bundle_slug(article_url, bundle_root)
     bundle_dir = bundle_root / slug
@@ -283,6 +284,7 @@ def persist_bundle_from_html(
 
     bundle = {
         "canonicalSourceUrl": article_url,
+        "captureMethod": capture_method,
         "html": {"rendered": relative_to_repo(html_path)},
         "css": css_paths,
         "js": js_paths,
@@ -329,12 +331,51 @@ def build_acquisition_report(
 def main() -> int:
     parser = argparse.ArgumentParser(description="Fetch and persist a Design Docs source bundle.")
     parser.add_argument("--article-url", required=True)
+    parser.add_argument(
+        "--capture-method",
+        choices=["auto", "rendered", "curl", "browser"],
+        default="auto",
+        help="Advisory acquisition tier. Rendered capture is used when --rendered-html-file is supplied.",
+    )
+    parser.add_argument(
+        "--rendered-html-file",
+        help="Rendered-DOM HTML captured via Chrome DevTools. When supplied, becomes tier-1 acquisition and skips curl.",
+    )
     parser.add_argument("--browser-html-file")
     parser.add_argument("--browser-screenshot", action="append", default=[])
     parser.add_argument("--bundle-root", default=str(SOURCE_BUNDLES_ROOT))
     args = parser.parse_args()
 
     bundle_root = Path(args.bundle_root)
+
+    # Tier 1: rendered-DOM capture (Chrome DevTools) takes priority and skips curl.
+    if args.rendered_html_file and Path(args.rendered_html_file).exists():
+        rendered_html = Path(args.rendered_html_file).read_text()
+        rendered_assessment = assess_html_trustworthiness(rendered_html)
+        if rendered_assessment["isTrustworthy"]:
+            screenshot_paths = [Path(path) for path in args.browser_screenshot]
+            bundle = persist_bundle_from_html(
+                args.article_url,
+                rendered_html,
+                bundle_root,
+                fetch_assets=True,
+                screenshot_paths=screenshot_paths,
+                capture_method="rendered",
+            )
+            print(
+                json.dumps(
+                    {
+                        "status": "ok",
+                        "sourceBundle": bundle,
+                        "captureMethod": "rendered",
+                        "warnings": rendered_assessment["warnings"],
+                    },
+                    indent=2,
+                )
+            )
+            return 0
+        # Rendered capture failed the trust gate; fall through to the curl tier.
+
     curl_ok, curl_payload = fetch_url_text(args.article_url)
     curl_summary = "curl fetch succeeded" if curl_ok else curl_payload
     browser_summary = "browser fallback not attempted"
@@ -342,8 +383,8 @@ def main() -> int:
     if curl_ok:
         assessment = assess_html_trustworthiness(curl_payload)
         if assessment["isTrustworthy"]:
-            bundle = persist_bundle_from_html(args.article_url, curl_payload, bundle_root, fetch_assets=True)
-            print(json.dumps({"status": "ok", "sourceBundle": bundle, "warnings": assessment["warnings"]}, indent=2))
+            bundle = persist_bundle_from_html(args.article_url, curl_payload, bundle_root, fetch_assets=True, capture_method="curl")
+            print(json.dumps({"status": "ok", "sourceBundle": bundle, "captureMethod": "curl", "warnings": assessment["warnings"]}, indent=2))
             return 0
         curl_summary = (
             f"curl fetch recovered {assessment['visibleTextChars']} visible chars "
@@ -370,8 +411,9 @@ def main() -> int:
                 bundle_root,
                 fetch_assets=True,
                 screenshot_paths=screenshot_paths,
+                capture_method="browser",
             )
-            print(json.dumps({"status": "ok", "sourceBundle": bundle, "warnings": browser_assessment["warnings"]}, indent=2))
+            print(json.dumps({"status": "ok", "sourceBundle": bundle, "captureMethod": "browser", "warnings": browser_assessment["warnings"]}, indent=2))
             return 0
         assessment = browser_assessment
     elif args.browser_html_file:

@@ -9,6 +9,7 @@ Reusable MCP registrations live in `~/.codex/config.toml`. TRR-local MCPs live i
 | `figma-desktop` | user-global `~/.codex/config.toml` | Local desktop Figma workflows when enabled. |
 | `github` | user-global `~/.codex/config.toml` | GitHub metadata and MCP-hosted remote operations with `GITHUB_PAT`. |
 | `context7` | user-global `~/.codex/config.toml` | Library and framework documentation lookup for implementation and review flows. |
+| `next-devtools` | trusted project-local `.codex/config.toml` | Next.js development diagnostics for the TRR admin app. Start the app with `make dev-hybrid` or `make dev-portless`, then use Next DevTools MCP to discover running Next.js 16 dev servers and query routes, logs, runtime errors, and app metadata. |
 | `supabase` | trusted project-local `.codex/config.toml` | Supabase DB, schema, function, storage, and project operations for the TRR project only. Uses `TRR_SUPABASE_ACCESS_TOKEN`, not the generic `SUPABASE_ACCESS_TOKEN`. |
 | `modal-ops` | trusted project-local `.codex/config.toml` | Read-only TRR Modal and Instagram Backfill Posts operations for `admin-56995` / `trr-backend-jobs`. Tools: `modal_readiness`, `probe_remote_auth`, `tail_logs`, `app_status`, `cron_status`, `list_recent_runs`, `list_active_jobs`, `list_active_cooldowns`, `backfill_health`. |
 

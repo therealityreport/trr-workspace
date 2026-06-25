@@ -17,8 +17,14 @@ it is not the canonical domain roster.
 Record these fields up front:
 
 - canonical source URL
+- `captureMethod`: `rendered` | `curl` | `browser` | `stealth`, and the
+  acquisition tier reached
 - authoritative viewport: `desktop`, `mobile`, or `both`
-- rendered-source authority inputs: HTML, CSS, JS, manifests, HAR
+- rendered-source authority inputs: HTML, CSS, JS, manifests, HAR,
+  `computed-styles.json`
+- golden screenshot baselines: `screenshots-manifest.json` at fixed viewports
+- network asset manifest: `network-asset-manifest.json` of resolved CDN and
+  webfont URLs
 - component-inventory authority inputs: source maps, exported `webpack://`
   trees, screenshot-backed module trees
 - hydrated-interaction coverage status
@@ -104,6 +110,45 @@ Examples of **HIGH-RISK** article hosts:
 - any site where curl or browser fallback still fails the trustworthiness gate
 
 **If acquisition fails, ask the user for a saved file instead.**
+
+---
+
+## Mode E: Chrome DevTools Rendered Capture
+
+**How to identify**: Acquisition tier 1. The bundle's `captureMethod` is
+`rendered` and it includes `computed-styles.json`, a fixed-viewport golden
+screenshot set (`screenshots-manifest.json`), and a `network-asset-manifest.json`.
+
+**How it is produced**: `capture-rendered-source` navigates the live URL in
+Chrome DevTools, waits for network idle, removes blocking overlays only when the
+underlying content is already present, then serializes the rendered DOM, computed
+styles, MHTML, and resource tree. `capture-golden-screenshots` and
+`harvest-network-assets` run in the same session.
+
+**Strengths**: Captures client-rendered layout, shells, and charts that `curl`
+cannot see; carries exact computed styles, golden parity baselines, and resolved
+absolute asset/webfont URLs.
+
+**Weaknesses**: Requires a browser MCP. Falls through to Mode D (curl) then
+Mode F (stealth) when unavailable or when the trust gate fails.
+
+---
+
+## Mode F: Scrapling Stealthy Fetch
+
+**How to identify**: Acquisition tier 3. The bundle's `captureMethod` is
+`stealth`, produced via `scrapling.stealthy_fetch` with a `scrapling.screenshot`
+parity backup.
+
+**How it is produced**: Used only when Chrome DevTools and `curl` are both
+blocked by WAF/Cloudflare/Turnstile/paywall challenges. Re-runs the helper with
+`--rendered-html-file` pointing at the scrapling-rendered HTML.
+
+**Strengths**: Recovers rendered HTML from bot-protected publishers that block
+the other tiers.
+
+**Weaknesses**: Optional dependency; degrade gracefully (skip) when the
+scrapling MCP is absent.
 
 ---
 

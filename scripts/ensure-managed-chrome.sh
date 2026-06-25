@@ -4,9 +4,10 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "${ROOT}/scripts/lib/chrome-runtime.sh"
 
-MODE="${CODEX_CHROME_MODE:-isolated}"
+MODE="${CODEX_CHROME_MODE:-shared}"
 SHARED_PORT="${CODEX_CHROME_SHARED_PORT:-${CODEX_CHROME_PORT:-9422}}"
 LOG_DIR="${ROOT}/.logs/workspace"
+SKIP_BROWSER_BOOT="${CODEX_CHROME_SKIP_BROWSER_BOOT:-0}"
 
 shared_profile_for_port() {
   local port="$1"
@@ -75,6 +76,11 @@ case "$MODE" in
         echo "[ensure-managed-chrome] ERROR: Shared Chrome on ${SHARED_PORT} is reachable but not using the expected openai-agent managed clone." >&2
         echo "[ensure-managed-chrome] Stop it, then relaunch with scripts/chrome-agent.sh so SocialBlade uses the openai-agent managed clone." >&2
         exit 1
+      fi
+      if [[ "$SKIP_BROWSER_BOOT" == "1" ]]; then
+        echo "[ensure-managed-chrome] Shared Chrome not running on ${SHARED_PORT}; browser boot skipped by CODEX_CHROME_SKIP_BROWSER_BOOT=1." >&2
+        shared_remediation
+        exit 0
       fi
       echo "[ensure-managed-chrome] Shared Chrome not running on ${SHARED_PORT}; auto-launching..." >&2
       CHROME_AGENT_DEBUG_PORT="${SHARED_PORT}" \

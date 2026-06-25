@@ -79,6 +79,28 @@ if decision != "forbidden":
     raise SystemExit(f"[check-codex] ERROR: expected git push --force to be forbidden, found {decision!r}")
 PY
 
+switch_create_policy="$(codex execpolicy check --pretty --rules "$RULES_FILE" -- git switch -c codex/example)"
+"$PYTHON_BIN" - <<'PY' "$switch_create_policy"
+import json
+import sys
+
+payload = json.loads(sys.argv[1])
+decision = payload.get("decision")
+if decision != "prompt":
+    raise SystemExit(f"[check-codex] ERROR: expected git switch -c to prompt, found {decision!r}")
+PY
+
+checkout_create_policy="$(codex execpolicy check --pretty --rules "$RULES_FILE" -- git checkout -b codex/example)"
+"$PYTHON_BIN" - <<'PY' "$checkout_create_policy"
+import json
+import sys
+
+payload = json.loads(sys.argv[1])
+decision = payload.get("decision")
+if decision != "prompt":
+    raise SystemExit(f"[check-codex] ERROR: expected git checkout -b to prompt, found {decision!r}")
+PY
+
 deploy_policy="$(codex execpolicy check --pretty --rules "$RULES_FILE" -- vercel deploy --prod)"
 "$PYTHON_BIN" - <<'PY' "$deploy_policy"
 import json

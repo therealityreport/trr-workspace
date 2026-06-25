@@ -7,7 +7,7 @@ source "$ROOT/scripts/lib/python-venv.sh"
 source "$ROOT/scripts/lib/workspace-test-contracts.sh"
 
 echo "[test] TRR-Backend..."
-trr_ensure_repo_runtime "$ROOT/TRR-Backend" "$ROOT/TRR-Backend/requirements.txt"
+trr_ensure_repo_runtime "$ROOT/TRR-Backend" "$ROOT/TRR-Backend/requirements.lock.txt"
 "$ROOT/TRR-Backend/.venv/bin/ruff" check "$ROOT/TRR-Backend"
 "$ROOT/TRR-Backend/.venv/bin/ruff" format --check "$ROOT/TRR-Backend"
 (cd "$ROOT/TRR-Backend" && "$ROOT/TRR-Backend/.venv/bin/pytest")

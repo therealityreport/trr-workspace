@@ -27,7 +27,7 @@ done
 
 if [[ "$RUN_BACKEND" == "1" ]]; then
   echo "[test-fast] TRR-Backend..."
-  trr_ensure_repo_runtime "$ROOT/TRR-Backend" "$ROOT/TRR-Backend/requirements.txt"
+  trr_ensure_repo_runtime "$ROOT/TRR-Backend" "$ROOT/TRR-Backend/requirements.lock.txt"
   "$ROOT/TRR-Backend/.venv/bin/ruff" check "$ROOT/TRR-Backend"
   "$ROOT/TRR-Backend/.venv/bin/ruff" format --check "$ROOT/TRR-Backend"
   BACKEND_FAST_HEALTH_TEST="tests/api/test_health.py"

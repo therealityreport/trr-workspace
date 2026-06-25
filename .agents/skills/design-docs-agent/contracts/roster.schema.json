@@ -62,9 +62,20 @@
           "browser.network.list",
           "browser.network.get",
           "browser.screenshot",
+          "browser.resize",
+          "browser.click",
+          "browser.hover",
           "delegate.parallel",
           "fs.edit",
-          "check.typecheck"
+          "check.typecheck",
+          "figma.create_file",
+          "figma.generate_design",
+          "figma.use",
+          "figma.search_design_system",
+          "figma.get_variable_defs",
+          "figma.get_design_context",
+          "scrapling.stealthy_fetch",
+          "scrapling.screenshot"
         ]
       },
       "uniqueItems": true

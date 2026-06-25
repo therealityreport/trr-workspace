@@ -143,6 +143,40 @@ port_pid() {
   fi
 }
 
+managed_stale_listener_matches_expected_profile() {
+  local pid="$1"
+  local cmd
+
+  [[ -n "$pid" ]] || return 1
+  cmd="$(ps -ww -o command= -p "$pid" 2>/dev/null || true)"
+  [[ "$cmd" == *"--remote-debugging-port=${DEBUG_PORT}"* ]] || return 1
+  [[ "$cmd" == *"--user-data-dir=${PROFILE_DIR}"* ]] || return 1
+  if [[ -n "$PROFILE_DIRECTORY" ]]; then
+    [[ "$cmd" == *"--profile-directory=${PROFILE_DIRECTORY}"* ]] || return 1
+  fi
+}
+
+stop_stale_managed_listener() {
+  local pid="$1"
+  local attempt
+
+  echo "[chrome-agent] WARNING: Chrome listener on port ${DEBUG_PORT} has no DevTools endpoint (pid=${pid}); relaunching managed profile." >&2
+  kill "$pid" >/dev/null 2>&1 || true
+  for attempt in 1 2 3 4 5; do
+    if ! kill -0 "$pid" >/dev/null 2>&1; then
+      break
+    fi
+    sleep 0.2
+  done
+  if kill -0 "$pid" >/dev/null 2>&1; then
+    kill -9 "$pid" >/dev/null 2>&1 || true
+  fi
+  rm -f "$PIDFILE"
+  if [[ "$DEBUG_PORT" == "9222" ]]; then
+    rm -f "$LEGACY_PIDFILE"
+  fi
+}
+
 endpoint_ready() {
   local target_port="${1:-$DEBUG_PORT}"
   curl -sf "http://localhost:${target_port}/json/version" >/dev/null 2>&1
@@ -260,6 +294,18 @@ launch_chrome() {
 
 # --- Check if already running on the debugging port ---
 existing_pid="$(port_pid)"
+if [[ -n "$existing_pid" ]]; then
+  if ! endpoint_ready "${DEBUG_PORT}"; then
+    if managed_stale_listener_matches_expected_profile "$existing_pid"; then
+      stop_stale_managed_listener "$existing_pid"
+      existing_pid=""
+    else
+      echo "[chrome-agent] ERROR: port ${DEBUG_PORT} has a listener with no DevTools endpoint (pid=${existing_pid}), but it does not match the expected managed profile." >&2
+      echo "[chrome-agent] ERROR: Refusing to stop an unknown Chrome/control process." >&2
+      exit 1
+    fi
+  fi
+fi
 if [[ -n "$existing_pid" ]]; then
   existing_profile_directory="$(sed -n 's/^PROFILE_DIRECTORY=//p' "$STATEFILE" 2>/dev/null | head -n 1)"
   if [[ -n "$PROFILE_DIRECTORY" && "$existing_profile_directory" != "$PROFILE_DIRECTORY" ]]; then

@@ -83,6 +83,21 @@ trr_resolve_python_bin() {
   return 1
 }
 
+trr_resolve_uv_bin() {
+  if [[ -n "${UV_BIN:-}" && -x "$UV_BIN" ]]; then
+    echo "$UV_BIN"
+    return 0
+  fi
+
+  if command -v uv >/dev/null 2>&1; then
+    command -v uv
+    return 0
+  fi
+
+  echo "[python-venv] ERROR: Missing uv executable. Install uv and retry bootstrap/test commands." >&2
+  return 1
+}
+
 trr_venv_path_ok() {
   local repo_dir="$1"
   local expected="${repo_dir}/.venv"
@@ -105,6 +120,7 @@ trr_ensure_repo_venv() {
   local repo_dir="$1"
   local venv_py="${repo_dir}/.venv/bin/python"
   local resolved_python
+  local uv_bin
 
   TRR_LAST_VENV_CREATED=0
 
@@ -118,8 +134,9 @@ trr_ensure_repo_venv() {
   fi
 
   resolved_python="$(trr_resolve_python_bin)" || return 1
+  uv_bin="$(trr_resolve_uv_bin)" || return 1
   echo "[python-venv] Creating venv: ${repo_dir}/.venv (${resolved_python})" >&2
-  "$resolved_python" -m venv "${repo_dir}/.venv"
+  "$uv_bin" venv --python "$resolved_python" "${repo_dir}/.venv"
   TRR_LAST_VENV_CREATED=1
 }
 
@@ -127,15 +144,16 @@ trr_install_repo_requirements() {
   local repo_dir="$1"
   local requirements_file="$2"
   local venv_py="${repo_dir}/.venv/bin/python"
+  local uv_bin
 
   if [[ ! -x "$venv_py" ]]; then
     echo "[python-venv] ERROR: ${repo_dir}/.venv/bin/python missing after ensure step." >&2
     return 1
   fi
 
+  uv_bin="$(trr_resolve_uv_bin)" || return 1
   echo "[python-venv] Installing requirements from ${requirements_file}" >&2
-  "$venv_py" -m pip install --upgrade pip
-  "$venv_py" -m pip install -r "$requirements_file"
+  "$uv_bin" pip sync --python "$venv_py" "$requirements_file"
 }
 
 trr_ensure_repo_runtime() {

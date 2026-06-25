@@ -18,6 +18,6 @@ fi
 
 echo "[bootstrap] TRR-Backend (python deps)..."
 trr_ensure_repo_venv "$ROOT/TRR-Backend"
-"$ROOT/TRR-Backend/.venv/bin/python" -m pip install -r "$ROOT/TRR-Backend/requirements.txt"
+trr_install_repo_requirements "$ROOT/TRR-Backend" "$ROOT/TRR-Backend/requirements.lock.txt"
 
 echo "[bootstrap] Done."

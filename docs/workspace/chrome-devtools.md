@@ -4,10 +4,42 @@
 
 This document describes browser policy only. Actual MCP defaults live in `~/.codex/config.toml` for Codex and in `~/.claude.json` for Claude.
 
+For profile-specific live Chrome work, use the selection rules in `docs/workspace/browser-debug.md`. In short: choose the explicit `TRR` Chrome extension instance for normal TRR/admin work, choose the real Codex profile only when requested, and warn if Chrome attaches to a profile that is not the last-used profile.
+
 ## Chrome Profile Identity
 Codex and Claude Code agents in the TRR Workspace use the `openai-agent` managed clone for routine browser automation. The real Codex Chrome profile means the saved Chrome profile signed in as `codex@thereality.report` and should be used when the user explicitly asks for the Codex profile. The admin@thereality.report profile (`~/.chrome-profiles/claude-agent`) is reserved for user-authorized tasks only — for example, accessing paywalled sites like NYTimes where the owner's subscription is required. If a site is inaccessible under the routine managed clone, stop and ask the user before switching. Set `CHROME_AGENT_ADMIN_OVERRIDE=1` when the user grants permission; return to the managed clone when the authorized task is complete.
 
 The managed `openai-agent` Chrome user-data directory may contain multiple Chrome subprofiles. Managed launches must pass the detected inner `--profile-directory` in addition to `--user-data-dir`.
+
+Profile 11 admin examples (`TRR` friendly profile, admin account):
+
+```bash
+export CODEX_CHROME_PREFERENCES_PATH="/Users/thomashulihan/Library/Application Support/Google/Chrome/Profile 11/Preferences"
+```
+
+That preferences path selects the saved admin profile for profile-aware Codex tooling. The managed Chrome launcher uses `CHROME_AGENT_*` variables, so pass the admin managed clone explicitly when a task is approved for the admin profile.
+
+Run the standard repair/status path with the admin managed clone:
+
+```bash
+CODEX_CHROME_PREFERENCES_PATH="/Users/thomashulihan/Library/Application Support/Google/Chrome/Profile 11/Preferences" \
+CHROME_AGENT_ADMIN_OVERRIDE=1 \
+CHROME_AGENT_PROFILE_DIR="$HOME/.chrome-profiles/claude-agent" \
+CHROME_AGENT_PROFILE_EMAIL=admin@thereality.report \
+CODEX_CHROME_SHARED_PORT=9222 \
+  make chrome-repair
+```
+
+Start only the visible admin Chrome keeper:
+
+```bash
+CHROME_AGENT_ADMIN_OVERRIDE=1 \
+CHROME_AGENT_PROFILE_DIR="$HOME/.chrome-profiles/claude-agent" \
+CHROME_AGENT_PROFILE_EMAIL=admin@thereality.report \
+CHROME_AGENT_DEBUG_PORT=9222 \
+CHROME_AGENT_HEADLESS=0 \
+scripts/ensure-managed-chrome.sh
+```
 
 **Exception:** Claude in Chrome (the Claude desktop app's browser automation) is permitted to use the admin@thereality.report profile. This restriction applies only to Codex and Claude Code agents running within the TRR Workspace context.
 
@@ -25,6 +57,7 @@ The canonical path is still a working `chrome-devtools` MCP session. Some Codex 
 
 - Keep browser work on the managed Chrome path.
 - Use the workspace scripts instead of changing tracked MCP config:
+  - `make chrome-repair` to clean stale browser MCP state, start shared Chrome, check extension/native-host readiness, and print the reload hint
   - `scripts/ensure-managed-chrome.sh` to guarantee a managed browser exists
   - `scripts/open-or-refresh-browser-tab.sh` to reuse or reload the current workspace tab
   - `scripts/chrome-devtools-mcp-status.sh` and `scripts/codex-mcp-session-reaper.sh` for diagnostics and cleanup
@@ -42,9 +75,28 @@ This fallback is for live verification only. Browser defaults still belong in wr
 ## Cleanup and Troubleshooting
 
 ### Quick fixes
+- `make chrome-repair` — one-command repair for stale MCP state, shared Chrome startup, status, extension readiness, and the MCP reload hint
 - `make mcp-clean` — kill stale wrapper trees and clean artifacts
 - `make chrome-devtools-mcp-status` — inspect current session state
 - `make chrome-devtools-mcp-stop-conflicts` — detect non-Codex browser-control clients
+
+### DevTools stale transport
+
+If `make chrome-repair` reports a healthy shared Chrome runtime but an already-open Codex chat still gets `Transport closed` from `chrome-devtools`, treat it as stale session transport state.
+
+Recovery:
+1. Keep the shared Chrome keeper running.
+2. Run `make codex-browser-transport-reset` once.
+3. Restart the Codex session or thread if tool calls still use the stale transport.
+4. Rerun `make chrome-devtools-mcp-status` in the new session.
+
+Do not keep retrying scraper, app, or Instagram workflows while the already-loaded MCP transport is stale. Do not add a repo-local fallback MCP block for one stale chat.
+
+### Viewport/window resize guardrail
+
+Window-bounds resize actions (`resize_page` / `resize_window` / `preview_resize`) must target the **headful** keeper on port `9222`, never the **headless** keeper on `9422`. The headless keeper has no real OS window, so a window-bounds reset waits for a state change that never lands and hits the fixed per-call timeout. Only issue a resize when the active page is idle.
+
+A timed-out resize-reset is a stale-transport signal. Run `make codex-browser-transport-reset` once and **do not retry**; restart the session or thread if the next call still uses the stale transport. As an alternative to resizing, drive against the headful `9222` keeper or skip the resize and use full-page `take_screenshot`.
 
 ## Chrome Dock Recents
 
@@ -73,6 +125,8 @@ The status script and workspace preflight now classify browser automation with t
 - `unavailable` — the shared keeper is down and there is no usable recovery path for the current startup contract
 
 Only the `unavailable` state should surface the stronger “shared Chrome is not responding” startup attention. `degraded` remains a cleanup suggestion, and `recoverable` is informational.
+
+Structured status also reports Chrome extension/native-host readiness and `orphaned_chrome_mcp_processes`. Startup attention is recorded when orphaned Chrome MCP process buildup reaches the configured threshold.
 
 ### Deep cleanup
 - `bash scripts/codex-mcp-session-reaper.sh diagnose` — full snapshot of all Chrome/MCP state

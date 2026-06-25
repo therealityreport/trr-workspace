@@ -3,7 +3,7 @@ name: design-docs-agent
 description: Canonical cross-host Design Docs agent for article ingestion, saved-source bundle extraction, generation, wiring, and brand sync.
 user-invocable: true
 metadata:
-  version: 1.4.0
+  version: 2.0.0
 ---
 
 # Design Docs Agent
@@ -54,27 +54,40 @@ The orchestrator may also use:
 - `contracts/acquisition-report.schema.json` for blocking live-acquisition failures
 - `contracts/publisher-policy.yaml` for paywall and live-fetch policy
 - `contracts/external-app-contract.yaml` for the minimum asserted TRR-APP contract
-- repo-local Design Docs config and pipeline types in `TRR-APP/apps/web`
+- repo-local Design Docs config and pipeline types under the target app root
+  (default `TRR-APP/apps/web`, overridable via `DESIGN_DOCS_APP_WEB_ROOT`)
 - `references/source-html-modes.md` for human-readable parsing and authority guidance
 
 ## Shared Capabilities
 
-Use the canonical capability names declared in `agents/openai.yaml`. Host-specific mappings live in `adapters/claude.md` and `adapters/codex.md`.
+Use the canonical capability names declared in `agents/openai.yaml`. Host-specific
+mappings live in `adapters/claude.md` and `adapters/codex.md`. The `figma.*` and
+`scrapling.*` capabilities and the interactive `browser.click` / `browser.hover` /
+`browser.resize` capabilities are optional: when the underlying MCP is absent the
+pipeline degrades gracefully (skip the Figma reference layer, fall through the
+acquisition ladder) rather than failing.
 
 ## Acquisition Contract
 
-When `sourceBundle` is absent, `fetch-source-bundle` owns acquisition behavior.
+When `sourceBundle` is absent, acquisition runs as a tiered ladder, and the chosen
+`captureMethod` is recorded on the returned bundle.
 
-1. Attempt shell acquisition first with `curl` and the package helper script.
-2. If shell acquisition is insufficient and browser tooling is available, attempt browser fallback.
-   - For `nytimes.com`, browser fallback must use the `admin@thereality.report`
-     Chrome profile, resolved on this machine as Chrome `Profile 11` under
-     `/Users/thomashulihan/Library/Application Support/Google/Chrome`.
-   - Reuse an already-open Profile 11 Chrome window or tab first when the
-     Codex Chrome Extension is connected. Open a new Profile 11 window only as
-     a recovery step or when the user explicitly approves it.
-3. Return a schema-compliant `sourceBundle` on success.
-4. Return a blocking acquisition report from `contracts/acquisition-report.schema.json` on failure.
+1. Tier 1 — `capture-rendered-source` performs rendered-DOM capture via Chrome
+   DevTools, the primary path for client-rendered article pages. In the same
+   browser session it also runs `capture-golden-screenshots` (fixed-viewport
+   parity baselines) and `harvest-network-assets` (network-driven asset and
+   webfont manifest).
+2. Tier 2 — `fetch-source-bundle` performs static `curl` acquisition when no
+   browser is available or tier 1 fails its trust gate.
+   - For `nytimes.com`, browser capture must use the `admin@thereality.report`
+     Chrome profile (`Profile 11` under
+     `/Users/thomashulihan/Library/Application Support/Google/Chrome`); reuse an
+     already-open Profile 11 window or tab before opening a new one.
+3. Tier 3 — `fetch-source-bundle` escalates to `scrapling.stealthy_fetch` for
+   WAF/Cloudflare/Turnstile/paywall-protected sources.
+4. Return a schema-compliant `sourceBundle` on success.
+5. Return a blocking acquisition report from
+   `contracts/acquisition-report.schema.json` only after every tier fails.
 
 ## Complete Article Coverage Gate
 
@@ -134,16 +147,34 @@ state why renderer-ready data could not be recovered. If the source bundle is
 complete enough to run an extractor but the extractor was skipped, treat that
 as a blocking finding.
 
+## Output Targets
+
+Generated output is governed by `DESIGN_DOCS_OUTPUT_TARGETS` (default `both`):
+
+1. `trr-app` — the full pixel-faithful article page in the Next.js renderer at
+   the target app root (default `TRR-APP/apps/web`, per `DESIGN_DOCS_APP_WEB_ROOT`).
+2. `skills-manager` — a catalog record plus mirrored assets published to the
+   Skills Manager Design tab via its `POST /api/design-docs` API, browsable in
+   that tab.
+3. `both` (default) — emit to both. Both targets share the
+   `design-docs-contracts` TypeScript surface, so the external-app contract
+   validates against either. The Design tab is a catalog/browser; full page
+   rendering stays with the TRR-APP renderer until an equivalent renderer is
+   ported, so do not drop the `trr-app` target before then.
+
 ## Procedure
 
 ### 1. Validate Inputs And Detect Mode
 
 Run the active `validation` phase from `agents/openai.yaml`.
 
-1. `fetch-source-bundle` runs first when `sourceBundle` is absent.
-   - Follow the shared acquisition contract above.
-2. `validate-inputs` runs after a bundle exists, whether that bundle came from
-   the caller or from `fetch-source-bundle`.
+1. When `sourceBundle` is absent, run the acquisition ladder in order:
+   `capture-rendered-source` (tier 1, with `capture-golden-screenshots` and
+   `harvest-network-assets` in the same browser session), then
+   `fetch-source-bundle` (tier 2 `curl`, tier 3 `scrapling.stealthy_fetch`).
+   Follow the Acquisition Contract above.
+2. `validate-inputs` runs after a bundle exists, whether it came from the caller
+   or from acquisition.
 
 `validate-inputs` owns:
 
@@ -180,6 +211,11 @@ Resolve the active `extraction` phase from `agents/openai.yaml`. Run those skill
 
 Fidelity rule: extraction skills emit their normal payloads plus fidelity evidence. Do not insert a separate contract-synthesis phase. The visual-contract extractor stays additive to the existing extraction wave rather than becoming a new bottleneck phase.
 
+When a rendered session is available, the extraction wave additionally captures
+stateful open/close interaction sequences (emitting typed `uiPrimitiveRecords`)
+and cross-references design tokens against the Figma design system (read-only).
+These are additive payloads on existing extraction skills, not a new phase.
+
 ### 5. Merge Extraction Outputs
 
 Merge extraction output into the typed pipeline contract asserted by `contracts/external-app-contract.yaml` and implemented in `TRR-APP/apps/web/src/lib/admin/design-docs-pipeline-types.ts`.
@@ -190,10 +226,17 @@ Resolve the active `generation` phase from `agents/openai.yaml`.
 
 1. Always run `generate-article-page`.
 2. Run `generate-brand-section` only in `create-brand` mode.
+3. When a Figma reference exists (from `capture-to-figma` or a known publisher
+   Figma file), `generate-article-page` runs the Figma design-context round-trip
+   (`figma.get_design_context`); the source HTML always wins on conflict.
+4. In the post-generation phase, `capture-to-figma` may push the captured page
+   into a new Figma file as a reference layer when the Figma MCP is available
+   (requires `/figma-create-new-file` and `/figma-use` preloads); it degrades
+   gracefully when Figma is unavailable.
 
 ### 7. Wire Shared Surfaces
 
-Resolve the active `wiring` phase from `agents/openai.yaml`. `wire-config-and-routing` updates config, imports, and navigation/routing surfaces needed for the new or updated article or brand.
+Resolve the active `wiring` phase from `agents/openai.yaml`. `wire-config-and-routing` updates config, imports, and navigation/routing surfaces needed for the new or updated article or brand. For the `skills-manager` target, routing is handled by the Design tab's view ids (no Next.js page routes are generated); only the `trr-app` target needs route wiring.
 
 ### 8. Run Verification Gates
 

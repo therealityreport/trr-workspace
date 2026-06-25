@@ -20,7 +20,7 @@ Per operator request, full rerun is deferred to manual execution:
 ## Suggested Post-Run Checks
 
 - TRR-APP: `https://trr.localhost`
-- TRR Admin: `https://admin.trr.localhost/admin`
+- TRR Admin: `https://admin.trr.localhost`
 - TRR-Backend health and APIs: `https://api.trr.localhost`
 - screenalytics API: `http://127.0.0.1:8001`
 - screenalytics Streamlit: `http://127.0.0.1:8501`

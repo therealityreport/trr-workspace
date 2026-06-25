@@ -5,12 +5,17 @@ Use these commands from `/Users/thomashulihan/Projects/TRR`.
 ## Preferred Contract
 - `make dev` is local-process-first: local `TRR-APP`, local `TRR-Backend`, direct DB lane, remote workers disabled, Modal dispatch disabled.
 - `make dev-cloud` is the explicit cloud/remote-worker path and remains on the session/pooler DB lane.
-- `make dev-hybrid` runs local app/backend on the direct DB lane while allowing Modal/remote workers on the session/pooler lane, with the social-safe worker caps applied by default.
+- `make dev-hybrid` runs local app/backend on the direct DB lane while allowing Modal/remote workers on the session/pooler lane, with the social-safe worker caps applied by default, and exposes the app/admin/API through Portless clean URLs.
 - Codex browser verification with `[@Browser](plugin://browser-use@openai-bundled)` defaults to `make dev-hybrid` unless the user specifies another startup target.
-- `make dev-portless` starts the app and API through Portless in separate managed sessions when stable local HTTPS names are more important than the workspace process manager.
-- `make stop-portless` stops the managed Portless app/API sessions.
+- `make dev-portless` starts the app, API, and Wordle through Portless in separate managed sessions when stable local HTTPS names are more important than the workspace process manager.
+- `make stop-portless` stops the managed Portless app/API/Wordle sessions.
 - `make portless-repair` ensures the Portless proxy is in wildcard mode, removes stale static TRR aliases, syncs hosts, and prints the clean routes.
-- `make open-admin` opens the clean Portless admin dashboard at `https://admin.trr.localhost/admin`.
+- `make open-admin` opens the clean Portless admin dashboard at `https://admin.trr.localhost`.
+- `make next-devtools-mcp-status` checks the TRR-local Next.js DevTools MCP registration. Runtime diagnostics require a running Next.js dev server, normally from `make dev-hybrid` or `make dev-portless`.
+- `make vercel-auth-doctor` checks whether the local Vercel CLI account can see the TRR team and `trr-app`.
+- `make vercel-cleanup-doctor` scans the TRR app checkout for stale local Vercel links, including the old nested `web` project.
+- `make vercel-link-trr` links `TRR-APP` to the `trr-app` Vercel project of record.
+- `make vercel-preview-ready` checks the local Vercel project link, checks/enables Web Analytics and Speed Insights, and writes the latest deployment URL for the `trr-app` project without deploying. The local Vercel CLI must be logged into the TRR team scope.
 - `PROFILE=default` is the canonical profile behind `make dev`. `local-cloud`, `local-lite`, and `local-full` remain compatibility profiles only.
 
 ## Daily Commands
@@ -18,12 +23,16 @@ Use these commands from `/Users/thomashulihan/Projects/TRR`.
 - `make dev-redis` — start local Redis, then run local app/backend with `PROFILE=local-redis`, `REDIS_URL=redis://127.0.0.1:6379/0`, and two FastAPI workers
 - `make redis-up` / `make redis-down` — start or stop only the local Redis container from `docker-compose.redis.yml`
 - `make dev-cloud` — explicit cloud/remote worker startup using the session/pooler DB lane
-- `make dev-hybrid` — safe Instagram/social hybrid mode; enables remote social workers with `WORKSPACE_TRR_REMOTE_SOCIAL_POSTS=1`, comments `8`, Instagram posts/comments platform cap `8`, post media mirror `1`, and comment media mirror `1`
+- `make dev-hybrid` — safe Instagram/social hybrid mode; enables remote social workers with `WORKSPACE_TRR_REMOTE_SOCIAL_POSTS=1`, comments `8`, Instagram posts/comments platform cap `8`, post media mirror `1`, and comment media mirror `1`; exposes app/admin/API at `https://trr.localhost`, `https://admin.trr.localhost`, and `https://api.trr.localhost`
+- `make dev-hybrid-media-safe` — post-recovery hybrid mode that blocks startup when stale media claims remain, then starts post media mirror `2` and comment media mirror `2`
+- `make dev-hybrid-media-safe-posts` — media-safe startup biased toward post media mirror lanes; uses post media mirror `3` and comment media mirror `1`
+- `make dev-hybrid-media-safe-comments` — media-safe startup biased toward comment media mirror lanes; uses post media mirror `1` and comment media mirror `3`
+- `make dev-hybrid-media-safe-bravotv` — Bravo pending-media drain preset; blocks on stale media claims, then starts post discovery `0`, comments `2`, post media mirror `4`, and comment media mirror `1`
 - `make dev-hybrid-social-safe` — compatibility alias for `make dev-hybrid`
-- `make dev-portless` — start the Next.js app and FastAPI backend through separate Portless-managed sessions (`https://trr.localhost`, admin at `https://admin.trr.localhost/admin`, backend at `https://api.trr.localhost`)
-- `make stop-portless` — stop the managed Portless web/API sessions
+- `make dev-portless` — start the Next.js app, FastAPI backend, and Wordle through separate Portless-managed sessions (`https://trr.localhost`, admin at `https://admin.trr.localhost`, backend at `https://api.trr.localhost`, Wordle at `https://wordle.trr.localhost`)
+- `make stop-portless` — stop the managed Portless web/API/Wordle sessions
 - `make portless-repair` — repair clean local URL routing by removing stale TRR static aliases and preserving admin routing through Portless wildcard forwarding
-- `make open-admin` — open the clean Portless admin dashboard (`https://admin.trr.localhost/admin`)
+- `make open-admin` — open the clean Portless admin dashboard (`https://admin.trr.localhost`)
 - `PROFILE=social-debug make dev` — tracked low-pressure social-profile validation lane; uses the same launcher but projects reduced app pool settings and lighter social dispatch caps without relying on ignored app-local env files
 - Instagram backfill operator runbook: `/Users/thomashulihan/Projects/TRR/docs/workspace/instagram-backfill-runbook.md`
 - Social profile dashboard runbook: `/Users/thomashulihan/Projects/TRR/docs/workspace/social-profile-dashboard.md`
@@ -33,7 +42,15 @@ Use these commands from `/Users/thomashulihan/Projects/TRR`.
 - `make env-contract` — refresh `docs/workspace/env-contract.md`
 - `make env-contract-report` — refresh the env-contract inventory/deprecation review docs intentionally
 - `make supabase-advisor-snapshot` — capture dated Supabase Security and Performance Advisor JSON plus a redacted manifest under `docs/workspace/supabase-advisor-snapshots/`; uses `TRR_SUPABASE_ACCESS_TOKEN`
+- `make supabase-preview-branch-cleanup` — dry-run old Supabase preview branch cleanup; use `DELETE=1` only after the candidate list is correct; uses `TRR_SUPABASE_ACCESS_TOKEN`
 - `cd TRR-Backend && .venv/bin/python scripts/db/index_advisor_social_hot_paths.py --dry-run` — list social/admin hot-path `index_advisor` query labels without connecting to the database
+- Admin performance tools runbook: `/Users/thomashulihan/Projects/TRR/docs/workspace/admin-performance-tools.md`
+- Admin performance report template: `/Users/thomashulihan/Projects/TRR/docs/workspace/admin-performance-report-template.md`
+- `pnpm -C TRR-APP/apps/web run perf:admin:sitespeed:bravotv` — run sitespeed.io page-load evidence for the Bravo TV admin social profile; writes `.artifacts/perf/sitespeed/<timestamp>/` and updates `.artifacts/perf/sitespeed/latest`
+- `pnpm -C TRR-APP/apps/web run perf:admin:sitespeed:cast` — run sitespeed.io page-load evidence for `/cast` and `/summer-house/credits`
+- `pnpm -C TRR-APP/apps/web run perf:admin:api -- --preset social-snapshot --max-p95-ms 1000 --max-p99-ms 2000` — run a low-concurrency autocannon benchmark with optional latency threshold exits; writes `.artifacts/perf/autocannon/<timestamp>/` and updates `.artifacts/perf/autocannon/latest`
+- `pnpm -C TRR-APP/apps/web run perf:bundle` — run Next.js `experimental-analyze --output`; copies analyzer output to `.artifacts/perf/bundle/<timestamp>/` and updates `.artifacts/perf/bundle/latest`
+- `pnpm -C TRR-APP/apps/web run perf:react-scan` — start the local app with dev-only React Scan enabled for client render diagnostics
 - `make status` — workspace health and PID snapshot
 - `make status-json` — workspace health and PID snapshot as JSON
 - `make db-pressure-rehearsal` — local-only DB pressure capture; writes redacted before/after artifacts under `.logs/workspace/`
@@ -43,10 +60,139 @@ Use these commands from `/Users/thomashulihan/Projects/TRR`.
 - `make test-full`
 - `make test-changed`
 - `make codex-check`
+- `make git-branch-report` — report local/remote branch refs outside `main`; read-only cleanup preflight
+- `make vercel-auth-doctor` — check local Vercel CLI access to the TRR team/project
+- `make vercel-cleanup-doctor` — scan for stale local Vercel project links such as the old nested `web` project
+- `make vercel-link-trr` — link the app checkout to the `trr-app` Vercel project
+- `make vercel-preview-ready` — check the local Vercel link, Web Analytics, Speed Insights, and latest deployment URL for preview readiness; requires local Vercel CLI access to the TRR team
 - `make doctor-json`
 - `make context7-repair`
+- `make chrome-repair`
+- `make next-devtools-mcp-status` — validate the TRR-local Next.js DevTools MCP registration; runtime diagnostics are available after starting a Next.js dev server
+- `make bravo-straggler-recovery` — dry-run or execute the approved Bravo Instagram straggler comments runner from `BRAVO_RECOVERY_ARGS`; accepts `--shortcode` or `--approved-shortcodes-file`
+- `make instagram-media-mirror-recovery` — recover stale run-scoped media mirror jobs after reviewing the plan; requires `RUN_ID=...`, and apply mode requires `APPLY=1 CONFIRM_APPLY='RECOVER MEDIA MIRROR JOBS'`
+- `make instagram-one-post-media-mirror` — run one exact Instagram post media mirror job locally or on Modal; use `JOB_ID=...`, `POST_ID=...`, `SOURCE_ID=...`, or `SHORTCODE=...`; add `DRY_RUN=1`, `JSON=1`, or `MODAL=1` as needed
+- `make social-queue-snapshot` — write a timestamped queue snapshot under `.logs/workspace/social-queue-snapshots/`; use `RUN_ID=... STAGE=media_mirror JSON=1`
 - `make mcp-clean`
 - `make help`
+
+## Social Media Queue Recovery
+
+Use the Social Analytics Media Queue panel first when the admin app is running. It shows recent media runs, stale media counts, oldest queued media jobs, recovery history for actions from the panel, and links to saved queue snapshots under `.logs/workspace/social-queue-snapshots/`.
+
+CLI recovery flow:
+1. Capture the current run/stage queue state:
+   ```bash
+   RUN_ID=<social.scrape_runs id> STAGE=media_mirror JSON=1 make social-queue-snapshot
+   ```
+2. Dry-run stale media recovery:
+   ```bash
+   RUN_ID=<social.scrape_runs id> STAGE=media_mirror make instagram-media-mirror-recovery
+   ```
+3. Apply only after the dry-run scope is correct:
+   ```bash
+   RUN_ID=<social.scrape_runs id> STAGE=media_mirror APPLY=1 CONFIRM_APPLY='RECOVER MEDIA MIRROR JOBS' make instagram-media-mirror-recovery
+   ```
+4. Start the higher-throughput worker preset after stale media claims are clear:
+   ```bash
+   make dev-hybrid-media-safe
+   ```
+5. Smoke one exact queued post media job locally:
+   ```bash
+   JOB_ID=<social.scrape_jobs id> DRY_RUN=1 JSON=1 make instagram-one-post-media-mirror
+   JOB_ID=<social.scrape_jobs id> make instagram-one-post-media-mirror
+   ```
+6. Resolve the same one-post command by post or shortcode:
+   ```bash
+   POST_ID=<social.instagram_posts id> ACCOUNT_HANDLE=bravotv make instagram-one-post-media-mirror
+   SHORTCODE=<instagram-shortcode> ACCOUNT_HANDLE=bravotv make instagram-one-post-media-mirror
+   ```
+7. Run the exact one-post smoke on deployed Modal:
+   ```bash
+   JOB_ID=<social.scrape_jobs id> MODAL=1 JSON=1 make instagram-one-post-media-mirror
+   ```
+8. Drain Bravo pending post-media work after stale media claims are clear:
+   ```bash
+   make dev-hybrid-media-safe-bravotv
+   ```
+
+Use `make dev-hybrid-media-safe-posts` when post media is the bottleneck, or `make dev-hybrid-media-safe-comments` when comment media is the bottleneck. Use the Bravo preset only when the operator is intentionally draining pending Bravo post-media work. Set `ALLOW_STALE_MEDIA=1` only when an operator intentionally wants to bypass the stale-media startup guard.
+
+## Git Branch Cleanup
+
+TRR defaults to one active workspace version at a time. Edit docs, plans, scripts, and implementation files on the currently checked-out branch, normally `main`, unless the user explicitly says: `create a new branch named <branch>`.
+
+Use this read-only report before merge/delete decisions:
+
+```bash
+make git-branch-report
+```
+
+The report shows:
+- extra local branches outside `main`
+- extra remote branches outside `origin/main`
+- whether each branch has the same file tree as `main`
+- whether Git sees the branch as an ancestor of `main`
+- a short changed-file sample when the branch tree differs
+
+Cleanup flow:
+1. Keep desired content on `main`.
+2. Run `make git-branch-report`.
+3. Delete redundant local branches after their desired content is on `main`.
+4. Delete redundant remote branches after confirming no open work depends on them.
+5. Keep docs/plans on `main`; do not create a branch just to edit planning or runbook files.
+
+Common cleanup commands:
+
+```bash
+git branch -d <local-branch>
+git branch -D <local-branch>   # only after confirming desired content is already on main
+git push origin --delete <remote-branch>
+git fetch --prune
+```
+
+Startup preflight runs the branch report in warning-only mode. Extra branches should be cleaned up, but they do not block normal local startup.
+
+## Supabase Preview Branch Cleanup
+
+Supabase preview branches are separate database environments, not Git branches. Use them for isolated schema or migration checks, then delete them when the check is done. Keep long-lived environments as explicit persistent branches instead of ordinary preview branches.
+
+Naming rule:
+- Use `purpose-ticket-or-date`, for example `schema-docs-0199`, `migration-20260617-social-index`, or `rls-policy-20260617`.
+- Include the practical purpose first so dashboard cleanup is obvious.
+- Do not use `main`, `prod`, `production`, `stage`, or `staging` for disposable preview branches.
+
+Delete a preview branch when:
+- its validation task is complete and the desired migration/docs result is already preserved on `main`;
+- its migration status is failed and no one needs the branch-specific logs anymore;
+- it is older than 30 days and not marked persistent;
+- it has no active merge request, app env, worker, or local runbook pointing at the preview project ref.
+
+Do not delete when:
+- the branch is the production/default branch;
+- the branch is persistent staging or QA infrastructure;
+- a current migration investigation needs its logs, schema state, or preview project ref.
+
+Dry-run cleanup command:
+
+```bash
+make supabase-preview-branch-cleanup
+```
+
+Apply deletion after reviewing the candidate list:
+
+```bash
+DELETE=1 make supabase-preview-branch-cleanup
+```
+
+Target one branch by name or ID:
+
+```bash
+SUPABASE_BRANCH_CLEANUP_ARGS='--name schema-docs-0199' make supabase-preview-branch-cleanup
+DELETE=1 SUPABASE_BRANCH_CLEANUP_ARGS='--name schema-docs-0199' make supabase-preview-branch-cleanup
+```
+
+The cleanup script intentionally reads `TRR_SUPABASE_ACCESS_TOKEN`. It maps that token into the Supabase CLI subprocess because the CLI expects `SUPABASE_ACCESS_TOKEN`; do not export or document generic `SUPABASE_ACCESS_TOKEN` as the TRR operator contract.
 
 ## Fallback / Specialized Commands
 - `make dev-local` — deprecated compatibility alias for `make dev`
@@ -55,9 +201,93 @@ Use these commands from `/Users/thomashulihan/Projects/TRR`.
 - `make app-check` — enforce the Node 24 baseline, then run TRR-APP lint and typecheck from the repo root
 - `bash scripts/codex-config-sync.sh bootstrap` — bootstrap minimal user-level `~/.codex` files without reapplying TRR project config there
 
+## Vercel Observability And Preview Readiness
+
+TRR's Vercel project of record is `trr-app` under the `the-reality-reports-projects` team. The old nested `web` project is not the production project of record.
+
+Enable or confirm Vercel dashboard observability for the project of record. These commands require local Vercel CLI access to the TRR team scope:
+
+```bash
+cd /Users/thomashulihan/Projects/TRR/TRR-APP
+./scripts/vercel.sh project web-analytics trr-app --scope the-reality-reports-projects --format json
+./scripts/vercel.sh project speed-insights trr-app --scope the-reality-reports-projects --format json
+```
+
+Check local Vercel auth and link the checkout:
+
+```bash
+make vercel-auth-doctor
+make vercel-cleanup-doctor
+make vercel-link-trr
+```
+
+Check preview readiness without deploying; the command writes a timestamped JSON artifact under `.logs/workspace/vercel-preview-ready/`, updates `latest.json`, and includes `latestDeploymentUrl` plus the raw deployment-list command output:
+
+```bash
+make vercel-preview-ready
+```
+
+If the command reports `classification=missing-project-link`, link the local TRR app to the project of record first:
+
+```bash
+make vercel-link-trr
+```
+
+If Vercel reports `The specified scope does not exist` or only lists personal projects, run `vercel login` with the account that belongs to `the-reality-reports-projects`, then rerun the setup commands above.
+
+First production data checklist after Web Analytics and Speed Insights are enabled:
+
+- Confirm the latest preview readiness artifact reports Web Analytics `enabled` and Speed Insights `enabled`.
+- Ship a production deployment from the `trr-app` project of record, not the old nested `web` project.
+- Open the production site and one admin route with the TRR admin account so Vercel receives real pageview and performance samples.
+- In the Vercel dashboard, confirm Web Analytics shows production pageviews for `trr-app`.
+- In the Vercel dashboard, confirm Speed Insights shows production field data such as LCP, CLS, or INP once Vercel has enough traffic to report it.
+- If either dashboard stays empty, check the latest artifact, the production deployment target, the app layout observability components, and Vercel project/team scope before changing code.
+
+Old `web` project cleanup note:
+
+- Run `make vercel-cleanup-doctor` before and after cleanup so stale local links are visible.
+- Treat the nested `web` Vercel project as stale unless a live dashboard check proves it still owns a needed domain, env var, integration, or deployment history.
+- Do not point TRR-APP deploys, Analytics, Speed Insights, env updates, or preview-readiness checks at `web`.
+- Delete or archive the old `web` project only after confirming there are no domains, active integrations, or retained env values that still need migration to `trr-app`.
+- If cleanup is approved, remove any stale local `.vercel` links that still identify `web`, then delete/archive the project from the Vercel dashboard or CLI under the correct TRR team scope.
+
+## Bravo Recovery Runner
+
+Use this for approved Bravo Instagram stragglers only. It plans from a shortcode
+list or an evidence/markdown shortlist, runs an anchor-scoped post-details/media
+follow-up for those exact shortcodes, then runs the public-first comments retry.
+It does not run broad account catalog recovery.
+
+Dry-run the plan:
+
+```bash
+BRAVO_RECOVERY_ARGS='--approved-shortcodes-file TRR-Backend/docs/ai/evidence/instagram-comments/bravotv_comments_evidence_latest.json --safe-12-workers' \
+  make bravo-straggler-recovery
+```
+
+Execute only after the dry-run plan is correct:
+
+```bash
+BRAVO_RECOVERY_ARGS='--approved-shortcodes-file TRR-Backend/docs/ai/evidence/instagram-comments/bravotv_comments_evidence_latest.json --safe-12-workers --execute --confirm-execute "RUN BRAVO STRAGGLER RECOVERY"' \
+  make bravo-straggler-recovery
+```
+
+Use repeated inline shortcodes for tiny operator-approved batches:
+
+```bash
+BRAVO_RECOVERY_ARGS='--shortcode SHORT_A --shortcode SHORT_B --safe-12-workers' \
+  make bravo-straggler-recovery
+```
+
+Do not substitute broad `local_catalog_action.py`, `direct_catalog_backfill.py`,
+or account-health repair scripts for this runner unless the current task
+explicitly approves a wider catalog recovery.
+
 ## Codex Tooling Repair
 
 - `make context7-repair` repairs raw or stale Context7 MCP config, reloads stale Context7 connector processes, verifies the installed plugin, checks installed/cache parity, and removes stale Context7 cache copies only after parity passes.
+- `make chrome-repair` cleans stale browser MCP process state, starts or confirms the shared Chrome keeper, runs Chrome DevTools status including extension/native-host readiness, and prints the session reload hint for `Transport closed`.
 - `bash scripts/doctor.sh` checks Context7 and Browser plugin runtime state without changing files by default.
 - `bash scripts/doctor.sh --json` emits the doctor plugin registry as JSON. Each result includes `status`, `label`, `required`, `needs_repair`, `repairable`, `repair_hint`, and live MCP validation fields.
 - `make doctor-json` is the Make wrapper for `bash scripts/doctor.sh --json`. `make doctor DOCTOR_ARGS=--json` is also supported.
@@ -162,18 +392,21 @@ curl -sS \
 
 If your task is ordinary backend/app development or milestone verification without browser-plugin verification, start with the local direct path. Use `make dev-cloud` or `make dev-hybrid` when the task explicitly needs Modal or remote worker behavior, or when Codex browser verification is requested or materially useful under the project rules.
 
-Use `make dev-portless` when you need stable HTTPS local names, cookie/origin behavior tied to `trr.localhost`, or a browser flow that should not depend on changing numeric ports. Portless does not replace `make dev-hybrid` for Modal or remote-worker validation; it is the named-host local route for app/API checks.
+Use `make dev-hybrid` when you need both Modal or remote-worker behavior and stable HTTPS local names for the app/admin/API. Use `make dev-portless` when you also need Wordle or want the app, API, and Wordle in separate Portless-managed sessions instead of the workspace process manager.
 
 Use `/Users/thomashulihan/Projects/TRR/docs/workspace/portless-clean-urls.md` as the shared Portless runbook snippet. It owns the current clean app, admin, API, and repair URLs.
 
 ## Quick URLs
 - Portless app: `https://trr.localhost`
-- Portless admin: `https://admin.trr.localhost/admin` (`https://admin.trr.localhost/` redirects here)
+- Portless admin: `https://admin.trr.localhost`
 - Portless backend: `https://api.trr.localhost`
+- Portless Wordle: `https://wordle.trr.localhost`
 - Direct backend health for local API debugging: `http://127.0.0.1:8000/health/live`
 
-Classic portful app/admin URLs are legacy compatibility paths only. Do not use
-them as active runbook examples unless the task explicitly enables
+Use subdomain-first admin URLs for browser work: `https://admin.trr.localhost/<slug>`.
+Do not use path-first admin URLs such as `https://trr.localhost/admin/<slug>` as
+the clean local target. Classic portful app/admin URLs are legacy compatibility
+paths only; do not use them as active runbook examples unless the task explicitly enables
 `TRR_LEGACY_LOCAL_ADMIN_FALLBACK=1`.
 
 The default `make dev` profile now launches only TRR-APP and TRR-Backend. Screenalytics remains an admin feature label in the app, not a separately managed local runtime.

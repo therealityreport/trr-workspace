@@ -188,7 +188,50 @@ class WorkspaceAppEnvProjectionTests(unittest.TestCase):
         self.assertIn("SOCIAL_PLATFORM_CAP_PER_ACCOUNT_SCALING=false", dev_hybrid)
         self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR=1", dev_hybrid)
         self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR=1", dev_hybrid)
+        self.assertIn("WORKSPACE_USE_PORTLESS_URLS=1", dev_hybrid)
         self.assertIn("WORKSPACE_DEV_MODE=hybrid", dev_hybrid)
+        self.assertIn("instagram-media-mirror-recovery", text)
+        self.assertIn("media_mirror_recovery.py", text)
+        self.assertIn("RECOVER MEDIA MIRROR JOBS", text)
+        self.assertIn("social-queue-snapshot", text)
+        self.assertIn("queue_snapshot.py", text)
+
+        media_safe = text[
+            text.index("\ndev-hybrid-media-safe:") : text.index("\n# Detached hybrid launcher", text.index("\ndev-hybrid-media-safe:"))
+        ]
+        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS=1", media_safe)
+        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT=8", media_safe)
+        self.assertIn("WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT=8", media_safe)
+        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS=8", media_safe)
+        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR=2", media_safe)
+        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR=2", media_safe)
+        self.assertIn("WORKSPACE_DEV_MODE=hybrid", media_safe)
+        self.assertIn("media_queue_guard.py", media_safe)
+        self.assertIn("ALLOW_STALE_MEDIA", media_safe)
+
+        posts_media_safe = text[
+            text.index("\ndev-hybrid-media-safe-posts:")
+            : text.index("\ndev-hybrid-media-safe-comments:", text.index("\ndev-hybrid-media-safe-posts:"))
+        ]
+        self.assertIn("media_queue_guard.py", posts_media_safe)
+        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR=3", posts_media_safe)
+        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR=1", posts_media_safe)
+        self.assertIn("WORKSPACE_DEV_MODE=hybrid", posts_media_safe)
+
+        comments_media_safe = text[
+            text.index("\ndev-hybrid-media-safe-comments:")
+            : text.index("\n# Detached hybrid launcher", text.index("\ndev-hybrid-media-safe-comments:"))
+        ]
+        self.assertIn("media_queue_guard.py", comments_media_safe)
+        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR=1", comments_media_safe)
+        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR=3", comments_media_safe)
+        self.assertIn("WORKSPACE_DEV_MODE=hybrid", comments_media_safe)
+
+        snapshot_target = text[
+            text.index("\nsocial-queue-snapshot:") : text.index("\n# Compatibility alias", text.index("\nsocial-queue-snapshot:"))
+        ]
+        self.assertIn(".logs/workspace/social-queue-snapshots", snapshot_target)
+        self.assertIn("tee", snapshot_target)
 
         social_safe_alias = text[
             text.index("\ndev-hybrid-social-safe:") : text.index("\n# Deprecated compatibility alias", text.index("\ndev-hybrid-social-safe:"))

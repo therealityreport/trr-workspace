@@ -1,7 +1,18 @@
 version: 1
+# WS3-PENDING (additive, intentionally NOT enabled yet): enable these only once the
+# shared design-docs-contracts TS package exports them AND both targets import it.
+# Enabling before the target .ts exports exist turns the compile-time gate RED.
+#   pipeline_types new interfaces:
+#     - CaptureMetadata       # captureMethod, viewport, waitStrategy, overlayRemovals
+#     - FigmaTokenCrossref    # figmaVariableDefinitions, matches, divergences
+#     - NetworkAssetManifest  # absoluteUrl, type, mirroredPath, role, failureReason
+#   MergedExtractionOutput additive fields:
+#     - captureMethod, statefulInteractionSequences, uiPrimitiveRecords,
+#       figmaTokenCrossref, networkAssetManifest, figmaRoundTripSummary
 files:
   pipeline_types:
-    path: TRR-APP/apps/web/src/lib/admin/design-docs-pipeline-types.ts
+    # app-web-relative; resolved against DESIGN_DOCS_APP_WEB_ROOT (default TRR-APP/apps/web)
+    path: src/lib/admin/design-docs-pipeline-types.ts
     interfaces:
       - TechInventory
       - PublisherClassification
@@ -48,7 +59,8 @@ files:
           - athletic-article
           - generic-publisher
   design_docs_config:
-    path: TRR-APP/apps/web/src/lib/admin/design-docs-config.ts
+    # app-web-relative; resolved against DESIGN_DOCS_APP_WEB_ROOT (default TRR-APP/apps/web)
+    path: src/lib/admin/design-docs-config.ts
     consts:
       - DESIGN_DOC_SECTIONS
     functions:

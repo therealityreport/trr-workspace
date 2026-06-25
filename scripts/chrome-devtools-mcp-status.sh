@@ -17,6 +17,13 @@ source "${ROOT}/scripts/lib/mcp-runtime.sh"
 TAB_CAP_DEFAULT="${CODEX_CHROME_TAB_CAP:-3}"
 TAB_TARGET_DEFAULT="${CODEX_CHROME_TAB_TARGET:-1}"
 KEEPER_PORTS=("9222" "9422")
+CHROME_EXTENSION_READINESS_STATE="unknown"
+CHROME_EXTENSION_READINESS_REASON="not_checked"
+CHROME_EXTENSION_SELECTED_PROFILE=""
+CHROME_EXTENSION_INSTALLED="unknown"
+CHROME_EXTENSION_ENABLED="unknown"
+CHROME_NATIVE_HOST_STATE="unknown"
+CHROME_NATIVE_HOST_MANIFEST=""
 
 usage() {
   cat <<'EOF'
@@ -283,6 +290,190 @@ process_has_live_ancestor_matching() {
   done
 
   return 1
+}
+
+process_is_chrome_devtools_diagnostic_helper() {
+  local pid="$1"
+  local cmd
+  cmd="$(process_command "$pid" 2>/dev/null || true)"
+  [[ "$cmd" == *"chrome-devtools-mcp-status.sh"* \
+    || "$cmd" == *"chrome-devtools-mcp-stop-conflicts.sh"* \
+    || "$cmd" == *"codex-mcp-session-reaper.sh"* \
+    || "$cmd" == *"make chrome-devtools-mcp-status"* \
+    || "$cmd" == *"make chrome-repair"* ]]
+}
+
+process_has_live_chrome_mcp_wrapper_ancestor() {
+  process_has_live_ancestor_matching "$1" 'codex-chrome-devtools-mcp\.sh|codex-chrome-devtools-mcp-global\.sh|chrome-devtools-global'
+}
+
+is_global_shared_keeper_process() {
+  local pid="$1"
+  local cmd
+  cmd="$(process_command "$pid" 2>/dev/null || true)"
+  [[ "$cmd" == *"--browserUrl http://127.0.0.1:${SHARED_PORT}"* || "$cmd" == *".codex/tmp/chrome-devtools-global/"* ]]
+}
+
+orphaned_shared_chrome_client_count() {
+  local client_pid
+  local wrapper_pid
+  local covered_by_live_wrapper
+  local count=0
+
+  while IFS= read -r client_pid; do
+    [[ -n "$client_pid" ]] || continue
+    covered_by_live_wrapper=0
+    while IFS= read -r wrapper_pid; do
+      [[ -n "$wrapper_pid" ]] || continue
+      if pid_is_descendant_of "$wrapper_pid" "$client_pid"; then
+        covered_by_live_wrapper=1
+        break
+      fi
+    done < <(chrome_wrapper_pids | awk '!seen[$0]++')
+    if [[ "$covered_by_live_wrapper" == "0" ]]; then
+      count=$((count + 1))
+    fi
+  done < <(shared_chrome_client_pids | awk '!seen[$0]++')
+
+  printf '%s\n' "$count"
+}
+
+orphaned_untracked_chrome_mcp_count() {
+  local pid
+  local full_cmd
+  local count=0
+
+  while IFS= read -r pid; do
+    [[ -n "$pid" ]] || continue
+    kill -0 "$pid" >/dev/null 2>&1 || continue
+    [[ "$pid" != "$$" ]] || continue
+    if process_is_chrome_devtools_diagnostic_helper "$pid"; then
+      continue
+    fi
+    full_cmd="$(process_command "$pid" 2>/dev/null || true)"
+    if [[ "$full_cmd" == *"--plugin-dir"* || "$full_cmd" == *"--mcp-config"* || "$full_cmd" == *"/claude.app/"* ]]; then
+      continue
+    fi
+    if [[ "$full_cmd" == *".codex/tmp/chrome-devtools-global/"* || "$full_cmd" == *"--browserUrl http://127.0.0.1:${SHARED_PORT}"* ]]; then
+      continue
+    fi
+    if is_global_shared_keeper_process "$pid"; then
+      continue
+    fi
+    if process_has_live_chrome_mcp_wrapper_ancestor "$pid"; then
+      continue
+    fi
+    count=$((count + 1))
+  done < <(
+    {
+      pgrep -f "chrome-devtools-mcp" 2>/dev/null || true
+      pgrep -f "telemetry/watchdog" 2>/dev/null || true
+      pgrep -f "scripts/codex-chrome-devtools-mcp\\.sh" 2>/dev/null || true
+    } | awk '!seen[$0]++'
+  )
+
+  printf '%s\n' "$count"
+}
+
+orphaned_chrome_mcp_process_count() {
+  local shared_orphans
+  local untracked_orphans
+  shared_orphans="$(orphaned_shared_chrome_client_count)"
+  untracked_orphans="$(orphaned_untracked_chrome_mcp_count)"
+  printf '%s\n' "$((shared_orphans + untracked_orphans))"
+}
+
+chrome_plugin_root() {
+  local candidate
+  local latest=""
+  if [[ -n "${CODEX_CHROME_PLUGIN_ROOT:-}" && -x "${CODEX_CHROME_PLUGIN_ROOT}/scripts/check-extension-installed.js" ]]; then
+    printf '%s\n' "$CODEX_CHROME_PLUGIN_ROOT"
+    return 0
+  fi
+  shopt -s nullglob
+  for candidate in "${HOME}"/.codex/plugins/cache/openai-bundled/chrome/*; do
+    if [[ -x "${candidate}/scripts/check-extension-installed.js" && -x "${candidate}/scripts/check-native-host-manifest.js" ]]; then
+      latest="$candidate"
+    fi
+  done
+  shopt -u nullglob
+  [[ -n "$latest" ]] && printf '%s\n' "$latest"
+}
+
+json_field() {
+  local field_path="$1"
+  python3 -c '
+import json
+import sys
+
+field_path = sys.argv[1].split(".")
+try:
+    data = json.load(sys.stdin)
+except Exception:
+    raise SystemExit(0)
+value = data
+for field in field_path:
+    if not isinstance(value, dict):
+        raise SystemExit(0)
+    value = value.get(field)
+if value is None:
+    raise SystemExit(0)
+if isinstance(value, bool):
+    print("true" if value else "false")
+else:
+    print(value)
+' "$field_path"
+}
+
+collect_chrome_extension_readiness() {
+  local plugin_root
+  local extension_json
+  local extension_rc
+  local native_json
+  local native_rc
+
+  plugin_root="$(chrome_plugin_root)"
+  if [[ -z "$plugin_root" ]]; then
+    CHROME_EXTENSION_READINESS_STATE="unknown"
+    CHROME_EXTENSION_READINESS_REASON="chrome_plugin_helpers_missing"
+    return 0
+  fi
+
+  set +e
+  extension_json="$(node "${plugin_root}/scripts/check-extension-installed.js" --json 2>/dev/null)"
+  extension_rc="$?"
+  native_json="$(node "${plugin_root}/scripts/check-native-host-manifest.js" --json 2>/dev/null)"
+  native_rc="$?"
+  set -e
+
+  CHROME_EXTENSION_SELECTED_PROFILE="$(printf '%s' "$extension_json" | json_field "selectedProfileDirectory")"
+  CHROME_EXTENSION_INSTALLED="$(printf '%s' "$extension_json" | json_field "installed")"
+  CHROME_EXTENSION_ENABLED="$(printf '%s' "$extension_json" | json_field "enabled")"
+  CHROME_NATIVE_HOST_MANIFEST="$(printf '%s' "$native_json" | json_field "manifestPath")"
+  if [[ "$native_rc" == "0" && "$(printf '%s' "$native_json" | json_field "correct")" == "true" ]]; then
+    CHROME_NATIVE_HOST_STATE="correct"
+  elif [[ "$native_rc" == "1" ]]; then
+    CHROME_NATIVE_HOST_STATE="invalid"
+  else
+    CHROME_NATIVE_HOST_STATE="unknown"
+  fi
+
+  if [[ "$extension_rc" == "0" && "$CHROME_NATIVE_HOST_STATE" == "correct" ]]; then
+    CHROME_EXTENSION_READINESS_STATE="pass"
+    CHROME_EXTENSION_READINESS_REASON="extension_enabled_native_host_correct"
+  elif [[ "$extension_rc" == "1" ]]; then
+    CHROME_EXTENSION_READINESS_STATE="fail"
+    CHROME_EXTENSION_READINESS_REASON="extension_installed_but_disabled"
+  elif [[ "$extension_rc" == "2" ]]; then
+    CHROME_EXTENSION_READINESS_STATE="fail"
+    CHROME_EXTENSION_READINESS_REASON="extension_not_installed"
+  elif [[ "$CHROME_NATIVE_HOST_STATE" == "invalid" ]]; then
+    CHROME_EXTENSION_READINESS_STATE="fail"
+    CHROME_EXTENSION_READINESS_REASON="native_host_manifest_invalid"
+  else
+    CHROME_EXTENSION_READINESS_STATE="unknown"
+    CHROME_EXTENSION_READINESS_REASON="extension_readiness_check_failed"
+  fi
 }
 
 count_matching_processes() {
@@ -960,6 +1151,12 @@ owner_state="$(visible_browser_owner_state)"
 managed_root_count="$(managed_chrome_root_count)"
 chrome_rss_mb="$(process_rss_mb_for_regex "Google Chrome|chrome-devtools-mcp|codex-chrome-devtools-mcp|Codex.app")"
 pressure_state="$(pressure_verdict "$owner_state" "$managed_root_count" "$chrome_rss_mb" "$shared_client_count" "$conflict_count")"
+collect_chrome_extension_readiness
+orphaned_chrome_mcp_processes="$(orphaned_chrome_mcp_process_count)"
+orphaned_chrome_mcp_attention_threshold="${CHROME_DEVTOOLS_ORPHAN_ATTENTION_THRESHOLD:-3}"
+if ! [[ "$orphaned_chrome_mcp_attention_threshold" =~ ^[0-9]+$ ]]; then
+  orphaned_chrome_mcp_attention_threshold="3"
+fi
 
 if is_summary_mode; then
   summary_pressure_line="$pressure_state"
@@ -978,7 +1175,7 @@ if is_summary_mode; then
       summary_status_line="[chrome-devtools-mcp] WARNING: browser automation is ready, but local browser pressure is ${summary_pressure_line}."
       summary_warning_line="[chrome-devtools-mcp] WARNING: consider 'make mcp-clean' if stale Chrome runtime artifacts or external MCP leftovers are not expected."
     fi
-    summary_note_line="[chrome-devtools-mcp] NOTE: if this already-open chat still lacks chrome-devtools, restart the Codex session/thread to reload MCP registrations."
+    summary_note_line="[chrome-devtools-mcp] NOTE: if this already-open chat still returns 'Transport closed' for chrome-devtools, restart the Codex session/thread to reload MCP registrations."
   elif [[ "$shared_auto_launch" == "1" ]]; then
     summary_status_line="[chrome-devtools-mcp] OK: browser automation can recover on demand; shared Chrome is currently stopped."
     summary_note_line="[chrome-devtools-mcp] NOTE: the shared launcher will auto-launch Chrome for fresh browser automation sessions when needed."
@@ -1026,8 +1223,17 @@ elif ! is_structured_mode; then
   else
     echo "[chrome-devtools-mcp] Tracked project config inherits chrome-devtools from ${config_source} (expected)"
   fi
+  echo "[chrome-devtools-mcp] Chrome extension readiness: ${CHROME_EXTENSION_READINESS_STATE} (${CHROME_EXTENSION_READINESS_REASON})"
+  echo "[chrome-devtools-mcp] Chrome extension profile: ${CHROME_EXTENSION_SELECTED_PROFILE:-unknown} installed=${CHROME_EXTENSION_INSTALLED} enabled=${CHROME_EXTENSION_ENABLED} native_host=${CHROME_NATIVE_HOST_STATE}"
+  if [[ -n "$CHROME_NATIVE_HOST_MANIFEST" ]]; then
+    echo "[chrome-devtools-mcp] Chrome native host manifest: ${CHROME_NATIVE_HOST_MANIFEST}"
+  fi
   if [[ "$wrapper_mode" == "shared" || "$shared_client_count" != "0" ]]; then
     print_shared_client_summary "$shared_clients"
+  fi
+  echo "[chrome-devtools-mcp] Orphaned Chrome MCP processes: ${orphaned_chrome_mcp_processes} (attention_threshold=${orphaned_chrome_mcp_attention_threshold})"
+  if (( orphaned_chrome_mcp_processes >= orphaned_chrome_mcp_attention_threshold && orphaned_chrome_mcp_processes > 0 )); then
+    echo "[chrome-devtools-mcp] WARNING: orphaned Chrome MCP process buildup detected; run 'make chrome-repair' or 'make mcp-clean'."
   fi
   if [[ "$wrapper_mode" == "isolated" ]]; then
     print_isolated_session_summary
@@ -1056,6 +1262,15 @@ structured_status_output="$(
     "$shared_client_count" \
     "$managed_root_count" \
     "$conflict_count"
+  chrome_devtools_status_emit_field "chrome_extension_readiness" "$CHROME_EXTENSION_READINESS_STATE"
+  chrome_devtools_status_emit_field "chrome_extension_readiness_reason" "$CHROME_EXTENSION_READINESS_REASON"
+  chrome_devtools_status_emit_field "chrome_extension_selected_profile" "$CHROME_EXTENSION_SELECTED_PROFILE"
+  chrome_devtools_status_emit_field "chrome_extension_installed" "$CHROME_EXTENSION_INSTALLED"
+  chrome_devtools_status_emit_field "chrome_extension_enabled" "$CHROME_EXTENSION_ENABLED"
+  chrome_devtools_status_emit_field "chrome_native_host_state" "$CHROME_NATIVE_HOST_STATE"
+  chrome_devtools_status_emit_field "orphaned_chrome_mcp_processes" "$orphaned_chrome_mcp_processes"
+  chrome_devtools_status_emit_field "orphaned_chrome_mcp_attention_threshold" "$orphaned_chrome_mcp_attention_threshold"
+  chrome_devtools_status_emit_field "mcp_reload_hint" "restart_codex_session_if_transport_closed"
 )"
 
 if is_structured_mode; then
@@ -1071,6 +1286,8 @@ elif is_summary_mode; then
   if [[ -n "$summary_note_line" ]]; then
     echo "$summary_note_line" >&2
   fi
+  echo "[chrome-devtools-mcp] Chrome extension readiness: ${CHROME_EXTENSION_READINESS_STATE} (${CHROME_EXTENSION_READINESS_REASON})" >&2
+  echo "[chrome-devtools-mcp] Orphaned Chrome MCP processes: ${orphaned_chrome_mcp_processes} (attention_threshold=${orphaned_chrome_mcp_attention_threshold})" >&2
   if [[ -n "$summary_warning_line" ]]; then
     echo "$summary_warning_line" >&2
   fi
@@ -1082,6 +1299,7 @@ elif is_summary_mode; then
 else
   echo "[chrome-devtools-mcp] Running wrapper smoke check..."
   echo "[chrome-devtools-mcp] Smoke check passed."
+  echo "[chrome-devtools-mcp] MCP reload hint: if chrome-devtools tool calls still return 'Transport closed', restart the Codex session/thread; the local Chrome runtime is ready but the already-loaded MCP transport is stale."
 fi
 
 if ! is_summary_mode && ! is_structured_mode && [[ "$wrapper_mode" == "shared" && "$shared_endpoint_state" != "reachable" ]]; then
@@ -1095,5 +1313,5 @@ elif ! is_summary_mode && ! is_structured_mode && [[ "$conflict_count" != "0" &&
 elif ! is_summary_mode && ! is_structured_mode && [[ "$wrapper_mode" == "isolated" ]]; then
   echo "[chrome-devtools-mcp] Recommended next action: start a fresh Codex chat to pick up the isolated headless default and per-chat tab cap." >&2
 elif ! is_summary_mode && ! is_structured_mode; then
-  echo "[chrome-devtools-mcp] Recommended next action: if this chat still lacks chrome-devtools, restart the Codex session to reload MCP registrations." >&2
+  echo "[chrome-devtools-mcp] Recommended next action: if this chat still returns 'Transport closed' for chrome-devtools, restart the Codex session to reload MCP registrations." >&2
 fi

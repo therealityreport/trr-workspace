@@ -3,7 +3,7 @@ name: extract-icons-and-media
 description: Extract SVG icons, logos, avatars, and embedded media from saved source bundles for design system documentation
 user-invocable: false
 metadata:
-  version: 1.1.0
+  version: 1.2.0
 ---
 
 # Extract Icons And Media
@@ -27,6 +27,8 @@ system can document brand assets and media usage without relying on a live DOM.
 ## Inputs
 
 - `sourceBundle`
+- optional `network-asset-manifest.json` from `harvest-network-assets`
+  (network-captured absolute CDN URLs for images, fonts, and media)
 - optional article or brand context
 
 ## Outputs
@@ -73,6 +75,14 @@ system can document brand assets and media usage without relying on a live DOM.
 When key assets (headshots, player photos, team logos, CDN images) cannot be
 resolved from the supplied saved sources, work through these steps in order
 before escalating:
+
+### 0. Check the network asset manifest
+
+If `harvest-network-assets` produced `network-asset-manifest.json`, resolve
+missing assets from the network-captured absolute CDN URLs first — these are the
+exact resources the page loaded at runtime and supersede HTML/CSS-scraped
+relative paths. Prefer a mirrored local path from the manifest over any upstream
+URL.
 
 ### 1. Check embedded JSON blobs
 

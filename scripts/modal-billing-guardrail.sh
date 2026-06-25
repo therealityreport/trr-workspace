@@ -7,7 +7,9 @@ BACKEND_ENV_EXAMPLE="$BACKEND_DIR/.env.example"
 SOURCE_ENV="${TRR_MODAL_SOURCE_ENV:-$BACKEND_DIR/.env}"
 MODAL_JOBS="$BACKEND_DIR/trr_backend/modal_jobs.py"
 
-allow_always_on="${WORKSPACE_ALLOW_MODAL_ALWAYS_ON_BILLING:-0}"
+# Resolved after the helper functions below (needs env_file_value to read the
+# committed acknowledgement from TRR-Backend/.env, not just the process env).
+allow_always_on=""
 failures=()
 
 is_truthy() {
@@ -137,6 +139,13 @@ check_exactly_one_modal_owner() {
   fi
 }
 
+# Honor an intentional, committed always-on acknowledgement from EITHER the process
+# environment OR TRR-Backend/.env, where WORKSPACE_ALLOW_MODAL_ALWAYS_ON_BILLING=1 is
+# paired with the always-on settings. The "exactly one maintenance owner" check and the
+# .env.example / modal_jobs.py default checks below still run unconditionally, so this
+# only accepts a deliberate, committed always-on dev pairing -- it does not disable
+# billing protection.
+allow_always_on="$(effective_env_value "WORKSPACE_ALLOW_MODAL_ALWAYS_ON_BILLING" "0")"
 if is_truthy "$allow_always_on"; then
   echo "[modal-billing] WARNING: WORKSPACE_ALLOW_MODAL_ALWAYS_ON_BILLING is set; runtime always-on settings are allowed for this run."
 else
