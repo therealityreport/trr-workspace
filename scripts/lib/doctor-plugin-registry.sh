@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 WORKSPACE_DOCTOR_PLUGIN_REPAIR="${WORKSPACE_DOCTOR_PLUGIN_REPAIR:-0}"
+DOCTOR_PLUGIN_COMMAND_TIMEOUT_SECONDS="${DOCTOR_PLUGIN_COMMAND_TIMEOUT_SECONDS:-15}"
 DOCTOR_PLUGIN_REPAIR_REGISTRY=(
   context7
   browser
@@ -44,6 +45,46 @@ doctor_plugin_reset_state() {
 
 doctor_plugin_python() {
   "${MCP_RUNTIME_PYTHON_BIN:-python3}" "$@"
+}
+
+doctor_plugin_timed_command_output() {
+  local timeout_seconds="$1"
+  shift
+
+  if ! [[ "$timeout_seconds" =~ ^[1-9][0-9]*$ ]]; then
+    timeout_seconds=15
+  fi
+
+  doctor_plugin_python - "$timeout_seconds" "$@" <<'PY'
+import os
+import signal
+import subprocess
+import sys
+
+timeout_seconds = int(sys.argv[1])
+command = sys.argv[2:]
+
+try:
+    process = subprocess.Popen(
+        command,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        text=True,
+        start_new_session=True,
+    )
+    stdout, _stderr = process.communicate(timeout=timeout_seconds)
+except subprocess.TimeoutExpired:
+    try:
+        os.killpg(process.pid, signal.SIGKILL)
+    except Exception:
+        process.kill()
+    process.communicate()
+    print(f"timeout after {timeout_seconds}s")
+    sys.exit(124)
+
+sys.stdout.write(stdout)
+sys.exit(process.returncode)
+PY
 }
 
 doctor_plugin_append_label() {
@@ -359,9 +400,19 @@ doctor_plugin_browser_check() {
   fi
 
   set +e
-  status_output="$(env CHROME_DEVTOOLS_MCP_STATUS_MODE=structured bash "$ROOT/scripts/chrome-devtools-mcp-status.sh" 2>/dev/null)"
+  status_output="$(
+    doctor_plugin_timed_command_output \
+      "$DOCTOR_PLUGIN_COMMAND_TIMEOUT_SECONDS" \
+      env CHROME_DEVTOOLS_MCP_STATUS_MODE=structured bash "$ROOT/scripts/chrome-devtools-mcp-status.sh"
+  )"
   status_rc="$?"
   set -e
+  if [[ "$status_rc" == "124" ]]; then
+    DOCTOR_PLUGIN_SKIPPED=1
+    DOCTOR_PLUGIN_LABEL="status check timed out after ${DOCTOR_PLUGIN_COMMAND_TIMEOUT_SECONDS}s"
+    DOCTOR_PLUGIN_REPAIR_HINT="make chrome-repair"
+    return 0
+  fi
   if [[ "$status_rc" != "0" ]]; then
     DOCTOR_PLUGIN_SKIPPED=1
     DOCTOR_PLUGIN_LABEL="status check failed"

@@ -3,7 +3,7 @@ name: generate-article-page
 description: Generate ARTICLES config entry and chart data constants from extraction data.
 user-invocable: false
 metadata:
-  version: 1.2.0
+  version: 1.3.0
 ---
 
 # Generate Article Page
@@ -29,6 +29,8 @@ constants from the merged extraction payload.
 - resolved mode
 - current Design Docs config state
 - optional `ArticleVisualContract`
+- optional `figma-reference.json` from `capture-to-figma` plus the read-only
+  capability `figma.get_design_context` for the Figma round-trip
 
 Primary touched files:
 
@@ -43,11 +45,29 @@ table with 20+ rows, etc.), also produce:
 See `references/rendering-contracts.md`, `references/taxonomy.md`, and
 `references/preflight-checklist.md`.
 
+## Output Targets
+
+Output is governed by `DESIGN_DOCS_OUTPUT_TARGETS` (default `both`):
+
+1. `trr-app` — write the full article into the Next.js renderer at the target app
+   root (default `TRR-APP/apps/web`): the `design-docs-config.ts` entry,
+   chart-data constants, standalone `<slug>-data.ts`, and any interactive
+   components. This target renders the pixel-faithful page.
+2. `skills-manager` — publish a catalog record to the Skills Manager Design tab
+   via `POST /api/design-docs` (`id`, `title`, `publisher`, `captureMethod`,
+   `sourceUrl`, `tags`, a `contentBlocks` summary, and the asset manifest), and
+   upload mirrored assets via `POST /api/design-docs/:id/assets`. A session token
+   from `GET /api/status` is required (these routes are trust-gated).
+3. `both` (default) — emit to both, sharing the `design-docs-contracts` type
+   surface. The Design tab is a catalog/browser; pixel-faithful page rendering
+   stays with the TRR-APP renderer until that renderer is ported.
+
 ## Outputs
 
 - article config entry edits
 - chart-data constant edits when needed
 - `crossPopulationCandidates` for brand sync
+- `figmaRoundTripSummary` when a Figma reference was reconciled
 
 ## Procedure
 
@@ -87,6 +107,21 @@ See `references/rendering-contracts.md`, `references/taxonomy.md`, and
 13. When source evidence requires page-level anchors, TOC controls, or viewport
    toggles, emit the supporting metadata rather than page-specific JSX hacks.
 14. Emit `crossPopulationCandidates` describing which brand taxonomy sections should update.
+
+### Figma Design Context Round-Trip
+
+When `figma-reference.json` exists (from `capture-to-figma` or a known publisher
+Figma file), pull the recreated layout back into renderer code:
+
+1. Call `figma.get_design_context` for the captured node to obtain reference
+   code, the node screenshot, and asset download URLs.
+2. Map Figma node layout, spacing, and token bindings onto the generated
+   `contentBlocks` and `architecture.layoutTokens` to tighten visual fidelity.
+3. Source HTML and the rendered capture ALWAYS win on conflict — Figma is a
+   fidelity aid, never the authority. Never let a Figma value override an
+   evidenced source value.
+4. Emit a `figmaRoundTripSummary` recording the Figma file/node used, which
+   blocks were reconciled, and any conflicts resolved in favor of source.
 
 ### Export Naming (mandatory)
 
@@ -171,5 +206,6 @@ Return:
 1. `article_config_changes`
 2. `chart_data_changes`
 3. `cross_population_candidates`
-4. `validation_notes`
-5. `warnings`
+4. `figma_round_trip_summary`
+5. `validation_notes`
+6. `warnings`

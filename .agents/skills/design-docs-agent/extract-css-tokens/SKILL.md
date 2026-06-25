@@ -3,7 +3,7 @@ name: extract-css-tokens
 description: Extract design tokens from CSS stylesheets
 user-invocable: false
 metadata:
-  version: 1.1.0
+  version: 1.2.0
 ---
 
 # Extract CSS Tokens
@@ -28,6 +28,9 @@ from source CSS and source HTML. This skill owns the per-article style payload.
 - discovered stylesheet URLs
 - inline `<style>` blocks from `sourceHtml`
 - optional computed-style evidence when trusted browser access is available
+  (including `computed-styles.json` from `capture-rendered-source`)
+- optional Figma read-only capabilities `figma.search_design_system` and
+  `figma.get_variable_defs` (no `/figma-use` preload required)
 - `sourceHtml`
 
 See `references/rendering-contracts.md`, `references/lessons-learned.md`, and
@@ -41,6 +44,7 @@ See `references/rendering-contracts.md`, `references/lessons-learned.md`, and
 - `typographyFidelityRequirements`
 - article-specific color palette
 - dark-mode token notes when present
+- `figmaTokenCrossref` and `figmaVariableDefinitions` when the Figma MCP was used
 
 ## Procedure
 
@@ -52,7 +56,14 @@ See `references/rendering-contracts.md`, `references/lessons-learned.md`, and
    or source-faithful sample text for each distinct style combination.
 5. Capture article-specific chart or interactive palettes rather than copying prior article values.
 6. When trusted computed-style evidence is available, cross-check key elements against the extracted payload.
-7. When Birdkit `g-*` structures are present, extract `--g-*` custom properties
+7. When the Figma MCP is available, cross-reference the extracted tokens against
+   the TRR/publisher Figma design system (read-only, no `/figma-use` preload):
+   - `search_design_system` to locate matching components and styles
+   - `get_variable_defs` to read canonical color/font/spacing variable values
+   - record matches and divergences in `figma_token_crossref` plus the raw
+     `figma_variable_definitions`. Source CSS values remain authoritative on
+     conflict; the cross-reference annotates, it does not overwrite.
+8. When Birdkit `g-*` structures are present, extract `--g-*` custom properties
    from `:root`, article wrapper scope, or Birdkit body scope and map them into
    token groups:
    - typography
@@ -84,4 +95,6 @@ Return:
 2. `typography_specimens`
 3. `color_summary`
 4. `computed_style_notes`
-5. `warnings`
+5. `figma_token_crossref`
+6. `figma_variable_definitions`
+7. `warnings`

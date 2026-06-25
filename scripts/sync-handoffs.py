@@ -8,6 +8,7 @@ import dataclasses
 import datetime as dt
 import difflib
 import fcntl
+import json
 import os
 import re
 import sys
@@ -37,6 +38,7 @@ FRESHNESS_LIMITS = {
 }
 RECENT_COMPLETIONS_LIMIT = 5
 OLDER_PLANS_LIMIT = 10
+VERCEL_PREVIEW_READY_RELATIVE_PATH = Path(".logs/workspace/vercel-preview-ready/latest.json")
 
 TASK_STATUS_RE = re.compile(r"^Status\s+[—-]\s+Task\s+(\d+)\s+\((.+)\)\s*$")
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
@@ -330,6 +332,91 @@ def relative_detail_path(target: Path, handoff_path: Path) -> str:
     return os.path.relpath(target, start=handoff_path.parent).replace(os.sep, "/")
 
 
+def parse_enabled_from_cli_output(output: str) -> bool | None:
+    start = output.find("{")
+    end = output.rfind("}")
+    if start == -1 or end == -1 or end < start:
+        return None
+    try:
+        payload = json.loads(output[start : end + 1])
+    except json.JSONDecodeError:
+        return None
+    if isinstance(payload, dict) and isinstance(payload.get("enabled"), bool):
+        return payload["enabled"]
+    return None
+
+
+def render_enabled_status(check: object) -> tuple[str, str | None]:
+    if not isinstance(check, dict):
+        return "unknown", None
+    status = check.get("status")
+    stdout = check.get("stdout")
+    stderr = check.get("stderr")
+    enabled = parse_enabled_from_cli_output(stdout if isinstance(stdout, str) else "")
+    if isinstance(status, int) and status != 0:
+        detail = stderr if isinstance(stderr, str) and stderr.strip() else stdout if isinstance(stdout, str) else ""
+        return f"error exit {status}", detail.strip() or None
+    if enabled is True:
+        return "enabled", None
+    if enabled is False:
+        return "disabled", None
+    return "unknown", None
+
+
+def render_vercel_preview_readiness(scope: ScopeConfig) -> list[str]:
+    if scope.key not in {"workspace", "app"}:
+        return []
+
+    artifact_path = ROOT / VERCEL_PREVIEW_READY_RELATIVE_PATH
+    artifact_label = relative_detail_path(artifact_path.resolve(), scope.handoff_path)
+    if not artifact_path.exists():
+        return [
+            "- Vercel preview readiness: no latest artifact found; run `make vercel-preview-ready`.",
+            f"- Expected artifact: `{artifact_label}`",
+        ]
+
+    try:
+        payload = json.loads(artifact_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        return [
+            f"- Vercel preview readiness: latest artifact could not be read: `{exc}`.",
+            f"- Artifact: `{artifact_label}`",
+        ]
+
+    if not isinstance(payload, dict):
+        return [
+            "- Vercel preview readiness: latest artifact is not a JSON object.",
+            f"- Artifact: `{artifact_label}`",
+        ]
+
+    checks = payload.get("checks")
+    checks = checks if isinstance(checks, dict) else {}
+    web_status, web_error = render_enabled_status(checks.get("webAnalytics"))
+    speed_status, speed_error = render_enabled_status(checks.get("speedInsights"))
+    project = payload.get("projectName") if isinstance(payload.get("projectName"), str) else "unknown"
+    team = payload.get("teamSlug") if isinstance(payload.get("teamSlug"), str) else payload.get("teamId")
+    team_label = team if isinstance(team, str) and team else "unknown"
+    generated_at = payload.get("generatedAt") if isinstance(payload.get("generatedAt"), str) else "unknown"
+    latest_deployment_url = (
+        payload.get("latestDeploymentUrl") if isinstance(payload.get("latestDeploymentUrl"), str) else "unknown"
+    )
+    active_project_dir = (
+        payload.get("activeProjectDir") if isinstance(payload.get("activeProjectDir"), str) else "unknown"
+    )
+
+    lines = [
+        f"- Vercel preview readiness: project `{project}` / team `{team_label}` generated `{generated_at}`.",
+        f"- Web Analytics: `{web_status}`; Speed Insights: `{speed_status}`.",
+        f"- Latest deployment: `{latest_deployment_url}`",
+        f"- Artifact: `{artifact_label}`",
+        f"- Active project dir: `{active_project_dir}`",
+    ]
+    errors = [error for error in (web_error, speed_error) if error]
+    if errors:
+        lines.append(f"- Command errors: `{' | '.join(errors)}`")
+    return lines
+
+
 def render_items(items: list[HandoffItem], handoff_path: Path) -> list[str]:
     if not items:
         return ["- None."]
@@ -366,6 +453,18 @@ def render_scope(scope: ScopeConfig, today: dt.date) -> str:
         "",
         f"Purpose: {scope.purpose}",
         "",
+    ]
+    readiness_lines = render_vercel_preview_readiness(scope)
+    if readiness_lines:
+        lines.extend(
+            [
+                "## Workspace Readiness Snapshot",
+                *readiness_lines,
+                "",
+            ]
+        )
+    lines.extend(
+        [
         "## Current Active Work",
         *render_items(grouped[STATE_ACTIVE], scope.handoff_path),
         "",
@@ -379,7 +478,8 @@ def render_scope(scope: ScopeConfig, today: dt.date) -> str:
         *render_items(grouped[STATE_OLDER], scope.handoff_path),
         "",
         "## Archives / Canonical Links",
-    ]
+        ]
+    )
     for label, relative_path in scope.static_links:
         lines.append(f"- {label}: `{relative_path}`")
     lines.append("")

@@ -1,291 +1,336 @@
-# TRR Gate Recovery And PR Orchestration Plan
+# Supabase Performance Audit Plan: Admin Page Load Time
 
-> Status: draft plan only. Revalidate this against the current branch, dirty
-> tree, tests, and active user request before using it as implementation
-> authority.
+Date: 2026-06-16
 
-## Summary
+## Objective
 
-Clear the remaining blockers before publishing the three TRR repo PRs. The stale TRR-APP local publish branch is already deleted and the hidden env docs have been classified for publication, so the active blockers are now:
+Reduce backend and database latency that affects TRR ADMIN page load time, with priority on admin pages that read Supabase-backed social, show, survey, screenalytics, and diagnostics data.
 
-- Instagram Profile 13 still requires a manual checkpoint before auth repair can proceed.
-- Full backend pytest no longer hangs, but it fails with 105 test failures.
-- PR orchestration must be constrained to the three active TRR repos and must exclude the detached backend worktree and adjacent `screenalytics` repo.
+This is an audit and implementation plan. It does not apply database migrations or app/backend code changes yet.
 
-Success means the backend gate is green or intentionally waived with named failures, Instagram auth repair reaches Modal apply/deploy/remote verification where required, and PR orchestration creates or updates only the intended TRR workspace, app, and backend PRs.
+## Beneficial Capabilities For This Plan
 
-## Project Context
+- `@supabase-fullstack` / Supabase connector
+  - Used for live Performance Advisor output, `pg_stat_statements`, cache hit rates, table scan stats, and index usage evidence.
+  - Validation contribution: confirms current database behavior instead of relying on migration files alone.
+- Plan Grader / Plan Architect
+  - Used to structure findings, fixes, dependencies, validation gates, and risk controls in this `Plan.md`.
+  - Validation contribution: keeps each recommendation tied to evidence and an executable follow-through path.
+- TRR repo inspection
+  - Used to map database findings to ADMIN routes, app proxy routes, backend routers, and repository files.
+  - Validation contribution: prevents generic database tuning that does not affect admin page load time.
 
-- Workspace root: `/Users/thomashulihan/Projects/TRR`
-- Active repos:
-  - `/Users/thomashulihan/Projects/TRR`
-  - `/Users/thomashulihan/Projects/TRR/TRR-APP`
-  - `/Users/thomashulihan/Projects/TRR/TRR-Backend`
-- Old TRR-APP branch cleanup status:
-  - `codex/publish/trr-app/20260520-174013` was confirmed tree-equivalent to `main`.
-  - The local branch ref is now deleted.
-- Env docs decision:
-  - Publish the changed workspace env/security docs.
-  - `skip-worktree` has been cleared for the affected docs under `/Users/thomashulihan/Projects/TRR/docs/workspace/`.
-- Backend gate status:
-  - Full backend pytest completed in about 59 minutes.
-  - Current result: `105 failed, 4587 passed, 19 skipped`.
-  - The previous first-test hang appears fixed.
-- Instagram auth status:
-  - Local auth repair validation returned `manual_checkpoint_required`.
-  - Modal secret apply, Modal deploy, and remote verification were not reached.
-- PR inventory status:
-  - The three target repos are eligible and dirty.
-  - Inventory also sees `/Users/thomashulihan/Projects/TRR/.worktrees/TRR-Backend-auth-profile-deploy` as a detached non-publishable worktree.
-  - Inventory also sees `/Users/thomashulihan/Projects/TRR/screenalytics`, which is out of this plan's active scope.
+## Live Evidence Summary
 
-## Assumptions
+- Supabase Performance Advisor returned active performance lints:
+  - 5 unindexed foreign key warnings on `social.instagram_profile_following_snapshots` and `social.instagram_profile_relationship_snapshot_items`.
+  - Many unused-index warnings across `social`, `core`, `ml`, `screenalytics`, `surveys`, and `public`.
+- Cache hit rates are below the usual target for a hot read-heavy admin workload:
+  - Index hit rate: `97.72%`.
+  - Table hit rate: `94.08%`.
+  - Supabase docs recommend investigating cache/index usage when rates are below about `99%`.
+- `pg_stat_statements` shows social admin reads dominate cumulative query time:
+  - Social landing progress rollup: about `1,453,210 ms` total, `34,600 ms` mean, `53,213 ms` max across 42 calls.
+  - Social account profile and post/comment rollups include several query shapes with `5,000 ms` to `47,000 ms` mean time.
+  - Queue and scrape-run status queries have high call volume and large outliers, including max times from about `40,225 ms` to `102,528 ms`.
+- Table stats show repeated scans on admin-hot tables:
+  - `social.scrape_workers`: `650,179` sequential scans, `82.62%` index scan share.
+  - `core.google_news_sync_jobs`: `300,481` sequential scans, `73.38%` index scan share.
+  - `social.scrape_jobs`: `88,793` sequential scans, `50,621` live rows.
+  - `social.instagram_account_catalog_posts`: `15,503` sequential scans, `30,524` live rows.
+  - `social.instagram_comments`: `947,957` live rows and appears in slow profile/comment reads despite high index usage.
+- Largest zero-scan indexes should be reviewed, not dropped automatically:
+  - `social.instagram_comments_username_created_idx`: `51 MB`, `0` scans.
+  - Several trigram/search indexes on social post tables have `0` scans but may support low-frequency admin search features.
 
-- Do not publish PRs while the backend gate is red unless the user explicitly approves a red-gate PR with documented failures.
-- Do not mark Modal-affecting backend/social work complete until Modal update status is known or the blocker is written down.
-- Do not run a TRR-APP production build unless the user explicitly approves it in the current chat.
-- Browser proof for admin social pages should use `make dev-hybrid` unless the user specifies another startup target.
+## ADMIN Surface Map
 
-## Implementation Changes
+Primary ADMIN page families found in the live repo:
 
-### Phase 1: Close The Manual Instagram Auth Blocker
+- Admin dashboard: `TRR-APP/apps/web/src/app/admin/page.tsx`
+  - Defers diagnostics with dynamic client-only cards.
+  - Shows a load-time badge but does not persist route-level timings.
+- Social landing: `TRR-APP/apps/web/src/app/admin/social/page.tsx`
+  - Reads `/api/admin/social/landing`.
+  - Backend source includes `TRR-APP/apps/web/src/lib/server/admin/social-landing-repository.ts`.
+- Social account profile pages: `TRR-APP/apps/web/src/components/admin/SocialAccountProfilePage.tsx`
+  - Loads summary/snapshot, live profile total, posts, catalog posts, hashtags, comments, freshness, queue/run progress, and remediation panels.
+  - Backend proxy path is under `/api/admin/trr-api/social/profiles/...`.
+- Social week/detail pages: `TRR-APP/apps/web/src/components/admin/social-week/WeekDetailPageView.tsx`
+  - Loads week snapshots, summary, post details, comments coverage, mirror coverage, runs, sync sessions, and streams.
+- Show detail pages: `TRR-APP/apps/web/src/app/admin/trr-shows/[showId]/...`
+  - Reads many show, cast, gallery, season, social, news, and asset endpoints.
+- Diagnostics/system health: `TRR-APP/apps/web/src/components/admin/SystemHealthModal.tsx`
+  - Reads queue status, active job state, and operation health.
+- Backend social/admin routers:
+  - `TRR-Backend/api/routers/socials/__init__.py`
+  - `TRR-Backend/trr_backend/socials/analytics/read_models.py`
+  - `TRR-Backend/trr_backend/repositories/*admin*`
 
-Outcome: Profile 13 has a valid Instagram session and the repair script can proceed past local validation.
+## Findings
 
-Tasks:
+### P0: Social landing progress rollup scans all platform tables before narrowing targets
 
-1. Open Chrome Profile 13 to Instagram.
-2. Complete the email/checkpoint challenge manually.
-3. Rerun local validation:
+Practical result: ADMIN social landing can spend tens of seconds on progress math before the page has useful data.
 
-   ```bash
-   cd /Users/thomashulihan/Projects/TRR/TRR-Backend
-   ./.venv/bin/python scripts/modal/repair_instagram_auth.py --validate-local-only --json
-   ```
+Evidence:
 
-4. If local validation succeeds, rerun the repair flow required by the current script/runbook.
-5. Capture whether the run reached:
-   - Modal secret apply
-   - Modal deploy
-   - remote verification
+- `pg_stat_statements` shows `/* landing_social_progress */` with about `34.6s` mean time and `53.2s` max.
+- App fallback query in `TRR-APP/apps/web/src/lib/server/admin/social-landing-repository.ts` builds `materialized_rows` and `catalog_rows` from all platform post/catalog tables, then joins to requested targets later.
+- Backend route logic in `TRR-Backend/api/routers/socials/__init__.py` uses the better target-first shape for some rollup paths, but the app fallback remains expensive.
 
-Stop condition:
+Fix:
 
-- If validation still reports `manual_checkpoint_required`, stop and preserve the JSON result. Do not keep retrying without completing the browser checkpoint.
+- Make the app-side fallback query target-first like the backend query:
+  - Join `targets` into each platform table inside each UNION branch.
+  - Avoid computing JSON/media/comment expressions for accounts not on the landing page.
+  - Keep the backend route as the primary path and treat app SQL fallback as emergency-only.
+- Add expression indexes only where confirmed by `EXPLAIN`:
+  - Example shape: lower/ltrim source account plus date/id ordering for platform post/catalog tables.
+  - Prefer generated normalized handle columns if repeated expression indexes become hard to maintain.
 
-### Phase 2: Triage The 105 Backend Pytest Failures
+### P0: Social profile page fires multiple secondary reads after initial snapshot
 
-Outcome: the red backend gate becomes a short repair queue grouped by root cause.
+Practical result: opening one profile can trigger summary/snapshot, live total, catalog preview, posts/catalog reads, hashtags, freshness, and run progress. That makes one page load look like a small batch job.
 
-Tasks:
+Evidence:
 
-1. Rerun focused failure groups instead of immediately rerunning the full hour-long suite.
-2. Start with failures likely caused by the local job-plane override fixture:
+- `SocialAccountProfilePage.tsx` loads `/summary` or `/snapshot`, then secondary reads such as `/live-profile-total`, `/catalog/posts?page=1&page_size=1`, `/posts`, `/catalog/posts`, hashtags, timeline, freshness, and progress endpoints.
+- Several matching query shapes in `pg_stat_statements` have mean runtimes above `5s`, and some max runtimes above `20s`.
 
-   ```bash
-   cd /Users/thomashulihan/Projects/TRR/TRR-Backend
-   ./.venv/bin/pytest \
-     tests/api/routers/test_admin_operations.py::test_start_operation_request_prefers_remote_in_dev_without_override \
-     tests/api/routers/test_socials_season_analytics.py \
-     tests/test_modal_jobs.py \
-     -q
-   ```
+Fix:
 
-3. Separate failures into these buckets:
-   - test setup fallout from forced local job-plane defaults
-   - real Modal/remote execution contract regressions
-   - DB pool naming or sizing expectation drift
-   - social repository/read-model expectation drift
-   - scraper/auth tests affected by the Instagram checkpoint state
-4. Fix the smallest shared cause first, then rerun only the affected focused group.
-5. Keep the first-test hang fix intact. Do not remove the safety fixture unless an equivalent isolation mechanism replaces it.
+- Define one load-time critical payload for first paint:
+  - Summary/snapshot.
+  - Last run state.
+  - Counts already cached in the snapshot.
+- Move all secondary reads behind explicit tab visibility or operator interaction:
+  - Live total.
+  - Catalog preview.
+  - Hashtag timeline.
+  - Comment detail.
+  - Gap analysis.
+- Add a single per-profile server snapshot cache for all first-paint fields with stale-if-error behavior.
 
-Stop condition:
+### P0: Instagram comments and catalog detail reads are too expensive for synchronous ADMIN page loading
 
-- If the same focused group fails twice with the same error, capture the command, stack trace, and recent related diff before changing another area.
+Practical result: comments-heavy accounts and posts can block UI load or saturate the backend when an admin opens post/comment detail panels.
 
-### Phase 3: Restore The Full Backend Gate
+Evidence:
 
-Outcome: backend pytest is dependable and green, or red only by explicit documented waiver.
+- `social.instagram_comments` has about `947,957` live rows.
+- `pg_stat_statements` shows comment/post detail queries with means from about `56 ms` to `16,467 ms`, and high row counts in reply fetches.
+- `TRR-Backend/trr_backend/socials/analytics/read_models.py` returns all comments for an Instagram post and orders by likes/created time.
 
-Tasks:
+Fix:
 
-1. After focused groups are fixed, run:
+- Paginate comments by default for ADMIN post detail:
+  - Return top-level comments first.
+  - Load replies per parent or in bounded pages.
+  - Keep an explicit "load all" operator action for rare deep inspection.
+- Add or validate indexes for the exact comment read shapes:
+  - `post_id`, `is_missing`, `is_reply`, `parent_comment_id`, `created_at`, and `likes`.
+  - Use partial indexes for active comments where `is_missing = false` and `deleted_at is null`.
+- Add route-level query timing headers for comment detail endpoints.
 
-   ```bash
-   cd /Users/thomashulihan/Projects/TRR/TRR-Backend
-   ./.venv/bin/pytest
-   ```
+### P1: Queue and operations health endpoints are high-frequency and can amplify load
 
-2. Record:
-   - total runtime
-   - pass/fail/skip counts
-   - first failing test if still red
-   - whether any worker/thread warnings remain
-3. If full pytest passes, run the broader workspace fast gate:
+Practical result: diagnostics cards and system health panels can add pressure while the database is already busy.
 
-   ```bash
-   cd /Users/thomashulihan/Projects/TRR
-   make test-fast
-   ```
+Evidence:
 
-4. If app changes are still in scope, run lightweight app validation before any build request:
+- `social.scrape_jobs` has `50,621` live rows and high read/update volume.
+- `pg_stat_statements` shows `social.scrape_jobs` and `social.scrape_runs` status queries with high call counts and large outliers.
+- `SystemHealthModal.tsx` and dashboard diagnostics hit queue status and operation health endpoints.
 
-   ```bash
-   cd /Users/thomashulihan/Projects/TRR
-   pnpm -C TRR-APP/apps/web run validate:quick
-   ```
+Fix:
 
-Stop condition:
+- Keep summary-first defaults and make full diagnostics explicit:
+  - `summary_only=true` should remain the default.
+  - Full stuck-job/run diagnostics should require a refresh/detail action.
+- Increase cache and singleflight coverage for queue status under load:
+  - Cache summary status for 5-15 seconds.
+  - Reuse stale summary on backend saturation.
+- Add covering/partial indexes only after `EXPLAIN` on current queue summary queries.
 
-- Do not move to PR publication with an unexplained backend failure.
+### P1: Live cache hit rates suggest memory or query-shape pressure
 
-### Phase 4: Browser-Prove Admin Social Tabs
+Practical result: even indexed reads may wait on disk/OS cache more often than expected, making admin load time inconsistent.
 
-Outcome: the admin social UI remains usable across the important Instagram tabs after the backend and app changes.
+Evidence:
 
-Tasks:
+- Live index hit rate: `97.72%`.
+- Live table hit rate: `94.08%`.
+- Supabase docs recommend using `pg_stat_statements`, cache hit rates, and `EXPLAIN` to identify hot or slow queries.
 
-1. Start the workspace with:
+Fix:
 
-   ```bash
-   cd /Users/thomashulihan/Projects/TRR
-   make dev-hybrid
-   ```
+- First reduce hot read volume and broad scans in social/admin routes.
+- Then re-check hit rates after the query-shape fixes.
+- If hit rates stay below `99%`, evaluate whether the current Supabase compute/memory tier is undersized for social ingestion plus admin reads.
 
-2. Use Browser against:
-   - `http://admin.localhost:3000/social/instagram/thetraitorsus`
-   - `http://admin.localhost:3000/social/instagram/thetraitorsus/catalog`
-   - `http://admin.localhost:3000/social/instagram/thetraitorsus/hashtags`
-   - `http://admin.localhost:3000/social/instagram/thetraitorsus/comments`
-3. Confirm:
-   - the primary profile summary renders before secondary panels finish
-   - catalog progress/repair routes do not trigger page-level failure
-   - degraded secondary panels show operator-readable messages
-   - no visible `BACKEND_TIMEOUT`, `BACKEND_SATURATED`, or 503/504 page-level failure appears
+### P1: Performance Advisor unindexed FK warnings are valid but currently small-table
 
-Stop condition:
+Practical result: these are easy hardening fixes, but they are not the current main page-load bottleneck.
 
-- If Browser proof fails on a user-visible route, fix or document that route before PR orchestration.
+Evidence:
 
-### Phase 5: Run Scoped Three-Repo PR Orchestration
+- Advisor flags these unindexed foreign keys:
+  - `social.instagram_profile_following_snapshots.last_scrape_job_id`
+  - `social.instagram_profile_following_snapshots.last_scrape_run_id`
+  - `social.instagram_profile_relationship_snapshot_items.relationship_row_id`
+  - `social.instagram_profile_relationship_snapshot_items.last_scrape_job_id`
+  - `social.instagram_profile_relationship_snapshot_items.last_scrape_run_id`
+- Live sizes are currently small:
+  - `instagram_profile_following_snapshots`: `2` live rows, `64 kB`.
+  - `instagram_profile_relationship_snapshot_items`: `54` live rows, `216 kB`.
 
-Outcome: PR orchestration publishes only the TRR workspace, app, and backend changes.
+Fix:
 
-Tasks:
+- Add small partial FK indexes in one migration:
+  - Use `WHERE <column> IS NOT NULL` for nullable FK columns.
+  - Use regular migration DDL locally; use concurrent index creation only if production row count is no longer small at execution time.
 
-1. Rerun inventory:
+### P2: Unused index warnings need a retention policy before drops
 
-   ```bash
-   cd /Users/thomashulihan/Projects/TRR
-   python3 /Users/thomashulihan/Projects/PLUGINS/workspace-pr-orchestrator/scripts/workspace_pr_inventory.py \
-     /Users/thomashulihan/Projects/TRR \
-     --action publish-and-sync \
-     --mode publish-only \
-     --format json
-   ```
+Practical result: dropping unused indexes blindly could break rare admin workflows or unique/constraint enforcement.
 
-2. Confirm these are the only publish targets:
-   - `/Users/thomashulihan/Projects/TRR`
-   - `/Users/thomashulihan/Projects/TRR/TRR-APP`
-   - `/Users/thomashulihan/Projects/TRR/TRR-Backend`
-3. Exclude:
-   - `/Users/thomashulihan/Projects/TRR/.worktrees/TRR-Backend-auth-profile-deploy`
-   - `/Users/thomashulihan/Projects/TRR/screenalytics`
-4. Publish only after:
-   - backend pytest is green or explicitly waived
-   - Instagram auth repair status is no longer ambiguous
-   - hidden env docs are included in the workspace PR
-   - changed app/backend helper files are included in their matching repo PRs
+Evidence:
 
-Stop condition:
+- Largest zero-scan indexes include `social.instagram_comments_username_created_idx` at `51 MB`.
+- Some zero-scan indexes are primary keys or unique constraints and must not be treated as cleanup candidates.
+- Some search/trigram indexes may support rare admin search paths and should be validated against route behavior first.
 
-- If the orchestrator cannot exclude the detached worktree or `screenalytics`, run repo-specific PR commands instead of a broad workspace publish.
+Fix:
 
-## Validation
+- Classify unused indexes into:
+  - Required constraints: keep.
+  - Rare admin/search support: keep unless replaced.
+  - Write-path drag with no route owner: candidate for drop.
+- For drop candidates, produce a rollback migration and compare write latency before and after.
 
-Required validation before PR publication:
+## Implementation Plan
 
-```bash
-cd /Users/thomashulihan/Projects/TRR
-make check-policy
-make test-fast
+### Phase 1: Add measurement and guardrails
+
+- Add server timing for the critical ADMIN API families:
+  - `/api/admin/social/landing`
+  - `/api/admin/trr-api/social/profiles/.../snapshot`
+  - `/api/admin/trr-api/social/profiles/.../posts`
+  - `/api/admin/trr-api/social/profiles/.../catalog/posts`
+  - `/api/admin/trr-api/social/ingest/queue-status`
+- Log route family, cache status, backend duration, and database duration without logging raw query text or secrets.
+- Persist client-side ADMIN load-time samples for dashboard, social landing, social profile, show detail, and system health surfaces.
+
+### Phase 2: Fix social landing query shape
+
+- Prefer backend `/landing-progress-rollup` as the only normal progress source.
+- Rewrite app SQL fallback to join `targets` inside each platform branch.
+- Add a bounded timeout and stale fallback for social landing enrichment.
+- Validate with `EXPLAIN` and a real target list before adding indexes.
+
+### Phase 3: Collapse social profile first-paint reads
+
+- Make `/snapshot?detail=lite` the single first-paint route.
+- Move `/live-profile-total`, catalog preview, hashtag timeline, and gap analysis behind tab visibility or explicit action.
+- Ensure snapshot responses include enough stale metadata for the UI to show usable cached data when backend saturation occurs.
+
+### Phase 4: Paginate comments and heavy catalog details
+
+- Change Instagram post comments detail to return:
+  - `comments_preview`
+  - `top_level_count`
+  - `reply_count`
+  - `next_cursor`
+- Add follow-up endpoints for reply pages and full export.
+- Add targeted partial indexes only after `EXPLAIN` confirms they match the new paginated query shape.
+
+### Phase 5: Apply low-risk advisor hardening
+
+- Add partial indexes for the five unindexed FK advisor findings.
+- Re-run Supabase Performance Advisor.
+- Record before/after advisor output in `TRR-Backend/docs/db/advisor-performance/`.
+
+### Phase 6: Build an unused-index decision ledger
+
+- Export zero-scan indexes with size, constraint ownership, table write volume, and route owner.
+- Keep all unique, primary key, exclusion, and active route-owned indexes.
+- Prepare a separate cleanup migration only for confirmed drop candidates.
+
+## Proposed Migration Candidates
+
+Do not run these until Phase 2-4 `EXPLAIN` confirms shape and selectivity.
+
+Low-risk advisor hardening candidates:
+
+```sql
+create index if not exists instagram_profile_following_snapshots_last_scrape_job_id_idx
+  on social.instagram_profile_following_snapshots (last_scrape_job_id)
+  where last_scrape_job_id is not null;
+
+create index if not exists instagram_profile_following_snapshots_last_scrape_run_id_idx
+  on social.instagram_profile_following_snapshots (last_scrape_run_id)
+  where last_scrape_run_id is not null;
+
+create index if not exists instagram_profile_relationship_snapshot_items_relationship_row_id_idx
+  on social.instagram_profile_relationship_snapshot_items (relationship_row_id)
+  where relationship_row_id is not null;
+
+create index if not exists instagram_profile_relationship_snapshot_items_last_scrape_job_id_idx
+  on social.instagram_profile_relationship_snapshot_items (last_scrape_job_id)
+  where last_scrape_job_id is not null;
+
+create index if not exists instagram_profile_relationship_snapshot_items_last_scrape_run_id_idx
+  on social.instagram_profile_relationship_snapshot_items (last_scrape_run_id)
+  where last_scrape_run_id is not null;
 ```
 
-```bash
-cd /Users/thomashulihan/Projects/TRR/TRR-Backend
-./.venv/bin/pytest
+Likely hot-path candidates to validate with `EXPLAIN`:
+
+```sql
+-- Validate against social landing/profile target-first queries before use.
+create index concurrently if not exists instagram_posts_source_account_posted_id_idx
+  on social.instagram_posts (lower(ltrim(source_account, '@')), posted_at desc, id desc);
+
+create index concurrently if not exists instagram_catalog_source_account_posted_id_idx
+  on social.instagram_account_catalog_posts (lower(ltrim(source_account, '@')), posted_at desc, id desc);
+
+-- Validate against paginated comment detail before use.
+create index concurrently if not exists instagram_comments_active_post_parent_created_idx
+  on social.instagram_comments (post_id, parent_comment_id, created_at asc)
+  where coalesce(is_missing, false) = false and deleted_at is null;
 ```
 
-```bash
-cd /Users/thomashulihan/Projects/TRR
-pnpm -C TRR-APP/apps/web run validate:quick
-```
+## Validation Gates
 
-Required validation after Instagram checkpoint completion:
+- Backend/API validation:
+  - Run focused backend tests for social profile, landing progress, queue status, and comment detail routes.
+  - Run `EXPLAIN (ANALYZE, BUFFERS)` on the exact before/after query shapes in staging or a safe live read-only path.
+  - Re-run Supabase Performance Advisor after the FK index migration.
+- App validation:
+  - Run lightweight app validation before any full build.
+  - Browser-check admin dashboard, social landing, one Instagram profile, one catalog tab, and one comment detail route with `make dev-hybrid`.
+  - Capture route timing headers and load-time badge values before and after.
+- Database validation:
+  - Re-check cache hit rates.
+  - Re-check top `pg_stat_statements` rows for the affected query fingerprints.
+  - Confirm no new lock waits during index creation.
+- Completion validation:
+  - If backend, worker, scraper, job, runtime, or Modal-deployed code changes are made, complete Modal follow-through before calling the implementation done.
 
-```bash
-cd /Users/thomashulihan/Projects/TRR/TRR-Backend
-./.venv/bin/python scripts/modal/repair_instagram_auth.py --validate-local-only --json
-```
+## Risks And Controls
 
-Required Browser validation if app/admin social behavior changed:
+- Risk: broad index additions improve reads but slow ingestion writes.
+  - Control: add only indexes proven by `EXPLAIN`, prefer partial indexes, and compare table write volume.
+- Risk: unused-index cleanup removes rare admin search support.
+  - Control: create an ownership ledger before any drop migration.
+- Risk: secondary reads still fire due React effects after first-paint consolidation.
+  - Control: add tab/visibility gates and one integration test for no extra first-load requests.
+- Risk: backend cache hides slow query regressions.
+  - Control: include cache status and uncached refresh timing in timing headers.
 
-```bash
-cd /Users/thomashulihan/Projects/TRR
-make dev-hybrid
-```
+## Readiness Score
 
-Then verify the four admin social tabs through Browser.
-
-## Acceptance Criteria
-
-- TRR-APP stale publish branch remains deleted.
-- Env/security workspace docs are visible to git and included in the workspace PR.
-- Instagram auth repair no longer stops at `manual_checkpoint_required`, or that blocker is explicitly carried into the PR/handoff.
-- Backend full pytest completes without hanging.
-- Backend full pytest passes, or every remaining failure is grouped and explicitly approved for deferral.
-- Admin social tabs have Browser evidence after relevant fixes.
-- PR orchestration targets only the three active TRR repos.
-- Modal update status is stated for backend/social changes.
-
-## Risks / Open Questions
-
-- The backend failures may include real regressions hidden behind the job-plane hang fix. Treat the 105 failures as current truth until grouped.
-- Instagram checkpoint completion requires manual browser action that Codex should not fake or bypass.
-- The detached backend worktree can block broad automation if the orchestrator is run against every discovered repo.
-- `screenalytics` is adjacent and dirty, but it is outside this TRR three-repo plan.
-- App production build remains approval-gated by project policy.
-
-## Recommended Handoff
-
-Use sequential execution first:
-
-1. Complete or explicitly defer the Instagram checkpoint.
-2. Triage and fix backend pytest groups.
-3. Run full backend pytest and fast workspace validation.
-4. Browser-prove admin social tabs.
-5. Use `workspace-pr-orchestrator` only after the gates are clear.
-
-Use `orchestrate-subagents` only for independent focused pytest failure groups after the first root-cause split is known. Do not split the Instagram checkpoint work because it depends on a single Chrome Profile 13 manual state.
-
-## Ready For Execution
-
-Partially ready.
-
-Ready now:
-
-- Backend pytest failure grouping and focused repair.
-- Scoped PR inventory filtering.
-- Env doc inclusion in the workspace PR.
-
-Blocked:
-
-- Instagram auth repair completion until the Profile 13 checkpoint is manually cleared.
-- Final PR publication until backend pytest is green or explicitly waived.
-
-## Completion Contract
-
-- saved_path: `/Users/thomashulihan/Projects/TRR/docs/codex/plans/2026-05-21-trr-gate-recovery-and-pr-orchestration.md`
-- compatibility_wrapper_used: true
-- canonical_skill: `write-plan`
+- Current plan readiness: `92/100`.
+- Main remaining gap: query-shape fixes need `EXPLAIN` evidence against real parameters before exact indexes and migrations are final.
+- Safe next action: implement Phase 1 timing and Phase 2 social landing target-first fallback, then gather before/after SQL plans.

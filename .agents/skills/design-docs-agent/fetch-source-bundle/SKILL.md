@@ -3,7 +3,7 @@ name: fetch-source-bundle
 description: Acquire a schema-compliant saved source bundle from an article URL before validation when the caller did not supply one.
 user-invocable: false
 metadata:
-  version: 1.0.0
+  version: 2.0.0
 ---
 
 # Fetch Source Bundle
@@ -21,6 +21,9 @@ generation, or routing work.
 
 1. The orchestrator is in the `validation` phase.
 2. A caller provided `articleUrl` but omitted `sourceBundle`.
+3. Tier-1 rendered capture (`capture-rendered-source`) is unavailable on the
+   host or failed its trust gate, so static/stealth fallback acquisition is
+   needed.
 
 ## Do Not Use For
 
@@ -36,7 +39,10 @@ generation, or routing work.
 - `contracts/source-bundle.schema.json`
 - `contracts/acquisition-report.schema.json`
 - `contracts/publisher-policy.yaml`
-- `scripts/fetch_source_bundle.py`
+- `scripts/fetch_source_bundle.py` (supports `--capture-method`,
+  `--rendered-html-file`, `--browser-html-file`, `--browser-screenshot`)
+- canonical capability `scrapling.stealthy_fetch` for tier-3 WAF/paywall
+  fallback (degrade gracefully when the scrapling MCP is absent)
 
 ## Outputs
 
@@ -47,59 +53,58 @@ One of:
 
 ## Procedure
 
-1. If the caller already supplied `sourceBundle`, return it unchanged and do not
-   acquire anything.
-2. Run the helper:
+`fetch-source-bundle` owns acquisition **tiers 2 and 3**. Tier 1 (rendered-DOM
+capture via Chrome DevTools) is owned by `capture-rendered-source`, which calls
+this same helper with `--rendered-html-file`. Run this skill when tier 1 is
+unavailable or failed its trust gate.
+
+1. If the caller already supplied `sourceBundle`, return it unchanged.
+
+2. **Tier 2 — static fetch.** Run the helper:
 
    ```bash
    python .agents/skills/design-docs-agent/scripts/fetch_source_bundle.py \
      --article-url "$ARTICLE_URL"
    ```
 
-3. If the helper returns `status: "ok"`, pass the returned `sourceBundle` to
-   `validate-inputs`.
-4. If the helper returns `needs-manual-bundle` and browser tooling is
-   available, attempt browser fallback with the declared capabilities from
-   `agents/openai.yaml`:
-   - `browser.navigate`
-   - `browser.snapshot`
-   - `browser.evaluate`
-   - `browser.screenshot`
-5. Browser fallback must:
-   - for `nytimes.com`, use the Chrome profile signed in as
-     `admin@thereality.report`:
-     `/Users/thomashulihan/Library/Application Support/Google/Chrome/Profile 11/Preferences`
-   - when Profile 11 is already open and the Codex Chrome Extension is
-     connected, reuse the existing Profile 11 window or matching article tab
-     before opening any new Chrome window
-   - set `CODEX_CHROME_PREFERENCES_PATH` to that Preferences path when using
-     the Codex Chrome extension selector for NYT capture
-   - when using DevTools/CDP directly, use Chrome's normal user data root plus
-     `--profile-directory="Profile 11"` if that profile can be attached safely;
-     if the live profile is already running without DevTools, use a temporary
-     profile copy only for capture and delete it after artifacts are saved
-   - open the article URL
-   - wait for DOM settle
-   - inspect visible page structure and blocking overlays
-   - remove obvious login or subscribe overlays only when the underlying
-     article or interactive content is already present in the DOM
-   - serialize `document.documentElement.outerHTML` to a local temporary file
-   - capture a complete MHTML snapshot when DevTools supports
-     `Page.captureSnapshot`
-   - save recoverable CSS, JS, media, and resource-tree files alongside the
-     rendered HTML
-   - optionally capture one desktop screenshot
-6. Re-run the helper with the browser-captured HTML:
+   On `status: "ok"`, pass the returned `sourceBundle` (with
+   `captureMethod: "curl"`) to `validate-inputs`.
+
+3. **Tier 2 browser fallback** — if the helper returns `needs-manual-bundle` and
+   browser tooling is available, capture rendered HTML the same way
+   `capture-rendered-source` does, then re-run the helper with
+   `--rendered-html-file` (preferred) or `--browser-html-file`. Declared
+   capabilities from `agents/openai.yaml`: `browser.navigate`,
+   `browser.snapshot`, `browser.evaluate`, `browser.screenshot`,
+   `browser.resize`. Browser fallback must:
+   - for `nytimes.com`, use the `admin@thereality.report` Chrome profile
+     (`Profile 11`,
+     `/Users/thomashulihan/Library/Application Support/Google/Chrome/Profile 11/Preferences`);
+     reuse an already-open Profile 11 window or matching article tab before
+     opening a new one; set `CODEX_CHROME_PREFERENCES_PATH` to that path when
+     using the Codex Chrome extension selector
+   - open the URL, wait for DOM settle, inspect overlays, and remove obvious
+     login/subscribe overlays only when the underlying content is already present
+   - serialize `document.documentElement.outerHTML`, capture MHTML when
+     `Page.captureSnapshot` is supported, save recoverable CSS/JS/media, and
+     optionally one desktop screenshot
 
    ```bash
    python .agents/skills/design-docs-agent/scripts/fetch_source_bundle.py \
      --article-url "$ARTICLE_URL" \
-     --browser-html-file "$BROWSER_HTML_FILE" \
+     --rendered-html-file "$RENDERED_HTML_FILE" \
      --browser-screenshot "$DESKTOP_SCREENSHOT"
    ```
 
-7. If browser fallback still returns `needs-manual-bundle`, stop before
-   extraction and return the acquisition report plus manual upload instructions.
+4. **Tier 3 — stealth fallback.** When the tiers above are blocked by
+   WAF/Cloudflare/Turnstile/paywall challenges, acquire rendered HTML via
+   `scrapling.stealthy_fetch` and a parity-backup screenshot via
+   `scrapling.screenshot` (`full_page`), then re-run the helper with
+   `--rendered-html-file` pointing at the scrapling-rendered HTML. Degrade
+   gracefully (skip this tier) when the scrapling MCP is absent.
+
+5. If every tier still returns `needs-manual-bundle`, stop before extraction and
+   return the acquisition report plus manual upload instructions.
 
 ## Trustworthiness Gate
 
@@ -120,6 +125,10 @@ bundle is trustworthy only when all of these hold:
    - Evaluate this against visible text only.
    - For browser capture, evaluate after overlay removal, not against the raw
      pre-removal DOM.
+
+Record the `captureMethod` (`rendered` | `curl` | `browser` | `stealth`) and the
+acquisition tier reached on the returned bundle so the Complete Article Coverage
+Gate can reason about how complete acquisition was.
 
 ## Persistence Rules
 

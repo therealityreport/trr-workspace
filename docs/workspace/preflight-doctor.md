@@ -19,6 +19,12 @@ Node baseline behavior:
 - If current `node` is lower than `24`, doctor attempts an in-process auto-switch using `nvm`.
 - Doctor reads workspace `/.nvmrc` first (currently `24`) and runs `nvm use --silent <target>`.
 - If auto-switch fails or Node is still below `24`, preflight fails with explicit remediation commands.
+- `pnpm --version` is bounded by `DOCTOR_COMMAND_TIMEOUT_SECONDS` and kills the
+  whole spawned process group if a shim or Corepack child hangs. The default is
+  `10` seconds.
+- Preflight also wraps the entire doctor phase with
+  `WORKSPACE_PREFLIGHT_DOCTOR_TIMEOUT_SECONDS` so `make dev-hybrid` cannot hang
+  indefinitely on doctor output capture. The default is `60` seconds.
 
 Manual fallback:
 ```bash

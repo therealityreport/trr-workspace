@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import os
 import subprocess
 import tempfile
+import time
 from pathlib import Path
 
 
@@ -50,6 +52,60 @@ def test_doctor_plugin_registry_declares_live_mcp_mapping() -> None:
     }
     for plugin, mcp_name in expected.items():
         assert f"{plugin}) echo \"{mcp_name}\"" in text
+
+
+def test_browser_doctor_status_check_is_time_bounded() -> None:
+    text = REGISTRY.read_text(encoding="utf-8")
+    doctor_text = DOCTOR.read_text(encoding="utf-8")
+    preflight_text = (ROOT / "scripts" / "preflight.sh").read_text(encoding="utf-8")
+
+    assert "DOCTOR_COMMAND_TIMEOUT_SECONDS" in doctor_text
+    assert "doctor_tool_version" in doctor_text
+    assert "DOCTOR_PLUGIN_COMMAND_TIMEOUT_SECONDS" in text
+    assert "doctor_plugin_timed_command_output" in text
+    assert "status check timed out after ${DOCTOR_PLUGIN_COMMAND_TIMEOUT_SECONDS}s" in text
+    assert "make chrome-repair" in text
+    assert "WORKSPACE_PREFLIGHT_DOCTOR_TIMEOUT_SECONDS" in preflight_text
+    assert "scripts/run-with-timeout.py" in preflight_text
+
+
+def test_doctor_pnpm_version_check_kills_stuck_process_group(tmp_path: Path) -> None:
+    fake_bin = tmp_path / "bin"
+    fake_bin.mkdir()
+    child_pid_file = tmp_path / "pnpm-child.pid"
+    fake_pnpm = fake_bin / "pnpm"
+    fake_pnpm.write_text(
+        f"""#!/usr/bin/env bash
+(sleep 30) &
+echo "$!" > "{child_pid_file}"
+wait
+""",
+        encoding="utf-8",
+    )
+    fake_pnpm.chmod(0o755)
+
+    started = time.monotonic()
+    result = subprocess.run(
+        ["bash", str(DOCTOR)],
+        cwd=ROOT,
+        env={
+            **dict(os.environ),
+            "PATH": f"{fake_bin}:{os.environ['PATH']}",
+            "DOCTOR_COMMAND_TIMEOUT_SECONDS": "1",
+            "DOCTOR_PLUGIN_COMMAND_TIMEOUT_SECONDS": "1",
+        },
+        capture_output=True,
+        text=True,
+        timeout=20,
+        check=False,
+    )
+
+    assert time.monotonic() - started < 10
+    assert result.returncode == 0
+    assert "pnpm: timeout after 1s" in result.stdout
+    assert "pnpm version check timed out after 1s" in result.stderr
+    child_pid = int(child_pid_file.read_text(encoding="utf-8").strip())
+    assert subprocess.run(["kill", "-0", str(child_pid)], check=False).returncode != 0
 
 
 def test_status_json_includes_plugin_registry() -> None:

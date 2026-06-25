@@ -1,15 +1,15 @@
 .PHONY: \
-	dev dev-lite dev-cloud dev-hybrid dev-hybrid-bg dev-hybrid-social-safe dev-portless stop-portless portless-repair open-admin dev-local dev-full dev-redis \
-	preflight preflight-local preflight-cloud preflight-hybrid preflight-strict preflight-diagnostics env-contract env-contract-report env-hygiene check-policy codex-check handoff-check handoff-sync smoke browser-smoke-admin-details status status-json backend-restart-diagnose stop logs logs-prune cleanup-disk help \
-	app-direct-sql-inventory redacted-env-inventory vercel-project-guard migration-ownership-lint rls-grants-snapshot db-pressure-rehearsal supabase-mcp-access supabase-advisor-snapshot \
+	dev dev-lite dev-cloud dev-hybrid dev-hybrid-bg dev-hybrid-media-safe dev-hybrid-media-safe-posts dev-hybrid-media-safe-comments dev-hybrid-media-safe-bravotv dev-hybrid-social-safe dev-portless stop-portless portless-repair open-admin dev-local dev-full dev-redis \
+	preflight preflight-local preflight-cloud preflight-hybrid preflight-strict preflight-diagnostics env-contract env-contract-report env-hygiene check-policy codex-check git-branch-report handoff-check handoff-sync smoke browser-smoke-admin-details status status-json backend-restart-diagnose stop logs logs-prune cleanup-disk help \
+	app-direct-sql-inventory redacted-env-inventory vercel-project-guard vercel-auth-doctor vercel-cleanup-doctor vercel-link-trr vercel-preview-ready migration-ownership-lint rls-grants-snapshot db-pressure-rehearsal supabase-mcp-access supabase-advisor-snapshot supabase-preview-branch-cleanup \
 	bootstrap doctor doctor-json app-check app-validate-quick test test-fast test-full test-changed test-env-sensitive \
 	workspace-contract-check workspace-hygiene-report workspace-hygiene-clean-dry-run \
 	cast-screentime-gap-check cast-screentime-live-check \
-	redis-up redis-down down chrome-devtools-mcp-status chrome-devtools-mcp-clean-stale chrome-devtools-mcp-stop-conflicts node-repl-mcp-clean-stale codex-browser-transport-reset \
+	redis-up redis-down down chrome-repair chrome-devtools-mcp-status chrome-devtools-mcp-clean-stale chrome-devtools-mcp-stop-conflicts next-devtools-mcp-status node-repl-mcp-clean-stale codex-browser-transport-reset \
 	context7-repair mcp-clean chrome-dock-clean \
 	workspace-pr-agent \
 	getty-server getty-tunnel getty-remote modal-instagram-auth-status modal-instagram-auth-repair \
-	instagram-backfill-preflight instagram-posts-smoke instagram-posts-benchmark
+	instagram-backfill-preflight instagram-backfill-progress instagram-backfill-recover-stalled instagram-posts-smoke instagram-posts-benchmark bravo-straggler-recovery instagram-media-mirror-recovery instagram-one-post-media-mirror social-queue-snapshot
 
 DOCKER_COMPOSE ?= docker compose
 REDIS_COMPOSE_FILE ?= docker-compose.redis.yml
@@ -20,9 +20,13 @@ REDIS_COMPOSE_PROJECT ?= trr-local-redis
 # To override the default profile explicitly:
 # PROFILE=default make dev
 # make dev-cloud                      # explicit cloud/remote worker mode
-# make dev-hybrid                     # local direct app/backend plus remote social-safe workers on session/pooler
-# make dev-portless                   # app and API through stable Portless HTTPS names in separate managed sessions
-# make stop-portless                  # stop managed Portless app/API sessions
+# make dev-hybrid                     # local direct app/backend plus remote social-safe workers and Portless app/admin/API URLs
+# make dev-hybrid-media-safe          # post-recovery hybrid mode with two media mirror lanes
+# make dev-hybrid-media-safe-posts    # post media biased media-safe preset
+# make dev-hybrid-media-safe-comments # comment media biased media-safe preset
+# make dev-hybrid-media-safe-bravotv  # Bravo pending-media drain preset
+# make dev-portless                   # app, API, and Wordle through stable Portless HTTPS names in separate managed sessions
+# make stop-portless                  # stop managed Portless app/API/Wordle sessions
 # make portless-repair                # repair Portless proxy state and remove stale static TRR aliases
 # PROFILE=local-cloud make dev-cloud  # deprecated compatibility alias
 # PROFILE=local-docker make dev-local # deprecated compatibility alias
@@ -68,6 +72,75 @@ dev-hybrid:
 	SOCIAL_PLATFORM_CAP_PER_ACCOUNT_SCALING=false \
 	WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR=1 \
 	WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR=1 \
+	WORKSPACE_USE_PORTLESS_URLS=1 \
+	PROFILE="$${PROFILE:-local-cloud}" WORKSPACE_DEV_MODE=hybrid bash scripts/dev-workspace.sh
+
+# Post-recovery hybrid path: keeps comments fast and allows two media mirror
+# lanes now that stale media claims have been cleared.
+dev-hybrid-media-safe:
+	@allow_arg=""; \
+	if [ "$${ALLOW_STALE_MEDIA:-0}" = "1" ]; then allow_arg="--allow-stale"; fi; \
+	cd TRR-Backend && ./.venv/bin/python scripts/socials/media_queue_guard.py $$allow_arg
+	@$(MAKE) --no-print-directory preflight-hybrid
+	@WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS=1 \
+	WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT=8 \
+	WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT=8 \
+	WORKSPACE_TRR_REMOTE_SOCIAL_POSTS=1 \
+	WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS=8 \
+	SOCIAL_POSTS_COMMENTS_PLATFORM_CAP_INSTAGRAM=8 \
+	SOCIAL_PLATFORM_CAP_PER_ACCOUNT_SCALING=false \
+	WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR=2 \
+	WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR=2 \
+	PROFILE="$${PROFILE:-local-cloud}" WORKSPACE_DEV_MODE=hybrid bash scripts/dev-workspace.sh
+
+dev-hybrid-media-safe-posts:
+	@allow_arg=""; \
+	if [ "$${ALLOW_STALE_MEDIA:-0}" = "1" ]; then allow_arg="--allow-stale"; fi; \
+	cd TRR-Backend && ./.venv/bin/python scripts/socials/media_queue_guard.py $$allow_arg
+	@$(MAKE) --no-print-directory preflight-hybrid
+	@WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS=1 \
+	WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT=8 \
+	WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT=8 \
+	WORKSPACE_TRR_REMOTE_SOCIAL_POSTS=1 \
+	WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS=8 \
+	SOCIAL_POSTS_COMMENTS_PLATFORM_CAP_INSTAGRAM=8 \
+	SOCIAL_PLATFORM_CAP_PER_ACCOUNT_SCALING=false \
+	WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR=3 \
+	WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR=1 \
+	PROFILE="$${PROFILE:-local-cloud}" WORKSPACE_DEV_MODE=hybrid bash scripts/dev-workspace.sh
+
+dev-hybrid-media-safe-comments:
+	@allow_arg=""; \
+	if [ "$${ALLOW_STALE_MEDIA:-0}" = "1" ]; then allow_arg="--allow-stale"; fi; \
+	cd TRR-Backend && ./.venv/bin/python scripts/socials/media_queue_guard.py $$allow_arg
+	@$(MAKE) --no-print-directory preflight-hybrid
+	@WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS=1 \
+	WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT=8 \
+	WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT=8 \
+	WORKSPACE_TRR_REMOTE_SOCIAL_POSTS=1 \
+	WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS=8 \
+	SOCIAL_POSTS_COMMENTS_PLATFORM_CAP_INSTAGRAM=8 \
+	SOCIAL_PLATFORM_CAP_PER_ACCOUNT_SCALING=false \
+	WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR=1 \
+	WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR=3 \
+	PROFILE="$${PROFILE:-local-cloud}" WORKSPACE_DEV_MODE=hybrid bash scripts/dev-workspace.sh
+
+dev-hybrid-media-safe-bravotv:
+	@allow_arg=""; \
+	if [ "$${ALLOW_STALE_MEDIA:-0}" = "1" ]; then allow_arg="--allow-stale"; fi; \
+	cd TRR-Backend && ./.venv/bin/python scripts/socials/media_queue_guard.py $$allow_arg
+	@$(MAKE) --no-print-directory preflight-hybrid
+	@echo "[workspace] Starting Bravo pending-media drain preset: posts=0, comments=2, media=4, comment media=1." >&2
+	@WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS=1 \
+	WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT=8 \
+	WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT=8 \
+	WORKSPACE_TRR_REMOTE_SOCIAL_POSTS=0 \
+	WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS=2 \
+	SOCIAL_POSTS_COMMENTS_PLATFORM_CAP_INSTAGRAM=8 \
+	SOCIAL_PLATFORM_CAP_PER_ACCOUNT_SCALING=false \
+	WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR=4 \
+	WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR=1 \
+	TRR_SOCIAL_OPERATOR_PRESET=bravotv-pending-media-drain \
 	PROFILE="$${PROFILE:-local-cloud}" WORKSPACE_DEV_MODE=hybrid bash scripts/dev-workspace.sh
 
 # Detached hybrid launcher for keeping the Modal-capable workspace alive after the shell exits.
@@ -104,7 +177,7 @@ portless-repair:
 	@bash scripts/portless-repair.sh
 
 open-admin:
-	@open "https://admin.trr.localhost/admin"
+	@open "https://admin.trr.localhost/"
 
 modal-instagram-auth-status:
 	@cd TRR-Backend && \
@@ -152,6 +225,30 @@ instagram-backfill-preflight:
 	cat "$$tmp_file"; \
 	python3 -c "import json, sys; data=json.load(open(sys.argv[1])); account=sys.argv[2]; posts=data.get('instagram_posts_auth_probe') or {}; comments=data.get('instagram_comments_auth_probe') or {}; core=[]; core += [] if data.get('app_found') else ['app_not_found']; core += ['missing_secret:' + str(x) for x in data.get('missing_secrets') or []]; core += ['missing_function:' + str(x) for x in data.get('missing_functions') or []]; core += ['missing_required_social_function:' + str(x) for x in data.get('missing_required_social_functions') or []]; core += ['missing_web_endpoint:' + str(x) for x in data.get('missing_web_endpoints') or []]; core += ['app_lookup_error:' + str(data.get('app_lookup_error'))] if data.get('app_lookup_error') else []; print('[workspace] Preflight summary: account=@' + account); print('[workspace] posts_auth: ' + ('ready' if posts.get('ready') else 'not_ready') + ' (' + str(posts.get('reason') or 'ok') + ')'); print('[workspace] comments_auth: ' + ('ready' if comments.get('ready') else 'not_ready') + ' (' + str(comments.get('reason') or 'ok') + ')'); (print('[workspace] BLOCKED: ' + ', '.join(core)) or sys.exit(1)) if core else None; (print('[workspace] BLOCKED: posts auth is not ready; do not launch Backfill Posts.') or sys.exit(1)) if not posts.get('ready') else None; (print('[workspace] WARNING: comments auth is blocked, but posts auth is ready. Posts listing may launch; comments follow-up is blocked until repaired.') or sys.exit(0)) if comments and not comments.get('ready') else None; print('[workspace] OK: posts auth is ready; comments auth is ready or not requested.')" "$$tmp_file" "$$account_handle"
 
+instagram-backfill-progress:
+	@if [ -z "$${RUN_ID:-}" ]; then echo "ERROR: set RUN_ID=<social.scrape_runs id>" >&2; exit 2; fi; \
+	json_arg=""; \
+	if [ "$${JSON:-0}" = "1" ]; then json_arg="--json"; fi; \
+	cd TRR-Backend && ./.venv/bin/python scripts/socials/instagram/backfill_progress.py --run-id "$${RUN_ID}" $$json_arg
+
+instagram-backfill-recover-stalled:
+	@if [ -z "$${RUN_ID:-}" ]; then echo "ERROR: set RUN_ID=<social.scrape_runs id>" >&2; exit 2; fi; \
+	json_arg=""; \
+	progress_arg=""; \
+	recover_arg=""; \
+	repair_arg=""; \
+	media_normalize_arg=""; \
+	frontier_recover_arg=""; \
+	dispatch_arg=""; \
+	if [ "$${JSON:-0}" = "1" ]; then json_arg="--json"; fi; \
+	if [ "$${SKIP_PROGRESS:-0}" = "1" ]; then progress_arg="--skip-progress"; fi; \
+	if [ "$${SKIP_RECOVER:-0}" = "1" ]; then recover_arg="--skip-recover"; fi; \
+	if [ "$${SKIP_REPAIR:-0}" = "1" ]; then repair_arg="--skip-repair"; fi; \
+	if [ "$${SKIP_MEDIA_NORMALIZE:-0}" = "1" ]; then media_normalize_arg="--skip-media-normalize"; fi; \
+	if [ "$${SKIP_FRONTIER_RECOVER:-0}" = "1" ]; then frontier_recover_arg="--skip-frontier-recover"; fi; \
+	if [ "$${SKIP_DISPATCH:-0}" = "1" ]; then dispatch_arg="--skip-dispatch"; fi; \
+	cd TRR-Backend && ./.venv/bin/python scripts/socials/instagram/recover_stalled_backfill.py --run-id "$${RUN_ID}" --stale-after-seconds "$${STALE_AFTER_SECONDS:-900}" --recover-limit "$${RECOVER_LIMIT:-5}" --dispatch-limit "$${DISPATCH_LIMIT:-8}" --media-normalize-batch-size "$${MEDIA_NORMALIZE_BATCH_SIZE:-500}" $$recover_arg $$repair_arg $$media_normalize_arg $$frontier_recover_arg $$dispatch_arg $$progress_arg $$json_arg
+
 instagram-posts-smoke:
 	@if [ -z "$${ACCOUNT_HANDLE:-}" ]; then echo "ERROR: set ACCOUNT_HANDLE=<instagram-handle>" >&2; exit 2; fi; \
 	account_handle="$$(printf '%s' "$${ACCOUNT_HANDLE}" | sed 's/^@//' | tr '[:upper:]' '[:lower:]')"; \
@@ -172,6 +269,46 @@ instagram-posts-benchmark:
 	if [ -n "$${JOB_ID:-}" ]; then job_arg="--job-id $${JOB_ID}"; fi; \
 	echo "[workspace] Emitting Instagram posts benchmark payload for @$$account_handle (MODE=$$mode, MAX_PAGES=$$max_pages)." >&2; \
 	cd TRR-Backend && ./.venv/bin/python scripts/socials/instagram/benchmark_posts_backfill.py --account "$$account_handle" --mode "$$mode" --max-pages "$$max_pages" $$run_arg $$job_arg
+
+bravo-straggler-recovery: export BRAVO_RECOVERY_ARGS := $(BRAVO_RECOVERY_ARGS)
+bravo-straggler-recovery:
+	@cd TRR-Backend && ./.venv/bin/python scripts/socials/instagram/bravo_straggler_recovery.py
+
+instagram-media-mirror-recovery:
+	@if [ -z "$${RUN_ID:-}" ]; then echo "ERROR: set RUN_ID=<social.scrape_runs id>" >&2; exit 2; fi; \
+	args="--run-id '$${RUN_ID}' --stage '$${STAGE:-media_mirror}' --stale-after-seconds '$${STALE_AFTER_SECONDS:-900}' --recover-limit '$${RECOVER_LIMIT:-5}' --dispatch-limit '$${DISPATCH_LIMIT:-8}'"; \
+	if [ -n "$${ACCOUNT_HANDLE:-}" ]; then args="$$args --account '$${ACCOUNT_HANDLE}'"; fi; \
+	if [ "$${SKIP_RECOVER:-0}" = "1" ]; then args="$$args --skip-recover"; fi; \
+	if [ "$${SKIP_DISPATCH:-0}" = "1" ]; then args="$$args --skip-dispatch"; fi; \
+	if [ "$${APPLY:-0}" = "1" ]; then args="$$args --apply"; fi; \
+	if [ -n "$${CONFIRM_APPLY:-}" ]; then args="$$args --confirm-apply '$${CONFIRM_APPLY}'"; fi; \
+	if [ "$${JSON:-0}" = "1" ]; then args="$$args --json"; fi; \
+	cd TRR-Backend && eval ./.venv/bin/python scripts/socials/instagram/media_mirror_recovery.py "$$args"
+
+instagram-one-post-media-mirror:
+	@args=""; \
+	if [ -n "$${JOB_ID:-}" ]; then args="$$args --job-id '$${JOB_ID}'"; fi; \
+	if [ -n "$${POST_ID:-}" ]; then args="$$args --post-id '$${POST_ID}'"; fi; \
+	if [ -n "$${SOURCE_ID:-}" ]; then args="$$args --source-id '$${SOURCE_ID}'"; fi; \
+	if [ -n "$${SHORTCODE:-}" ]; then args="$$args --source-id '$${SHORTCODE}'"; fi; \
+	if [ -z "$$args" ]; then echo "ERROR: set JOB_ID=..., POST_ID=..., SOURCE_ID=..., or SHORTCODE=..." >&2; exit 2; fi; \
+	if [ -n "$${ACCOUNT_HANDLE:-}" ]; then args="$$args --account '$${ACCOUNT_HANDLE}'"; fi; \
+	if [ -n "$${MODE:-}" ]; then args="$$args --mode '$${MODE}'"; fi; \
+	if [ "$${MODAL:-0}" = "1" ]; then args="$$args --mode modal"; fi; \
+	if [ "$${DRY_RUN:-0}" = "1" ]; then args="$$args --dry-run"; fi; \
+	if [ "$${JSON:-0}" = "1" ]; then args="$$args --json"; fi; \
+	cd TRR-Backend && eval ./.venv/bin/python scripts/socials/instagram/one_post_media_mirror.py "$$args"
+
+social-queue-snapshot:
+	@if [ -z "$${RUN_ID:-}" ]; then echo "ERROR: set RUN_ID=<social.scrape_runs id>" >&2; exit 2; fi; \
+	mkdir -p .logs/workspace/social-queue-snapshots; \
+	timestamp="$$(date -u +%Y%m%dT%H%M%SZ)"; \
+	log_file=".logs/workspace/social-queue-snapshots/$$timestamp-$${RUN_ID}-$${STAGE:-media_mirror}.json"; \
+	args="--run-id '$${RUN_ID}' --platform '$${PLATFORM:-instagram}' --stage '$${STAGE:-media_mirror}' --stale-after-seconds '$${STALE_AFTER_SECONDS:-900}'"; \
+	if [ -n "$${ACCOUNT_HANDLE:-}" ]; then args="$$args --account '$${ACCOUNT_HANDLE}'"; fi; \
+	if [ "$${JSON:-0}" = "1" ]; then args="$$args --json"; fi; \
+	cd TRR-Backend && eval ./.venv/bin/python scripts/socials/queue_snapshot.py "$$args" | tee "../$$log_file"; \
+	echo "[workspace] Queue snapshot log: $$log_file" >&2
 
 # Compatibility alias for older social-safe muscle memory.
 dev-hybrid-social-safe:
@@ -224,6 +361,18 @@ env-hygiene:
 vercel-project-guard:
 	@python3 scripts/vercel-project-guard.py --project-dir TRR-APP
 
+vercel-auth-doctor:
+	@bash TRR-APP/scripts/vercel.sh auth-doctor
+
+vercel-cleanup-doctor:
+	@bash TRR-APP/scripts/vercel.sh cleanup-doctor
+
+vercel-link-trr:
+	@bash TRR-APP/scripts/vercel.sh link-trr
+
+vercel-preview-ready:
+	@bash TRR-APP/scripts/vercel.sh preview-ready
+
 migration-ownership-lint:
 	@python3 scripts/migration-ownership-lint.py
 
@@ -239,11 +388,20 @@ supabase-mcp-access:
 supabase-advisor-snapshot:
 	@python3 scripts/capture-supabase-advisor-snapshot.py
 
+SUPABASE_BRANCH_CLEANUP_ARGS ?=
+supabase-preview-branch-cleanup:
+	@args="$(SUPABASE_BRANCH_CLEANUP_ARGS)"; \
+	if [ "$${DELETE:-0}" = "1" ]; then args="$$args --delete"; fi; \
+	python3 scripts/supabase-preview-branch-cleanup.py $$args
+
 check-policy:
 	@bash scripts/check-policy.sh
 
 codex-check:
 	@bash scripts/check-codex.sh
+
+git-branch-report:
+	@bash scripts/git-branch-report.sh
 
 handoff-check:
 	@python3 scripts/sync-handoffs.py --check
@@ -375,18 +533,28 @@ help:
 	@echo "  make status-json  - workspace health and PID snapshot as JSON"
 	@echo "  make dev-redis    - start local Redis, then run make dev with PROFILE=local-redis"
 	@echo "  make dev-cloud    - explicit cloud/remote worker path using session/pooler DB"
-	@echo "  make dev-hybrid   - hybrid social mode: dispatch=8, concurrency=8, posts=1, comments=8, media=1, comment media=1"
+	@echo "  make dev-hybrid   - hybrid social mode plus Portless app/admin/API URLs: dispatch=8, concurrency=8, posts=1, comments=8, media=1, comment media=1"
+	@echo "  make dev-hybrid-media-safe - post-recovery hybrid social mode with media=2 and comment media=2"
+	@echo "  make dev-hybrid-media-safe-posts - post-recovery hybrid mode biased toward post media lanes"
+	@echo "  make dev-hybrid-media-safe-comments - post-recovery hybrid mode biased toward comment media lanes"
+	@echo "  make dev-hybrid-media-safe-bravotv - Bravo pending-media drain preset with media=4, posts=0"
 	@echo "  make dev-hybrid-bg - starts Modal-capable make dev-hybrid detached, writing .logs/workspace/dev-hybrid-background.log"
 	@echo "  make dev-hybrid-social-safe - alias for make dev-hybrid"
-	@echo "  make dev-portless - app and API through stable Portless HTTPS names in managed sessions"
-	@echo "  make stop-portless - stop managed Portless app/API sessions"
+	@echo "  make dev-portless - app, API, and Wordle through stable Portless HTTPS names in managed sessions"
+	@echo "  make stop-portless - stop managed Portless app/API/Wordle sessions"
 	@echo "  make portless-repair - ensure Portless wildcard routing and remove stale TRR static aliases"
 	@echo "  make open-admin   - open the clean Portless admin dashboard"
 	@echo "  make modal-instagram-auth-status - bounded Instagram Modal auth probe (ACCOUNT_HANDLE=... adds posts/comments probes)"
 	@echo "  make modal-instagram-auth-repair - bounded Instagram auth repair, secret refresh, deploy, and remote verify (DRY_RUN=1 plans only)"
 	@echo "  make instagram-backfill-preflight - account-scoped posts/comments auth preflight (ACCOUNT_HANDLE=...)"
+	@echo "  make instagram-backfill-progress - compact run progress (RUN_ID=... JSON=1 optional)"
+	@echo "  make instagram-backfill-recover-stalled - recover stale Instagram frontier, repair metrics, normalize hosted media, dispatch due jobs (RUN_ID=... SKIP_PROGRESS=1 optional)"
 	@echo "  make instagram-posts-smoke - bounded live posts smoke (ACCOUNT_HANDLE=... MAX_PAGES=1; not a dry run)"
 	@echo "  make instagram-posts-benchmark - emit bounded benchmark payload (ACCOUNT_HANDLE=... MODE=listing-only)"
+	@echo "  make bravo-straggler-recovery - plan or run approved Bravo Instagram straggler recovery (BRAVO_RECOVERY_ARGS='--approved-shortcodes-file ...')"
+	@echo "  make instagram-media-mirror-recovery - dry-run or apply stale Instagram media mirror recovery (RUN_ID=... APPLY=1 CONFIRM_APPLY='RECOVER MEDIA MIRROR JOBS' optional)"
+	@echo "  make instagram-one-post-media-mirror - run one post media mirror job exactly (JOB_ID=... or POST_ID=...; MODAL=1 optional)"
+	@echo "  make social-queue-snapshot - reusable run/stage queue snapshot (RUN_ID=... STAGE=media_mirror JSON=1 optional)"
 	@echo "  make dev-local    - deprecated alias for make dev"
 	@echo "  make preflight    - validates the local/direct workspace path"
 	@echo "  make preflight-cloud - validates the explicit cloud/session path"
@@ -396,11 +564,19 @@ help:
 	@echo "  make env-hygiene - validate env file authority classes without printing values"
 	@echo "  make app-validate-quick - run the approved lightweight TRR-APP validation path"
 	@echo "  make codex-check  - validates tracked Codex config, rules, and user bootstrap state"
+	@echo "  make git-branch-report - report local/remote branch refs outside main"
 	@echo "  make doctor-json  - plugin registry doctor output as JSON"
 	@echo "  make context7-repair - repair Context7 MCP wrapper config, reload stale connector processes, and smoke test"
+	@echo "  make chrome-repair - clean stale browser MCP state, start shared Chrome, and print DevTools readiness"
+	@echo "  make next-devtools-mcp-status - validate TRR-local Next.js DevTools MCP registration"
 	@echo "  make browser-smoke-admin-details - smoke test social account and show detail routes in a browser"
 	@echo "  make codex-browser-transport-reset - clean stale Codex Browser transport state"
 	@echo "  make supabase-advisor-snapshot - capture dated Supabase advisor JSON artifacts"
+	@echo "  make supabase-preview-branch-cleanup - dry-run old Supabase preview branch cleanup (DELETE=1 applies)"
+	@echo "  make vercel-auth-doctor - check local Vercel CLI access to the TRR team/project"
+	@echo "  make vercel-cleanup-doctor - find stale local Vercel links such as the old web project"
+	@echo "  make vercel-link-trr - link TRR-APP to the trr-app Vercel project of record"
+	@echo "  make vercel-preview-ready - check Vercel project link and check/enable Web Analytics plus Speed Insights"
 	@echo "  make backend-restart-diagnose - prints backend restart/watchdog attribution state"
 	@echo "  make redis-up     - start local Redis via docker-compose.redis.yml"
 	@echo "  make redis-down   - stop local Redis via docker-compose.redis.yml"
@@ -411,6 +587,12 @@ help:
 
 chrome-devtools-mcp-status:
 	@bash scripts/chrome-devtools-mcp-status.sh
+
+next-devtools-mcp-status:
+	@bash scripts/next-devtools-mcp-status.sh
+
+chrome-repair:
+	@bash scripts/chrome-repair.sh
 
 chrome-devtools-mcp-clean-stale:
 	@bash scripts/chrome-devtools-mcp-clean-stale.sh

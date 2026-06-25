@@ -38,6 +38,29 @@ def test_degraded_browser_pressure_is_not_promoted_to_startup_attention(
     assert result.stdout == ""
 
 
+def test_orphaned_chrome_mcp_buildup_is_promoted_to_startup_attention(
+    tmp_path: Path,
+) -> None:
+    attention_file = tmp_path / "attention.log"
+
+    result = _run_bash(
+        f"""
+        source "{WORKSPACE_TERMINAL_SCRIPT_PATH}"
+        source "{SCRIPT_PATH}"
+        workspace_attention_reset "{attention_file}"
+        preflight_record_browser_attention "{attention_file}" $'overall_state=ready\\nattention_kind=none\\nshared_runtime_state=ready\\nshared_port=9422\\norphaned_chrome_mcp_processes=4\\norphaned_chrome_mcp_attention_threshold=3'
+        cat "{attention_file}"
+        """
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == (
+        "Chrome DevTools orphaned MCP processes detected (4).\t"
+        "Impact: stale browser-control processes can keep chrome-devtools transports closed or slow to attach.\t"
+        "Remediation: run 'make chrome-repair' to clean stale MCP processes, restart shared Chrome, and print the reload hint.\n"
+    )
+
+
 def test_recoverable_browser_runtime_is_not_promoted_to_startup_attention(
     tmp_path: Path,
 ) -> None:

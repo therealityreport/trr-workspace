@@ -27,7 +27,9 @@ function readContract() {
 }
 
 function readSourceFile(relativePath) {
-  const filePath = path.join(repoRoot, relativePath);
+  // Contract `path:` values are app-web-relative so the active target can be
+  // retargeted via DESIGN_DOCS_APP_WEB_ROOT (default: TRR-APP/apps/web).
+  const filePath = path.join(appWebRoot, relativePath);
   const sourceText = fs.readFileSync(filePath, "utf8");
   return {
     filePath,

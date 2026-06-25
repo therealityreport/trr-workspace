@@ -50,6 +50,15 @@ use a temporary copy for capture and delete it after the source bundle is saved.
 Save complete evidence where available: rendered HTML, MHTML/Page.captureSnapshot,
 desktop screenshot, resource tree/assets, and the source-bundle manifest.
 
+## Rendered Capture And Parity
+
+Acquisition runs as a tiered ladder. Tier 1 is rendered-DOM capture via Chrome
+DevTools (`capture-rendered-source`), which also captures fixed-viewport golden
+screenshots (`capture-golden-screenshots`) and a network-driven asset/webfont
+manifest (`harvest-network-assets`). Static `curl` and `scrapling` stealth fetch
+are tier-2/3 fallbacks. The golden screenshots are the parity baseline that
+verification uses to check the recreation against the original.
+
 ## Procedure
 
 1. Resolve the caller's `articleUrl` and source bundle input.
@@ -112,6 +121,16 @@ For each recovered chart, capture and store:
 Every chart element that a future TRR chart author would naturally change must
 live in config rather than inside an opaque iframe: marks, labels, scales,
 colors, source/credit lines, notes, and annotations.
+
+## Figma Output Option
+
+When the Figma MCP is available, the pipeline can additionally push the captured
+page into a new Figma file as a pixel-faithful reference (`capture-to-figma`,
+using `generate_figma_design`), reconcile it to real components and variables,
+and round-trip its design context back into the generated renderer code. This is
+an additive reference layer: the saved source always wins on conflict, and the
+step is skipped gracefully when Figma is unavailable. Any Figma write calls
+require the `/figma-use` and `/figma-create-new-file` preloads.
 
 ## Validation
 

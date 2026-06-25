@@ -7,9 +7,15 @@ LOG_DIR="$ROOT_DIR/.logs/workspace"
 STATE_FILE="$LOG_DIR/portless-managed.env"
 WEB_SESSION="${TRR_PORTLESS_WEB_SESSION:-trr-portless-web}"
 API_SESSION="${TRR_PORTLESS_API_SESSION:-trr-portless-api}"
+WORDLE_SESSION="${TRR_PORTLESS_WORDLE_SESSION:-trr-portless-wordle}"
 WEB_LOG="$LOG_DIR/portless-web.log"
 API_LOG="$LOG_DIR/portless-api.log"
+WORDLE_LOG="$LOG_DIR/portless-wordle.log"
 READY_TIMEOUT_SECONDS="${TRR_PORTLESS_READY_TIMEOUT_SECONDS:-45}"
+PORTLESS_PUBLIC_PORT_SUFFIX=""
+if [[ -n "${PORTLESS_PORT:-}" && "${PORTLESS_PORT}" != "443" ]]; then
+  PORTLESS_PUBLIC_PORT_SUFFIX=":${PORTLESS_PORT}"
+fi
 
 export PATH="/opt/homebrew/bin:${PATH}"
 
@@ -20,6 +26,7 @@ Usage: $0 [start|stop|status]
 Starts TRR clean local URLs through Portless as separate managed sessions:
   app/admin: $WEB_SESSION
   API:       $API_SESSION
+  Wordle:    $WORDLE_SESSION
 EOF
 }
 
@@ -57,6 +64,7 @@ stop_sessions() {
   require_command screen
   stop_screen_session "$WEB_SESSION"
   stop_screen_session "$API_SESSION"
+  stop_screen_session "$WORDLE_SESSION"
   if command -v portless >/dev/null 2>&1; then
     stop_stale_portless_route_owners
   fi
@@ -74,6 +82,11 @@ portless_status() {
     echo "  api: running ($API_SESSION)"
   else
     echo "  api: stopped ($API_SESSION)"
+  fi
+  if screen_session_running "$WORDLE_SESSION"; then
+    echo "  wordle: running ($WORDLE_SESSION)"
+  else
+    echo "  wordle: stopped ($WORDLE_SESSION)"
   fi
   echo
   echo "[dev-portless] Portless routes:"
@@ -106,7 +119,7 @@ stop_stale_next_lock_holder() {
 
 stop_stale_portless_route_owners() {
   local output
-  local route_owner_pattern='^[[:space:]]*https://([a-zA-Z0-9.-]+)\.localhost[[:space:]]+->[[:space:]].*\(pid[[:space:]]+([0-9]+)\)'
+  local route_owner_pattern='^[[:space:]]*https://([a-zA-Z0-9.-]+)\.localhost(:[0-9]+)?[[:space:]]+->[[:space:]].*\(pid[[:space:]]+([0-9]+)\)'
   output="$(portless list 2>/dev/null || true)"
   if [[ -z "$output" ]]; then
     return 0
@@ -116,7 +129,7 @@ stop_stale_portless_route_owners() {
     [[ -z "$line" ]] && continue
     if [[ "$line" =~ $route_owner_pattern ]]; then
       local route="${BASH_REMATCH[1]}"
-      local pid="${BASH_REMATCH[2]}"
+      local pid="${BASH_REMATCH[3]}"
       case "$route" in
         trr|api.trr|admin.trr|wordle.trr)
           if kill -0 "$pid" >/dev/null 2>&1; then
@@ -146,7 +159,7 @@ wait_for_routes() {
 
   while (( SECONDS < deadline )); do
     output="$(portless list 2>/dev/null || true)"
-    if grep -Eq "https://trr\.localhost[[:space:]]+->[[:space:]]+" <<< "$output" && grep -Eq "https://api\.trr\.localhost[[:space:]]+->[[:space:]]+" <<< "$output"; then
+    if grep -Eq "https://trr\.localhost(:[0-9]+)?[[:space:]]+->[[:space:]]+" <<< "$output" && grep -Eq "https://api\.trr\.localhost(:[0-9]+)?[[:space:]]+->[[:space:]]+" <<< "$output" && grep -Eq "https://wordle\.trr\.localhost(:[0-9]+)?[[:space:]]+->[[:space:]]+" <<< "$output"; then
       echo "$output"
       return 0
     fi
@@ -162,11 +175,14 @@ write_state_file() {
   cat > "$STATE_FILE" <<EOF
 TRR_PORTLESS_WEB_SESSION="$WEB_SESSION"
 TRR_PORTLESS_API_SESSION="$API_SESSION"
+TRR_PORTLESS_WORDLE_SESSION="$WORDLE_SESSION"
 TRR_PORTLESS_WEB_LOG="$WEB_LOG"
 TRR_PORTLESS_API_LOG="$API_LOG"
-TRR_PORTLESS_ADMIN_URL="https://admin.trr.localhost/admin"
-TRR_PORTLESS_APP_URL="https://trr.localhost"
-TRR_PORTLESS_API_URL="https://api.trr.localhost/health/live"
+TRR_PORTLESS_WORDLE_LOG="$WORDLE_LOG"
+TRR_PORTLESS_ADMIN_URL="https://admin.trr.localhost${PORTLESS_PUBLIC_PORT_SUFFIX}"
+TRR_PORTLESS_APP_URL="https://trr.localhost${PORTLESS_PUBLIC_PORT_SUFFIX}"
+TRR_PORTLESS_API_URL="https://api.trr.localhost${PORTLESS_PUBLIC_PORT_SUFFIX}/health/live"
+TRR_PORTLESS_WORDLE_URL="https://wordle.trr.localhost${PORTLESS_PUBLIC_PORT_SUFFIX}"
 EOF
 }
 
@@ -189,12 +205,14 @@ start_sessions() {
   echo
   node "$APP_DIR/scripts/portless-banner.mjs"
 
-  local api_command web_command
+  local api_command web_command wordle_command
   api_command="set -euo pipefail; export PATH=\"/opt/homebrew/bin:\$PATH\"; source \"$ROOT_DIR/scripts/lib/node-baseline.sh\"; cd \"$APP_DIR\"; trr_pnpm \"$APP_DIR\" run api:portless 2>&1 | tee -a \"$API_LOG\""
   web_command="set -euo pipefail; export PATH=\"/opt/homebrew/bin:\$PATH\"; source \"$ROOT_DIR/scripts/lib/node-baseline.sh\"; cd \"$APP_DIR\"; trr_pnpm \"$APP_DIR\" run dev:portless 2>&1 | tee -a \"$WEB_LOG\""
+  wordle_command="set -euo pipefail; export PATH=\"/opt/homebrew/bin:\$PATH\"; source \"$ROOT_DIR/scripts/lib/node-baseline.sh\"; cd \"$APP_DIR\"; PORTLESS_WILDCARD=1 portless wordle.trr --force --app-port 5173 bash -lc 'source \"$ROOT_DIR/scripts/lib/node-baseline.sh\"; cd \"$APP_DIR\"; trr_pnpm \"$APP_DIR\" -C apps/vue-wordle run dev' 2>&1 | tee -a \"$WORDLE_LOG\""
 
   start_screen_session "$API_SESSION" "$API_LOG" "$api_command"
   start_screen_session "$WEB_SESSION" "$WEB_LOG" "$web_command"
+  start_screen_session "$WORDLE_SESSION" "$WORDLE_LOG" "$wordle_command"
   write_state_file
 
   echo
@@ -204,19 +222,22 @@ start_sessions() {
     echo "[dev-portless] Check logs:" >&2
     echo "[dev-portless]   $API_LOG" >&2
     echo "[dev-portless]   $WEB_LOG" >&2
+    echo "[dev-portless]   $WORDLE_LOG" >&2
     exit 1
   fi
 
   cat <<EOF
 
 [dev-portless] Clean TRR URLs are managed in separate sessions:
-  Admin: https://admin.trr.localhost/admin
-  App:   https://trr.localhost
-  API:   https://api.trr.localhost/health/live
+  Admin: https://admin.trr.localhost${PORTLESS_PUBLIC_PORT_SUFFIX}
+  App:   https://trr.localhost${PORTLESS_PUBLIC_PORT_SUFFIX}
+  API:   https://api.trr.localhost${PORTLESS_PUBLIC_PORT_SUFFIX}/health/live
+  Wordle: https://wordle.trr.localhost${PORTLESS_PUBLIC_PORT_SUFFIX}
 
 [dev-portless] Logs:
   Web: $WEB_LOG
   API: $API_LOG
+  Wordle: $WORDLE_LOG
 
 [dev-portless] Stop:
   $0 stop

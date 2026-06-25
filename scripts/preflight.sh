@@ -272,8 +272,15 @@ case "$WORKSPACE_DEV_MODE" in
 esac
 
 WORKSPACE_PREFLIGHT_STRICT="${WORKSPACE_PREFLIGHT_STRICT:-0}"
+WORKSPACE_PREFLIGHT_DOCTOR_TIMEOUT_SECONDS="${WORKSPACE_PREFLIGHT_DOCTOR_TIMEOUT_SECONDS:-60}"
+if ! [[ "$WORKSPACE_PREFLIGHT_DOCTOR_TIMEOUT_SECONDS" =~ ^[1-9][0-9]*$ ]]; then
+  echo "[preflight] WARNING: invalid WORKSPACE_PREFLIGHT_DOCTOR_TIMEOUT_SECONDS='${WORKSPACE_PREFLIGHT_DOCTOR_TIMEOUT_SECONDS}', using 60." >&2
+  WORKSPACE_PREFLIGHT_DOCTOR_TIMEOUT_SECONDS="60"
+fi
 
 echo "[preflight] Mode: ${WORKSPACE_DEV_MODE}"
+
+run_preflight_phase "git-branch-report" "[preflight] Checking Git branch surface..." bash "$ROOT/scripts/git-branch-report.sh" --quiet-clean
 
 if ! trr_runtime_db_require_local_app_url "$ROOT" "preflight" "$WORKSPACE_DEV_MODE"; then
   exit 1
@@ -288,7 +295,7 @@ fi
 run_preflight_phase "modal-billing-guardrail" "[preflight] Checking Modal billing guardrails..." bash "$ROOT/scripts/modal-billing-guardrail.sh"
 run_preflight_phase "instagram-auth-freshness" "[preflight] Checking Instagram auth freshness..." python3 "$ROOT/scripts/instagram_auth_freshness.py"
 
-run_preflight_phase "doctor" "[preflight] Running workspace doctor..." env WORKSPACE_DEV_MODE="$WORKSPACE_DEV_MODE" WORKSPACE_PREFLIGHT_STRICT="$WORKSPACE_PREFLIGHT_STRICT" bash "$ROOT/scripts/doctor.sh"
+run_preflight_phase "doctor" "[preflight] Running workspace doctor..." python3 "$ROOT/scripts/run-with-timeout.py" --timeout-seconds "$WORKSPACE_PREFLIGHT_DOCTOR_TIMEOUT_SECONDS" --label "workspace doctor" -- env WORKSPACE_DEV_MODE="$WORKSPACE_DEV_MODE" WORKSPACE_PREFLIGHT_STRICT="$WORKSPACE_PREFLIGHT_STRICT" bash "$ROOT/scripts/doctor.sh"
 
 runtime_reconcile_output=""
 runtime_reconcile_rc=0

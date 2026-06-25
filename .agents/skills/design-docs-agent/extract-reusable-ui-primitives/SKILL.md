@@ -3,7 +3,7 @@ name: extract-reusable-ui-primitives
 description: Normalize repeated publisher shell, menu, drawer, popup, storyline, and icon surfaces into reusable Design Docs primitives.
 user-invocable: false
 metadata:
-  version: 1.0.0
+  version: 1.1.0
 ---
 
 # Extract Reusable UI Primitives
@@ -27,6 +27,9 @@ popup, or storyline component instead of rebuilding it inline.
 ## Inputs
 
 - extracted shell/icon/media evidence
+- `statefulInteractionSequences` and `uiPrimitiveRecords` from
+  `extract-site-shell-interactions` (open/closed markup, transition classes,
+  ARIA states) when a rendered session was available
 - `PublisherClassification`
 - existing primitive registry state
 
@@ -47,7 +50,11 @@ Primary runtime targets:
 2. Identify stable candidates such as logos, masthead icons, share/save/gift
    buttons, close/search/hamburger/account icons, storyline rails, site-header
    shells, menu overlays, search panels, account drawers, and promo list cards.
-3. Match each candidate against existing primitive signatures before creating a new primitive.
+3. When `statefulInteractionSequences` / `uiPrimitiveRecords` are present, fold
+   the open/closed markup, transition classes, and ARIA states into the primitive
+   definition so reused chrome carries its interaction contract, not just its
+   resting markup.
+4. Match each candidate against existing primitive signatures before creating a new primitive.
 4. Reuse an existing primitive when publisher, layout family, DOM role,
    interaction contract, and visible structure are materially the same.
 5. Create a new primitive only when the new source-backed variant differs in a

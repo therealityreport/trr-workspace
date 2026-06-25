@@ -54,6 +54,69 @@ REQUIRED_PY_MAJOR=3
 REQUIRED_PY_MINOR=11
 REQUIRED_NODE_MAJOR="$(trr_node_required_major "$ROOT")"
 REQUIRED_NODE_DEFAULT_ALIAS="${REQUIRED_NODE_MAJOR}"
+DOCTOR_COMMAND_TIMEOUT_SECONDS="${DOCTOR_COMMAND_TIMEOUT_SECONDS:-10}"
+
+doctor_timed_command_output() {
+  local timeout_seconds="$1"
+  shift
+
+  if ! [[ "$timeout_seconds" =~ ^[1-9][0-9]*$ ]]; then
+    timeout_seconds=10
+  fi
+
+  "$PYTHON_BIN" - "$timeout_seconds" "$@" <<'PY'
+import os
+import signal
+import subprocess
+import sys
+
+timeout_seconds = int(sys.argv[1])
+command = sys.argv[2:]
+
+try:
+    process = subprocess.Popen(
+        command,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        text=True,
+        start_new_session=True,
+    )
+    stdout, _stderr = process.communicate(timeout=timeout_seconds)
+except subprocess.TimeoutExpired:
+    try:
+        os.killpg(process.pid, signal.SIGKILL)
+    except Exception:
+        process.kill()
+    process.communicate()
+    print(f"timeout after {timeout_seconds}s")
+    sys.exit(124)
+
+sys.stdout.write(stdout)
+sys.exit(process.returncode)
+PY
+}
+
+doctor_tool_version() {
+  local label="$1"
+  shift
+
+  local output rc
+  set +e
+  output="$(doctor_timed_command_output "$DOCTOR_COMMAND_TIMEOUT_SECONDS" "$@")"
+  rc="$?"
+  set -e
+  if [[ "$rc" == "124" ]]; then
+    echo "${label}: ${output}"
+    echo "[doctor] WARNING: ${label} version check timed out after ${DOCTOR_COMMAND_TIMEOUT_SECONDS}s; continuing startup." >&2
+    return 0
+  fi
+  if [[ "$rc" != "0" || -z "$output" ]]; then
+    echo "${label}: unavailable"
+    echo "[doctor] WARNING: ${label} version check failed; continuing startup." >&2
+    return 0
+  fi
+  echo "${label}: ${output}"
+}
 
 python_version_str() {
   local py="$1"
@@ -154,7 +217,8 @@ fi
 
 echo "[doctor] Versions:"
 echo "  node: $(trr_node_version_string)"
-echo "  pnpm: $({ pnpm --version; } 2>/dev/null)"
+printf "  "
+doctor_tool_version "pnpm" pnpm --version
 echo "  python: ${PYTHON_BIN} ($({ ${PYTHON_BIN} --version; } 2>/dev/null))"
 echo "  workspace_dev_mode: ${WORKSPACE_DEV_MODE}"
 if [[ -n "${VIRTUAL_ENV:-}" ]]; then

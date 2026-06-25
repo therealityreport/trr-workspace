@@ -26,6 +26,17 @@ capability list live in `agents/openai.yaml`.
 | `browser.network.list` | Chrome DevTools MCP network listing |
 | `browser.network.get` | Chrome DevTools MCP network request inspection |
 | `browser.screenshot` | Chrome DevTools MCP screenshot capture |
+| `browser.resize` | Chrome DevTools MCP viewport resize/emulation |
+| `browser.click` | Chrome DevTools MCP element click for stateful capture |
+| `browser.hover` | Chrome DevTools MCP element hover for stateful capture |
+| `figma.create_file` | Figma MCP `create_new_file` (preload `/figma-create-new-file`) |
+| `figma.generate_design` | Figma MCP `generate_figma_design` HTML/URL-to-Figma capture |
+| `figma.use` | Figma MCP `use_figma` write API (preload `/figma-use`) |
+| `figma.search_design_system` | Figma MCP `search_design_system` (read-only) |
+| `figma.get_variable_defs` | Figma MCP `get_variable_defs` token read (read-only) |
+| `figma.get_design_context` | Figma MCP `get_design_context` round-trip (read-only) |
+| `scrapling.stealthy_fetch` | Scrapling MCP `stealthy_fetch` for WAF/paywall fallback |
+| `scrapling.screenshot` | Scrapling MCP full-page screenshot fallback |
 | `delegate.parallel` | Claude subagents when available, otherwise sequential execution |
 | `fs.edit` | Claude edit flow |
 | `check.typecheck` | repo validation command via shell |
