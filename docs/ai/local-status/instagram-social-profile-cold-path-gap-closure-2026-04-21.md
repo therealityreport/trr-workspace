@@ -434,7 +434,7 @@ then (config->>'post_id') || ':' || (config->>'comment_id')
   - Cold full-summary payload under `5000 ms`: **PASS** (`4107.9 ms`)
   - Warm full-summary payload under `750 ms`: **PASS** (`1.2 ms`)
   - `4` concurrent full summaries succeed with no generic unlabeled pool noise: **PASS**
-- HTTP shell validation was not possible in this Codex shell because neither `127.0.0.1:3000` nor `127.0.0.1:8000` was listening during the final pass, so the UI acceptance evidence for this note is the route-function validation above rather than a live curl/browser session.
+- HTTP shell validation was not possible in this Codex shell because the local app and API listeners were not running during the final pass, so the UI acceptance evidence for this note is the route-function validation above rather than a live curl/browser session.
 
 ## Comments Tab Health Closeout (2026-04-22)
 - The comments tab now uses the stable Instagram dataset-rows path for `comments_only` profile pagination instead of the drifted bespoke SQL fast path.

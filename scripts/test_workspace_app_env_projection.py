@@ -15,6 +15,24 @@ SOCIAL_DEBUG_PROFILE = ROOT / "profiles" / "social-debug.env"
 LOCAL_CLOUD_PROFILE = ROOT / "profiles" / "local-cloud.env"
 ENV_CONTRACT_DOC = ROOT / "docs" / "workspace" / "env-contract.md"
 DEFAULT_PROFILE = ROOT / "profiles" / "default.env"
+PORTFUL_BROWSER_URL_PATTERNS = (
+    "admin.localhost:3000",
+    "localhost:3000/",
+    "127.0.0.1:3000/",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://admin.trr.localhost:",
+    "https://trr.localhost:",
+    "https://api.trr.localhost:",
+)
+PORTFUL_BROWSER_URL_DOC_ROOTS = (
+    ROOT / "AGENTS.md",
+    ROOT / "docs",
+    ROOT / "TRR-APP" / "docs",
+)
+PORTFUL_BROWSER_URL_ALLOWED_PARTS = (
+    ("docs", "ai", "archive"),
+)
 
 
 class WorkspaceAppEnvProjectionTests(unittest.TestCase):
@@ -175,6 +193,67 @@ class WorkspaceAppEnvProjectionTests(unittest.TestCase):
             self.assertIn(f'{key}="${{{key}:-{value}}}"', dev_text)
             self.assertIn(f'{key}="${{{key}:-{value}}}"', status_text)
             self.assertIn(f"invalid {key}='${{{key}}}', using {value}.", dev_text)
+
+    def test_make_dev_defaults_to_hybrid_portless_runtime(self) -> None:
+        text = MAKEFILE.read_text(encoding="utf-8")
+        dev_target = text[text.index("\ndev:") : text.index("\ndev-redis:", text.index("\ndev:"))]
+        self.assertIn("dev-hybrid", dev_target)
+        self.assertIn('PROFILE="$${PROFILE:-local-cloud}"', dev_target)
+
+        dev_redis = text[text.index("\ndev-redis:") : text.index("\n# Compatibility alias", text.index("\ndev-redis:"))]
+        self.assertIn("dev-local PROFILE=local-redis", dev_redis)
+
+        dev_local = text[text.index("\ndev-local:") : text.index("\n# Deprecated compatibility alias", text.index("\ndev-local:"))]
+        self.assertIn("preflight", dev_local)
+        self.assertIn("WORKSPACE_DEV_MODE=local", dev_local)
+
+    def test_workspace_launcher_always_uses_portless_urls(self) -> None:
+        dev_text = DEV_SCRIPT.read_text(encoding="utf-8")
+        makefile_text = MAKEFILE.read_text(encoding="utf-8")
+        contract_text = ENV_CONTRACT_DOC.read_text(encoding="utf-8")
+
+        self.assertIn('WORKSPACE_USE_PORTLESS_URLS="1"', dev_text)
+        self.assertNotIn('WORKSPACE_USE_PORTLESS_URLS="${WORKSPACE_USE_PORTLESS_URLS:-0}"', dev_text)
+        self.assertNotIn("http://admin.localhost:3000", dev_text)
+        self.assertNotIn("PORTLESS_PUBLIC_PORT_SUFFIX", dev_text)
+        self.assertIn("PORTLESS_PORT=${PORTLESS_PORT} would publish numbered TRR dev URLs", dev_text)
+        self.assertIn('WORKSPACE_PORTLESS_APP_URL="https://trr.localhost"', dev_text)
+        self.assertIn('WORKSPACE_PORTLESS_ADMIN_URL="https://admin.trr.localhost"', dev_text)
+        self.assertIn('WORKSPACE_PORTLESS_API_URL="https://api.trr.localhost"', dev_text)
+        self.assertIn('ADMIN_APP_ORIGIN="${ADMIN_APP_ORIGIN:-$WORKSPACE_PORTLESS_ADMIN_URL}"', dev_text)
+        self.assertIn('TRR_APP_RUNTIME_API_URL="$WORKSPACE_PORTLESS_API_URL"', dev_text)
+        self.assertIn('WORKSPACE_PUBLIC_APP_URL="$WORKSPACE_PORTLESS_APP_URL"', dev_text)
+        self.assertIn('WORKSPACE_PUBLIC_ADMIN_URL="$WORKSPACE_PORTLESS_ADMIN_URL"', dev_text)
+        self.assertIn('WORKSPACE_PUBLIC_API_URL="$WORKSPACE_PORTLESS_API_URL"', dev_text)
+        self.assertIn("portless api.trr", dev_text)
+        self.assertIn("portless trr", dev_text)
+        self.assertIn("| `WORKSPACE_USE_PORTLESS_URLS` | `1` | `1` |", contract_text)
+        for command_prefix in makefile_text.split("bash scripts/dev-workspace.sh")[:-1]:
+            self.assertIn("WORKSPACE_USE_PORTLESS_URLS=1", command_prefix[-300:])
+
+    def test_active_docs_do_not_reintroduce_portful_browser_urls(self) -> None:
+        violations: list[str] = []
+        for root in PORTFUL_BROWSER_URL_DOC_ROOTS:
+            paths = [root] if root.is_file() else sorted(path for path in root.rglob("*") if path.is_file())
+            for path in paths:
+                relative_parts = path.relative_to(ROOT).parts
+                if any(
+                    tuple(relative_parts[index : index + len(allowed)]) == allowed
+                    for allowed in PORTFUL_BROWSER_URL_ALLOWED_PARTS
+                    for index in range(len(relative_parts) - len(allowed) + 1)
+                ):
+                    continue
+                text = path.read_text(encoding="utf-8", errors="ignore")
+                for pattern in PORTFUL_BROWSER_URL_PATTERNS:
+                    if pattern in text:
+                        violations.append(f"{path.relative_to(ROOT)} contains {pattern}")
+
+        self.assertEqual(
+            violations,
+            [],
+            "Use Portless clean URLs in active docs: https://admin.trr.localhost, "
+            "https://trr.localhost, and https://api.trr.localhost.",
+        )
 
     def test_dev_hybrid_adopts_social_safe_make_overrides(self) -> None:
         text = MAKEFILE.read_text(encoding="utf-8")

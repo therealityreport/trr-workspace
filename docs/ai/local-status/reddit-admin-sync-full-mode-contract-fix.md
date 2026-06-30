@@ -15,7 +15,7 @@ handoff:
 
 ## Problem
 
-The Reddit admin season page at `http://admin.localhost:3000/admin/social/reddit/BravoRealHousewives/rhoslc/s6` showed repeated `Failed to start reddit refresh run` errors after the episode-discussion auto-sync step succeeded.
+The Reddit admin season page at `https://admin.trr.localhost/admin/social/reddit/BravoRealHousewives/rhoslc/s6` showed repeated `Failed to start reddit refresh run` errors after the episode-discussion auto-sync step succeeded.
 
 ## Root Cause
 

@@ -12,9 +12,15 @@ WEB_LOG="$LOG_DIR/portless-web.log"
 API_LOG="$LOG_DIR/portless-api.log"
 WORDLE_LOG="$LOG_DIR/portless-wordle.log"
 READY_TIMEOUT_SECONDS="${TRR_PORTLESS_READY_TIMEOUT_SECONDS:-45}"
-PORTLESS_PUBLIC_PORT_SUFFIX=""
 if [[ -n "${PORTLESS_PORT:-}" && "${PORTLESS_PORT}" != "443" ]]; then
-  PORTLESS_PUBLIC_PORT_SUFFIX=":${PORTLESS_PORT}"
+  cat >&2 <<EOF
+[dev-portless] ERROR: PORTLESS_PORT=${PORTLESS_PORT} would publish numbered TRR dev URLs.
+[dev-portless] ERROR: unset PORTLESS_PORT and use clean Portless URLs:
+  https://admin.trr.localhost
+  https://trr.localhost
+  https://api.trr.localhost/health/live
+EOF
+  exit 2
 fi
 
 export PATH="/opt/homebrew/bin:${PATH}"
@@ -179,10 +185,10 @@ TRR_PORTLESS_WORDLE_SESSION="$WORDLE_SESSION"
 TRR_PORTLESS_WEB_LOG="$WEB_LOG"
 TRR_PORTLESS_API_LOG="$API_LOG"
 TRR_PORTLESS_WORDLE_LOG="$WORDLE_LOG"
-TRR_PORTLESS_ADMIN_URL="https://admin.trr.localhost${PORTLESS_PUBLIC_PORT_SUFFIX}"
-TRR_PORTLESS_APP_URL="https://trr.localhost${PORTLESS_PUBLIC_PORT_SUFFIX}"
-TRR_PORTLESS_API_URL="https://api.trr.localhost${PORTLESS_PUBLIC_PORT_SUFFIX}/health/live"
-TRR_PORTLESS_WORDLE_URL="https://wordle.trr.localhost${PORTLESS_PUBLIC_PORT_SUFFIX}"
+TRR_PORTLESS_ADMIN_URL="https://admin.trr.localhost"
+TRR_PORTLESS_APP_URL="https://trr.localhost"
+TRR_PORTLESS_API_URL="https://api.trr.localhost/health/live"
+TRR_PORTLESS_WORDLE_URL="https://wordle.trr.localhost"
 EOF
 }
 
@@ -229,10 +235,10 @@ start_sessions() {
   cat <<EOF
 
 [dev-portless] Clean TRR URLs are managed in separate sessions:
-  Admin: https://admin.trr.localhost${PORTLESS_PUBLIC_PORT_SUFFIX}
-  App:   https://trr.localhost${PORTLESS_PUBLIC_PORT_SUFFIX}
-  API:   https://api.trr.localhost${PORTLESS_PUBLIC_PORT_SUFFIX}/health/live
-  Wordle: https://wordle.trr.localhost${PORTLESS_PUBLIC_PORT_SUFFIX}
+  Admin: https://admin.trr.localhost
+  App:   https://trr.localhost
+  API:   https://api.trr.localhost/health/live
+  Wordle: https://wordle.trr.localhost
 
 [dev-portless] Logs:
   Web: $WEB_LOG

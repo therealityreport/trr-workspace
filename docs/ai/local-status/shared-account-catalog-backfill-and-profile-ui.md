@@ -71,7 +71,7 @@ handoff:
   - `pnpm -C /Users/thomashulihan/Projects/TRR/TRR-APP/apps/web exec eslint '/Users/thomashulihan/Projects/TRR/TRR-APP/apps/web/src/components/admin/SocialAccountProfilePage.tsx' '/Users/thomashulihan/Projects/TRR/TRR-APP/apps/web/src/lib/admin/social-account-profile.ts' '/Users/thomashulihan/Projects/TRR/TRR-APP/apps/web/src/app/api/admin/trr-api/social/profiles/[platform]/[handle]/catalog/runs/[runId]/cancel/route.ts' '/Users/thomashulihan/Projects/TRR/TRR-APP/apps/web/tests/social-account-profile-page.runtime.test.tsx'`
   - `pnpm -C /Users/thomashulihan/Projects/TRR/TRR-APP/apps/web exec vitest run /Users/thomashulihan/Projects/TRR/TRR-APP/apps/web/tests/social-account-profile-page.runtime.test.tsx`
   - `pnpm -C /Users/thomashulihan/Projects/TRR/TRR-APP/apps/web run typecheck`
-  - Managed Chrome validation on `http://admin.localhost:3000/admin/social/instagram/bravotv`, `/catalog`, and `/hashtags`
+  - Managed Chrome validation on `https://admin.trr.localhost/admin/social/instagram/bravotv`, `/catalog`, and `/hashtags`
 - Outstanding follow-up:
   - March 20, 2026 social-ingest audit:
     - Root cause of the recurring BravoTV `33 checked` / `33 saved` failures was the Instagram public GraphQL request body. The shared-account worker was sending a very lean `POST /graphql/query` payload that happened to work locally but was fragile on Modal once cursor pagination kicked in.

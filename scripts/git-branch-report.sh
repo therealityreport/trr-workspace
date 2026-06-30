@@ -114,12 +114,16 @@ describe_ref() {
   fi
 }
 
-for branch in "${extra_local[@]}"; do
-  describe_ref "$branch" "local"
-done
+if [[ "${#extra_local[@]}" -gt 0 ]]; then
+  for branch in "${extra_local[@]}"; do
+    describe_ref "$branch" "local"
+  done
+fi
 
-for branch in "${extra_remote[@]}"; do
-  describe_ref "$branch" "remote"
-done
+if [[ "${#extra_remote[@]}" -gt 0 ]]; then
+  for branch in "${extra_remote[@]}"; do
+    describe_ref "$branch" "remote"
+  done
+fi
 
 echo "[git-branch-report] Cleanup rule: keep desired content on ${DEFAULT_BRANCH}, then delete redundant refs. This report does not delete anything."
