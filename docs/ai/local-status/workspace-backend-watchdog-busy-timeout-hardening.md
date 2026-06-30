@@ -47,7 +47,7 @@ handoff:
   - `make dev`
   - `make status`
   - repeated local `curl` probes against `http://127.0.0.1:8000/health`
-  - repeated local probes against `http://127.0.0.1:3000/api/admin/reddit/communities?include_assigned_threads=0`
+  - repeated local probes against `https://admin.trr.localhost/api/admin/reddit/communities?include_assigned_threads=0`
 
 ## Result
 

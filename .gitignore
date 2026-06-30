@@ -11,8 +11,10 @@
 # Temp/scratch directories
 /.codex-tmp/
 /.codex/config.toml.bak-*
+/.codex/tmp/
 /.tmp/
 /.artifacts/
+/.tool-finder/
 .tmp-codex-bootstrap.*/
 
 # Git worktrees

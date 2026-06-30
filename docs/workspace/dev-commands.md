@@ -3,11 +3,13 @@
 Use these commands from `/Users/thomashulihan/Projects/TRR`.
 
 ## Preferred Contract
-- `make dev` is local-process-first: local `TRR-APP`, local `TRR-Backend`, direct DB lane, remote workers disabled, Modal dispatch disabled.
-- `make dev-cloud` is the explicit cloud/remote-worker path and remains on the session/pooler DB lane.
-- `make dev-hybrid` runs local app/backend on the direct DB lane while allowing Modal/remote workers on the session/pooler lane, with the social-safe worker caps applied by default, and exposes the app/admin/API through Portless clean URLs.
+- `make dev` is the default social-scraping runtime: local `TRR-APP` and `TRR-Backend`, Modal/remote social workers enabled, and Portless app/admin/API URLs.
+- All workspace `make dev*` launchers publish the app, admin, and API through Portless. `local`, `cloud`, `hybrid`, Redis, and media-safe variants change worker and DB behavior only; they do not create separate portful browser URLs.
+- `make dev-local` is the local-only worker escape hatch: local `TRR-APP`, local `TRR-Backend`, direct DB lane, remote workers disabled, Modal dispatch disabled, and the same Portless app/admin/API URLs.
+- `make dev-cloud` is the explicit cloud/remote-worker path and remains on the session/pooler DB lane with the same Portless app/admin/API URLs.
+- `make dev-hybrid` is the explicit name for the default `make dev` path: local app/backend on the direct DB lane while allowing Modal/remote workers on the session/pooler lane, with the social-safe worker caps applied by default, and app/admin/API exposed through Portless clean URLs.
 - Codex browser verification with `[@Browser](plugin://browser-use@openai-bundled)` defaults to `make dev-hybrid` unless the user specifies another startup target.
-- `make dev-portless` starts the app, API, and Wordle through Portless in separate managed sessions when stable local HTTPS names are more important than the workspace process manager.
+- `make dev-portless` is only the Wordle/separate-session launcher. It is not the normal TRR dev alternative; `make dev` already uses Portless.
 - `make stop-portless` stops the managed Portless app/API/Wordle sessions.
 - `make portless-repair` ensures the Portless proxy is in wildcard mode, removes stale static TRR aliases, syncs hosts, and prints the clean routes.
 - `make open-admin` opens the clean Portless admin dashboard at `https://admin.trr.localhost`.
@@ -16,18 +18,19 @@ Use these commands from `/Users/thomashulihan/Projects/TRR`.
 - `make vercel-cleanup-doctor` scans the TRR app checkout for stale local Vercel links, including the old nested `web` project.
 - `make vercel-link-trr` links `TRR-APP` to the `trr-app` Vercel project of record.
 - `make vercel-preview-ready` checks the local Vercel project link, checks/enables Web Analytics and Speed Insights, and writes the latest deployment URL for the `trr-app` project without deploying. The local Vercel CLI must be logged into the TRR team scope.
-- `PROFILE=default` is the canonical profile behind `make dev`. `local-cloud`, `local-lite`, and `local-full` remain compatibility profiles only.
+- `local-cloud` is the canonical profile behind `make dev`. `default`, `local-lite`, and `local-full` remain compatibility profiles only.
 
 ## Daily Commands
-- `make dev` — recommended default workspace startup (local app/backend, direct DB lane, Modal/remote disabled)
-- `make dev-redis` — start local Redis, then run local app/backend with `PROFILE=local-redis`, `REDIS_URL=redis://127.0.0.1:6379/0`, and two FastAPI workers
+- `make dev` — recommended default workspace startup for social scraping tests with Modal/Scrapling behavior; exposes app/admin/API at `https://trr.localhost`, `https://admin.trr.localhost`, and `https://api.trr.localhost`
+- `make dev-local` — local-only app/backend startup with direct DB lane, Modal/remote workers disabled, and app/admin/API exposed through Portless
+- `make dev-redis` — start local Redis, then run local-only app/backend with `PROFILE=local-redis`, `REDIS_URL=redis://127.0.0.1:6379/0`, two FastAPI workers, and app/admin/API exposed through Portless
 - `make redis-up` / `make redis-down` — start or stop only the local Redis container from `docker-compose.redis.yml`
-- `make dev-cloud` — explicit cloud/remote worker startup using the session/pooler DB lane
-- `make dev-hybrid` — safe Instagram/social hybrid mode; enables remote social workers with `WORKSPACE_TRR_REMOTE_SOCIAL_POSTS=1`, comments `8`, Instagram posts/comments platform cap `8`, post media mirror `1`, and comment media mirror `1`; exposes app/admin/API at `https://trr.localhost`, `https://admin.trr.localhost`, and `https://api.trr.localhost`
-- `make dev-hybrid-media-safe` — post-recovery hybrid mode that blocks startup when stale media claims remain, then starts post media mirror `2` and comment media mirror `2`
-- `make dev-hybrid-media-safe-posts` — media-safe startup biased toward post media mirror lanes; uses post media mirror `3` and comment media mirror `1`
-- `make dev-hybrid-media-safe-comments` — media-safe startup biased toward comment media mirror lanes; uses post media mirror `1` and comment media mirror `3`
-- `make dev-hybrid-media-safe-bravotv` — Bravo pending-media drain preset; blocks on stale media claims, then starts post discovery `0`, comments `2`, post media mirror `4`, and comment media mirror `1`
+- `make dev-cloud` — explicit cloud/remote worker startup using the session/pooler DB lane and app/admin/API exposed through Portless
+- `make dev-hybrid` — explicit alias for the default hybrid social mode; enables remote social workers with `WORKSPACE_TRR_REMOTE_SOCIAL_POSTS=1`, comments `8`, Instagram posts/comments platform cap `8`, post media mirror `1`, and comment media mirror `1`; exposes app/admin/API at `https://trr.localhost`, `https://admin.trr.localhost`, and `https://api.trr.localhost`
+- `make dev-hybrid-media-safe` — Portless hybrid mode that blocks startup when stale media claims remain, then starts post media mirror `2` and comment media mirror `2`
+- `make dev-hybrid-media-safe-posts` — Portless media-safe startup biased toward post media mirror lanes; uses post media mirror `3` and comment media mirror `1`
+- `make dev-hybrid-media-safe-comments` — Portless media-safe startup biased toward comment media mirror lanes; uses post media mirror `1` and comment media mirror `3`
+- `make dev-hybrid-media-safe-bravotv` — Portless Bravo pending-media drain preset; blocks on stale media claims, then starts post discovery `0`, comments `2`, post media mirror `4`, and comment media mirror `1`
 - `make dev-hybrid-social-safe` — compatibility alias for `make dev-hybrid`
 - `make dev-portless` — start the Next.js app, FastAPI backend, and Wordle through separate Portless-managed sessions (`https://trr.localhost`, admin at `https://admin.trr.localhost`, backend at `https://api.trr.localhost`, Wordle at `https://wordle.trr.localhost`)
 - `make stop-portless` — stop the managed Portless web/API/Wordle sessions
@@ -195,7 +198,7 @@ DELETE=1 SUPABASE_BRANCH_CLEANUP_ARGS='--name schema-docs-0199' make supabase-pr
 The cleanup script intentionally reads `TRR_SUPABASE_ACCESS_TOKEN`. It maps that token into the Supabase CLI subprocess because the CLI expects `SUPABASE_ACCESS_TOKEN`; do not export or document generic `SUPABASE_ACCESS_TOKEN` as the TRR operator contract.
 
 ## Fallback / Specialized Commands
-- `make dev-local` — deprecated compatibility alias for `make dev`
+- `make dev-local` — local-only app/backend fallback when Modal and remote workers should stay disabled
 - `make down` — retained no-op for old local infra cleanup muscle memory
 - `make bootstrap` — one-time dependency setup
 - `make app-check` — enforce the Node 24 baseline, then run TRR-APP lint and typecheck from the repo root
@@ -370,7 +373,7 @@ Use this only when you need to exercise Redis-backed FastAPI realtime fanout or 
 
 ```bash
 make redis-up
-make dev PROFILE=local-redis
+make dev-local PROFILE=local-redis
 ```
 
 `make dev-redis` combines those two steps. Stop Redis with `make redis-down` when you are done. The `local-redis` profile sets `REDIS_URL=redis://127.0.0.1:6379/0`, keeps `TRR_BACKEND_RELOAD=0`, and requests `TRR_BACKEND_WORKERS=2` with `TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER=1`.
@@ -390,9 +393,9 @@ curl -sS \
 - `TRR-Backend make schema-docs-reset-check` — backend-local replay fallback when an isolated remote validation target does not answer the reset/replay question
 - `TRR-Backend make ci-local` — Docker-backed local replay parity lane for intentionally local-only backend verification
 
-If your task is ordinary backend/app development or milestone verification without browser-plugin verification, start with the local direct path. Use `make dev-cloud` or `make dev-hybrid` when the task explicitly needs Modal or remote worker behavior, or when Codex browser verification is requested or materially useful under the project rules.
+Use `make dev` for the normal TRR dev loop, especially social scraping tests that need Modal, Scrapling, and clean browser URLs. Use `make dev-local` only when the task explicitly needs local-only worker behavior with remote workers disabled. Use `make dev-cloud` when the task needs the explicit cloud/session path without local direct DB behavior. All of these keep the same Portless app/admin/API URLs.
 
-Use `make dev-hybrid` when you need both Modal or remote-worker behavior and stable HTTPS local names for the app/admin/API. Use `make dev-portless` when you also need Wordle or want the app, API, and Wordle in separate Portless-managed sessions instead of the workspace process manager.
+`make dev-hybrid` remains as the explicit name for the default `make dev` path. Use `make dev-portless` only when Wordle or separate Portless-managed screen sessions are the target; it is not a separate URL mode for normal TRR dev.
 
 Use `/Users/thomashulihan/Projects/TRR/docs/workspace/portless-clean-urls.md` as the shared Portless runbook snippet. It owns the current clean app, admin, API, and repair URLs.
 
@@ -401,15 +404,13 @@ Use `/Users/thomashulihan/Projects/TRR/docs/workspace/portless-clean-urls.md` as
 - Portless admin: `https://admin.trr.localhost`
 - Portless backend: `https://api.trr.localhost`
 - Portless Wordle: `https://wordle.trr.localhost`
-- Direct backend health for local API debugging: `http://127.0.0.1:8000/health/live`
 
 Use subdomain-first admin URLs for browser work: `https://admin.trr.localhost/<slug>`.
 Do not use path-first admin URLs such as `https://trr.localhost/admin/<slug>` as
-the clean local target. Classic portful app/admin URLs are legacy compatibility
-paths only; do not use them as active runbook examples unless the task explicitly enables
-`TRR_LEGACY_LOCAL_ADMIN_FALLBACK=1`.
+the clean local target. Do not use classic portful app/admin URLs as active
+runbook examples for workspace make targets.
 
-The default `make dev` profile now launches only TRR-APP and TRR-Backend. Screenalytics remains an admin feature label in the app, not a separately managed local runtime.
+The local-only `make dev-local` profile launches only TRR-APP and TRR-Backend. Screenalytics remains an admin feature label in the app, not a separately managed local runtime.
 
 Flashback live gameplay is currently disabled and `/flashback`, `/flashback/cover`, and `/flashback/play` redirect to `/hub`, so legacy browser-only Flashback envs are not part of the normal `make dev` startup contract.
 
@@ -421,13 +422,13 @@ If preflight warns that generated env-contract docs are stale, refresh them inte
 
 Browser automation warnings now come from the same structured readiness states used by `make chrome-devtools-mcp-status`: `ready`, `degraded`, `recoverable`, and `unavailable`. A missing shared `9422` keeper with working auto-launch remains a recoverable state, not an unavailable one.
 
-The default profile runs TRR long jobs locally. Shared-account Instagram `Sync Recent`, `Resume Tail`, and `Backfill Posts` use Modal-owned dispatch only through `make dev-cloud`, `make dev-hybrid`, or an explicit reviewed override.
+The default `make dev` path uses Modal-owned dispatch for shared-account Instagram `Sync Recent`, `Resume Tail`, and `Backfill Posts`. Use `make dev-local` only when long jobs should stay local.
 
 For migration or schema validation, prefer an isolated Supabase branch or disposable database target and point `TRR_DB_URL` there before running backend verification commands. Do not aim destructive replay or reset flows at shared persistent databases.
 
 Shared-schema migration ownership is documented in `/Users/thomashulihan/Projects/TRR/docs/workspace/migration-ownership-policy.md`; check new app migrations with `make migration-ownership-lint`.
 
-`make dev` includes a startup runtime-reconcile phase before app/backend launch. It validates direct DB identity before any migration apply or repair decision, can auto-apply only a bounded allowlisted Supabase migration suffix, and does not auto-run `supabase migration repair`, schema-doc checks, Render deploys, or tracked-doc refreshes. Modal auto-deploy behavior belongs to explicit cloud/hybrid modes.
+`make dev` includes a startup runtime-reconcile phase before app/backend launch. It validates direct DB identity before any migration apply or repair decision, can auto-apply only a bounded allowlisted Supabase migration suffix, and does not auto-run `supabase migration repair`, schema-doc checks, Render deploys, or tracked-doc refreshes.
 
 If runtime reconcile blocks on Supabase history drift, use `/Users/thomashulihan/Projects/TRR/TRR-Backend/docs/runbooks/supabase_migration_history_repair.md`. If runtime reconcile blocks on Modal, inspect `python TRR-Backend/scripts/modal/verify_modal_readiness.py --json --probe-remote-auth instagram` for blocking readiness, then add `--probe-getty-remote-access` when you want advisory Getty transport diagnostics. `make status` now surfaces the nested Getty probe under the Modal runtime section. Render and Decodo checks remain advisory-only and are surfaced there as well.
 

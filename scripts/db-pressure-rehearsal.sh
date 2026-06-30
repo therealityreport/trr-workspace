@@ -77,8 +77,8 @@ preflight_rc="$?"
 set -e
 
 capture_status "before"
-capture_url "backend-db-pressure" "http://127.0.0.1:8000/health/db-pressure"
-capture_url "app-root" "http://127.0.0.1:3000/"
+capture_url "backend-db-pressure" "https://api.trr.localhost/health/db-pressure"
+capture_url "app-root" "https://trr.localhost/"
 sleep 2
 capture_status "after"
 capture_log_signals

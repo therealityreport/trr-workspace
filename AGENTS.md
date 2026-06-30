@@ -39,7 +39,14 @@ Use a multi-context domain-doc layout: start from root `CONTEXT-MAP.md` when it 
 - Set `CODEX_CHROME_PREFERENCES_PATH="/Users/thomashulihan/Library/Application Support/Google/Chrome/Profile 11/Preferences"` before Chrome-backed launches unless another profile is requested.
 - Use [@supabase](plugin://supabase@openai-curated) for Supabase docs, schema/data, migrations, RLS/auth/storage, advisors, or contracts. Prefer the repo-local Supabase MCP and `TRR_SUPABASE_ACCESS_TOKEN`.
 - Use [@modal-platform](plugin://modal-platform@local-plugins) with admin-56995 / trr-backend-jobs for Modal work.
+- Use [@cloudflare](plugin://cloudflare@openai-curated) with the TRR Cloudflare account that owns `thereality.report` and TRR infrastructure. Do not use the THB-BBL/`tommyhulihanbasketball.com` Cloudflare account for TRR work.
+- For Cloudflare MCP/API auth in this workspace, prefer a TRR-scoped token env var such as `TRR_CLOUDFLARE_API_TOKEN`; do not store Cloudflare API keys or tokens in repo files.
 - Keep inherited MCPs, plugins, and skills unless explicitly disabled.
+
+## Portless URLs
+- Use Portless clean URLs for TRR browser and runbook work: `https://admin.trr.localhost`, `https://trr.localhost`, and `https://api.trr.localhost`.
+- Do not use classic localhost/admin hosts with browser port 3000, loopback app URLs with browser port 3000, or numbered Portless URLs.
+- Local loopback ports may still appear as internal service bindings in process output, logs, or low-level diagnostics, but they are not the documented operator/browser URLs.
 
 ## Subagents
 - Use subagents for separable backend, app, scraper, database, deploy, or browser work.

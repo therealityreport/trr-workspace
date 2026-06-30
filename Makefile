@@ -8,24 +8,25 @@
 	redis-up redis-down down chrome-repair chrome-devtools-mcp-status chrome-devtools-mcp-clean-stale chrome-devtools-mcp-stop-conflicts next-devtools-mcp-status node-repl-mcp-clean-stale codex-browser-transport-reset \
 	context7-repair mcp-clean chrome-dock-clean \
 	workspace-pr-agent \
-	getty-server getty-tunnel getty-remote modal-instagram-auth-status modal-instagram-auth-repair \
+	getty-server getty-tunnel getty-remote modal-instagram-auth-status modal-instagram-auth-repair socialblade-auth-repair \
 	instagram-backfill-preflight instagram-backfill-progress instagram-backfill-recover-stalled instagram-posts-smoke instagram-posts-benchmark bravo-straggler-recovery instagram-media-mirror-recovery instagram-one-post-media-mirror social-queue-snapshot
 
 DOCKER_COMPOSE ?= docker compose
 REDIS_COMPOSE_FILE ?= docker-compose.redis.yml
 REDIS_COMPOSE_PROJECT ?= trr-local-redis
 
-# Daily default: `make dev` runs local TRR-APP + local TRR-Backend on the direct DB lane.
-# Remote workers and Modal dispatch are disabled unless an explicit cloud/hybrid target is used.
+# Daily default: `make dev` runs the Modal-capable hybrid workspace with
+# Portless app/admin/API URLs for social scraping work.
 # To override the default profile explicitly:
-# PROFILE=default make dev
+# PROFILE=local-cloud make dev
+# make dev-local                     # local-only app/backend, remote workers disabled
 # make dev-cloud                      # explicit cloud/remote worker mode
 # make dev-hybrid                     # local direct app/backend plus remote social-safe workers and Portless app/admin/API URLs
 # make dev-hybrid-media-safe          # post-recovery hybrid mode with two media mirror lanes
 # make dev-hybrid-media-safe-posts    # post media biased media-safe preset
 # make dev-hybrid-media-safe-comments # comment media biased media-safe preset
 # make dev-hybrid-media-safe-bravotv  # Bravo pending-media drain preset
-# make dev-portless                   # app, API, and Wordle through stable Portless HTTPS names in separate managed sessions
+# make dev-portless                   # Wordle/separate-session Portless launcher, not the normal TRR dev path
 # make stop-portless                  # stop managed Portless app/API/Wordle sessions
 # make portless-repair                # repair Portless proxy state and remove stale static TRR aliases
 # PROFILE=local-cloud make dev-cloud  # deprecated compatibility alias
@@ -42,12 +43,11 @@ REDIS_COMPOSE_PROJECT ?= trr-local-redis
 # TRR_BACKEND_RELOAD=0 make dev          # opt out of backend hot-reload when you need non-reload stability
 # TRR_ADMIN_ROUTE_CACHE_DISABLED=0 make dev  # re-enable local admin route caching if you want production-like staleness locally
 dev:
-	@$(MAKE) --no-print-directory preflight
-	@PROFILE="$${PROFILE:-default}" WORKSPACE_DEV_MODE=local bash scripts/dev-workspace.sh
+	@$(MAKE) --no-print-directory dev-hybrid PROFILE="$${PROFILE:-local-cloud}"
 
 dev-redis:
 	@$(MAKE) --no-print-directory redis-up
-	@$(MAKE) --no-print-directory dev PROFILE=local-redis
+	@$(MAKE) --no-print-directory dev-local PROFILE=local-redis
 
 # Compatibility alias for the canonical default path.
 dev-lite:
@@ -57,7 +57,7 @@ dev-lite:
 # Explicit cloud/remote path.
 dev-cloud:
 	@$(MAKE) --no-print-directory preflight-cloud
-	@PROFILE="$${PROFILE:-local-cloud}" WORKSPACE_DEV_MODE=cloud bash scripts/dev-workspace.sh
+	@WORKSPACE_USE_PORTLESS_URLS=1 PROFILE="$${PROFILE:-local-cloud}" WORKSPACE_DEV_MODE=cloud bash scripts/dev-workspace.sh
 
 # Explicit hybrid path: local app/backend use direct DB; Modal/remote workers use session/pooler.
 # Social scraping is enabled with conservative post discovery and downstream fan-out.
@@ -91,6 +91,7 @@ dev-hybrid-media-safe:
 	SOCIAL_PLATFORM_CAP_PER_ACCOUNT_SCALING=false \
 	WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR=2 \
 	WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR=2 \
+	WORKSPACE_USE_PORTLESS_URLS=1 \
 	PROFILE="$${PROFILE:-local-cloud}" WORKSPACE_DEV_MODE=hybrid bash scripts/dev-workspace.sh
 
 dev-hybrid-media-safe-posts:
@@ -107,6 +108,7 @@ dev-hybrid-media-safe-posts:
 	SOCIAL_PLATFORM_CAP_PER_ACCOUNT_SCALING=false \
 	WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR=3 \
 	WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR=1 \
+	WORKSPACE_USE_PORTLESS_URLS=1 \
 	PROFILE="$${PROFILE:-local-cloud}" WORKSPACE_DEV_MODE=hybrid bash scripts/dev-workspace.sh
 
 dev-hybrid-media-safe-comments:
@@ -123,6 +125,7 @@ dev-hybrid-media-safe-comments:
 	SOCIAL_PLATFORM_CAP_PER_ACCOUNT_SCALING=false \
 	WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR=1 \
 	WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR=3 \
+	WORKSPACE_USE_PORTLESS_URLS=1 \
 	PROFILE="$${PROFILE:-local-cloud}" WORKSPACE_DEV_MODE=hybrid bash scripts/dev-workspace.sh
 
 dev-hybrid-media-safe-bravotv:
@@ -141,6 +144,7 @@ dev-hybrid-media-safe-bravotv:
 	WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR=4 \
 	WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR=1 \
 	TRR_SOCIAL_OPERATOR_PRESET=bravotv-pending-media-drain \
+	WORKSPACE_USE_PORTLESS_URLS=1 \
 	PROFILE="$${PROFILE:-local-cloud}" WORKSPACE_DEV_MODE=hybrid bash scripts/dev-workspace.sh
 
 # Detached hybrid launcher for keeping the Modal-capable workspace alive after the shell exits.
@@ -207,6 +211,17 @@ modal-instagram-auth-repair:
 	if [ "$${DRY_RUN:-0}" = "1" ]; then dry_run_arg="--dry-run"; fi; \
 	echo "[workspace] Instagram Modal auth repair timeouts: validate=120s, refresh=420s, apply=180s, deploy=900s, verify=120s" >&2; \
 	"$$python_cmd" scripts/modal/repair_instagram_auth.py --json $$account_arg $$env_arg $$dry_run_arg
+
+socialblade-auth-repair:
+	@if [ -z "$${ACCOUNT_HANDLE:-$${SOCIALBLADE_VALIDATION_HANDLE:-}}" ]; then echo "ERROR: set ACCOUNT_HANDLE=<real-instagram-handle> for SocialBlade validation" >&2; exit 2; fi
+	@backend_dir="$${TRR_MODAL_BACKEND_DIR:-$(CURDIR)/TRR-Backend}"; \
+	python_cmd="$${TRR_BACKEND_PYTHON:-$(CURDIR)/TRR-Backend/.venv/bin/python}"; \
+	source_env="$${TRR_MODAL_SOURCE_ENV:-$$backend_dir/.env}"; \
+	TRR_MODAL_BACKEND_DIR="$$backend_dir" TRR_MODAL_SOURCE_ENV="$$source_env" bash ./scripts/modal-billing-guardrail.sh; \
+	cd "$$backend_dir" && \
+	apply_arg=""; \
+	if [ "$${APPLY_MODAL:-0}" = "1" ]; then apply_arg="--apply-modal"; fi; \
+	"$$python_cmd" scripts/socials/repair_socialblade_auth.py --json --source-env "$$source_env" --chrome-profile "$${SOCIAL_AUTH_CHROME_PROFILE:-codex@thereality.report}" --validation-handle "$${ACCOUNT_HANDLE:-$${SOCIALBLADE_VALIDATION_HANDLE}}" $$apply_arg
 
 instagram-backfill-preflight:
 	@if [ -z "$${ACCOUNT_HANDLE:-}" ]; then echo "ERROR: set ACCOUNT_HANDLE=<instagram-handle>" >&2; exit 2; fi; \
@@ -315,10 +330,9 @@ dev-hybrid-social-safe:
 	@echo "[workspace] NOTE: 'make dev-hybrid-social-safe' is now an alias for 'make dev-hybrid'."
 	@$(MAKE) --no-print-directory dev-hybrid PROFILE="$${PROFILE:-local-cloud}"
 
-# Deprecated compatibility alias retained for older local muscle memory.
 dev-local:
-	@echo "[workspace] NOTE: 'make dev-local' is deprecated; running 'make dev'."
-	@$(MAKE) --no-print-directory dev PROFILE="$${PROFILE:-default}"
+	@$(MAKE) --no-print-directory preflight
+	@WORKSPACE_USE_PORTLESS_URLS=1 PROFILE="$${PROFILE:-default}" WORKSPACE_DEV_MODE=local bash scripts/dev-workspace.sh
 
 # Deprecated compatibility alias retained for older local muscle memory.
 dev-full:
@@ -528,19 +542,20 @@ redis-down:
 
 help:
 	@echo "Workspace commands:"
-	@echo "  make dev          - local TRR-APP + local TRR-Backend, direct DB lane, remote workers disabled"
+	@echo "  make dev          - default hybrid social scraping runtime with Modal workers and Portless app/admin/API URLs"
 	@echo "  make status       - workspace health and PID snapshot (STATUS_ARGS=--json for JSON)"
 	@echo "  make status-json  - workspace health and PID snapshot as JSON"
-	@echo "  make dev-redis    - start local Redis, then run make dev with PROFILE=local-redis"
+	@echo "  make dev-local    - local-only TRR-APP + TRR-Backend, direct DB lane, remote workers disabled"
+	@echo "  make dev-redis    - start local Redis, then run make dev-local with PROFILE=local-redis"
 	@echo "  make dev-cloud    - explicit cloud/remote worker path using session/pooler DB"
-	@echo "  make dev-hybrid   - hybrid social mode plus Portless app/admin/API URLs: dispatch=8, concurrency=8, posts=1, comments=8, media=1, comment media=1"
+	@echo "  make dev-hybrid   - explicit name for make dev"
 	@echo "  make dev-hybrid-media-safe - post-recovery hybrid social mode with media=2 and comment media=2"
 	@echo "  make dev-hybrid-media-safe-posts - post-recovery hybrid mode biased toward post media lanes"
 	@echo "  make dev-hybrid-media-safe-comments - post-recovery hybrid mode biased toward comment media lanes"
 	@echo "  make dev-hybrid-media-safe-bravotv - Bravo pending-media drain preset with media=4, posts=0"
 	@echo "  make dev-hybrid-bg - starts Modal-capable make dev-hybrid detached, writing .logs/workspace/dev-hybrid-background.log"
 	@echo "  make dev-hybrid-social-safe - alias for make dev-hybrid"
-	@echo "  make dev-portless - app, API, and Wordle through stable Portless HTTPS names in managed sessions"
+	@echo "  make dev-portless - Wordle/separate-session Portless launcher; make dev already uses Portless"
 	@echo "  make stop-portless - stop managed Portless app/API/Wordle sessions"
 	@echo "  make portless-repair - ensure Portless wildcard routing and remove stale TRR static aliases"
 	@echo "  make open-admin   - open the clean Portless admin dashboard"
@@ -555,7 +570,6 @@ help:
 	@echo "  make instagram-media-mirror-recovery - dry-run or apply stale Instagram media mirror recovery (RUN_ID=... APPLY=1 CONFIRM_APPLY='RECOVER MEDIA MIRROR JOBS' optional)"
 	@echo "  make instagram-one-post-media-mirror - run one post media mirror job exactly (JOB_ID=... or POST_ID=...; MODAL=1 optional)"
 	@echo "  make social-queue-snapshot - reusable run/stage queue snapshot (RUN_ID=... STAGE=media_mirror JSON=1 optional)"
-	@echo "  make dev-local    - deprecated alias for make dev"
 	@echo "  make preflight    - validates the local/direct workspace path"
 	@echo "  make preflight-cloud - validates the explicit cloud/session path"
 	@echo "  make preflight-hybrid - validates direct local plus session remote separation"

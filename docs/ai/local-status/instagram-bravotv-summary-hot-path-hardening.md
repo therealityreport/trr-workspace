@@ -18,7 +18,7 @@ handoff:
 - `TRR-Backend/tests/repositories/test_social_season_analytics.py`
 
 ## Problem
-- `http://admin.localhost:3000/social/instagram/bravotv` was not the same failure as the earlier Modal dispatch issue on `@bravodailydish`.
+- `https://admin.trr.localhost/social/instagram/bravotv` was not the same failure as the earlier Modal dispatch issue on `@bravodailydish`.
 - The live backend summary path for `instagram/bravotv` was repeatedly timing out or stalling because summary assembly reloaded the full Instagram account dataset while computing hashtag aggregates.
 
 ## Root Cause

@@ -524,7 +524,7 @@ def _build_inventory_markdown() -> str:
             "",
             "| Surface | Owner alias | Runtime context | Privilege | Allowed environments | Connection/API type | Notes |",
             "|---|---|---|---|---|---|---|",
-            "| `TRR_DB_DIRECT_URL` | `workspace-ops` | Local `make dev` Next server and backend API | postgres role | local only | Direct Postgres | Required local direct lane for default `make dev`; never pass to Modal, Render, Cloud Run, Vercel, or remote workers. |",
+            "| `TRR_DB_DIRECT_URL` | `workspace-ops` | Local app/backend in `make dev`, `make dev-hybrid`, and `make dev-local` | postgres role | local only | Direct Postgres | Required local direct lane for local app/backend; never pass to Modal, Render, Cloud Run, Vercel, or remote workers. |",
             "| `TRR_DB_SESSION_URL`, `TRR_DB_URL`, `TRR_DB_FALLBACK_URL` | `workspace-ops` | Cloud/hybrid remote workers, deployed runtimes, and migration/tooling | postgres role | local, preview, production | Postgres session by default | Session-mode runtime lane; `TRR_DB_URL` remains the compatibility fallback while explicit lanes roll out. |",
             "| `TRR_DB_TRANSACTION_URL`, `TRR_DB_RUNTIME_LANE`, `TRR_DB_TRANSACTION_FLIGHT_TEST` | `workspace-ops` | Scoped Next/backend read flight tests | postgres role | local, preview, production with review | Supavisor transaction mode | Optional `:6543` lane; selected only when runtime lane is `transaction` and flight-test flag is enabled. |",
             "| `TRR_CORE_SUPABASE_URL`, `TRR_CORE_SUPABASE_SERVICE_ROLE_KEY` | `admin-read-model` | Next server only | service role | local, preview, production | Supabase REST/Auth/Storage API | Server/admin only; never browser public. |",

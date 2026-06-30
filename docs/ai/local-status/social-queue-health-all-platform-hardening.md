@@ -41,4 +41,4 @@ handoff:
   - `cd /Users/thomashulihan/Projects/TRR/TRR-APP && pnpm -C apps/web exec vitest run tests/system-health-modal.test.tsx`
 - Notes:
   - `ruff check` on the touched backend files is still noisy because those files already contain pre-existing long-line violations outside this change set.
-  - Browser verification was requested after code/test validation; if it is still needed later, start from `http://admin.localhost:3000` and open the `System Jobs Health` modal to confirm the blocked/stuck split against live data.
+  - Browser verification was requested after code/test validation; if it is still needed later, start from `https://admin.trr.localhost` and open the `System Jobs Health` modal to confirm the blocked/stuck split against live data.

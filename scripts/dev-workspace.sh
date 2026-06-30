@@ -15,8 +15,9 @@ source "$ROOT/scripts/lib/preflight-browser-attention.sh"
 source "$ROOT/scripts/lib/context7-status.sh"
 
 # Optional profile defaults.
-# Usage: PROFILE=default make dev
-# Default workspace contract: `make dev` is local app/backend on the direct DB lane.
+# Usage: PROFILE=local-cloud make dev
+# `make dev` delegates here through the hybrid target; use `make dev-local`
+# for local app/backend only on the direct DB lane.
 PROFILE="${PROFILE:-}"
 if [[ -n "$PROFILE" ]]; then
   PROFILE_FILE="$ROOT/profiles/${PROFILE}.env"
@@ -53,6 +54,21 @@ if [[ -n "$PROFILE" ]]; then
       echo "[workspace] NOTE: PROFILE=local-full is deprecated; use the explicit Docker fallback: make dev-local (or PROFILE=local-docker make dev-local)." >&2
       ;;
   esac
+fi
+
+if [[ -n "${PORTLESS_PORT:-}" && "${PORTLESS_PORT}" != "443" ]]; then
+  cat >&2 <<EOF
+[workspace] ERROR: PORTLESS_PORT=${PORTLESS_PORT} would publish numbered TRR dev URLs.
+[workspace] ERROR: TRR dev-hybrid must use clean Portless URLs:
+  https://admin.trr.localhost
+  https://trr.localhost
+  https://api.trr.localhost
+
+[workspace] Unset PORTLESS_PORT and rerun:
+  unset PORTLESS_PORT
+  make dev-hybrid
+EOF
+  exit 2
 fi
 
 WORKSPACE_DEV_MODE="${WORKSPACE_DEV_MODE:-local}"
@@ -312,7 +328,7 @@ WORKSPACE_ENFORCE_DB_HOLDER_BUDGET="${WORKSPACE_ENFORCE_DB_HOLDER_BUDGET:-0}"
 WORKSPACE_OPEN_BROWSER="${WORKSPACE_OPEN_BROWSER:-0}"
 WORKSPACE_OPEN_ADMIN_BROWSER="${WORKSPACE_OPEN_ADMIN_BROWSER:-1}"
 WORKSPACE_BROWSER_TAB_SYNC_MODE="${WORKSPACE_BROWSER_TAB_SYNC_MODE:-reuse_no_reload}"
-WORKSPACE_USE_PORTLESS_URLS="${WORKSPACE_USE_PORTLESS_URLS:-0}"
+WORKSPACE_USE_PORTLESS_URLS="1"
 WORKSPACE_HEALTH_CURL_MAX_TIME="${WORKSPACE_HEALTH_CURL_MAX_TIME:-8}"
 WORKSPACE_HEALTH_TIMEOUT_BACKEND="${WORKSPACE_HEALTH_TIMEOUT_BACKEND:-30}"
 WORKSPACE_HEALTH_TIMEOUT_APP="${WORKSPACE_HEALTH_TIMEOUT_APP:-60}"
@@ -569,10 +585,6 @@ if ! [[ "$WORKSPACE_ENFORCE_DB_HOLDER_BUDGET" =~ ^[01]$ ]]; then
   echo "[workspace] WARNING: invalid WORKSPACE_ENFORCE_DB_HOLDER_BUDGET='${WORKSPACE_ENFORCE_DB_HOLDER_BUDGET}', using 0." >&2
   WORKSPACE_ENFORCE_DB_HOLDER_BUDGET="0"
 fi
-if ! [[ "$WORKSPACE_USE_PORTLESS_URLS" =~ ^[01]$ ]]; then
-  echo "[workspace] WARNING: invalid WORKSPACE_USE_PORTLESS_URLS='${WORKSPACE_USE_PORTLESS_URLS}', using 0." >&2
-  WORKSPACE_USE_PORTLESS_URLS="0"
-fi
 # Avoid relying on `#!/usr/bin/env bash` (or the `env` command) in sub-scripts.
 # If PATH contains a slow/unavailable entry, `/usr/bin/env` can hang while
 # searching for `bash`, leaving services "started" but with no listeners.
@@ -587,44 +599,26 @@ fi
 TRR_BACKEND_PORT="${TRR_BACKEND_PORT:-8000}"
 TRR_APP_PORT="${TRR_APP_PORT:-3000}"
 TRR_APP_HOST="${TRR_APP_HOST:-127.0.0.1}"
-PORTLESS_PUBLIC_PORT_SUFFIX=""
-if [[ -n "${PORTLESS_PORT:-}" && "${PORTLESS_PORT}" != "443" ]]; then
-  PORTLESS_PUBLIC_PORT_SUFFIX=":${PORTLESS_PORT}"
-fi
-WORKSPACE_PORTLESS_APP_URL="https://trr.localhost${PORTLESS_PUBLIC_PORT_SUFFIX}"
-WORKSPACE_PORTLESS_ADMIN_URL="https://admin.trr.localhost${PORTLESS_PUBLIC_PORT_SUFFIX}"
-WORKSPACE_PORTLESS_API_URL="https://api.trr.localhost${PORTLESS_PUBLIC_PORT_SUFFIX}"
-if [[ "$WORKSPACE_USE_PORTLESS_URLS" == "1" ]]; then
-  ADMIN_APP_ORIGIN="${ADMIN_APP_ORIGIN:-$WORKSPACE_PORTLESS_ADMIN_URL}"
-  ADMIN_APP_HOSTS="${ADMIN_APP_HOSTS:-admin.trr.localhost,trr.localhost,localhost,127.0.0.1,[::1]}"
-else
-  ADMIN_APP_ORIGIN="${ADMIN_APP_ORIGIN:-http://admin.localhost:3000}"
-  ADMIN_APP_HOSTS="${ADMIN_APP_HOSTS:-admin.localhost,localhost,127.0.0.1,[::1]}"
-fi
+WORKSPACE_PORTLESS_APP_URL="https://trr.localhost"
+WORKSPACE_PORTLESS_ADMIN_URL="https://admin.trr.localhost"
+WORKSPACE_PORTLESS_API_URL="https://api.trr.localhost"
+ADMIN_APP_ORIGIN="${ADMIN_APP_ORIGIN:-$WORKSPACE_PORTLESS_ADMIN_URL}"
+ADMIN_APP_HOSTS="${ADMIN_APP_HOSTS:-admin.trr.localhost,trr.localhost,localhost,127.0.0.1,[::1]}"
 ADMIN_ENFORCE_HOST="${ADMIN_ENFORCE_HOST:-true}"
 ADMIN_STRICT_HOST_ROUTING="${ADMIN_STRICT_HOST_ROUTING:-false}"
 
-# Managed local workspace runs always use loopback service URLs derived from
-# the launcher ports. Inherited shell values must not hijack local routing.
+# Managed local services still bind to loopback ports, but every public/browser
+# URL projected by the workspace launcher uses Portless clean HTTPS routes.
 TRR_API_URL="http://127.0.0.1:${TRR_BACKEND_PORT}"
-TRR_APP_RUNTIME_API_URL="$TRR_API_URL"
-WORKSPACE_PUBLIC_APP_URL="http://${TRR_APP_HOST}:${TRR_APP_PORT}"
-WORKSPACE_PUBLIC_ADMIN_URL="$ADMIN_APP_ORIGIN"
-WORKSPACE_PUBLIC_API_URL="$TRR_API_URL"
 WORKSPACE_BACKEND_CORS_ALLOW_ORIGINS="http://127.0.0.1:${TRR_APP_PORT},http://localhost:${TRR_APP_PORT}"
-WORKSPACE_PORTLESS_APP_ENV_URL=""
-WORKSPACE_PORTLESS_ADMIN_ENV_URL=""
-WORKSPACE_PORTLESS_ROOT_ENV_URL=""
-if [[ "$WORKSPACE_USE_PORTLESS_URLS" == "1" ]]; then
-  TRR_APP_RUNTIME_API_URL="$WORKSPACE_PORTLESS_API_URL"
-  WORKSPACE_PUBLIC_APP_URL="$WORKSPACE_PORTLESS_APP_URL"
-  WORKSPACE_PUBLIC_ADMIN_URL="$WORKSPACE_PORTLESS_ADMIN_URL"
-  WORKSPACE_PUBLIC_API_URL="$WORKSPACE_PORTLESS_API_URL"
-  WORKSPACE_BACKEND_CORS_ALLOW_ORIGINS="${WORKSPACE_BACKEND_CORS_ALLOW_ORIGINS},${WORKSPACE_PORTLESS_APP_URL},${WORKSPACE_PORTLESS_ADMIN_URL}"
-  WORKSPACE_PORTLESS_APP_ENV_URL="$WORKSPACE_PORTLESS_APP_URL"
-  WORKSPACE_PORTLESS_ADMIN_ENV_URL="$WORKSPACE_PORTLESS_ADMIN_URL"
-  WORKSPACE_PORTLESS_ROOT_ENV_URL="$WORKSPACE_PORTLESS_APP_URL"
-fi
+TRR_APP_RUNTIME_API_URL="$WORKSPACE_PORTLESS_API_URL"
+WORKSPACE_PUBLIC_APP_URL="$WORKSPACE_PORTLESS_APP_URL"
+WORKSPACE_PUBLIC_ADMIN_URL="$WORKSPACE_PORTLESS_ADMIN_URL"
+WORKSPACE_PUBLIC_API_URL="$WORKSPACE_PORTLESS_API_URL"
+WORKSPACE_BACKEND_CORS_ALLOW_ORIGINS="${WORKSPACE_BACKEND_CORS_ALLOW_ORIGINS},${WORKSPACE_PORTLESS_APP_URL},${WORKSPACE_PORTLESS_ADMIN_URL}"
+WORKSPACE_PORTLESS_APP_ENV_URL="$WORKSPACE_PORTLESS_APP_URL"
+WORKSPACE_PORTLESS_ADMIN_ENV_URL="$WORKSPACE_PORTLESS_ADMIN_URL"
+WORKSPACE_PORTLESS_ROOT_ENV_URL="$WORKSPACE_PORTLESS_APP_URL"
 BACKEND_READINESS_URL="$(workspace_backend_readiness_url "${TRR_BACKEND_PORT}")"
 BACKEND_LIVENESS_URL="$(workspace_backend_watchdog_url "${TRR_BACKEND_PORT}")"
 TRR_APP_LOCAL_ENV_FILE="$ROOT/TRR-APP/apps/web/.env.local"
@@ -1449,11 +1443,7 @@ print_workspace_ready_summary() {
   echo "    TRR-APP:             ${WORKSPACE_PUBLIC_APP_URL}"
   echo "    TRR-APP Admin:       ${WORKSPACE_PUBLIC_ADMIN_URL}"
   echo "    TRR-Backend:         ${WORKSPACE_PUBLIC_API_URL}"
-  if [[ "$WORKSPACE_USE_PORTLESS_URLS" == "1" ]]; then
-    echo "    Direct app:          http://${TRR_APP_HOST}:${TRR_APP_PORT}"
-    echo "    Direct backend:      ${TRR_API_URL}"
-    echo "    Admin route:         wildcard via trr.localhost"
-  fi
+  echo "    Admin route:         wildcard via trr.localhost"
   echo "  Summary: $(workspace_startup_runtime_summary)"
   echo "  Workspace mode: $(workspace_dev_mode_label)"
   echo "  DB lane: $(workspace_selected_db_lane)"
@@ -1490,13 +1480,9 @@ start_trr_backend() {
   local social_stage_comments="$WORKSPACE_SOCIAL_WORKER_COMMENTS"
   local social_stage_media_mirror="$WORKSPACE_SOCIAL_WORKER_MEDIA_MIRROR"
   local social_stage_comment_media_mirror="$WORKSPACE_SOCIAL_WORKER_COMMENT_MEDIA_MIRROR"
-  local backend_exec_command="exec \"$BASH_BIN\" ./start-api.sh"
+  local backend_exec_command="exec env PORTLESS_WILDCARD=1 portless api.trr --force --app-port \"$TRR_BACKEND_PORT\" -- \"$BASH_BIN\" ./start-api.sh"
   local social_queue_enabled
   social_queue_enabled="$(workspace_social_queue_enabled)"
-
-  if [[ "$WORKSPACE_USE_PORTLESS_URLS" == "1" ]]; then
-    backend_exec_command="exec env PORTLESS_WILDCARD=1 portless api.trr --force --app-port \"$TRR_BACKEND_PORT\" -- \"$BASH_BIN\" ./start-api.sh"
-  fi
 
   if [[ "$WORKSPACE_TRR_REMOTE_EXECUTOR" == "modal" && "$WORKSPACE_TRR_MODAL_ENABLED" == "1" ]]; then
     social_stage_posts="$WORKSPACE_TRR_REMOTE_SOCIAL_POSTS"
@@ -1628,10 +1614,7 @@ start_trr_app() {
   if [[ "$WORKSPACE_TRR_APP_DEV_BUNDLER" == "webpack" ]]; then
     trr_app_dev_flag="--webpack"
   fi
-  app_exec_command="exec ./node_modules/.bin/next dev ${trr_app_dev_flag} -p \"$TRR_APP_PORT\" --hostname \"$TRR_APP_HOST\""
-  if [[ "$WORKSPACE_USE_PORTLESS_URLS" == "1" ]]; then
-    app_exec_command="exec env PORTLESS_WILDCARD=1 portless trr --force --app-port \"$TRR_APP_PORT\" -- ./node_modules/.bin/next dev ${trr_app_dev_flag} -p \"$TRR_APP_PORT\" --hostname \"$TRR_APP_HOST\""
-  fi
+  app_exec_command="exec env PORTLESS_WILDCARD=1 portless trr --force --app-port \"$TRR_APP_PORT\" -- ./node_modules/.bin/next dev ${trr_app_dev_flag} -p \"$TRR_APP_PORT\" --hostname \"$TRR_APP_HOST\""
   trr_app_postgres_pool_max="$(workspace_projected_app_postgres_pool_max)"
   trr_app_postgres_max_concurrent_operations="$(workspace_projected_app_postgres_max_concurrent_operations)"
 
@@ -1805,30 +1788,22 @@ trap 'cleanup; exit 130' INT
 trap 'cleanup; exit 143' TERM
 
 prepare_workspace_portless_routes() {
-  if [[ "$WORKSPACE_USE_PORTLESS_URLS" != "1" ]]; then
-    return 0
-  fi
-
   export PATH="/opt/homebrew/bin:${PATH}"
   if ! command -v portless >/dev/null 2>&1; then
-    echo "[workspace] ERROR: WORKSPACE_USE_PORTLESS_URLS=1 but the portless CLI was not found." >&2
+    echo "[workspace] ERROR: the portless CLI was not found." >&2
     echo "[workspace] ERROR: install or repair Portless, then rerun make dev-hybrid." >&2
     exit 127
   fi
 
-  echo "[workspace] Preparing Portless wildcard routing for dev-hybrid..."
+  echo "[workspace] Preparing Portless wildcard routing for workspace startup..."
   PORTLESS_REPAIR_ALLOW_NO_ACTIVE_ROUTES=1 bash "$ROOT/scripts/portless-repair.sh"
 }
 
 wait_workspace_portless_routes() {
-  if [[ "$WORKSPACE_USE_PORTLESS_URLS" != "1" ]]; then
-    return 0
-  fi
-
   local deadline=$((SECONDS + 30))
   local output=""
-  local app_route_pattern="https://trr[.]localhost(:[0-9]+)?[[:space:]]+->[[:space:]]+(localhost|127[.]0[.]0[.]1):${TRR_APP_PORT}([[:space:]]|$)"
-  local api_route_pattern="https://api[.]trr[.]localhost(:[0-9]+)?[[:space:]]+->[[:space:]]+(localhost|127[.]0[.]0[.]1):${TRR_BACKEND_PORT}([[:space:]]|$)"
+  local app_route_pattern="https://trr[.]localhost[[:space:]]+->[[:space:]]+(localhost|127[.]0[.]0[.]1):${TRR_APP_PORT}([[:space:]]|$)"
+  local api_route_pattern="https://api[.]trr[.]localhost[[:space:]]+->[[:space:]]+(localhost|127[.]0[.]0[.]1):${TRR_BACKEND_PORT}([[:space:]]|$)"
   while (( SECONDS < deadline )); do
     output="$(portless list 2>/dev/null || true)"
     if grep -Eq "$app_route_pattern" <<<"$output" \
@@ -1839,13 +1814,18 @@ wait_workspace_portless_routes() {
         printf '%s\n' "$output" >&2
         exit 1
       fi
+      if grep -Eq "https://(admin[.]trr|trr|api[.]trr)[.]localhost:[0-9]+" <<<"$output"; then
+        echo "[workspace] ERROR: numeric Portless TRR routes are active; clean URLs are required." >&2
+        printf '%s\n' "$output" >&2
+        exit 1
+      fi
       echo "[workspace] Portless routes are up for trr:${TRR_APP_PORT} and api.trr:${TRR_BACKEND_PORT}; admin.trr uses wildcard fallback through trr."
       return 0
     fi
     sleep 1
   done
 
-  echo "[workspace] ERROR: Portless routes did not become ready for dev-hybrid." >&2
+  echo "[workspace] ERROR: Portless routes did not become ready for workspace startup." >&2
   printf '%s\n' "$output" >&2
   exit 1
 }

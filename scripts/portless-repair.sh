@@ -3,9 +3,15 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 export PATH="/opt/homebrew/bin:${PATH}"
-PORTLESS_PUBLIC_PORT_SUFFIX=""
 if [[ -n "${PORTLESS_PORT:-}" && "${PORTLESS_PORT}" != "443" ]]; then
-  PORTLESS_PUBLIC_PORT_SUFFIX=":${PORTLESS_PORT}"
+  cat >&2 <<EOF
+[portless-repair] ERROR: PORTLESS_PORT=${PORTLESS_PORT} would publish numbered TRR dev URLs.
+[portless-repair] ERROR: unset PORTLESS_PORT and use clean Portless URLs:
+  https://admin.trr.localhost
+  https://trr.localhost
+  https://api.trr.localhost/health/live
+EOF
+  exit 2
 fi
 
 if ! command -v portless >/dev/null 2>&1; then
@@ -14,13 +20,20 @@ if ! command -v portless >/dev/null 2>&1; then
 fi
 
 echo "[portless-repair] Ensuring Portless proxy is running with wildcard host routing..."
+existing_proxy_lines="$(pgrep -fl "portless proxy start" || true)"
+if grep -Eq -- '--port[ =][0-9]+' <<<"$existing_proxy_lines"; then
+  cat >&2 <<EOF
+[portless-repair] ERROR: a Portless proxy is already running with an explicit numeric port.
+[portless-repair] ERROR: stop that proxy, then rerun make dev-hybrid so clean URLs bind on the default Portless port.
+[portless-repair] Existing proxy process:
+${existing_proxy_lines}
+EOF
+  exit 2
+fi
 if pgrep -f "portless proxy start .*--wildcard" >/dev/null 2>&1; then
   echo "[portless-repair] Portless proxy is already running in wildcard mode."
 else
   proxy_args=(--wildcard)
-  if [[ -n "${PORTLESS_PORT:-}" && "${PORTLESS_PORT}" != "443" ]]; then
-    proxy_args+=(--port "$PORTLESS_PORT" --https)
-  fi
   portless proxy start "${proxy_args[@]}"
 fi
 
@@ -41,7 +54,15 @@ else
 fi
 
 routes="$(portless list || true)"
-if ! grep -Eq 'https://trr[.]localhost(:[0-9]+)?[[:space:]]+->[[:space:]]+localhost:[0-9]+' <<<"$routes"; then
+if grep -Eq 'https://(admin[.]trr|trr|api[.]trr)[.]localhost:[0-9]+' <<<"$routes"; then
+  cat >&2 <<EOF
+[portless-repair] ERROR: numeric TRR Portless routes are active. Clean URLs are required.
+[portless-repair] Current Portless routes:
+${routes:-  <none>}
+EOF
+  exit 2
+fi
+if ! grep -Eq 'https://trr[.]localhost[[:space:]]+->[[:space:]]+localhost:[0-9]+' <<<"$routes"; then
   if [[ "${PORTLESS_REPAIR_ALLOW_NO_ACTIVE_ROUTES:-0}" == "1" ]]; then
     cat <<EOF
 [portless-repair] No active trr.localhost app route is running yet.
@@ -54,8 +75,8 @@ EOF
 [portless-repair] ERROR: no active trr.localhost app route is running.
 [portless-repair] Portless can repair hosts and proxy state, but admin.trr.localhost has no app target until the app route is registered.
 
-[portless-repair] Start the managed TRR app route:
-  cd "$ROOT_DIR" && make dev-portless
+[portless-repair] Start the normal TRR hybrid workspace:
+  cd "$ROOT_DIR" && make dev-hybrid
 
 [portless-repair] Then rerun:
   cd "$ROOT_DIR" && make portless-repair
@@ -74,11 +95,14 @@ printf '%s\n' "$routes"
 cat <<EOF
 
 [portless-repair] Clean TRR URLs:
-  Admin: https://admin.trr.localhost${PORTLESS_PUBLIC_PORT_SUFFIX}
-  App:   https://trr.localhost${PORTLESS_PUBLIC_PORT_SUFFIX}
-  API:   https://api.trr.localhost${PORTLESS_PUBLIC_PORT_SUFFIX}/health/live
-  Wordle: https://wordle.trr.localhost${PORTLESS_PUBLIC_PORT_SUFFIX}
+  Admin: https://admin.trr.localhost
+  App:   https://trr.localhost
+  API:   https://api.trr.localhost/health/live
+  Wordle: https://wordle.trr.localhost
 
-[portless-repair] Start TRR through managed Portless routes with:
+[portless-repair] Start the normal TRR hybrid workspace with:
+  cd "$ROOT_DIR" && make dev-hybrid
+
+[portless-repair] If Wordle or separate screen sessions are the target, use:
   cd "$ROOT_DIR" && make dev-portless
 EOF

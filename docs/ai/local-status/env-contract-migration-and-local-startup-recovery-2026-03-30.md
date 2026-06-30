@@ -62,7 +62,7 @@ handoff:
   - `cd /Users/thomashulihan/Projects/TRR && ./scripts/preflight.sh`
   - `cd /Users/thomashulihan/Projects/TRR && make dev`
   - `curl -fsS http://127.0.0.1:8000/health`
-  - `curl -I -fsS http://127.0.0.1:3000/`
+  - `curl -I -fsS https://admin.trr.localhost/`
 - Handoff closeout:
   - `cd /Users/thomashulihan/Projects/TRR && ./scripts/handoff-lifecycle.sh post-phase`
   - `cd /Users/thomashulihan/Projects/TRR && ./scripts/handoff-lifecycle.sh closeout`
