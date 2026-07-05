@@ -59,8 +59,8 @@ handoff:
   - `make preflight`
   - `make dev`
   - `make status`
-  - `curl -H 'Authorization: Bearer dev-admin-bypass' 'https://admin.trr.localhost/api/admin/trr-api/people/resolve-slug?slug=mary-cosby'`
-  - `curl -H 'Authorization: Bearer dev-admin-bypass' 'https://admin.trr.localhost/api/admin/trr-api/people/584abd04-9dfa-418d-9ef6-2ef00f67073d/photos?limit=25&offset=0'`
+  - `curl -H 'Host: admin.localhost:3000' -H 'Authorization: Bearer dev-admin-bypass' 'http://127.0.0.1:3000/api/admin/trr-api/people/resolve-slug?slug=mary-cosby'`
+  - `curl -H 'Host: admin.localhost:3000' -H 'Authorization: Bearer dev-admin-bypass' 'http://127.0.0.1:3000/api/admin/trr-api/people/584abd04-9dfa-418d-9ef6-2ef00f67073d/photos?limit=25&offset=0'`
   - `lsof -nP -iTCP:8501 -sTCP:LISTEN`
   - `lsof -nP -iTCP:8080 -sTCP:LISTEN`
 

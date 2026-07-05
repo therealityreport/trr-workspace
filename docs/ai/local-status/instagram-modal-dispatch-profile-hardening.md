@@ -35,7 +35,7 @@ handoff:
 - Validation:
   - `cd /Users/thomashulihan/Projects/TRR/TRR-Backend && python3.11 -m pytest tests/test_modal_dispatch.py tests/api/routers/test_socials_season_analytics.py tests/repositories/test_social_season_analytics.py -k 'resolve_modal_function or modal_dispatch_unavailable or post_social_account_catalog_backfill or post_social_account_catalog_sync_recent or build_run_dispatch_health'`
   - `cd /Users/thomashulihan/Projects/TRR/TRR-APP && pnpm -C apps/web exec vitest run -c vitest.config.ts tests/social-account-profile-page.runtime.test.tsx`
-  - `curl -I https://admin.trr.localhost/social/instagram/bravodailydish`
+  - `curl -I http://admin.localhost:3000/social/instagram/bravodailydish`
 - Notes:
   - The focused app runtime file passed under the current shell despite a Node `24.x` engine warning because the shell is on Node `v22.18.0`.
   - The targeted runtime run still emits pre-existing React test warnings about `act(...)` in unrelated polling tests within the same file; those warnings were not introduced by this change set.

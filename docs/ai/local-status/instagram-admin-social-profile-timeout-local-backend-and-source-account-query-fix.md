@@ -15,7 +15,7 @@ handoff:
 
 ## Problem
 
-The local admin page at `https://admin.trr.localhost/admin/social/instagram/[username]` was repeatedly showing `TRR-Backend request timed out.` even after a clean `make dev`.
+The local admin page at `http://admin.localhost:3000/admin/social/instagram/[username]` was repeatedly showing `TRR-Backend request timed out.` even after a clean `make dev`.
 
 Two root causes were confirmed:
 

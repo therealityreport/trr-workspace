@@ -68,5 +68,5 @@ Implemented the canonical-window truthfulness pass for Reddit season analytics:
 - This pass did not deploy.
 - The working tree already had many unrelated changes before this session; I left them alone.
 - The next practical verification step is to reload:
-  - `https://admin.trr.localhost/admin/social/reddit/BravoRealHousewives/rhoslc/s6`
-  - `https://admin.trr.localhost/admin/social/reddit/BravoRealHousewives/rhoslc/s6/e1`
+  - `http://admin.localhost:3000/admin/social/reddit/BravoRealHousewives/rhoslc/s6`
+  - `http://admin.localhost:3000/admin/social/reddit/BravoRealHousewives/rhoslc/s6/e1`

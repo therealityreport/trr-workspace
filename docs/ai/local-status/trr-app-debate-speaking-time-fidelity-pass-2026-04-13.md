@@ -18,7 +18,7 @@ handoff:
 - Added article-scoped metadata for `cssInfo`, `typographyGroups`, `colorCategories`, `featuredImage`, and chart accessibility label templates in `apps/web/src/lib/admin/design-docs-config.ts`, then updated `ArticleDetailPage.tsx` to render those richer sections.
 - Strengthened article and chart tests for the debate page so the new headings, counts, sections, featured image, color groups, note styling, and accessibility labels are asserted directly.
 - Browser verification:
-  - A Playwright screenshot of `https://admin.trr.localhost/design-docs/nyt-articles/debate-speaking-time` after hydration showed the restored `Icons & SVGs` section, `Images` section with `facebookJumbo`, CSS summary metrics, and both charts fully visible without the previously reported clipping.
+  - A Playwright screenshot of `http://admin.localhost:3000/design-docs/nyt-articles/debate-speaking-time` after hydration showed the restored `Icons & SVGs` section, `Images` section with `facebookJumbo`, CSS summary metrics, and both charts fully visible without the previously reported clipping.
 - Validation:
   - `pnpm -C /Users/thomashulihan/Projects/TRR/TRR-APP/apps/web run lint`
   - `pnpm -C /Users/thomashulihan/Projects/TRR/TRR-APP/apps/web exec next build --webpack`

@@ -1,180 +1,22 @@
 {
-  "sourcePath": "/Users/thomashulihan/.codex/attachments/b5ac7657-ccec-4c44-900f-1f78c4b48f72/pasted-text.txt",
-  "initialPlanPath": ".full-review/plan-architect/REVISED_PLAN.md",
-  "artifactDirectory": ".full-review/plan-architect",
-  "runVersion": 1,
-  "artifactVersionSuffix": "",
-  "artifactPaths": {
-    "audit": ".full-review/plan-architect/AUDIT.md",
-    "handoff": ".full-review/plan-architect/HANDOFF.md",
-    "improvements": ".full-review/plan-architect/IMPROVEMENTS.md",
-    "patches": ".full-review/plan-architect/PATCHES.md",
-    "revisedPlan": ".full-review/plan-architect/REVISED_PLAN.md",
-    "scorecard": ".full-review/plan-architect/SCORECARD.md",
-    "validation": ".full-review/plan-architect/VALIDATION.md"
-  },
-  "toolsPath": null,
-  "ledgerPath": null,
-  "improvementsPath": ".full-review/plan-architect/IMPROVEMENTS.md",
-  "auditPath": ".full-review/plan-architect/AUDIT.md",
-  "validationPath": ".full-review/plan-architect/VALIDATION.md",
-  "handoffPath": ".full-review/plan-architect/HANDOFF.md",
-  "bugCount": 2,
-  "suggestionCount": 15,
-  "restructureCount": 0,
-  "acceptedImprovementCount": 15,
-  "deferredImprovementCount": 2,
-  "rejectedImprovementCount": 3,
-  "scores": {
-    "initialRaw": 72,
-    "initialReadiness": 59,
-    "revisedRaw": 93,
-    "revisedReadiness": 97,
-    "rawDelta": 21,
-    "readinessDelta": 38,
-    "target": 97,
-    "evidenceGrade": 2,
-    "evidenceChecked": true,
-    "architectureFit": "fits existing backend/runtime recovery surfaces; no new abstraction added",
-    "cleanupRefactoringRequired": "none before execution; terminal-reason persistence must be checked if data mutation is chosen",
-    "sourceCacheParity": "not applicable",
-    "iterations": 1,
-    "versionHistory": [
-      {
-        "version": 1,
-        "path": ".full-review/plan-architect/REVISED_PLAN.md",
-        "summary": "Audit blockers incorporated into active recovery plan."
-      }
-    ],
-    "stopReason": "target_met",
-    "appliedCaps": [],
-    "gateFindings": [
-      "Dirty backend deploy requires scoped patch or explicit human approval.",
-      "Approval residuals default to terminal acceptance unless user approves auth fallback escalation."
-    ],
-    "openImplementationGaps": [
-      "Verify exact terminal-reason persistence field before SQL/data mutation."
-    ]
-  },
-  "recommendedNextExecutionSkill": "orchestrate-subagents",
-  "cleanupAfterImplementation": true,
-  "archivePlanAfterImplementation": true,
-  "pipelineStagesRun": [
-    "audit_review",
-    "reality_verification",
-    "revise_plan",
-    "validation_update",
-    "scorecard_update",
-    "handoff_update",
-    "result_update"
+  "skill": "plan-architect",
+  "date": "2026-05-29",
+  "mode": "targeted existing_plan_review (focused refinement)",
+  "canonical_plan": ".full-review/REMEDIATION_PLAN.md",
+  "initial_snapshot": ".full-review/plan-architect/INITIAL_PLAN.md",
+  "artifacts": [
+    "INITIAL_PLAN.md", "VALIDATION.md", "AUDIT.md", "IMPROVEMENTS.md",
+    "SCORECARD.md", "REVISED_PLAN.md", "HANDOFF.md", "result.json"
   ],
-  "triggerMode": "existing_plan_review",
-  "executionMode": "serialized_backend_runtime_operator",
-  "ownershipScopes": [
-    {
-      "name": "backend-runtime-operator",
-      "scope": "TRR-Backend backfill runtime recovery and Modal follow-through only after approval gates"
-    }
-  ],
-  "toolFinder": {
-    "status": "skipped",
-    "failureReason": "Direct audit-driven revise-plan run; no new external tool discovery was needed beyond existing repo commands and skills."
+  "score": 8.9,
+  "ready_for_execution": true,
+  "execution_handoff": "orchestrate-subagents",
+  "requires_human_checkpoint": true,
+  "default_auto_scope": ["G0:WorkstreamV", "Wave1:0A-cron", "Wave1:0A-modal", "Wave1:W1.1", "Wave1:W1.2", "Wave1:W1.4", "Wave1:W1.6", "Wave1:W1.7", "Wave2:W1.3", "Wave2:W1.5"],
+  "excluded_from_subagents": {
+    "wave0_human_locked": ["anon_grant_revoke", "keys_remove_and_rotate", "branch_protection", "destructive_or_rls_migrations"],
+    "wave3_human_scheduled_refactors": ["W1.S1_admin_person_images", "W1.S2_social_monolith", "W1.S3_showId_page"]
   },
-  "capabilityInventory": [
-    "Backfill Operator",
-    "Plan Architect revise-plan",
-    "DebugPro discipline",
-    "Repo make targets",
-    "Existing backend repository helpers"
-  ],
-  "docsLookups": [],
-  "realityVerification": {
-    "status": "pass",
-    "checkedClaims": 13,
-    "verifiedClaims": 13,
-    "unverifiedClaims": 0,
-    "contradictedClaims": 0,
-    "staleClaims": 0,
-    "missingEvidenceClaims": 0,
-    "proofSources": [
-      "Makefile",
-      "TRR-Backend/scripts/socials/instagram/recover_stalled_backfill.py",
-      "TRR-Backend/trr_backend/modal_jobs.py",
-      "TRR-Backend/trr_backend/socials/instagram/comments_scrapling/job_runner.py",
-      "TRR-Backend/trr_backend/socials/instagram/comments_scrapling/public_mode.py",
-      "TRR-Backend/trr_backend/socials/social_season_analytics_impl.py",
-      "latest read-only progress output from prior plan rewrite turn"
-    ],
-    "readinessImpact": "Audit blockers removed; execution still requires fresh read-only runtime verification before mutation."
-  },
-  "userDecisionRequests": [
-    {
-      "id": "approval_residual_policy",
-      "header": "Approval",
-      "question": "Accept sub-MIN_GAP approval residuals as terminal, or approve authenticated fallback escalation?",
-      "mode": "single_select",
-      "required": false,
-      "allowOther": true,
-      "options": [
-        {
-          "id": "accept_terminal",
-          "label": "Accept terminal",
-          "description": "Default: record approval-blocked targets as terminal and avoid extra auth/proxy escalation."
-        },
-        {
-          "id": "escalate_auth",
-          "label": "Escalate auth",
-          "description": "Lower MIN_GAP or change policy to permit authenticated fallback."
-        }
-      ],
-      "recommendedOptionIds": [
-        "accept_terminal"
-      ],
-      "selectedOptionIds": [
-        "accept_terminal"
-      ],
-      "otherText": null,
-      "fallbackMode": "conservative_default",
-      "owner": "human",
-      "status": "deferred"
-    },
-    {
-      "id": "dirty_backend_deploy",
-      "header": "Deploy",
-      "question": "Approve dirty backend deploy or require a scoped patch?",
-      "mode": "single_select",
-      "required": true,
-      "allowOther": true,
-      "options": [
-        {
-          "id": "scoped_patch",
-          "label": "Scoped patch",
-          "description": "Default: deploy only a reviewed scoped backend patch."
-        },
-        {
-          "id": "dirty_tree",
-          "label": "Dirty tree",
-          "description": "Explicitly approve deploying the current dirty backend tree."
-        }
-      ],
-      "recommendedOptionIds": [
-        "scoped_patch"
-      ],
-      "selectedOptionIds": [
-        "scoped_patch"
-      ],
-      "otherText": null,
-      "fallbackMode": "hard_execution_checkpoint",
-      "owner": "human",
-      "status": "deferred"
-    }
-  ],
-  "uiSystemDecision": {
-    "selectedDefault": "none",
-    "reason": "No UI work."
-  },
-  "threadFileConflictSummary": "Plan artifacts changed only; TRR-Backend remains dirty and must not be broadly deployed without approval.",
-  "sharedEvidencePath": null,
-  "sharedEvidenceCount": 0,
-  "readyForHandoff": true
+  "verify_first_gate": ["migration_testing_uncertain", "requirements_lock_no_hash_pins", "trr_app_no_secret_scan", "destructive_flashback_migration", "missing_database_types_ts"],
+  "top_audit_risks": ["A1_monolith_concurrent_edit", "A4_irreversible_auto_apply", "A5_credential_slice_lockout", "A9_branch_protection_before_green_ci"]
 }

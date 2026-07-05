@@ -73,6 +73,14 @@ def test_doctor_pnpm_version_check_kills_stuck_process_group(tmp_path: Path) -> 
     fake_bin = tmp_path / "bin"
     fake_bin.mkdir()
     child_pid_file = tmp_path / "pnpm-child.pid"
+    fake_node = fake_bin / "node"
+    fake_node.write_text(
+        """#!/usr/bin/env bash
+echo "v24.0.0"
+""",
+        encoding="utf-8",
+    )
+    fake_node.chmod(0o755)
     fake_pnpm = fake_bin / "pnpm"
     fake_pnpm.write_text(
         f"""#!/usr/bin/env bash
@@ -91,6 +99,7 @@ wait
         env={
             **dict(os.environ),
             "PATH": f"{fake_bin}:{os.environ['PATH']}",
+            "NVM_DIR": str(tmp_path / "missing-nvm"),
             "DOCTOR_COMMAND_TIMEOUT_SECONDS": "1",
             "DOCTOR_PLUGIN_COMMAND_TIMEOUT_SECONDS": "1",
         },

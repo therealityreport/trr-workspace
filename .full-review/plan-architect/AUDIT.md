@@ -1,29 +1,17 @@
-# AUDIT - BravoTV Instagram Backfill Recovery Plan
+# AUDIT — Plan pressure-test (risks & latent bugs)
 
-Audit source: `/Users/thomashulihan/.codex/attachments/b5ac7657-ccec-4c44-900f-1f78c4b48f72/pasted-text.txt`
+Severity = risk to a safe, correct execution.
 
-## Verdict
+| # | Risk | Sev | Mitigation in revised plan |
+|---|---|---|---|
+| A1 | Two subagents edit the same monolith on `main` → corruption/lost work | **High** | Ownership matrix marks `social_season_analytics_impl.py`, `admin_person_images.py`, `[showId]/page.tsx`, `inventory.ts` **single-owner**; Wave 3 sequential. |
+| A2 | W1.3 sanitizer touches broad `api/routers/**` while S1/S2 refactor the same routers | **High** | W1.3 = Wave 2; S-streams = Wave 3 (after W1.3). Explicit "must finish before Wave 3". |
+| A3 | `api/main.py` edited by both 0A-modal (metrics) and W1.3 (global handler) | Med | 0A-modal edits `main.py` first; W1.3 rebases. |
+| A4 | Auto-applying anon-grant revoke / key rotation / branch protection | **Critical** | All 🔒, Wave 0, human-only, OUT of subagent set. |
+| A5 | Removing static-secret gates piecemeal → cross-repo auth lockout | **High** | Single coordinated slice (backend+app+Modal) + feature flag + rollback. |
+| A6 | Acting on unverified completeness leads (some may be wrong, like the refuted XSS) | Med | Gate G0 (Workstream V) confirms before scheduling. |
+| A7 | `orchestrate-subagents` on dirty/`main` with uncommitted review files | Med | Precondition: clean tree, commit at each wave boundary. |
+| A8 | Modal change not redeployed → public ingress stays open | Med | 0A-modal acceptance requires redeploy + unauth `/metrics` rejection check. |
+| A9 | Branch-protection enabled before CI is green → blocks all merges | Med | Sequence: W1.1 lands + passing, *then* 0B branch protection. |
 
-The prior revised plan was directionally correct but unsafe to execute. The revised artifact now addresses the audit blockers.
-
-## Former Blockers
-
-| Item | Risk | Resolution |
-| --- | --- | --- |
-| CHG-01 | Step 3 treated `instagram-backfill-recover-stalled` as evidence collection even though it mutates and dispatches by default. | Step 3 now uses only read-only progress/preflight commands. The skipped form is shown only as a safe progress wrapper, with warning. |
-| CHG-02 | Step 4 assumed the approval blocker could be cleared by a config-only switch, but auto-auth fallback is already on and `MIN_GAP` is the real gate. | Step 4 now frames the choice as terminal acceptance versus explicit `MIN_GAP`/auth fallback escalation. |
-
-## High-Risk Fixes Folded In
-
-- Recover-stalled cannot clear approval failures by itself.
-- Stale comments shard recovery must target `comments_scrapling`, not the posts stage.
-- Approval-failed comments jobs will not self-heal through capacity recovery.
-- Public-mode and auto-auth fallback tests are required for config/env changes.
-- Fresh read-only re-verification is required before mutation.
-
-## Remaining Controlled Risks
-
-- Live run state can drift before execution.
-- Terminal-reason persistence must be verified before SQL/data mutation.
-- Lowering `MIN_GAP` permits auth/proxy fallback and needs explicit approval.
-- Backend deployment remains blocked by dirty tree until scoped patch review or explicit human approval.
+**Net:** no Critical/High audit risk is left unmitigated; A4/A9 are sequencing constraints encoded in the wave order.

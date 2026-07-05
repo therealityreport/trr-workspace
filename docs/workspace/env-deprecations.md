@@ -57,8 +57,8 @@ No occurrences in this category.
 | `DATABASE_URL` | `TRR-Backend/tests/db/test_connection_resolution.py:32` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `DATABASE_URL` | `TRR-Backend/tests/db/test_connection_resolution.py:184` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `DATABASE_URL` | `TRR-Backend/tests/db/test_connection_resolution.py:205` | Explicit compatibility layer or regression coverage for deprecated env handling. |
-| `DATABASE_URL` | `TRR-Backend/tests/scripts/test_prepare_named_secrets.py:237` | Explicit compatibility layer or regression coverage for deprecated env handling. |
-| `DATABASE_URL` | `TRR-Backend/tests/scripts/test_prepare_named_secrets.py:245` | Explicit compatibility layer or regression coverage for deprecated env handling. |
+| `DATABASE_URL` | `TRR-Backend/tests/scripts/test_prepare_named_secrets.py:243` | Explicit compatibility layer or regression coverage for deprecated env handling. |
+| `DATABASE_URL` | `TRR-Backend/tests/scripts/test_prepare_named_secrets.py:251` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `DATABASE_URL` | `TRR-Backend/trr_backend/db/postgrest_cache.py:124` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `DATABASE_URL` | `TRR-Backend/trr_backend/db/preflight.py:123` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `DATABASE_URL` | `TRR-Backend/trr_backend/db/preflight.py:134` | Explicit compatibility layer or regression coverage for deprecated env handling. |
@@ -99,9 +99,9 @@ No occurrences in this category.
 | `SUPABASE_DB_URL` | `TRR-Backend/tests/db/test_connection_resolution.py:31` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `SUPABASE_DB_URL` | `TRR-Backend/tests/db/test_connection_resolution.py:184` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `SUPABASE_DB_URL` | `TRR-Backend/tests/db/test_connection_resolution.py:193` | Explicit compatibility layer or regression coverage for deprecated env handling. |
-| `SUPABASE_DB_URL` | `TRR-Backend/tests/scripts/test_prepare_named_secrets.py:236` | Explicit compatibility layer or regression coverage for deprecated env handling. |
-| `SUPABASE_DB_URL` | `TRR-Backend/tests/scripts/test_prepare_named_secrets.py:244` | Explicit compatibility layer or regression coverage for deprecated env handling. |
+| `SUPABASE_DB_URL` | `TRR-Backend/tests/scripts/test_prepare_named_secrets.py:242` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `SUPABASE_DB_URL` | `TRR-Backend/tests/scripts/test_prepare_named_secrets.py:250` | Explicit compatibility layer or regression coverage for deprecated env handling. |
+| `SUPABASE_DB_URL` | `TRR-Backend/tests/scripts/test_prepare_named_secrets.py:256` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `SUPABASE_DB_URL` | `docs/workspace/shared-env-manifest.json:272` | Canonical env ownership manifest entry for deprecated or compatibility-only names. |
 | `SUPABASE_DB_URL` | `scripts/lib/preflight-env-drift.sh:78` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `SUPABASE_DB_URL` | `scripts/lib/preflight-env-drift.sh:79` | Explicit compatibility layer or regression coverage for deprecated env handling. |
