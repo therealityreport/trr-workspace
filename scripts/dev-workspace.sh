@@ -13,6 +13,7 @@ source "$ROOT/scripts/lib/workspace-terminal.sh"
 source "$ROOT/scripts/lib/chrome-devtools-status.sh"
 source "$ROOT/scripts/lib/preflight-browser-attention.sh"
 source "$ROOT/scripts/lib/context7-status.sh"
+source "$ROOT/scripts/lib/portless-startup-check.sh"
 
 # Optional profile defaults.
 # Usage: PROFILE=local-cloud make dev
@@ -310,7 +311,8 @@ workspace_in_app_browser_transport_health_repair() {
 
 # Clean stale Chrome/MCP processes from prior sessions.
 if [[ -x "$ROOT/scripts/codex-mcp-session-reaper.sh" ]]; then
-  bash "$ROOT/scripts/codex-mcp-session-reaper.sh" reap 2>/dev/null || true
+  MCP_REAPER_UNTRACKED_MIN_AGE_SEC="${WORKSPACE_MCP_STALE_AGE_SEC:-3600}" \
+    bash "$ROOT/scripts/codex-mcp-session-reaper.sh" reap 2>/dev/null || true
 fi
 workspace_browser_transport_health_repair
 workspace_in_app_browser_transport_health_repair
@@ -1796,6 +1798,7 @@ prepare_workspace_portless_routes() {
   fi
 
   echo "[workspace] Preparing Portless wildcard routing for workspace startup..."
+  trr_portless_require_proxy_start_allowed "workspace" "$ROOT"
   PORTLESS_REPAIR_ALLOW_NO_ACTIVE_ROUTES=1 bash "$ROOT/scripts/portless-repair.sh"
 }
 

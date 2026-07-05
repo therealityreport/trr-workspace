@@ -41,6 +41,18 @@ emit_preflight_phase_output() {
     doctor)
       printf '%s\n' "$output"
       ;;
+    mcp-orphan-reap)
+      if [[ "$output" == *"KILLED_PROCESSES=0"* || "$output" == *"No stale MCP/Chrome runtime artifacts found."* ]]; then
+        echo "[preflight] MCP orphan cleanup OK (nothing stale)"
+      else
+        local killed_count
+        killed_count="$(printf '%s\n' "$output" | sed -n 's/^KILLED_PROCESSES=//p' | tail -1)"
+        echo "[preflight] MCP orphan cleanup removed ${killed_count:-unknown} abandoned helper process(es)"
+      fi
+      ;;
+    context7-cache-repair)
+      echo "[preflight] Context7 cache/config reconciliation OK"
+      ;;
     env-contract)
       echo "[preflight] Env contract OK"
       ;;
@@ -295,6 +307,22 @@ fi
 run_preflight_phase "modal-billing-guardrail" "[preflight] Checking Modal billing guardrails..." bash "$ROOT/scripts/modal-billing-guardrail.sh"
 run_preflight_phase "instagram-auth-freshness" "[preflight] Checking Instagram auth freshness..." python3 "$ROOT/scripts/instagram_auth_freshness.py"
 
+# Reap helpers whose Codex/Claude session owner has exited before plugin health
+# checks run. The reaper preserves processes with a live session ancestor and
+# the shared Chrome keeper, so normal Chrome and active MCP sessions are not
+# touched.
+if [[ "${WORKSPACE_PREFLIGHT_MCP_REAP:-1}" == "1" ]]; then
+  run_preflight_phase "mcp-orphan-reap" "[preflight] Cleaning abandoned MCP helpers..." env MCP_REAPER_UNTRACKED_MIN_AGE_SEC="${WORKSPACE_PREFLIGHT_MCP_STALE_AGE_SEC:-3600}" bash "$ROOT/scripts/codex-mcp-session-reaper.sh" reap
+fi
+
+# Codex can regenerate a stale Context7 app-resolver entry while the direct MCP
+# remains healthy. Repair that cache/config boundary without reloading or
+# terminating live Context7 connector processes.
+context7_repair_script="$HOME/.codex/plugins/context7/scripts/repair-context7-mcp.mjs"
+if [[ -x "$context7_repair_script" ]]; then
+  run_preflight_phase "context7-cache-repair" "[preflight] Reconciling Context7 cache/config..." node "$context7_repair_script"
+fi
+
 run_preflight_phase "doctor" "[preflight] Running workspace doctor..." python3 "$ROOT/scripts/run-with-timeout.py" --timeout-seconds "$WORKSPACE_PREFLIGHT_DOCTOR_TIMEOUT_SECONDS" --label "workspace doctor" -- env WORKSPACE_DEV_MODE="$WORKSPACE_DEV_MODE" WORKSPACE_PREFLIGHT_STRICT="$WORKSPACE_PREFLIGHT_STRICT" bash "$ROOT/scripts/doctor.sh"
 
 runtime_reconcile_output=""
@@ -359,7 +387,17 @@ run_preflight_phase "codex-bootstrap" "[preflight] Reconciling Codex config..." 
 
 run_preflight_phase "check-policy" "[preflight] Checking policy drift rules..." bash "$ROOT/scripts/check-policy.sh"
 
-run_preflight_phase "design-docs-agent-package" "[preflight] Validating design-docs-agent package..." python3 "$ROOT/.agents/skills/design-docs-agent/test/validate-package.py"
+design_docs_validator="$ROOT/.agents/skills/design-docs-agent/test/validate-package.py"
+if [[ ! -f "$design_docs_validator" && -L "$ROOT/.agents/skills/design-docs" ]]; then
+  design_docs_skill_target="$(readlink "$ROOT/.agents/skills/design-docs")"
+  design_docs_package_root="$(cd "$(dirname "$design_docs_skill_target")/.." && pwd)"
+  design_docs_validator="$design_docs_package_root/test/validate-package.py"
+fi
+if [[ ! -f "$design_docs_validator" ]]; then
+  echo "[preflight] design-docs-agent validator missing: $design_docs_validator" >&2
+  exit 1
+fi
+run_preflight_phase "design-docs-agent-package" "[preflight] Validating design-docs-agent package..." env DESIGN_DOCS_REPO_ROOT="$ROOT" python3 "$design_docs_validator"
 
 run_preflight_phase "chrome-devtools-mcp-status" "[preflight] Checking browser automation..." env CHROME_DEVTOOLS_MCP_STATUS_MODE=structured bash "$ROOT/scripts/chrome-devtools-mcp-status.sh"
 

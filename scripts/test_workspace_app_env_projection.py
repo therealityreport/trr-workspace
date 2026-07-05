@@ -432,6 +432,27 @@ class WorkspaceAppEnvProjectionTests(unittest.TestCase):
             "app=1, backend=3, social_profile=2, social_control=2, social_progress=1, health=1, total=10",
         )
 
+    def test_session_fallback_launch_footprint_supports_api_concurrency_and_four_remote_workers(self) -> None:
+        low_pressure_env = {
+            "WORKSPACE_TRR_APP_POSTGRES_POOL_MAX": "1",
+            # One primary connection is not launch-capable: concurrent admin
+            # status reads can occupy it while the start request needs a write.
+            "TRR_DB_POOL_MAXCONN": "2",
+            "TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN": "1",
+            "TRR_SOCIAL_CONTROL_DB_POOL_MAXCONN": "1",
+            "TRR_SOCIAL_PROGRESS_DB_POOL_MAXCONN": "1",
+            "TRR_HEALTH_DB_POOL_MAXCONN": "1",
+        }
+
+        budget = self.run_workspace_db_holder_budget(low_pressure_env)
+        total = int(budget.rsplit("total=", 1)[1])
+
+        self.assertEqual(
+            budget,
+            "app=1, backend=2, social_profile=1, social_control=1, social_progress=1, health=1, total=7",
+        )
+        self.assertLessEqual(total + 4, 15)
+
     def test_effective_db_holder_budget_uses_default_profile_fallbacks_when_malformed(self) -> None:
         self.assertEqual(
             self.run_workspace_db_holder_budget(

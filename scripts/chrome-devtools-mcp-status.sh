@@ -386,18 +386,21 @@ orphaned_chrome_mcp_process_count() {
 chrome_plugin_root() {
   local candidate
   local latest=""
-  if [[ -n "${CODEX_CHROME_PLUGIN_ROOT:-}" && -x "${CODEX_CHROME_PLUGIN_ROOT}/scripts/check-extension-installed.js" ]]; then
+  if [[ -n "${CODEX_CHROME_PLUGIN_ROOT:-}" && -f "${CODEX_CHROME_PLUGIN_ROOT}/scripts/check-extension-installed.js" ]]; then
     printf '%s\n' "$CODEX_CHROME_PLUGIN_ROOT"
     return 0
   fi
   shopt -s nullglob
   for candidate in "${HOME}"/.codex/plugins/cache/openai-bundled/chrome/*; do
-    if [[ -x "${candidate}/scripts/check-extension-installed.js" && -x "${candidate}/scripts/check-native-host-manifest.js" ]]; then
+    if [[ -f "${candidate}/scripts/check-extension-installed.js" && -f "${candidate}/scripts/check-native-host-manifest.js" ]]; then
       latest="$candidate"
     fi
   done
   shopt -u nullglob
-  [[ -n "$latest" ]] && printf '%s\n' "$latest"
+  if [[ -n "$latest" ]]; then
+    printf '%s\n' "$latest"
+  fi
+  return 0
 }
 
 json_field() {

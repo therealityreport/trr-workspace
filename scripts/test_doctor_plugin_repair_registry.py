@@ -69,10 +69,48 @@ def test_browser_doctor_status_check_is_time_bounded() -> None:
     assert "scripts/run-with-timeout.py" in preflight_text
 
 
+def test_preflight_reaps_abandoned_mcp_helpers_before_doctor() -> None:
+    preflight_text = (ROOT / "scripts" / "preflight.sh").read_text(encoding="utf-8")
+
+    reap_call = 'run_preflight_phase "mcp-orphan-reap"'
+    doctor_call = 'run_preflight_phase "doctor"'
+    assert reap_call in preflight_text
+    assert preflight_text.index(reap_call) < preflight_text.index(doctor_call)
+    assert 'WORKSPACE_PREFLIGHT_MCP_REAP:-1' in preflight_text
+    assert 'MCP_REAPER_UNTRACKED_MIN_AGE_SEC="${WORKSPACE_PREFLIGHT_MCP_STALE_AGE_SEC:-3600}"' in preflight_text
+    assert 'codex-mcp-session-reaper.sh" reap' in preflight_text
+
+
+def test_preflight_repairs_context7_cache_without_reloading_connectors() -> None:
+    preflight_text = (ROOT / "scripts" / "preflight.sh").read_text(encoding="utf-8")
+
+    repair_call = 'run_preflight_phase "context7-cache-repair"'
+    doctor_call = 'run_preflight_phase "doctor"'
+    assert repair_call in preflight_text
+    assert preflight_text.index(repair_call) < preflight_text.index(doctor_call)
+    assert 'node "$context7_repair_script"' in preflight_text
+    assert '--reload' not in preflight_text[preflight_text.index(repair_call):preflight_text.index(doctor_call)]
+
+
+def test_workspace_startup_reaper_uses_stale_age_floor() -> None:
+    workspace_text = (ROOT / "scripts" / "dev-workspace.sh").read_text(encoding="utf-8")
+
+    assert 'MCP_REAPER_UNTRACKED_MIN_AGE_SEC="${WORKSPACE_MCP_STALE_AGE_SEC:-3600}"' in workspace_text
+    assert 'bash "$ROOT/scripts/codex-mcp-session-reaper.sh" reap' in workspace_text
+
+
 def test_doctor_pnpm_version_check_kills_stuck_process_group(tmp_path: Path) -> None:
     fake_bin = tmp_path / "bin"
     fake_bin.mkdir()
     child_pid_file = tmp_path / "pnpm-child.pid"
+    fake_node = fake_bin / "node"
+    fake_node.write_text(
+        """#!/usr/bin/env bash
+echo "v24.0.0"
+""",
+        encoding="utf-8",
+    )
+    fake_node.chmod(0o755)
     fake_pnpm = fake_bin / "pnpm"
     fake_pnpm.write_text(
         f"""#!/usr/bin/env bash
@@ -91,6 +129,7 @@ wait
         env={
             **dict(os.environ),
             "PATH": f"{fake_bin}:{os.environ['PATH']}",
+            "NVM_DIR": str(tmp_path / "missing-nvm"),
             "DOCTOR_COMMAND_TIMEOUT_SECONDS": "1",
             "DOCTOR_PLUGIN_COMMAND_TIMEOUT_SECONDS": "1",
         },

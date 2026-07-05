@@ -5,6 +5,8 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 # shellcheck source=scripts/lib/node-baseline.sh
 source "$ROOT/scripts/lib/node-baseline.sh"
+# shellcheck source=scripts/lib/portless-startup-check.sh
+source "$ROOT/scripts/lib/portless-startup-check.sh"
 
 REQUIRED_NODE_MAJOR="$(trr_node_required_major "$ROOT")"
 if ! trr_ensure_node_baseline "$ROOT"; then
@@ -14,6 +16,8 @@ if ! trr_ensure_node_baseline "$ROOT"; then
   echo "[browser-smoke]   source ~/.nvm/nvm.sh && nvm install ${REQUIRED_NODE_MAJOR}" >&2
   exit 1
 fi
+
+trr_portless_require_browser_routes "browser-smoke" "$ROOT"
 
 cd "$ROOT/TRR-APP/apps/web"
 trr_pnpm "$ROOT/TRR-APP" run smoke:admin-detail-routes -- "$@"
