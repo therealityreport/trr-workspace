@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 export PATH="/opt/homebrew/bin:${PATH}"
+source "$ROOT_DIR/scripts/lib/portless-startup-check.sh"
 if [[ -n "${PORTLESS_PORT:-}" && "${PORTLESS_PORT}" != "443" ]]; then
   cat >&2 <<EOF
 [portless-repair] ERROR: PORTLESS_PORT=${PORTLESS_PORT} would publish numbered TRR dev URLs.
@@ -21,7 +22,7 @@ fi
 
 echo "[portless-repair] Ensuring Portless proxy is running with wildcard host routing..."
 existing_proxy_lines="$(pgrep -fl "portless proxy start" || true)"
-if grep -Eq -- '--port[ =][0-9]+' <<<"$existing_proxy_lines"; then
+if trr_portless_has_disallowed_numeric_proxy_port "$existing_proxy_lines"; then
   cat >&2 <<EOF
 [portless-repair] ERROR: a Portless proxy is already running with an explicit numeric port.
 [portless-repair] ERROR: stop that proxy, then rerun make dev-hybrid so clean URLs bind on the default Portless port.
@@ -33,6 +34,7 @@ fi
 if pgrep -f "portless proxy start .*--wildcard" >/dev/null 2>&1; then
   echo "[portless-repair] Portless proxy is already running in wildcard mode."
 else
+  trr_portless_require_proxy_start_allowed "portless-repair" "$ROOT_DIR"
   proxy_args=(--wildcard)
   portless proxy start "${proxy_args[@]}"
 fi
@@ -66,14 +68,18 @@ if ! grep -Eq 'https://trr[.]localhost[[:space:]]+->[[:space:]]+localhost:[0-9]+
   if [[ "${PORTLESS_REPAIR_ALLOW_NO_ACTIVE_ROUTES:-0}" == "1" ]]; then
     cat <<EOF
 [portless-repair] No active trr.localhost app route is running yet.
+[portless-repair] Portless itself is ready. The TRR app has not connected to Portless yet.
 [portless-repair] Proxy, stale aliases, and hosts were prepared for a managed cold start.
+[portless-repair] Start the workspace when you are ready:
+  cd "$ROOT_DIR" && make dev-hybrid
 EOF
     exit 0
   fi
 
   cat >&2 <<EOF
 [portless-repair] ERROR: no active trr.localhost app route is running.
-[portless-repair] Portless can repair hosts and proxy state, but admin.trr.localhost has no app target until the app route is registered.
+[portless-repair] Portless itself is ready, but the TRR app has not connected to Portless yet.
+[portless-repair] In plain terms: the clean web address exists, but there is no running app behind it.
 
 [portless-repair] Start the normal TRR hybrid workspace:
   cd "$ROOT_DIR" && make dev-hybrid

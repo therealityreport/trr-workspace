@@ -13,6 +13,7 @@ source "$ROOT/scripts/lib/workspace-terminal.sh"
 source "$ROOT/scripts/lib/chrome-devtools-status.sh"
 source "$ROOT/scripts/lib/preflight-browser-attention.sh"
 source "$ROOT/scripts/lib/context7-status.sh"
+source "$ROOT/scripts/lib/portless-startup-check.sh"
 
 # Optional profile defaults.
 # Usage: PROFILE=local-cloud make dev
@@ -1796,6 +1797,7 @@ prepare_workspace_portless_routes() {
   fi
 
   echo "[workspace] Preparing Portless wildcard routing for workspace startup..."
+  trr_portless_require_proxy_start_allowed "workspace" "$ROOT"
   PORTLESS_REPAIR_ALLOW_NO_ACTIVE_ROUTES=1 bash "$ROOT/scripts/portless-repair.sh"
 }
 
