@@ -83,3 +83,7 @@
 /artifacts/
 __pycache__/
 scripts/socials/instagram/instagram_cookies.json
+.agents/skills/design-docs
+.agents/skills/design-docs-add-article
+/graphify-out/
+/plans/.impeccable/
