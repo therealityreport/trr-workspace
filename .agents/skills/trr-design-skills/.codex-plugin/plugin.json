@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "Codex plugin that bundles TRR's design-system and frontend taste skills.",
   "author": {
-    "name": "The Reality Report"
+    "name": "The Reality Report",
+    "url": "https://github.com/therealityreport"
   },
   "homepage": "https://github.com/therealityreport/trr-workspace",
   "repository": "https://github.com/therealityreport/trr-workspace",
@@ -31,6 +32,7 @@
       "Apply TRR frontend taste to this page.",
       "Generate a premium design system for this screen."
     ],
-    "brandColor": "#111827"
+    "brandColor": "#111827",
+    "websiteURL": "https://github.com/therealityreport/trr-workspace"
   }
 }
