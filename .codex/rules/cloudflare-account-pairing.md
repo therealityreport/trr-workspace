@@ -21,6 +21,23 @@ These are not interchangeable.
 
 The TRR management token is stored in macOS Keychain, not in repo files.
 
+Create or update the Keychain item on a new machine without placing the token
+in shell history:
+
+```bash
+read -r -s -p "TRR Cloudflare API token: " token
+printf '\n'
+security add-generic-password \
+  -U \
+  -a TRR_CLOUDFLARE_API_TOKEN \
+  -s co.thomashulihan.trr.cloudflare-api-token \
+  -w "$token"
+unset token
+```
+
+The loader expects account `TRR_CLOUDFLARE_API_TOKEN` and service
+`co.thomashulihan.trr.cloudflare-api-token` exactly.
+
 ```sh
 eval "$(/Users/thomashulihan/Projects/TRR/scripts/workspace/load-trr-cloudflare-token.sh)"
 ```
