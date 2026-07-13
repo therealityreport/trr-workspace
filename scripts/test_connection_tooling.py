@@ -204,7 +204,8 @@ def test_app_direct_sql_inventory_emits_owner_aliases_and_retained_exception_con
     assert "## Owner Aliases" in rendered
     assert "## Retained High-Fan-Out Exceptions" in rendered
     assert "`backend-shared-schema`" in rendered
-    assert "| n/a | n/a | n/a | n/a | n/a |" in rendered
+    assert "Phase 5 migration is out of this workspace-only slice" in rendered
+    assert "TRR-Backend aggregate endpoint" in rendered
     assert "New high-fanout app direct-SQL rows must include an exception owner" in rendered
     assert "needs owner label" not in rendered
 
