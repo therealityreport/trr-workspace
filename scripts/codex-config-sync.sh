@@ -467,10 +467,8 @@ unexpected = sorted(name for name in servers if name not in required_servers)
 for name in unexpected:
     errors.append(f"[mcp_servers.{name}] is no longer allowed in the tracked project config")
 
-if agents.get("max_threads") != 6:
-    errors.append(f"[agents] expected max_threads=6, found {agents.get('max_threads')!r}")
-if agents.get("max_depth") != 1:
-    errors.append(f"[agents] expected max_depth=1, found {agents.get('max_depth')!r}")
+if "max_threads" in agents:
+    errors.append("[agents] max_threads is incompatible with multi_agent_v2; remove it")
 for agent_name, config_file in required_agents.items():
     agent_settings = agents.get(agent_name)
     if not isinstance(agent_settings, dict):

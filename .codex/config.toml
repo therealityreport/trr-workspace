@@ -6,18 +6,14 @@
 personality = "pragmatic"
 approval_policy = "never"
 sandbox_mode = "danger-full-access"
-model = "gpt-5.5"
-model_reasoning_effort = "high"
+model = "gpt-5.6-sol"
+model_reasoning_effort = "medium"
 web_search = "cached"
 project_doc_max_bytes = 65536
 project_doc_fallback_filenames = []
 
 # Chrome DevTools is inherited from ~/.codex/config.toml so TRR uses the
 # shared headless global default unless a session explicitly overrides it.
-
-[agents]
-max_threads = 6
-max_depth = 1
 
 [git_policy]
 default_branch = "main"
@@ -49,6 +45,12 @@ config_file = "./agents/browser_debugger.toml"
 description = "Targeted UI and interaction fixes after mapping or browser debugging."
 config_file = "./agents/ui_fixer.toml"
 
+[mcp_servers.next-devtools]
+command = "npx"
+args = ["-y", "next-devtools-mcp@latest"]
+startup_timeout_ms = 20000
+env = { NEXT_TELEMETRY_DISABLED = "1" }
+
 [mcp_servers.supabase]
 url = "https://mcp.supabase.com/mcp?project_ref=vwxfvzutyufrkhfgoeaa&features=docs%2Caccount%2Cdatabase%2Cdebugging%2Cdevelopment%2Cfunctions%2Cbranching%2Cstorage"
 bearer_token_env_var = "TRR_SUPABASE_ACCESS_TOKEN"
@@ -57,4 +59,3 @@ bearer_token_env_var = "TRR_SUPABASE_ACCESS_TOKEN"
 command = "/Users/thomashulihan/Projects/TRR/TRR-Backend/.venv/bin/python"
 args = ["/Users/thomashulihan/Projects/TRR/TRR-Backend/scripts/modal/modal_ops_mcp.py"]
 env = { MODAL_PROFILE = "admin-56995", MODAL_PROFILE_NAME = "admin-56995", MODAL_PROFILE_LABEL = "TRR Backend Jobs", TRR_MODAL_APP_NAME = "trr-backend-jobs" }
-

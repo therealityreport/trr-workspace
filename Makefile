@@ -1,5 +1,5 @@
 .PHONY: \
-	dev dev-lite dev-cloud dev-hybrid dev-hybrid-bg dev-hybrid-media-safe dev-hybrid-media-safe-posts dev-hybrid-media-safe-comments dev-hybrid-media-safe-bravotv dev-hybrid-social-safe dev-portless stop-portless portless-repair open-admin dev-local dev-full dev-redis \
+	dev dev-lite dev-cloud dev-hybrid dev-hybrid-bg dev-hybrid-media-safe dev-hybrid-media-safe-posts dev-hybrid-media-safe-comments dev-hybrid-media-safe-bravotv dev-hybrid-social-safe dev-portless stop-portless portless-status portless-repair open-admin dev-local dev-full dev-redis \
 	preflight preflight-local preflight-cloud preflight-hybrid preflight-strict preflight-diagnostics env-contract env-contract-report env-hygiene check-policy codex-check git-branch-report handoff-check handoff-sync smoke browser-smoke-admin-details status status-json backend-restart-diagnose stop logs logs-prune cleanup-disk help \
 	app-direct-sql-inventory redacted-env-inventory vercel-project-guard vercel-auth-doctor vercel-cleanup-doctor vercel-link-trr vercel-preview-ready migration-ownership-lint rls-grants-snapshot db-pressure-rehearsal supabase-mcp-access supabase-advisor-snapshot supabase-preview-branch-cleanup \
 	bootstrap doctor doctor-json app-check app-validate-quick test test-fast test-full test-changed test-env-sensitive \
@@ -28,6 +28,7 @@ REDIS_COMPOSE_PROJECT ?= trr-local-redis
 # make dev-hybrid-media-safe-bravotv  # Bravo pending-media drain preset
 # make dev-portless                   # Wordle/separate-session Portless launcher, not the normal TRR dev path
 # make stop-portless                  # stop managed Portless app/API/Wordle sessions
+# make portless-status                # print read-only Portless proxy, route, and Browser-test readiness
 # make portless-repair                # repair Portless proxy state and remove stale static TRR aliases
 # PROFILE=local-cloud make dev-cloud  # deprecated compatibility alias
 # PROFILE=local-docker make dev-local # deprecated compatibility alias
@@ -176,6 +177,9 @@ dev-portless:
 
 stop-portless:
 	@bash scripts/dev-portless-managed.sh stop
+
+portless-status:
+	@bash scripts/portless-status.sh
 
 portless-repair:
 	@bash scripts/portless-repair.sh
@@ -557,6 +561,7 @@ help:
 	@echo "  make dev-hybrid-social-safe - alias for make dev-hybrid"
 	@echo "  make dev-portless - Wordle/separate-session Portless launcher; make dev already uses Portless"
 	@echo "  make stop-portless - stop managed Portless app/API/Wordle sessions"
+	@echo "  make portless-status - print read-only Portless proxy, route, and Browser-test readiness"
 	@echo "  make portless-repair - ensure Portless wildcard routing and remove stale TRR static aliases"
 	@echo "  make open-admin   - open the clean Portless admin dashboard"
 	@echo "  make modal-instagram-auth-status - bounded Instagram Modal auth probe (ACCOUNT_HANDLE=... adds posts/comments probes)"

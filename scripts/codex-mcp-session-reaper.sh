@@ -13,6 +13,9 @@ REAPER_INTERVAL_SEC="${REAPER_INTERVAL_SEC:-30}"
 FIGMA_RUNTIME_DIR="${CODEX_HOME:-$HOME/.codex}/tmp/figma-console-mcp/runtime"
 VISIBLE_BROWSER_OWNER_FILE="${LOG_DIR}/chrome-devtools-visible-browser-owner.env"
 SHARED_HEADFUL_IDLE_SEC="${CODEX_CHROME_SHARED_HEADFUL_IDLE_TIMEOUT_SEC:-300}"
+# Automatic startup cleanup sets this to a conservative age. Manual `reap`
+# keeps the historical immediate behavior unless the caller opts in.
+MCP_REAPER_UNTRACKED_MIN_AGE_SEC="${MCP_REAPER_UNTRACKED_MIN_AGE_SEC:-0}"
 
 for lib in mcp-runtime.sh chrome-runtime.sh; do
   if [[ ! -f "${ROOT}/scripts/lib/${lib}" ]]; then
@@ -71,6 +74,33 @@ pid_alive() {
 safe_to_kill() {
   local pid="$1"
   [[ -n "$pid" && "$pid" =~ ^[0-9]+$ && "$pid" != "1" && "$pid" != "$$" ]]
+}
+
+process_age_seconds() {
+  local pid="$1"
+  local started
+  started="$(ps -p "$pid" -o lstart= 2>/dev/null | sed 's/^[[:space:]]*//')"
+  [[ -n "$started" ]] || return 1
+  python3 - "$started" <<'PY'
+import datetime
+import sys
+
+try:
+    started = datetime.datetime.strptime(sys.argv[1], "%a %b %d %H:%M:%S %Y")
+except ValueError:
+    raise SystemExit(1)
+now = datetime.datetime.now()
+print(max(0, int((now - started).total_seconds())))
+PY
+}
+
+untracked_process_old_enough() {
+  local pid="$1"
+  local age
+  [[ "$MCP_REAPER_UNTRACKED_MIN_AGE_SEC" =~ ^[0-9]+$ ]] || return 1
+  [[ "$MCP_REAPER_UNTRACKED_MIN_AGE_SEC" == "0" ]] && return 0
+  age="$(process_age_seconds "$pid" 2>/dev/null || true)"
+  [[ "$age" =~ ^[0-9]+$ ]] && (( age >= MCP_REAPER_UNTRACKED_MIN_AGE_SEC ))
 }
 
 owner_field() {
@@ -326,6 +356,9 @@ list_orphaned_generic_mcp_processes() {
     if process_has_live_session_ancestor "$pid"; then
       continue
     fi
+    if ! untracked_process_old_enough "$pid"; then
+      continue
+    fi
 
     printf '%s\t%s\n' "$pid" "$(printf '%s' "$cmd" | head -c 150)"
   done < <(
@@ -424,6 +457,9 @@ diagnose_sessions() {
     if wrapper_is_healthy_or_tracked "$pid"; then
       continue
     fi
+    if ! untracked_process_old_enough "$pid"; then
+      continue
+    fi
     local ppid_val app_type cmd
     ppid_val="$(process_parent_pid "$pid")"
     app_type="$(classify_codex_app_server_pid "$pid")"
@@ -449,6 +485,9 @@ diagnose_sessions() {
       continue
     fi
     if process_has_live_wrapper_ancestor "$pid"; then
+      continue
+    fi
+    if ! untracked_process_old_enough "$pid"; then
       continue
     fi
     local ppid_val
@@ -479,6 +518,9 @@ diagnose_sessions() {
     if process_has_live_wrapper_ancestor "$pid"; then
       continue
     fi
+    if ! untracked_process_old_enough "$pid"; then
+      continue
+    fi
     local ppid_val
     ppid_val="$(process_parent_pid "$pid")"
     local app_type cmd
@@ -495,6 +537,9 @@ diagnose_sessions() {
     if figma_wrapper_is_tracked "$pid"; then
       continue
     fi
+    if ! untracked_process_old_enough "$pid"; then
+      continue
+    fi
     local ppid_val app_type cmd
     ppid_val="$(process_parent_pid "$pid")"
     app_type="$(classify_codex_app_server_pid "$pid")"
@@ -508,6 +553,9 @@ diagnose_sessions() {
     pid_alive "$pid" || continue
     [[ "$pid" != "$$" ]] || continue
     if figma_process_has_live_wrapper_ancestor "$pid"; then
+      continue
+    fi
+    if ! untracked_process_old_enough "$pid"; then
       continue
     fi
     local ppid_val app_type cmd
