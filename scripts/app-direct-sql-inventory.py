@@ -16,7 +16,7 @@ SCAN_ROOTS = (
     APP_ROOT / "src/app/api",
 )
 POSTGRES_IMPORT_RE = re.compile(r"@/lib/server/postgres|['\"](?:\.\.?/)+postgres['\"]")
-CALL_RE = re.compile(r"\b(query|withTransaction|withAuthTransaction|queryWithAuth)\s*\(")
+CALL_SYMBOLS = frozenset(("query", "withTransaction", "withAuthTransaction", "queryWithAuth"))
 HIGH_FANOUT_REVIEW_DATE = "2026-05-27"
 
 
@@ -71,6 +71,115 @@ def _iter_source_files() -> list[Path]:
     return sorted(files)
 
 
+def _skip_quoted(text: str, index: int) -> int:
+    """Return the first offset after a JavaScript/TypeScript string literal."""
+    quote = text[index]
+    index += 1
+    while index < len(text):
+        char = text[index]
+        if char == "\\":
+            index += 2
+            continue
+        index += 1
+        if char == quote:
+            break
+    return index
+
+
+def _skip_trivia(text: str, index: int) -> int:
+    """Skip whitespace and comments between a symbol, generic, and call paren."""
+    while index < len(text):
+        if text[index].isspace():
+            index += 1
+            continue
+        if text.startswith("//", index):
+            newline = text.find("\n", index + 2)
+            return len(text) if newline < 0 else _skip_trivia(text, newline + 1)
+        if text.startswith("/*", index):
+            closing = text.find("*/", index + 2)
+            return len(text) if closing < 0 else _skip_trivia(text, closing + 2)
+        break
+    return index
+
+
+def _generic_call_open_paren(text: str, index: int) -> int | None:
+    """Find the call paren after a balanced TypeScript generic starting at ``<``.
+
+    Type arguments can contain nested generics, object/tuple/function types, and
+    quoted property names. A greater-than sign in the ``=>`` arrow token is not
+    an angle-bracket delimiter.
+    """
+    depth = 1
+    index += 1
+    while index < len(text):
+        if text.startswith("//", index):
+            newline = text.find("\n", index + 2)
+            if newline < 0:
+                return None
+            index = newline + 1
+            continue
+        if text.startswith("/*", index):
+            closing = text.find("*/", index + 2)
+            if closing < 0:
+                return None
+            index = closing + 2
+            continue
+        char = text[index]
+        if char in "'\"`":
+            index = _skip_quoted(text, index)
+            continue
+        if char == "<":
+            depth += 1
+        elif char == ">" and (index == 0 or text[index - 1] != "="):
+            depth -= 1
+            if depth == 0:
+                call_index = _skip_trivia(text, index + 1)
+                return call_index if call_index < len(text) and text[call_index] == "(" else None
+        index += 1
+    return None
+
+
+def scan_call_sites(text: str) -> list[tuple[str, int]]:
+    """Return direct-SQL call symbols and their source offsets.
+
+    This is intentionally a small lexical scanner instead of a TypeScript
+    parser: it ignores comments and strings, identifies the four supported
+    symbols as identifier tokens, then validates either a plain call or a call
+    following balanced generic type arguments.
+    """
+    calls: list[tuple[str, int]] = []
+    index = 0
+    while index < len(text):
+        if text.startswith("//", index):
+            newline = text.find("\n", index + 2)
+            index = len(text) if newline < 0 else newline + 1
+            continue
+        if text.startswith("/*", index):
+            closing = text.find("*/", index + 2)
+            index = len(text) if closing < 0 else closing + 2
+            continue
+        char = text[index]
+        if char in "'\"`":
+            index = _skip_quoted(text, index)
+            continue
+        if char.isalpha() or char in "_$":
+            start = index
+            index += 1
+            while index < len(text) and (text[index].isalnum() or text[index] in "_$"):
+                index += 1
+            symbol = text[start:index]
+            if symbol not in CALL_SYMBOLS:
+                continue
+            suffix = _skip_trivia(text, index)
+            if suffix < len(text) and text[suffix] == "(":
+                calls.append((symbol, start))
+            elif suffix < len(text) and text[suffix] == "<" and _generic_call_open_paren(text, suffix) is not None:
+                calls.append((symbol, start))
+            continue
+        index += 1
+    return calls
+
+
 def _classify(path: Path) -> tuple[str, str, str, str, str, str]:
     path_text = path.as_posix()
     if "/surveys/" in path_text or "/api/admin/surveys/" in path_text:
@@ -99,28 +208,28 @@ def collect_uses() -> list[DirectSqlUse]:
         if path == APP_ROOT / "src/lib/server/postgres.ts":
             continue
         text = path.read_text(encoding="utf-8")
-        if not POSTGRES_IMPORT_RE.search(text) and not CALL_RE.search(text):
+        call_sites = scan_call_sites(text)
+        if not POSTGRES_IMPORT_RE.search(text) and not call_sites:
             continue
         owner_alias, risk, exception_owner, reason_retained, review_by, migration_target = _classify(path)
-        for index, line in enumerate(text.splitlines(), start=1):
-            stripped = line.strip()
-            if stripped.startswith(("*", "//")):
-                continue
-            for match in CALL_RE.finditer(line):
-                uses.append(
-                    DirectSqlUse(
-                        path=path.relative_to(ROOT),
-                        line_number=index,
-                        symbol=match.group(1),
-                        owner_alias=owner_alias,
-                        risk=risk,
-                        exception_owner=exception_owner,
-                        reason_retained=reason_retained,
-                        review_by=review_by,
-                        migration_target=migration_target,
-                        excerpt=line.strip()[:120],
-                    )
+        lines = text.splitlines()
+        for symbol, offset in call_sites:
+            line_number = text.count("\n", 0, offset) + 1
+            excerpt = lines[line_number - 1].strip()[:120] if lines else ""
+            uses.append(
+                DirectSqlUse(
+                    path=path.relative_to(ROOT),
+                    line_number=line_number,
+                    symbol=symbol,
+                    owner_alias=owner_alias,
+                    risk=risk,
+                    exception_owner=exception_owner,
+                    reason_retained=reason_retained,
+                    review_by=review_by,
+                    migration_target=migration_target,
+                    excerpt=excerpt,
                 )
+            )
     return uses
 
 
