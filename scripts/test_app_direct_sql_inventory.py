@@ -80,6 +80,19 @@ query<Actual> /* trivia */ (sql);
     assert [symbol for symbol, _ in module.scan_call_sites(source)] == ["query"]
 
 
+def test_line_number_scanner_advances_without_prefix_recounts() -> None:
+    module = load_inventory_module()
+
+    class CountGuard(str):
+        def count(self, _sub: str, _start: int = 0, _end: int = sys.maxsize) -> int:
+            raise AssertionError("line extraction must not rescan source prefixes")
+
+    source = CountGuard("query(first); query(second);\n\nquery<Third>(third);\n")
+    offsets = [offset for _, offset in module.scan_call_sites(source)]
+
+    assert list(module._iter_line_numbers(source, offsets)) == [1, 1, 3]
+
+
 def test_collect_uses_emits_each_multiline_call_once(tmp_path: Path, monkeypatch) -> None:
     module = load_inventory_module()
     source_root = tmp_path / "src" / "lib" / "server" / "admin"

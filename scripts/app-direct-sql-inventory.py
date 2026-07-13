@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import re
 import sys
+from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -180,6 +181,18 @@ def scan_call_sites(text: str) -> list[tuple[str, int]]:
     return calls
 
 
+def _iter_line_numbers(text: str, offsets: list[int]) -> Iterator[int]:
+    """Yield one-based line numbers for increasing source offsets in one pass."""
+    newline_offsets = (index for index, char in enumerate(text) if char == "\n")
+    next_newline = next(newline_offsets, None)
+    line_number = 1
+    for offset in offsets:
+        while next_newline is not None and next_newline < offset:
+            line_number += 1
+            next_newline = next(newline_offsets, None)
+        yield line_number
+
+
 def _classify(path: Path) -> tuple[str, str, str, str, str, str]:
     path_text = path.as_posix()
     if "/surveys/" in path_text or "/api/admin/surveys/" in path_text:
@@ -213,8 +226,8 @@ def collect_uses() -> list[DirectSqlUse]:
             continue
         owner_alias, risk, exception_owner, reason_retained, review_by, migration_target = _classify(path)
         lines = text.splitlines()
-        for symbol, offset in call_sites:
-            line_number = text.count("\n", 0, offset) + 1
+        line_numbers = _iter_line_numbers(text, [offset for _, offset in call_sites])
+        for (symbol, _), line_number in zip(call_sites, line_numbers):
             excerpt = lines[line_number - 1].strip()[:120] if lines else ""
             uses.append(
                 DirectSqlUse(
