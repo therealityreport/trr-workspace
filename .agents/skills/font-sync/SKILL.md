@@ -65,7 +65,7 @@ python3.11 /Users/thomashulihan/Projects/TRR/TRR-APP/scripts/upload-fonts-to-s3.
 | Bucket | `trr-media-prod` |
 | Key prefix | `fonts/trr/<Family Name>/` |
 | Public URL | `https://pub-a3c452f3df0d40319f7c585253a4776c.r2.dev/fonts/trr/<Family Name>/` |
-| Access Key ID | `REDACTED_R2_ACCESS_KEY_ID` |
+| Access Key ID | Do not document credentials; read from `TRR-Backend/.env` or operator secret storage. |
 
 The upload script reads credentials from these env vars (already set in `TRR-Backend/.env`):
 
