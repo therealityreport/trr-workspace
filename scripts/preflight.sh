@@ -319,7 +319,7 @@ fi
 # remains healthy. Repair that cache/config boundary without reloading or
 # terminating live Context7 connector processes.
 context7_repair_script="$HOME/.codex/plugins/context7/scripts/repair-context7-mcp.mjs"
-if [[ -x "$context7_repair_script" ]]; then
+if [[ -f "$context7_repair_script" ]]; then
   run_preflight_phase "context7-cache-repair" "[preflight] Reconciling Context7 cache/config..." node "$context7_repair_script"
 fi
 

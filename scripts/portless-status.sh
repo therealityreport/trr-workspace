@@ -4,6 +4,15 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 export PATH="/opt/homebrew/bin:${PATH}"
 
+status_tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/trr-portless-status.XXXXXX")"
+trap 'rm -rf "$status_tmp_dir"' EXIT
+version_out="$status_tmp_dir/version.out"
+version_err="$status_tmp_dir/version.err"
+service_out="$status_tmp_dir/service.out"
+service_err="$status_tmp_dir/service.err"
+routes_out="$status_tmp_dir/routes.out"
+routes_err="$status_tmp_dir/routes.err"
+
 echo "[portless-status] Clean TRR URLs:"
 echo "  Admin: https://admin.trr.localhost"
 echo "  App:   https://trr.localhost"
@@ -17,23 +26,21 @@ if ! command -v portless >/dev/null 2>&1; then
 fi
 
 echo "[portless-status] CLI:"
-if portless --version >/tmp/trr-portless-version.$$ 2>/tmp/trr-portless-version-err.$$; then
-  sed 's/^/  version: /' /tmp/trr-portless-version.$$
+if portless --version >"$version_out" 2>"$version_err"; then
+  sed 's/^/  version: /' "$version_out"
 else
   echo "  version: unavailable"
-  sed 's/^/  /' /tmp/trr-portless-version-err.$$ || true
+  sed 's/^/  /' "$version_err" || true
 fi
-rm -f /tmp/trr-portless-version.$$ /tmp/trr-portless-version-err.$$
 
 echo ""
 echo "[portless-status] Service:"
-if portless service status >/tmp/trr-portless-service.$$ 2>/tmp/trr-portless-service-err.$$; then
-  sed 's/^/  /' /tmp/trr-portless-service.$$
+if portless service status >"$service_out" 2>"$service_err"; then
+  sed 's/^/  /' "$service_out"
 else
   echo "  service status unavailable"
-  sed 's/^/  /' /tmp/trr-portless-service-err.$$ || true
+  sed 's/^/  /' "$service_err" || true
 fi
-rm -f /tmp/trr-portless-service.$$ /tmp/trr-portless-service-err.$$
 
 echo ""
 echo "[portless-status] Proxy process:"
@@ -46,13 +53,12 @@ fi
 
 echo ""
 echo "[portless-status] Routes:"
-if portless list >/tmp/trr-portless-routes.$$ 2>/tmp/trr-portless-routes-err.$$; then
-  sed 's/^/  /' /tmp/trr-portless-routes.$$
+if portless list >"$routes_out" 2>"$routes_err"; then
+  sed 's/^/  /' "$routes_out"
 else
   echo "  route list unavailable"
-  sed 's/^/  /' /tmp/trr-portless-routes-err.$$ || true
+  sed 's/^/  /' "$routes_err" || true
 fi
-rm -f /tmp/trr-portless-routes.$$ /tmp/trr-portless-routes-err.$$
 
 echo ""
 echo "[portless-status] Browser-test readiness:"

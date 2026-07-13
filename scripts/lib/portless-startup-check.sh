@@ -18,9 +18,12 @@ trr_portless_has_wildcard_proxy() {
 
 trr_portless_has_disallowed_numeric_proxy_port() {
   local proxy_lines="${1:-}"
-  grep -E -- '(^|[[:space:]])(--port[ =]|-p[[:space:]])[0-9]+' <<<"$proxy_lines" \
+  if grep -E -- '(^|[[:space:]])(--port[ =]|-p[[:space:]])[0-9]+' <<<"$proxy_lines" \
     | grep -Ev -- '(^|[[:space:]])(--port[ =]|-p[[:space:]])443([[:space:]]|$)' \
-    >/dev/null
+      >/dev/null; then
+    return 0
+  fi
+  return 1
 }
 
 trr_portless_print_clean_urls() {

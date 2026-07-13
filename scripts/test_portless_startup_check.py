@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import shlex
 import stat
 import subprocess
 import tempfile
@@ -58,9 +59,11 @@ class PortlessStartupCheckTests(unittest.TestCase):
                     "bash",
                     "-lc",
                     (
-                        f"source {PORTLESS_LIB}; "
-                        f"pgrep() {{ {pgrep_script} \"$@\"; }}; "
-                        f"portless() {{ if [[ \"$1\" == \"list\" ]]; then cat {list_file}; else return 0; fi; }}; "
+                        f"source {shlex.quote(str(PORTLESS_LIB))}; "
+                        f"pgrep() {{ {shlex.quote(str(pgrep_script))} \"$@\"; }}; "
+                        "portless() { "
+                        f"if [[ \"$1\" == \"list\" ]]; then cat {shlex.quote(str(list_file))}; "
+                        "else return 0; fi; }; "
                         f"{command}"
                     ),
                 ],
