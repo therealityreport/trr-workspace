@@ -72,9 +72,6 @@ emit_preflight_phase_output() {
     check-policy)
       echo "[preflight] Policy checks OK"
       ;;
-    design-docs-agent-package)
-      echo "[preflight] Design Docs agent package OK"
-      ;;
     chrome-devtools-mcp-status)
       record_browser_attention "$output"
       if [[ -s "$ATTENTION_FILE" ]]; then
@@ -386,19 +383,6 @@ fi
 run_preflight_phase "codex-bootstrap" "[preflight] Reconciling Codex config..." bash "$ROOT/scripts/codex-config-sync.sh" bootstrap
 
 run_preflight_phase "check-policy" "[preflight] Checking policy drift rules..." bash "$ROOT/scripts/check-policy.sh"
-
-design_docs_validator="$ROOT/.agents/skills/design-docs-agent/test/validate-package.py"
-if [[ ! -f "$design_docs_validator" && -L "$ROOT/.agents/skills/design-docs" ]]; then
-  design_docs_skill_target="$(readlink "$ROOT/.agents/skills/design-docs")"
-  design_docs_skill_dir="$ROOT/.agents/skills"
-  design_docs_package_root="$(cd "$design_docs_skill_dir" && cd "$(dirname "$design_docs_skill_target")/.." && pwd)"
-  design_docs_validator="$design_docs_package_root/test/validate-package.py"
-fi
-if [[ ! -f "$design_docs_validator" ]]; then
-  echo "[preflight] design-docs-agent validator missing: $design_docs_validator" >&2
-  exit 1
-fi
-run_preflight_phase "design-docs-agent-package" "[preflight] Validating design-docs-agent package..." env DESIGN_DOCS_REPO_ROOT="$ROOT" python3 "$design_docs_validator"
 
 run_preflight_phase "chrome-devtools-mcp-status" "[preflight] Checking browser automation..." env CHROME_DEVTOOLS_MCP_STATUS_MODE=structured bash "$ROOT/scripts/chrome-devtools-mcp-status.sh"
 

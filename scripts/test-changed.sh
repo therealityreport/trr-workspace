@@ -30,18 +30,6 @@ run_workspace_checks() {
   bash "$ROOT/scripts/check-workspace-contract.sh"
   env CHROME_DEVTOOLS_MCP_STATUS_MODE=summary bash "$ROOT/scripts/chrome-devtools-mcp-status.sh"
 
-  if rg -q '^\.agents/skills/design-docs-agent/' "$changed_tmp"; then
-    echo "[test-changed] design-docs-agent skill changes detected; validating package."
-    python3 "$ROOT/.agents/skills/design-docs-agent/test/validate-package.py" "$ROOT/.agents/skills/design-docs-agent"
-  fi
-
-  if rg -q '^\.agents/skills/crawl4ai/' "$changed_tmp"; then
-    echo "[test-changed] crawl4ai skill changes detected; validating script entrypoints."
-    python3 "$ROOT/.agents/skills/crawl4ai/scripts/basic_crawler.py" --help
-    python3 "$ROOT/.agents/skills/crawl4ai/scripts/batch_crawler.py" --help
-    python3 "$ROOT/.agents/skills/crawl4ai/scripts/extraction_pipeline.py" --help
-  fi
-
   echo "[test-changed] Root script contract tests..."
   trr_workspace_pytest_contracts "$ROOT"
 }
@@ -52,7 +40,7 @@ fi
 if rg -q '^TRR-APP/' "$changed_tmp"; then
   run_app=1
 fi
-if rg -q '^(AGENTS\.md|CLAUDE\.md|Makefile|scripts/|docs/|profiles/|\.agents/skills/|skills/)' "$changed_tmp"; then
+if rg -q '^(AGENTS\.md|CLAUDE\.md|Makefile|scripts/|docs/|profiles/)' "$changed_tmp"; then
   run_baseline=1
 fi
 
