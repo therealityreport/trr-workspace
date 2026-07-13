@@ -98,7 +98,7 @@ EOF
   cd "$root_dir" && make portless-repair
   cd "$root_dir" && make dev-hybrid
 
-[${label}] Then rerun the Browser smoke test.
+[${label}] Then rerun the command that failed.
 EOF
       return 2
     fi
@@ -108,13 +108,13 @@ EOF
   if trr_portless_agent_noninteractive; then
     cat >&2 <<EOF
 [${label}] ERROR: Portless wildcard proxy is not running.
-[${label}] Browser tests require the clean TRR admin host before they open the app.
+[${label}] TRR workflows require the clean TRR admin host to be available first.
 EOF
     trr_portless_print_clean_urls "$label"
     cat >&2 <<EOF
 
 [${label}] This Codex/non-interactive shell will not start Portless automatically because binding HTTPS on port 443 can require sudo.
-[${label}] Start or repair Portless from an interactive terminal, then rerun the Browser test:
+[${label}] Start or repair Portless from an interactive terminal, then rerun the command that failed:
   cd "$root_dir" && make portless-repair
   cd "$root_dir" && make dev-hybrid
 

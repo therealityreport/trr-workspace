@@ -443,15 +443,38 @@ class WorkspaceAppEnvProjectionTests(unittest.TestCase):
             "TRR_SOCIAL_PROGRESS_DB_POOL_MAXCONN": "1",
             "TRR_HEALTH_DB_POOL_MAXCONN": "1",
         }
+        remote_worker_launch_settings = {
+            "WORKSPACE_TRR_REMOTE_ADMIN_WORKERS": "1",
+            "WORKSPACE_TRR_REMOTE_REDDIT_WORKERS": "1",
+            "WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS": "1",
+            "WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS": "1",
+        }
 
         budget = self.run_workspace_db_holder_budget(low_pressure_env)
         total = int(budget.rsplit("total=", 1)[1])
+        api_concurrency = int(low_pressure_env["TRR_DB_POOL_MAXCONN"])
+        remote_worker_count = sum(int(value) for value in remote_worker_launch_settings.values())
+
+        dev_text = DEV_SCRIPT.read_text(encoding="utf-8")
+        makefile_text = MAKEFILE.read_text(encoding="utf-8")
+        dev_hybrid = makefile_text[
+            makefile_text.index("\ndev-hybrid:") : makefile_text.index(
+                "\n# Compatibility alias", makefile_text.index("\ndev-hybrid:")
+            )
+        ]
+        for key, value in remote_worker_launch_settings.items():
+            if key == "WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS":
+                self.assertIn(f"{key}={value}", dev_hybrid)
+            else:
+                self.assertIn(f'{key}="${{{key}:-{value}}}"', dev_text)
 
         self.assertEqual(
             budget,
             "app=1, backend=2, social_profile=1, social_control=1, social_progress=1, health=1, total=7",
         )
-        self.assertLessEqual(total + 4, 15)
+        self.assertEqual(api_concurrency, 2)
+        self.assertEqual(remote_worker_count, 4)
+        self.assertLessEqual(total + remote_worker_count, 15)
 
     def test_effective_db_holder_budget_uses_default_profile_fallbacks_when_malformed(self) -> None:
         self.assertEqual(

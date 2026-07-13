@@ -8,6 +8,7 @@ import tempfile
 import textwrap
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -53,6 +54,8 @@ class PortlessStartupCheckTests(unittest.TestCase):
                 "PATH": f"{bin_dir}:{os.environ.get('PATH', '')}",
                 "CODEX_CI": "1",
             }
+            env.pop("TRR_PORTLESS_ALLOW_PROXY_START", None)
+            env.pop("PORTLESS_PORT", None)
             env.update(extra_env or {})
             return subprocess.run(
                 [
@@ -82,6 +85,20 @@ class PortlessStartupCheckTests(unittest.TestCase):
         self.assertIn("https://admin.trr.localhost", result.stderr)
         self.assertIn("make portless-status", result.stderr)
         self.assertIn("TRR_PORTLESS_ALLOW_PROXY_START=1 make dev-hybrid", result.stderr)
+        self.assertIn("rerun the command that failed", result.stderr)
+        self.assertNotIn("Browser test", result.stderr)
+
+    def test_host_proxy_start_and_port_overrides_do_not_leak_into_subprocess(self) -> None:
+        with patch.dict(
+            os.environ,
+            {"TRR_PORTLESS_ALLOW_PROXY_START": "1", "PORTLESS_PORT": "7443"},
+        ):
+            result = self._run_check('trr_portless_require_proxy_start_allowed "workspace" "$PWD"')
+
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("Portless wildcard proxy is not running", result.stderr)
+        self.assertNotIn("TRR_PORTLESS_ALLOW_PROXY_START=1 was set", result.stderr)
+        self.assertNotIn("explicit numeric port", result.stderr)
 
     def test_noninteractive_allow_proxy_start_requires_passwordless_sudo(self) -> None:
         result = self._run_check(

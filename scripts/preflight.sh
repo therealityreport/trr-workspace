@@ -390,7 +390,8 @@ run_preflight_phase "check-policy" "[preflight] Checking policy drift rules..." 
 design_docs_validator="$ROOT/.agents/skills/design-docs-agent/test/validate-package.py"
 if [[ ! -f "$design_docs_validator" && -L "$ROOT/.agents/skills/design-docs" ]]; then
   design_docs_skill_target="$(readlink "$ROOT/.agents/skills/design-docs")"
-  design_docs_package_root="$(cd "$(dirname "$design_docs_skill_target")/.." && pwd)"
+  design_docs_skill_dir="$ROOT/.agents/skills"
+  design_docs_package_root="$(cd "$design_docs_skill_dir" && cd "$(dirname "$design_docs_skill_target")/.." && pwd)"
   design_docs_validator="$design_docs_package_root/test/validate-package.py"
 fi
 if [[ ! -f "$design_docs_validator" ]]; then

@@ -386,7 +386,9 @@ orphaned_chrome_mcp_process_count() {
 chrome_plugin_root() {
   local candidate
   local latest=""
-  if [[ -n "${CODEX_CHROME_PLUGIN_ROOT:-}" && -f "${CODEX_CHROME_PLUGIN_ROOT}/scripts/check-extension-installed.js" ]]; then
+  if [[ -n "${CODEX_CHROME_PLUGIN_ROOT:-}" \
+    && -f "${CODEX_CHROME_PLUGIN_ROOT}/scripts/check-extension-installed.js" \
+    && -f "${CODEX_CHROME_PLUGIN_ROOT}/scripts/check-native-host-manifest.js" ]]; then
     printf '%s\n' "$CODEX_CHROME_PLUGIN_ROOT"
     return 0
   fi
