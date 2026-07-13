@@ -32,12 +32,10 @@ The backend maintains authenticated Instagram browser sessions on disk under
 `data/social-browser-sessions/` and GCP service-account keys under `keys/`. The
 code already intends these to be private: `write_private_json_file` writes at
 `0o600` and `ensure_private_file_mode` re-chmods to `0o600`. But that intent is
-not reconciled across all files — several older session files
-(`bravodailydish.cookies.json`, `bravowwhl.cookies.json`, their `.storage-state.json`
-siblings, a stale `bravotv.cookies.json.bak`, and
-`entertainmentdatagroup-gmail.com.storage-state.json`) are **0644
+not reconciled across all files — several older `*.cookies.json`,
+`*.storage-state.json`, and `*.cookies.json.bak` session files are **0644
 (world-readable)**, while newer files are correctly 0600 — so this is drift, not
-policy. All three GCP `service_account` JSON keys in `keys/` are likewise **0644**,
+policy. The service-account JSON keys in the configured key directory are likewise **0644**,
 and the parent directories are **0755**. Any other local user or any non-root
 process/daemon (backup/sync agents) running under this login can read live
 Instagram session cookies (full session takeover of the scraper accounts) and
@@ -191,7 +189,7 @@ report rather than hardcoding a fragile path.
 
 ### Step 3: Remove the orphaned `.bak` cookie snapshot handling
 
-The stale `bravotv.cookies.json.bak` (0644) has no creator in current code and no
+The stale `*.cookies.json.bak` file found during the host inventory has no creator in current code and no
 cleanup path (`reset_account_context` unlinks only `.storage-state.json` and
 `.cookies.json`). Do not special-case `.bak` in code, but ensure the sweep in
 Step 1 covers it (it does — `rglob("*")` includes `.bak`). Optionally, if
@@ -251,13 +249,12 @@ report. Do NOT stop for this; do NOT hardcode a cwd-relative `keys/` path.
 1. Run the sweep once on the host (or restart a worker so Step 2 runs), then
    verify: `find data/social-browser-sessions keys -type f -perm -044` returns
    nothing.
-2. Delete the orphaned `data/social-browser-sessions/instagram/bravotv.cookies.json.bak`.
-3. **Rotate the exposed credentials** — they sat world-readable, so treat as
-   burned: re-authenticate the affected Instagram scraper sessions
-   (`bravodailydish`, `bravowwhl`, `bravotv`, `entertainmentdatagroup-gmail.com`,
-   and any other that was 0644), and regenerate/rotate the three GCP
-   service-account keys in `keys/` (issue new keys, update the runtime secret,
-   disable the old keys).
+2. Delete orphaned `*.cookies.json.bak` files identified by the host inventory.
+3. **Rotate the exposed credentials** — they sat world-readable, so treat them
+   as burned: re-authenticate every scraper session identified by the
+   pre-remediation permission inventory, and regenerate each affected
+   service-account key (issue replacements, update runtime secrets, and disable
+   the old keys).
 
 - A reviewer should confirm the sweep is idempotent, non-fatal, and runs once (a
   module flag), and that no key contents are read or logged.

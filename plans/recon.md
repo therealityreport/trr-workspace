@@ -19,7 +19,7 @@ resolved cleanly at the committed-head level.
 
 Backend (run from `TRR-Backend/`, venv at `.venv/`):
 - Import gate: `.venv/bin/python -c "import api.main"` — **verified locally, passes** (latest: 2026-07-07).
-- Blocking test gate (CI): `.venv/bin/python -m pytest tests/api -q` — **verified locally, passes** (latest: 2026-07-07, `1104 passed, 12 warnings`; CI contract in `.github/workflows/ci.yml`).
+- Blocking test gate (CI): `.venv/bin/python -m pytest tests/api -q` — **verified locally, passes** (latest: 2026-07-07, `1104 passed, 12 warnings`; CI contract in `TRR-Backend/.github/workflows/ci.yml`).
 - Lint: `ruff check <files>` (CI lints changed files only, forward-only).
 - Lock freshness (CI): `uv pip compile requirements.in --python-version 3.11 -o requirements.lock.txt` then diff.
 - **Known**: full `pytest` has ~18 cross-test-pollution failures that pass in isolation; only `tests/api` blocks merge. Re-run failures in isolation before attributing them to a change.
@@ -31,7 +31,7 @@ App (run from `TRR-APP/`):
 - Lint: `pnpm -C apps/web run lint` (eslint, 8GB heap).
 - Quick gate: `pnpm -C apps/web run validate:quick` (generated:check + 3 vitest files) — **verified locally, passes** (latest: 2026-07-07 via `make app-validate-quick`).
 - Build: `pnpm -C apps/web run build` (`scripts/safe-next-build.mjs`).
-- CI: `.github/workflows/web-tests.yml`, `firebase-rules.yml`.
+- CI: `TRR-APP/.github/workflows/web-tests.yml`, `TRR-APP/.github/workflows/firebase-rules.yml`.
 
 Workspace root: `make git-branch-report` before branch-ref changes; `make dev-hybrid` needs sudo (Portless 443) — don't start it headless.
 
@@ -55,7 +55,7 @@ Skipped everywhere: `node_modules`, `.venv`, `.next`, `__pycache__`, `.git`, `TR
 ## 2026-07-08 social-focus deep-audit refresh
 
 Run scope: social-media pipeline only (`/improve-more deep`, plans written for the
-Codex executor). Heads unchanged since 2026-07-06 audit: root `fb76b5b`, Backend
+Codex executor). Heads at this run: root `fb76b5b`, Backend
 `8ea7aa1a`, App `83778e5c`; both nested trees still dirty (plans 001-024 landed
 locally, uncommitted) — **working tree is authoritative**. Backend import gate
 re-verified 2026-07-08 (`.venv/bin/python -c "import api.main"` → ok).
@@ -93,7 +93,7 @@ June no longer exist at their remembered paths — treated as gone.
 
 See `plans/README.md` → "Findings considered and rejected" for full rationale. Summary:
 - Dockerfile `COPY . .` baking `.env`/`keys/` — FALSE POSITIVE (`.dockerignore` already excludes them; `keys/` untracked + gitignored).
-- "No CI exists" (backend) — INCORRECT (`.github/workflows/ci.yml` has 5 jobs incl. py312 canary).
+- "No CI exists" (backend) — INCORRECT (`TRR-Backend/.github/workflows/ci.yml` has 5 jobs incl. py312 canary).
 - `InternalAdminUser = None` as auth bypass — REJECTED (FastAPI always runs `Annotated[...,Depends()]`; default is dead code, not a bypass).
 - Core-table open-read RLS — BY DESIGN (public read-only browse; admin writes bypass RLS via direct SQL).
 - Adaptive scrape control-plane design — SETTLED by docs/adr/0001 (only impl bugs are findings).
@@ -102,7 +102,7 @@ See `plans/README.md` → "Findings considered and rejected" for full rationale.
 ## 2026-07-08 social deep audit #3 spot-check
 
 Third `/improve-more deep` run, scoped to everything social (workers, scrapers,
-app UI, socials core, secrets-at-rest). Heads unchanged: root `ba70326`,
+app UI, socials core, secrets-at-rest). Heads at this run: root `ba70326`,
 TRR-Backend `8ea7aa1a`, TRR-APP `83778e5c`; nested trees still dirty and
 **authoritative** (audit read on-disk files, not HEAD). Wrote plans 035–041.
 
@@ -141,7 +141,8 @@ auto-merge + additive code). Nothing merged to the user's branch — merge is th
 user's call. Codex dispatch harness lives at the session scratchpad
 (`dispatch.sh` + `preamble.txt`); resume note: `codex exec resume <id>` does NOT
 accept `-C`/`-s` (set sandbox via `-c sandbox_mode=...`, run from the worktree cwd).
-Operator follow-up (041): rotate the exposed IG sessions + 3 GCP keys.
+Operator follow-up (041): complete the credential rotation and permission
+verification described in plan 041's maintenance notes.
 
 ## 2026-07-08 `execute 042-047` — five more DONE (GPT-5.5 via Codex)
 
