@@ -7,7 +7,6 @@
 	cast-screentime-gap-check cast-screentime-live-check \
 	redis-up redis-down down chrome-repair chrome-devtools-mcp-status chrome-devtools-mcp-clean-stale chrome-devtools-mcp-stop-conflicts next-devtools-mcp-status node-repl-mcp-clean-stale codex-browser-transport-reset \
 	context7-repair mcp-clean chrome-dock-clean \
-	workspace-pr-agent \
 	getty-server getty-tunnel getty-remote modal-instagram-auth-status modal-instagram-auth-repair socialblade-auth-repair \
 	instagram-backfill-preflight instagram-backfill-progress instagram-backfill-recover-stalled instagram-posts-smoke instagram-posts-benchmark bravo-straggler-recovery instagram-media-mirror-recovery instagram-one-post-media-mirror social-queue-snapshot
 
@@ -633,15 +632,3 @@ mcp-clean:
 
 chrome-dock-clean:
 	@bash scripts/cleanup-chrome-dock-recents.sh
-
-# Repo commit/PR/review/merge automation agent for one repo or a repo set.
-# Optional env overrides:
-# WORKSPACE_PR_AGENT_REVISION_COMMAND='...'   # default uses scripts/workspace-pr-agent-revision.py
-# WORKSPACE_PR_AGENT_REVISION_USE_CODEX=0     # disable Codex-assist within revision script
-# WORKSPACE_PR_AGENT_REVISION_USE_GITHUB_MCP=0   # default is 1 (MCP-preferred Codex prompt)
-# WORKSPACE_PR_AGENT_REVISION_REQUIRE_GITHUB_MCP=1   # fail revision assist if GitHub MCP auth is missing
-# WORKSPACE_PR_AGENT_REVISION_USE_VERCEL_MCP=0   # disable Vercel deployment-context lookup in revision assist
-# WORKSPACE_PR_AGENT_DRY_RUN=1
-# WORKSPACE_PR_AGENT_REPOS='TRR-APP' or 'TRR-Backend,TRR-APP'   # optional scope override; default auto-discovers workspace root + child repos
-workspace-pr-agent:
-	@bash scripts/workspace-pr-agent.sh

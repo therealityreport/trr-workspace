@@ -1,19 +1,19 @@
 # Skill Routing Governance Matrix
 
-Canonical source is the **user-level skill**: `~/.claude/skills/skill-routing/SKILL.md`
+TRR does not own or install project-local skills. Skill discovery and selection come from the maintained user-level, system-level, and plugin registries available to the active agent runtime.
 
-This project-level file exists for:
-1. `AGENTS.md` line 48 reference (workspace policy pointer)
-2. `scripts/check-policy.sh` validation target
-3. Companion file co-location with `claude_skill_overlap.md` and `mcp_inventory.md`
+This file is a workspace policy pointer used by `AGENTS.md` and `scripts/check-policy.sh`; it is not a skill package or a duplicate skill registry.
 
-The user-level skill is authoritative. Do not duplicate routing rules here — read the skill directly.
+## Routing Rules
 
-Companion rule for Codex/TRR config: routing decides which skill owns a surface, but workspace policy should not disable unrelated user-level or system-level skills just because a local canonical exists.
+1. Select a maintained user-level, system-level, or plugin skill that matches the current task.
+2. Use TRR's `AGENTS.md`, `.codex/rules/`, domain documentation, and tests for project-specific context and constraints.
+3. Do not treat repository files under `.agents/skills`, `.claude/skills`, or nested repository skill directories as canonical skill sources.
+4. Do not disable unrelated inherited capabilities to resolve overlap. Prefer the narrowest maintained capability and follow the active instruction hierarchy.
 
 ## Companion Files
 
 | File | Purpose |
 |------|---------|
-| `claude_skill_overlap.md` | Absorption/demotion records for global skills absorbed into workspace canonicals |
+| `claude_skill_overlap.md` | Record of the retired local-skill ownership model and its replacement |
 | `mcp_inventory.md` | MCP server registration and invocation guidance |
