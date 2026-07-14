@@ -366,6 +366,12 @@ with project_config_path.open("rb") as handle:
     data = tomllib.load(handle)
 
 required_servers = {
+    "next-devtools": {
+        "command": "npx",
+        "args": ["-y", "next-devtools-mcp@latest"],
+        "startup_timeout_ms": 20000,
+        "env": {"NEXT_TELEMETRY_DISABLED": "1"},
+    },
     "supabase": {
         "url": "https://mcp.supabase.com/mcp?project_ref=vwxfvzutyufrkhfgoeaa&features=docs%2Caccount%2Cdatabase%2Cdebugging%2Cdevelopment%2Cfunctions%2Cbranching%2Cstorage",
         "bearer_token_env_var": "TRR_SUPABASE_ACCESS_TOKEN",
