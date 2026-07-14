@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import os
+import shutil
 import subprocess
 import tempfile
+import tomllib
 from pathlib import Path
 
 
@@ -23,6 +25,48 @@ def _run_sync(action: str, home: Path) -> subprocess.CompletedProcess[str]:
         text=True,
         check=False,
     )
+
+
+def test_bootstrap_accepts_tracked_project_mcp_servers() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        temp_root = Path(tmp) / "workspace"
+        (temp_root / "scripts").mkdir(parents=True)
+        (temp_root / "config" / "codex").mkdir(parents=True)
+        (temp_root / ".codex").mkdir(parents=True)
+
+        temp_script = temp_root / "scripts" / SCRIPT.name
+        shutil.copy2(SCRIPT, temp_script)
+        shutil.copy2(
+            ROOT / "config" / "codex" / "user-bootstrap.toml.tmpl",
+            temp_root / "config" / "codex" / "user-bootstrap.toml.tmpl",
+        )
+        shutil.copytree(ROOT / ".codex" / "agents", temp_root / ".codex" / "agents")
+
+        project_config = (ROOT / ".codex" / "config.toml").read_text(encoding="utf-8")
+        parsed_config = tomllib.loads(project_config)
+        modal_command = parsed_config["mcp_servers"]["modal-ops"]["command"]
+        configured_root = Path(modal_command).parents[3]
+        project_config = project_config.replace(str(configured_root), str(temp_root))
+        (temp_root / ".codex" / "config.toml").write_text(project_config, encoding="utf-8")
+
+        home = Path(tmp) / "home"
+        (home / ".codex").mkdir(parents=True)
+        (home / ".codex" / "config.toml").write_text('model = "gpt-5.6-sol"\n', encoding="utf-8")
+        env = os.environ.copy()
+        env["HOME"] = str(home)
+        env["CODEX_HOME"] = str(home / ".codex")
+        env["CODEX_CONFIG_FILE"] = str(home / ".codex" / "config.toml")
+        result = subprocess.run(
+            ["/bin/bash", str(temp_script), "bootstrap"],
+            cwd=temp_root,
+            env=env,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+    assert result.returncode == 0, result.stderr
+    assert "Validation OK" in result.stdout
 
 
 def test_validate_allows_user_level_model_reasoning_effort() -> None:
