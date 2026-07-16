@@ -1,0 +1,154 @@
+{
+  "version": 1,
+  "authority": "TRR workspace environment-specific runtime capacity projection",
+  "change_policy": {
+    "preserve_effective_behavior": true,
+    "tuning_requires_approval": true,
+    "required_evidence": [
+      "queue_throughput",
+      "database_session_budget",
+      "failure_rate"
+    ]
+  },
+  "semantics": {
+    "dispatch_batch_size": "Maximum queued jobs selected by one dispatcher sweep; this is not container concurrency.",
+    "container_job_concurrency": "Maximum concurrently running job containers for a function family; comments can be lower than the general social limit.",
+    "stage_caps": "Per-stage in-flight work caps; these are not dispatch batch size or container concurrency."
+  },
+  "contexts": {
+    "local_workspace": {
+      "remote_social_enabled_by_default": false,
+      "dispatch_batch_size": 4,
+      "container_job_concurrency": {
+        "general_social": 4
+      },
+      "stage_caps": {
+        "posts": 1,
+        "comments": 1,
+        "media_mirror": 1,
+        "comment_media_mirror": 1
+      }
+    },
+    "workspace_hybrid": {
+      "remote_social_enabled_by_default": true,
+      "dispatch_batch_size": 8,
+      "container_job_concurrency": {
+        "general_social": 8
+      },
+      "stage_caps": {
+        "posts": 1,
+        "comments": 8,
+        "media_mirror": 1,
+        "comment_media_mirror": 1,
+        "instagram_posts_comments_platform": 8
+      }
+    },
+    "hosted_modal": {
+      "remote_social_enabled_by_default": true,
+      "dispatch_batch_size": 12,
+      "container_job_concurrency": {
+        "general_social": 8,
+        "comments": 4,
+        "comments_recovery": 4,
+        "media": 1,
+        "recovery": 1
+      },
+      "stage_caps": {
+        "comments": 4,
+        "media_mirror": 1,
+        "comment_media_mirror": 1,
+        "instagram_posts_comments_platform": 4
+      }
+    },
+    "architecture_refactor": {
+      "remote_social_enabled_by_default": false,
+      "database_target": "loopback_only",
+      "dispatch_batch_size": 4,
+      "container_job_concurrency": {
+        "general_social": 4
+      },
+      "stage_caps": {
+        "posts": 1,
+        "comments": 1,
+        "media_mirror": 1,
+        "comment_media_mirror": 1
+      },
+      "side_effects": {
+        "database_apply": false,
+        "runtime_reconcile": false,
+        "modal_deploy": false,
+        "render_mutation": false,
+        "vercel_mutation": false,
+        "remote_workers": false
+      }
+    }
+  },
+  "profile_contexts": {
+    "default": "local_workspace",
+    "local-redis": "local_workspace",
+    "social-debug": "local_workspace",
+    "local-cloud": "workspace_hybrid",
+    "local-docker": "workspace_hybrid",
+    "local-full": "workspace_hybrid",
+    "local-lite": "workspace_hybrid",
+    "architecture-refactor": "architecture_refactor"
+  },
+  "profile_overrides": {
+    "local-lite": {
+      "remote_social_enabled": true,
+      "stage_caps": {
+        "posts": 2,
+        "comments": 2,
+        "media_mirror": 1,
+        "comment_media_mirror": 1
+      }
+    }
+  },
+  "workspace_presets": {
+    "dev-hybrid": {
+      "context": "workspace_hybrid",
+      "stage_caps": {
+        "posts": 1,
+        "comments": 8,
+        "media_mirror": 1,
+        "comment_media_mirror": 1
+      }
+    },
+    "dev-hybrid-media-safe": {
+      "context": "workspace_hybrid",
+      "stage_caps": {
+        "posts": 1,
+        "comments": 8,
+        "media_mirror": 2,
+        "comment_media_mirror": 2
+      }
+    },
+    "dev-hybrid-media-safe-posts": {
+      "context": "workspace_hybrid",
+      "stage_caps": {
+        "posts": 1,
+        "comments": 8,
+        "media_mirror": 3,
+        "comment_media_mirror": 1
+      }
+    },
+    "dev-hybrid-media-safe-comments": {
+      "context": "workspace_hybrid",
+      "stage_caps": {
+        "posts": 1,
+        "comments": 8,
+        "media_mirror": 1,
+        "comment_media_mirror": 3
+      }
+    },
+    "dev-hybrid-media-safe-bravotv": {
+      "context": "workspace_hybrid",
+      "stage_caps": {
+        "posts": 0,
+        "comments": 2,
+        "media_mirror": 4,
+        "comment_media_mirror": 1
+      }
+    }
+  }
+}

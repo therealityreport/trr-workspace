@@ -1,0 +1,575 @@
+{
+  "manifest_version": 4,
+  "program_id": "trr-architecture-overhaul-20260715-v5",
+  "gate": "R0-candidate-promotion-tooling-accepted-r1-ready",
+  "captured_at": "2026-07-16T22:58:30Z",
+  "coordination_owner": "program-coordination",
+  "current_checkpoint": {
+    "state": "r0-checkpoint-commit-approved-candidate-promotion-tooling-accepted-r1-ready-after-promotion",
+    "execution_authority": ".plan-work/plan-architect/trr-architecture-overhaul-20260715/REVISED_PLAN.v5.md",
+    "historical_gate_receipts_preserved": true,
+    "current_reproducibility": {
+      "required_contract_trackability": "working-tree-pass-candidate-promotion-tooling-accepted",
+      "local_release_packets": "current-tree-provenance-enforced-by-live-validator-R0-B",
+      "safe_runtime_loopback_proof": "pass-independently-accepted-R0-C",
+      "provider_rollback_guards": "pass-independently-accepted-R0-C",
+      "expanded_hotspot_coverage": "pass-independently-accepted-R0-C",
+      "candidate_promotion_tooling": "pass-independently-accepted-R0-D"
+    },
+    "staging_or_commit_authorized": true,
+    "staging_or_commit_scope": "accepted-72-path-root-R0-checkpoint-plus-required-metadata-receipt-commit",
+    "production_build_authorized": false,
+    "migration_apply_authorized": false,
+    "deployment_authorized": false,
+    "browser_authorized": false
+  },
+  "active_r0_lanes": [
+    {
+      "lane_id": "R0-A",
+      "owner": "durable-contracts-worker",
+      "state": "accepted-local-candidate-tracking-blocked",
+      "owned_paths": [
+        "CONTEXT-MAP.md",
+        "docs/workspace/deployment-targets.json",
+        "docs/workspace/runtime-capacity.json",
+        "docs/workspace/output-disposition.json",
+        "scripts/architecture/check-durable-contracts.py",
+        "scripts/architecture/tests/test_check_durable_contracts.py"
+      ],
+      "forbidden_paths": [
+        "docs/workspace/architecture-task-locks.json",
+        "docs/workspace/release-packet.schema.json",
+        "docs/workspace/architecture-evidence.schema.json",
+        "docs/workspace/architecture-hotspots.json",
+        "Makefile",
+        "scripts/check-workspace-contract.sh",
+        "TRR-Backend/**",
+        "TRR-APP/**"
+      ]
+    },
+    {
+      "lane_id": "R0-B",
+      "owner": "local-packet-evidence-worker",
+      "state": "accepted-current-tree-provenance-enforced",
+      "owned_paths": [
+        "docs/workspace/release-packet.schema.json",
+        "docs/workspace/architecture-evidence.schema.json",
+        "scripts/architecture/check-release-manifests.py",
+        "scripts/architecture/tests/test_check_release_manifests.py",
+        "docs/workspace/release-packets/**",
+        "docs/workspace/architecture-evidence/**",
+        "docs/workspace/parked-unaccepted-local-work.json",
+        "release-manifests/**",
+        "artifacts/architecture-overhaul/**"
+      ],
+      "forbidden_paths": [
+        "docs/workspace/architecture-task-locks.json",
+        "docs/workspace/deployment-targets.json",
+        "docs/workspace/runtime-capacity.json",
+        "docs/workspace/output-disposition.json",
+        "docs/workspace/architecture-hotspots.json",
+        "Makefile",
+        "scripts/check-workspace-contract.sh",
+        "TRR-Backend/**",
+        "TRR-APP/**"
+      ]
+    },
+    {
+      "lane_id": "R0-C",
+      "owner": "runtime-rollback-hotspot-worker",
+      "state": "accepted-local-gate4-live-proof-pending",
+      "owned_paths": [
+        "profiles/architecture-refactor.env",
+        "scripts/architecture-refactor-preflight.sh",
+        "docs/workspace/architecture-hotspots.json",
+        "scripts/architecture/check-hotspots.py",
+        "scripts/architecture/tests/test_check_hotspots.py",
+        "scripts/modal-trr.sh",
+        "scripts/vercel-project-guard.py",
+        "scripts/test_modal_trr.py",
+        "TRR-Backend/scripts/modal/**",
+        "TRR-Backend/tests/scripts/test_*modal*",
+        "TRR-APP/scripts/vercel*.sh",
+        "TRR-APP/apps/web/tests/*vercel*"
+      ],
+      "forbidden_paths": [
+        "docs/workspace/architecture-task-locks.json",
+        "docs/workspace/release-packet.schema.json",
+        "docs/workspace/architecture-evidence.schema.json",
+        "docs/workspace/deployment-targets.json",
+        "docs/workspace/runtime-capacity.json",
+        "docs/workspace/output-disposition.json",
+        "Makefile",
+        "scripts/check-workspace-contract.sh",
+        "TRR-Backend/api/**",
+        "TRR-Backend/supabase/**",
+        "TRR-APP/apps/web/src/**"
+      ]
+    },
+    {
+      "lane_id": "R0-D",
+      "owner": "candidate-promotion-tooling-worker",
+      "state": "accepted-local-candidate-promotion-tooling",
+      "owned_paths": [
+        "scripts/architecture/check-release-manifests.py",
+        "scripts/architecture/tests/test_check_release_manifests.py"
+      ],
+      "forbidden_paths": [
+        "docs/workspace/architecture-task-locks.json",
+        "docs/workspace/release-packets/**",
+        "docs/workspace/architecture-evidence/**",
+        "docs/workspace/parked-unaccepted-local-work.json",
+        "Makefile",
+        "TRR-Backend/**",
+        "TRR-APP/**"
+      ]
+    }
+  ],
+  "packet_2a_readiness": {
+    "state": "ready-after-r0-candidate-promotion",
+    "coordination_owner": "program-coordination",
+    "backend_first": true,
+    "product_live_mutation_authorized": false,
+    "production_build_authorized": false,
+    "migration_apply_authorized": false,
+    "deployment_authorized": false,
+    "browser_authorized": false,
+    "backend_data_worker": {
+      "state": "ready-after-r0-candidate-promotion",
+      "owned_paths": [
+        "TRR-Backend/trr_backend/repositories/core_show_reads.py",
+        "TRR-Backend/trr_backend/services/core_show_reads.py",
+        "TRR-Backend/tests/repositories/test_core_show_reads.py",
+        "TRR-Backend/tests/services/test_core_show_reads.py"
+      ]
+    },
+    "backend_contract_worker": {
+      "state": "ready-after-r0-candidate-promotion",
+      "owned_paths": [
+        "TRR-Backend/api/schemas/v2/core_show_reads.py",
+        "TRR-Backend/api/routers/v2/core_show_reads.py",
+        "TRR-Backend/tests/api/routers/test_v2_core_show_reads.py",
+        "TRR-Backend/docs/api/openapi.v2.json",
+        "TRR-APP/apps/web/src/lib/server/trr-api/generated/openapi.v2.json",
+        "TRR-APP/apps/web/src/lib/server/trr-api/generated/openapi.v2.d.ts"
+      ]
+    },
+    "app_adapter_worker": {
+      "state": "blocked-until-backend-contract-freeze",
+      "owned_paths": [
+        "TRR-APP/apps/web/src/lib/server/trr-api/trr-shows-repository.ts",
+        "TRR-APP/apps/web/tests/trr-shows-repository*.test.ts"
+      ]
+    },
+    "lead_only_paths": [
+      "TRR-Backend/api/main.py",
+      "docs/workspace/api-migration-ledger.md",
+      "docs/workspace/app-direct-sql-inventory.md",
+      "scripts/app-direct-sql-inventory.py",
+      "scripts/test_app_direct_sql_inventory.py",
+      "docs/workspace/architecture-task-locks.json",
+      "docs/workspace/release-packets/**",
+      "docs/workspace/architecture-evidence/**"
+    ],
+    "target_app_direct_sql_delta": {
+      "before": 261,
+      "after": 251,
+      "delta": -10
+    }
+  },
+  "lead_only_paths": [
+    ".git/info/exclude",
+    "Makefile",
+    "scripts/check-workspace-contract.sh",
+    "docs/workspace/architecture-task-locks.json",
+    "scripts/architecture/check-import-graph.py",
+    "TRR-Backend/api/main.py"
+  ],
+  "dirty_tree_policy": {
+    "preserve_unrelated_changes": true,
+    "excluded_concurrent_paths": [
+      "AGENTS.md",
+      "plans/048-workspace-architecture-restructure.md"
+    ],
+    "cross_owner_edit_policy": "stop-and-request-serialized-assignment",
+    "branch_policy": "use-current-branch-no-task-branches-or-worktrees",
+    "git_metadata_policy": "no-move-delete-or-rename-without-explicit-user-approval"
+  },
+  "repository_quarantine": {
+    "state": "complete",
+    "approved_in_current_chat": true,
+    "completed_at": "2026-07-16T04:40:26Z",
+    "source": "TRR-APP/apps/web/.git",
+    "destination": "/Users/thomashulihan/Documents/TRR-architecture-quarantine/2026-07-15-pre-move-v2-20260716T021430Z/live-nested-root/.git",
+    "recovery_package": "/Users/thomashulihan/Documents/TRR-architecture-quarantine/2026-07-15-pre-move-v2-20260716T021430Z/nested-root-recovery-package-v2.tar.gz",
+    "recovery_package_sha256": "e06e6c3d1bb09993c2e25a767857cbcc8a0fd2659263055720c4b7d92a67df41",
+    "pre_move_status_sha256": "2e8267054b9d2313fb612abfd936634b176f58334b3d5aa1e1db423740e27208",
+    "post_move_worktree_manifest_sha256": "029aaacb58b25c8cbd538e367985d01077dace15100fde6a580def1931a85f1e",
+    "quarantined_git_metadata_manifest_sha256": "b48e7b14679e44817748ce4ce3b6927b0d3d9156d01bcaede7bd0c945792084d",
+    "quarantined_head": "b4198ec471d55204af3f5bbeca194ac0a9706ab7",
+    "quarantined_stash_count": 1,
+    "parent_app_status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "active_git_root_count": 3,
+    "restore_rehearsal": "pass",
+    "git_fsck_full": "pass",
+    "working_files_changed_by_move": false,
+    "deletion_approved": false,
+    "deletion_policy": "separate-explicit-approval-required"
+  },
+  "gate_results": {
+    "gate_0e": {
+      "state": "complete",
+      "completed_at": "2026-07-16T04:41:15Z",
+      "active_git_root_count": 3,
+      "workspace_contract": "pass",
+      "app_contract_tests": 47,
+      "import_graph_frozen": "pass",
+      "sql_inventory_expiry": "pass",
+      "migration_ownership": "pass",
+      "runtime_capacity": "pass",
+      "deployment_targets": "pass"
+    },
+    "gate_1": {
+      "state": "complete",
+      "completed_at": "2026-07-16T04:41:15Z",
+      "architecture_refactor_no_side_effects": "pass",
+      "modal_invocation_guard": "pass",
+      "modal_guard_regression_tests": 27,
+      "independent_review": "pass"
+    },
+    "r0_graph_recapture": {
+      "state": "complete",
+      "completed_at": "2026-07-16T20:59:30Z",
+      "frozen_check": "pass",
+      "baseline_check": "pass",
+      "backend_social_cycle_count": 2,
+      "backend_social_cyclic_module_count": 49,
+      "backend_legacy_social_import_count": 141,
+      "app_cycle_count": 0
+    },
+    "r0_local_contracts": {
+      "state": "ready-candidate-tracking-blocked",
+      "completed_at": "2026-07-16T21:28:14Z",
+      "durable_working_tree_check": "pass",
+      "durable_candidate_check": "blocked-45-required-paths-untracked",
+      "guard_tests": 76,
+      "release_packet_count": 9,
+      "architecture_evidence_count": 15,
+      "hotspot_count": 144,
+      "independent_reviews": {
+        "R0-A": "accept",
+        "R0-B": "semantic-pass-current-tree-hash-recheck-enforced-by-live-validator",
+        "R0-C": "accept",
+        "lead-integration": "accept"
+      }
+    }
+  },
+  "baseline": {
+    "branch_report": "only-main-local-and-origin-main-remote-refs",
+    "status_capture_contract": {
+      "command_template": "GIT_OPTIONAL_LOCKS=0 git -C <repo> status --porcelain=v2 -z --untracked-files=all",
+      "output_format": "porcelain-v2",
+      "encoding": "raw bytes with NUL-delimited records and repository-relative paths",
+      "branch_headers_included": false,
+      "digest_command": "shasum -a 256",
+      "digest_input": "exact command stdout with no text normalization",
+      "clean_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "entry_count_command_template": "GIT_OPTIONAL_LOCKS=0 git -C <repo> status --porcelain=v2 --untracked-files=all | wc -l"
+    },
+    "initial_pre_gate0": {
+      "captured_at": "2026-07-16T01:40:04Z",
+      "lifecycle": "historical-pre-gate0-expected-to-drift-under-owned-edits",
+      "expected_to_drift": true,
+      "capture_quality": "The original dirty-tree hashes used branch headers and inconsistent untracked expansion. Unverifiable dirty hashes are intentionally null; clean hashes are corrected to the canonical empty digest.",
+      "repositories": [
+        {
+          "id": "workspace",
+          "path": ".",
+          "branch": "main",
+          "head": "df55c982ecf6741808536bfb6af308cc737372cf",
+          "status_entry_count": 2,
+          "status_porcelain_v2_z_sha256": null,
+          "digest_status": "not-reproducible-from-original-capture",
+          "stash_count": 3,
+          "remote_names": ["origin"],
+          "remote_urls": ["https://github.com/therealityreport/trr-workspace.git"],
+          "worktree_count": 1
+        },
+        {
+          "id": "app",
+          "path": "TRR-APP",
+          "branch": "main",
+          "head": "78681eac73c79e6534031fe1f050966edff9b844",
+          "status_entry_count": 0,
+          "status_porcelain_v2_z_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "digest_status": "exact-clean-digest-under-canonical-method",
+          "stash_count": 6,
+          "remote_names": ["origin"],
+          "remote_urls": ["https://github.com/therealityreport/trr-app.git"],
+          "worktree_count": 1
+        },
+        {
+          "id": "backend",
+          "path": "TRR-Backend",
+          "branch": "main",
+          "head": "0a3d2b59ec29304fb2765fd8cf996032e11c937b",
+          "status_entry_count": 0,
+          "status_porcelain_v2_z_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "digest_status": "exact-clean-digest-under-canonical-method",
+          "stash_count": 7,
+          "remote_names": ["origin"],
+          "remote_urls": ["https://github.com/therealityreport/trr-backend.git"],
+          "worktree_count": 1
+        },
+        {
+          "id": "legacy-nested-app",
+          "path": "TRR-APP/apps/web",
+          "branch": "main",
+          "head": "b4198ec471d55204af3f5bbeca194ac0a9706ab7",
+          "status_entry_count": 636,
+          "status_porcelain_v2_z_sha256": null,
+          "digest_status": "not-reproducible-from-original-capture",
+          "stash_count": 1,
+          "remote_names": [],
+          "remote_urls": [],
+          "worktree_count": 1,
+          "disposition": "preserve-and-restore-test-only-pending-explicit-move-approval"
+        }
+      ]
+    },
+    "current_gate0_snapshot": {
+      "captured_at": "2026-07-16T02:16:19Z",
+      "lifecycle": "point-in-time-gate0-snapshot-expected-to-drift-under-owned-edits",
+      "expected_to_drift": true,
+      "evidence_path": "/Users/thomashulihan/Documents/TRR-architecture-quarantine/2026-07-15-pre-move-v2-20260716T021430Z/payload/gate0-repository-snapshot.json",
+      "repositories": [
+        {
+          "id": "workspace",
+          "path": ".",
+          "branch": "main",
+          "head": "df55c982ecf6741808536bfb6af308cc737372cf",
+          "status_entry_count": 35,
+          "status_porcelain_v2_z_sha256": "99cc3eebfc964613898ebbabf70d9287488f20101ae9b7594ae7edc7bd577cd2",
+          "stash_count": 3,
+          "remote_names": ["origin"],
+          "remote_urls": ["https://github.com/therealityreport/trr-workspace.git"],
+          "worktree_count": 1
+        },
+        {
+          "id": "app",
+          "path": "TRR-APP",
+          "branch": "main",
+          "head": "78681eac73c79e6534031fe1f050966edff9b844",
+          "status_entry_count": 0,
+          "status_porcelain_v2_z_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stash_count": 6,
+          "remote_names": ["origin"],
+          "remote_urls": ["https://github.com/therealityreport/trr-app.git"],
+          "worktree_count": 1
+        },
+        {
+          "id": "backend",
+          "path": "TRR-Backend",
+          "branch": "main",
+          "head": "0a3d2b59ec29304fb2765fd8cf996032e11c937b",
+          "status_entry_count": 13,
+          "status_porcelain_v2_z_sha256": "e65f60be74e6af8a5357c0a372ad331dd644971563a5e2e1a859d1d72b86bf14",
+          "stash_count": 7,
+          "remote_names": ["origin"],
+          "remote_urls": ["https://github.com/therealityreport/trr-backend.git"],
+          "worktree_count": 1
+        },
+        {
+          "id": "legacy-nested-app",
+          "path": "TRR-APP/apps/web",
+          "branch": "main",
+          "head": "b4198ec471d55204af3f5bbeca194ac0a9706ab7",
+          "status_entry_count": 636,
+          "status_porcelain_v2_z_sha256": "2e8267054b9d2313fb612abfd936634b176f58334b3d5aa1e1db423740e27208",
+          "stash_count": 1,
+          "remote_names": [],
+          "remote_urls": [],
+          "worktree_count": 1,
+          "disposition": "preserve-and-restore-test-only-pending-explicit-move-approval"
+        }
+      ]
+    }
+  },
+  "serialized_coordination_paths": [
+    "TRR-Backend/api/main.py",
+    "artifacts/architecture-overhaul/**",
+    "release-manifests/**"
+  ],
+  "serialized_coordination_exceptions": [
+    {
+      "exception_id": "gate1-task5-modal-invocation-call-sites",
+      "approved_by": "program-coordination",
+      "gate": "1",
+      "task_id": 5,
+      "serialized": true,
+      "broad_ownership_granted": false,
+      "paths": [
+        "TRR-Backend/trr_backend/vision/people_count_service.py",
+        "TRR-Backend/trr_backend/socials/social_season_analytics_impl.py"
+      ],
+      "allowed_change": "Route raw Function.from_name calls through modal_dispatch only.",
+      "forbidden_change": "No domain behavior, API, schema, social semantics, or unrelated refactor change."
+    }
+  ],
+  "tasks": [
+    {
+      "task_id": 1,
+      "title": "Workspace Foundations And Repository Safety",
+      "state": "in_progress",
+      "write_gate": "0A-0B",
+      "owned_paths": [
+        "CONTEXT-MAP.md",
+        "docs/workspace/architecture-task-locks.json",
+        "docs/workspace/release-packet.schema.json",
+        "docs/workspace/architecture-evidence.schema.json",
+        "docs/workspace/output-disposition.json",
+        "scripts/architecture/**",
+        "/Users/thomashulihan/Documents/TRR-architecture-quarantine/2026-07-15-pre-move/**",
+        "/Users/thomashulihan/Documents/TRR-architecture-quarantine/2026-07-15-pre-move-v2-20260716T021430Z/**"
+      ],
+      "forbidden_paths": [
+        "AGENTS.md",
+        "plans/048*",
+        "docs/workspace/deployment-targets.json",
+        "docs/workspace/runtime-capacity.json",
+        "Makefile",
+        "profiles/**",
+        "scripts/dev-workspace.sh",
+        "scripts/check-workspace-contract.sh",
+        "scripts/app-direct-sql-inventory.py",
+        "TRR-Backend/**",
+        "TRR-APP/**"
+      ]
+    },
+    {
+      "task_id": 2,
+      "title": "Backend Social Decomposition And Handlers",
+      "state": "in_progress",
+      "write_gate": "gate1-except-coordinated-capacity-preslice",
+      "owned_paths": [
+        "TRR-Backend/trr_backend/socials/**",
+        "TRR-Backend/api/routers/socials/**",
+        "TRR-Backend/tests/**/*social*",
+        "TRR-Backend/tests/**/socials/**"
+      ],
+      "conditional_owned_paths": [
+        "coordinator-named-capacity-consumer-and-parity-files-only"
+      ],
+      "forbidden_paths": [
+        "TRR-Backend/supabase/migrations/**",
+        "TRR-Backend/api/routers/v2/**",
+        "TRR-Backend/api/schemas/v2/**",
+        "TRR-APP/**",
+        "Makefile",
+        "profiles/**",
+        "scripts/dev-workspace.sh",
+        "scripts/render-trr.sh",
+        "TRR-Backend/scripts/modal/**"
+      ]
+    },
+    {
+      "task_id": 3,
+      "title": "Schema API Data And Contract Packets",
+      "state": "in_progress",
+      "write_gate": "0D-for-governance-then-gate1",
+      "owned_paths": [
+        "scripts/app-direct-sql-inventory.py",
+        "scripts/test_app_direct_sql_inventory.py",
+        "docs/workspace/app-direct-sql-inventory.md",
+        "docs/workspace/api-migration-ledger.md",
+        "TRR-Backend/supabase/migrations/**",
+        "TRR-Backend/scripts/db/apply_release_manifest.py",
+        "TRR-Backend/api/routers/v2/**",
+        "TRR-Backend/api/schemas/v2/**",
+        "TRR-Backend/openapi/**",
+        "TRR-APP/apps/web/src/lib/server/**",
+        "TRR-APP/apps/web/src/app/api/**",
+        "TRR-APP/apps/web/**/*generated*api*",
+        "TRR-APP/apps/web/**/*generated*type*",
+        "TRR-Backend/tests/**/*contract*",
+        "TRR-APP/apps/web/**/*contract*.test.*"
+      ],
+      "forbidden_paths": [
+        "TRR-Backend/api/routers/socials/**",
+        "TRR-APP/apps/web/src/app/**/page.*",
+        "TRR-APP/apps/web/src/components/**",
+        "TRR-APP/apps/web/src/lib/admin/**",
+        "Makefile",
+        "profiles/**",
+        "scripts/dev-workspace.sh",
+        "scripts/render-trr.sh",
+        "TRR-Backend/scripts/modal/**"
+      ]
+    },
+    {
+      "task_id": 4,
+      "title": "App Routes And Module Architecture",
+      "state": "in_progress",
+      "write_gate": "gate1",
+      "owned_paths": [
+        "TRR-APP/apps/web/src/app/**",
+        "TRR-APP/apps/web/src/components/admin/**",
+        "TRR-APP/apps/web/src/lib/admin/**",
+        "TRR-APP/apps/web/src/proxy.ts",
+        "TRR-APP/apps/web/**/*route*.test.*",
+        "TRR-APP/apps/web/**/*browser*.test.*",
+        "TRR-APP/apps/web/e2e/**"
+      ],
+      "owned_path_exclusions": [
+        "TRR-APP/apps/web/src/app/api/**"
+      ],
+      "forbidden_paths": [
+        "scripts/app-direct-sql-inventory.py",
+        "docs/workspace/app-direct-sql-inventory.md",
+        "TRR-Backend/**",
+        "TRR-APP/apps/web/src/app/api/**",
+        "TRR-APP/apps/web/src/lib/server/**",
+        "TRR-APP/apps/web/**/*generated*api*",
+        "TRR-APP/apps/web/**/*generated*type*",
+        "Makefile",
+        "profiles/**",
+        "scripts/dev-workspace.sh",
+        "scripts/render-trr.sh"
+      ]
+    },
+    {
+      "task_id": 5,
+      "title": "Runtime Capacity And Deployment Safety",
+      "state": "in_progress",
+      "write_gate": "0B-0C-then-gate1",
+      "owned_paths": [
+        "docs/workspace/deployment-targets.json",
+        "docs/workspace/runtime-capacity.json",
+        "Makefile",
+        "profiles/**",
+        "scripts/dev-workspace.sh",
+        "scripts/check-workspace-contract.sh",
+        "scripts/render-trr.sh",
+        "scripts/vercel-*.py",
+        "scripts/modal-*.sh",
+        "TRR-Backend/scripts/modal/**",
+        "TRR-Backend/trr_backend/modal_jobs.py",
+        "TRR-Backend/**/*runtime*projection*",
+        "TRR-Backend/tests/**/*runtime*",
+        "scripts/test_*runtime*"
+      ],
+      "forbidden_paths": [
+        "TRR-Backend/supabase/migrations/**",
+        "TRR-Backend/api/routers/**",
+        "TRR-Backend/api/schemas/**",
+        "TRR-APP/apps/web/src/app/**",
+        "TRR-APP/apps/web/src/components/**",
+        "TRR-APP/apps/web/src/lib/admin/**",
+        "TRR-Backend/trr_backend/socials/**"
+      ],
+      "conditional_owned_paths": [
+        "coordinator-named-social-capacity-config-consumer-only"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,505 @@
+{
+  "schema_version": 2,
+  "packet_id": "local-networks-streaming",
+  "capability": "Networks and streaming backend read models and app adapters",
+  "created_at": "2026-07-16T20:52:42.770997Z",
+  "updated_at": "2026-07-16T20:52:42.770997Z",
+  "state": "implementation_complete_parked",
+  "truth_scope": "local",
+  "repositories": {
+    "workspace": {
+      "revision_type": "local_dirty_checkpoint",
+      "base_sha": "df55c982ecf6741808536bfb6af308cc737372cf",
+      "candidate_sha": null,
+      "owned_paths": [],
+      "owned_path_manifest_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "binary_tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "dirty_counts": {
+        "tracked_modified": 0,
+        "tracked_added": 0,
+        "tracked_deleted": 0,
+        "tracked_renamed": 0,
+        "tracked_copied": 0,
+        "unmerged": 0,
+        "untracked": 0,
+        "total": 0
+      },
+      "candidate_commit_required_before_gate_4": true
+    },
+    "app": {
+      "revision_type": "local_dirty_checkpoint",
+      "base_sha": "78681eac73c79e6534031fe1f050966edff9b844",
+      "candidate_sha": null,
+      "owned_paths": [
+        "apps/web/src/app/api/admin/brands/profile/route.ts",
+        "apps/web/src/app/api/admin/networks-streaming/detail/route.ts",
+        "apps/web/src/app/api/admin/networks-streaming/summary/route.ts",
+        "apps/web/src/lib/server/admin/brand-profile-repository.ts",
+        "apps/web/src/lib/server/admin/networks-streaming-repository.ts",
+        "apps/web/src/lib/server/trr-api/admin-networks-streaming-contracts.ts",
+        "apps/web/src/lib/server/trr-api/admin-networks-streaming-reads.ts",
+        "apps/web/tests/admin-networks-streaming-reads.test.ts",
+        "apps/web/tests/brand-profile-repository.test.ts",
+        "apps/web/tests/brand-profile-route.test.ts",
+        "apps/web/tests/networks-streaming-detail-route.test.ts",
+        "apps/web/tests/networks-streaming-repository.test.ts",
+        "apps/web/tests/networks-streaming-summary-route-cache-dedupe.test.ts",
+        "apps/web/tests/networks-streaming-summary-route.test.ts"
+      ],
+      "owned_path_manifest_sha256": "8bc01b8b3738660f6fa6ea0223ebfea5f4c45a89df8891ad94b13ebbd548a0ab",
+      "binary_tracked_diff_sha256": "75e53ddcfaf9f61f94a8f372be615c026cf7eaa311e90da4a87a63155f2fea26",
+      "dirty_counts": {
+        "tracked_modified": 9,
+        "tracked_added": 0,
+        "tracked_deleted": 2,
+        "tracked_renamed": 0,
+        "tracked_copied": 0,
+        "unmerged": 0,
+        "untracked": 3,
+        "total": 14
+      },
+      "candidate_commit_required_before_gate_4": true
+    },
+    "backend": {
+      "revision_type": "local_dirty_checkpoint",
+      "base_sha": "0a3d2b59ec29304fb2765fd8cf996032e11c937b",
+      "candidate_sha": null,
+      "owned_paths": [
+        "api/routers/admin_networks_streaming_reads.py",
+        "api/routers/v2/networks_streaming.py",
+        "api/schemas/v2/networks_streaming.py",
+        "tests/api/routers/test_v2_admin_networks_streaming.py",
+        "tests/api/test_admin_networks_streaming_reads.py",
+        "tests/repositories/test_admin_networks_streaming_reads_repository.py",
+        "tests/services/test_networks_streaming_reads.py",
+        "trr_backend/repositories/admin_networks_streaming_reads.py",
+        "trr_backend/services/networks_streaming_reads.py"
+      ],
+      "owned_path_manifest_sha256": "2b7304beaeee6db4a57415c6dc56785293ea00ec1f6dc9b4df22eef668d5a4fd",
+      "binary_tracked_diff_sha256": "7151fd99f8e3788db12cdc07782632bede046eb18b862b5c1402e3bae0c3b0fa",
+      "dirty_counts": {
+        "tracked_modified": 4,
+        "tracked_added": 0,
+        "tracked_deleted": 0,
+        "tracked_renamed": 0,
+        "tracked_copied": 0,
+        "unmerged": 0,
+        "untracked": 5,
+        "total": 9
+      },
+      "candidate_commit_required_before_gate_4": true
+    }
+  },
+  "owned_paths": [
+    {
+      "repository": "app",
+      "path": "apps/web/src/app/api/admin/brands/profile/route.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/app/api/admin/networks-streaming/detail/route.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/app/api/admin/networks-streaming/summary/route.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/lib/server/admin/brand-profile-repository.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/lib/server/admin/networks-streaming-repository.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/lib/server/trr-api/admin-networks-streaming-contracts.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/lib/server/trr-api/admin-networks-streaming-reads.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/admin-networks-streaming-reads.test.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/brand-profile-repository.test.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/brand-profile-route.test.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/networks-streaming-detail-route.test.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/networks-streaming-repository.test.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/networks-streaming-summary-route-cache-dedupe.test.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/networks-streaming-summary-route.test.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "api/routers/admin_networks_streaming_reads.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "api/routers/v2/networks_streaming.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "api/schemas/v2/networks_streaming.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "tests/api/routers/test_v2_admin_networks_streaming.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "tests/api/test_admin_networks_streaming_reads.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "tests/repositories/test_admin_networks_streaming_reads_repository.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "tests/services/test_networks_streaming_reads.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "trr_backend/repositories/admin_networks_streaming_reads.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "trr_backend/services/networks_streaming_reads.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    }
+  ],
+  "contracts": {
+    "openapi_sha256": "5d38fa8a429cea94ae0d5a352cc7b04276aedb081051bb79350de09169c3e188",
+    "generated_types_sha256": "a712dd696581c6ccb3fa5ce0611385af9714ebf36a1f7d41e4b1d488c4206460",
+    "compatibility_matrix": [
+      {
+        "app_revision": "N",
+        "backend_revision": "N",
+        "status": "pass",
+        "evidence_ids": [
+          "ev.local-networks-streaming.backend-focused",
+          "ev.local-networks-streaming.app-focused"
+        ]
+      },
+      {
+        "app_revision": "N",
+        "backend_revision": "N+1",
+        "status": "pass",
+        "evidence_ids": [
+          "ev.local-networks-streaming.backend-focused",
+          "ev.local-networks-streaming.app-focused"
+        ]
+      },
+      {
+        "app_revision": "N+1",
+        "backend_revision": "N",
+        "status": "pass",
+        "evidence_ids": [
+          "ev.local-networks-streaming.backend-focused",
+          "ev.local-networks-streaming.app-focused"
+        ]
+      },
+      {
+        "app_revision": "N+1",
+        "backend_revision": "N+1",
+        "status": "pass",
+        "evidence_ids": [
+          "ev.local-networks-streaming.backend-focused",
+          "ev.local-networks-streaming.app-focused"
+        ]
+      }
+    ]
+  },
+  "migrations": {
+    "expected_pending": [],
+    "backfill": {
+      "required": false,
+      "idempotent": true,
+      "resumable": true,
+      "batch_size": null,
+      "validation": {
+        "row_counts": false,
+        "checksums": false,
+        "evidence_ids": []
+      }
+    },
+    "rls_grants": {
+      "expected_change": false,
+      "evidence_ids": []
+    }
+  },
+  "direct_sql_delta": {
+    "status": "observed",
+    "before": 7,
+    "after": 0,
+    "delta": -7,
+    "evidence_ids": [
+      "ev.local-networks-streaming.app-focused"
+    ]
+  },
+  "targets": {
+    "preview": {
+      "status": "pending_gate_4",
+      "database_url_env": "TRR_PREVIEW_DATABASE_URL",
+      "project_ref_env": "TRR_PREVIEW_SUPABASE_PROJECT_REF"
+    },
+    "production": {
+      "status": "pending_gate_4",
+      "database_url_env": "TRR_PRODUCTION_DATABASE_URL",
+      "project_ref": "vwxfvzutyufrkhfgoeaa"
+    }
+  },
+  "affected": {
+    "routes": [
+      "/api/v2/admin/networks-streaming/summary",
+      "/api/v2/admin/networks-streaming/detail"
+    ],
+    "jobs": [],
+    "schedules": [],
+    "data_sets": [],
+    "aliases": []
+  },
+  "validation": {
+    "quick": {
+      "status": "pass",
+      "evidence_ids": [
+        "ev.local-networks-streaming.backend-focused",
+        "ev.local-networks-streaming.app-focused"
+      ]
+    },
+    "full": {
+      "status": "pending",
+      "evidence_ids": []
+    },
+    "app_build": {
+      "status": "pending_gate_4",
+      "current_chat_approval_id": null,
+      "evidence_ids": []
+    },
+    "browser": {
+      "status": "pending_gate_4",
+      "evidence_ids": []
+    },
+    "evidence_ids": [
+      "ev.local-networks-streaming.backend-focused",
+      "ev.local-networks-streaming.app-focused"
+    ]
+  },
+  "deployments": {
+    "render": {
+      "status": "pending_gate_4",
+      "service_id": "srv-d6phk5vkijhs73fcsk7g",
+      "candidate_sha": null,
+      "deployment_id": null,
+      "previous_deployment_id": null,
+      "direct_url": "https://trr-backend-api.onrender.com",
+      "evidence_ids": []
+    },
+    "modal": {
+      "status": "pending_gate_4",
+      "profile": "admin-56995",
+      "workspace": "admin-56995",
+      "app_name": "trr-backend-jobs",
+      "app_ref": "trr_backend.modal_jobs",
+      "candidate_sha": null,
+      "affected_functions": [],
+      "evidence_ids": []
+    },
+    "vercel": {
+      "status": "pending_gate_4",
+      "team_id": "team_EUsG2kN9TAvVDGOu4yZVEoCX",
+      "project_id": "prj_MHpStkwr26rV5kjt0f80zqhwZpAs",
+      "candidate_sha": null,
+      "deployment_id": null,
+      "previous_deployment_id": null,
+      "aliases": [
+        "https://trr-app.vercel.app"
+      ],
+      "evidence_ids": []
+    }
+  },
+  "rollback": {
+    "backend_commands": [
+      [
+        "scripts/render-trr.sh",
+        "rollback",
+        "--service-id",
+        "srv-d6phk5vkijhs73fcsk7g",
+        "--deploy-id",
+        "<gate-4-previous-deploy-id>",
+        "--commit",
+        "<gate-4-candidate-backend-sha>"
+      ],
+      [
+        "scripts/modal-trr.sh",
+        "rollback",
+        "--version",
+        "<gate-4-previous-version>",
+        "--dry-run"
+      ]
+    ],
+    "app_commands": [
+      [
+        "TRR-APP/scripts/vercel.sh",
+        "rollback-trr",
+        "--deployment",
+        "<gate-4-previous-deployment>",
+        "--dry-run"
+      ]
+    ],
+    "data_recovery": "No migration or data mutation was performed by this local checkpoint.",
+    "evidence_ids": []
+  },
+  "observation": {
+    "baselines": [
+      {
+        "name": "affected_route_5xx",
+        "value": 0,
+        "unit": "percent",
+        "window": "15m",
+        "evidence_ids": []
+      }
+    ],
+    "abort_thresholds": [
+      {
+        "name": "affected_route_5xx",
+        "value": 1,
+        "unit": "percent",
+        "window": "15m",
+        "evidence_ids": []
+      }
+    ],
+    "active_canary_minutes": 30,
+    "passive_monitoring_hours": 24,
+    "gate5_minimum_days": 7,
+    "status": "not_started"
+  },
+  "review": {
+    "verdict": "accepted_with_follow_up",
+    "reviewers": [
+      "r0-b-checkpoint-revalidation"
+    ],
+    "basis": "Current focused checks pass; integrated independent review and all Gate 4 proof remain pending.",
+    "evidence_ids": [
+      "ev.local-networks-streaming.backend-focused",
+      "ev.local-networks-streaming.app-focused"
+    ]
+  },
+  "gate_4": {
+    "candidate_commits": "pending_gate_4",
+    "preview": "pending_gate_4",
+    "production": "pending_gate_4",
+    "app_build": "pending_gate_4",
+    "browser": "pending_gate_4",
+    "deployments": "pending_gate_4"
+  },
+  "approvals": []
+}

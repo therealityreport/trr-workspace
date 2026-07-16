@@ -160,7 +160,7 @@ When a runtime check fails, classify it by the first concrete lane named in logs
 | `WORKSPACE_TRR_MODAL_GOOGLE_NEWS_FUNCTION` | `run_google_news_sync` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_TRR_MODAL_REDDIT_REFRESH_FUNCTION` | `run_reddit_refresh` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_TRR_MODAL_RUNTIME_SECRET_NAME` | `trr-backend-runtime` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
-| `WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT` | `8` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Maximum concurrent Modal containers allowed for each social Modal function. |
+| `WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT` | `4` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Maximum concurrent Modal containers allowed for each social Modal function. |
 | `WORKSPACE_TRR_MODAL_SOCIAL_JOB_FUNCTION` | `run_social_job` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_TRR_MODAL_SOCIAL_RECOVERY_FUNCTION` | `sweep_social_dispatch_queue` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_TRR_MODAL_SOCIAL_SECRET_NAME` | `trr-social-auth` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
@@ -171,7 +171,7 @@ When a runtime check fails, classify it by the first concrete lane named in logs
 | `WORKSPACE_TRR_REMOTE_REDDIT_WORKERS` | `1` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS` | `1` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Comments-stage cap used by Modal social dispatch and by legacy local social worker mode. |
 | `WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR` | `1` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Comment media mirror stage cap used by Modal social dispatch and by legacy local social worker mode. |
-| `WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT` | `8` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Maximum number of queued social jobs the backend will dispatch per Modal sweep. |
+| `WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT` | `4` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Maximum number of queued social jobs the backend will dispatch per Modal sweep. |
 | `WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR` | `1` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Post media mirror stage cap used by Modal social dispatch and by legacy local social worker mode. |
 | `WORKSPACE_TRR_REMOTE_SOCIAL_POSTS` | `1` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Posts-stage cap used by Modal social dispatch and by legacy local social worker mode. |
 | `WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable or disable the Modal social lane in the remote execution contract; this is not a worker-count knob. |

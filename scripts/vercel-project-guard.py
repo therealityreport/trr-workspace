@@ -13,6 +13,7 @@ DEFAULT_PROJECT_DIR = ROOT / "TRR-APP"
 DEFAULT_EXPECTED_NAME = "trr-app"
 DEFAULT_EXPECTED_ID = "prj_MHpStkwr26rV5kjt0f80zqhwZpAs"
 DEFAULT_TEAM_SLUG = "the-reality-reports-projects"
+DEFAULT_TEAM_ID = "team_EUsG2kN9TAvVDGOu4yZVEoCX"
 KNOWN_NON_PRODUCTION_PROJECTS = {
     ("web", "prj_0nWn8xpm9ikhcvhzE3ma4jUXTe1p"): "sandbox/stale-nested-project",
 }
@@ -28,9 +29,10 @@ def _load_project(project_dir: Path) -> dict[str, Any]:
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Guard Vercel env work against the wrong linked project.")
     parser.add_argument("--project-dir", type=Path, default=DEFAULT_PROJECT_DIR)
-    parser.add_argument("--expected-name", default=DEFAULT_EXPECTED_NAME)
-    parser.add_argument("--expected-id", default=DEFAULT_EXPECTED_ID)
-    parser.add_argument("--team-slug", default=DEFAULT_TEAM_SLUG)
+    parser.add_argument("--expected-name", choices=(DEFAULT_EXPECTED_NAME,), default=DEFAULT_EXPECTED_NAME)
+    parser.add_argument("--expected-id", choices=(DEFAULT_EXPECTED_ID,), default=DEFAULT_EXPECTED_ID)
+    parser.add_argument("--team-slug", choices=(DEFAULT_TEAM_SLUG,), default=DEFAULT_TEAM_SLUG)
+    parser.add_argument("--expected-team-id", choices=(DEFAULT_TEAM_ID,), default=DEFAULT_TEAM_ID)
     parser.add_argument("--json", action="store_true")
     return parser.parse_args(argv)
 
@@ -43,6 +45,8 @@ def _missing_link_payload(args: argparse.Namespace, project_dir: Path, project_f
         "projectName": "",
         "projectId": "",
         "teamId": "",
+        "expectedTeamId": args.expected_team_id,
+        "expectedTeamSlug": args.team_slug,
         "expectedName": args.expected_name,
         "expectedId": args.expected_id,
         "classification": "missing-project-link",
@@ -88,13 +92,15 @@ def main(argv: list[str] | None = None) -> int:
     name = str(data.get("projectName") or "")
     project_id = str(data.get("projectId") or "")
     team_id = str(data.get("orgId") or data.get("teamId") or "")
-    ok = name == args.expected_name and project_id == args.expected_id
+    ok = name == args.expected_name and project_id == args.expected_id and team_id == args.expected_team_id
     classification = _classify_linked_project(name, project_id, ok)
     payload = {
         "projectDir": str(project_dir),
         "projectName": name,
         "projectId": project_id,
         "teamId": team_id,
+        "expectedTeamId": args.expected_team_id,
+        "expectedTeamSlug": args.team_slug,
         "expectedName": args.expected_name,
         "expectedId": args.expected_id,
         "classification": classification,
@@ -103,12 +109,13 @@ def main(argv: list[str] | None = None) -> int:
     if args.json:
         print(json.dumps(payload, indent=2, sort_keys=True))
     elif ok:
-        print(f"[vercel-project-guard] OK: {name} ({project_id})")
+        print(f"[vercel-project-guard] OK: {name} ({project_id}) team={team_id}")
     else:
         print(
             "[vercel-project-guard] ERROR: linked project is "
             f"{name or '<missing>'} ({project_id or '<missing>'}); expected "
-            f"{args.expected_name} ({args.expected_id}). classification={classification}; "
+            f"{args.expected_name} ({args.expected_id}) on team {args.expected_team_id}; "
+            f"found team {team_id or '<missing>'}. classification={classification}; "
             "production env mutation is blocked from this directory.",
             file=sys.stderr,
         )

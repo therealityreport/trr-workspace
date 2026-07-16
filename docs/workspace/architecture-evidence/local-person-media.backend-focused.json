@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "evidence_id": "ev.local-person-media.backend-focused",
+  "packet_id": "local-person-media",
+  "gate": "gate-0",
+  "truth_scope": "local",
+  "command": {
+    "argv": [
+      ".venv/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "tests/repositories/test_person_media_admin.py",
+      "tests/services/test_person_media_admin_service.py",
+      "tests/api/routers/test_v2_admin_person_media.py",
+      "tests/api/test_internal_admin_openapi.py"
+    ],
+    "cwd": "/Users/thomashulihan/Projects/TRR/TRR-Backend",
+    "mutating": false,
+    "environment_variable_names": []
+  },
+  "started_at": "2026-07-16T20:45:39.866906Z",
+  "finished_at": "2026-07-16T20:45:44.215000Z",
+  "exit_code": 0,
+  "expected_result": "Person-media repository, service, route, and OpenAPI tests pass.",
+  "result": "pass",
+  "output": {
+    "sha256": "5d5bfc4c07b6e5d6a387636dd7bd6322d6da37ef79157ef6ff1d623b4420abdd",
+    "size_bytes": 99,
+    "stored_path": null
+  },
+  "artifacts": [],
+  "target_observations": [
+    {
+      "target_type": "repository",
+      "target_id": "backend",
+      "observed_at": "2026-07-16T20:45:44.215000Z",
+      "status": "pass",
+      "facts": [
+        {
+          "name": "test.count",
+          "value": 22
+        }
+      ]
+    }
+  ],
+  "approval": {
+    "required": false,
+    "approval_id": null,
+    "status": "not_required",
+    "current_chat": false
+  },
+  "redaction": {
+    "status": "verified_clean",
+    "scanner": "scripts/architecture/check-release-manifests.py",
+    "safe_to_store": true,
+    "credential_values_included": false,
+    "environment_values_included": false
+  }
+}

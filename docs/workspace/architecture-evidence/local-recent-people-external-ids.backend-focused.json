@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "evidence_id": "ev.local-recent-people-external-ids.backend-focused",
+  "packet_id": "local-recent-people-external-ids",
+  "gate": "gate-0",
+  "truth_scope": "local",
+  "command": {
+    "argv": [
+      ".venv/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "tests/api/test_admin_recent_people.py",
+      "tests/api/routers/test_v2_admin_recent_people.py",
+      "tests/repositories/test_recent_people_repository.py",
+      "tests/api/routers/test_v2_admin_external_ids.py",
+      "tests/repositories/test_external_id_reads.py"
+    ],
+    "cwd": "/Users/thomashulihan/Projects/TRR/TRR-Backend",
+    "mutating": false,
+    "environment_variable_names": []
+  },
+  "started_at": "2026-07-16T20:45:39.910588Z",
+  "finished_at": "2026-07-16T20:45:44.751798Z",
+  "exit_code": 0,
+  "expected_result": "Recent-people and external-ID backend tests pass.",
+  "result": "pass",
+  "output": {
+    "sha256": "e1df6f3e825e4c6241df1742d9aee275f343f76a9a3335395aa5a6f5a872b94a",
+    "size_bytes": 99,
+    "stored_path": null
+  },
+  "artifacts": [],
+  "target_observations": [
+    {
+      "target_type": "repository",
+      "target_id": "backend",
+      "observed_at": "2026-07-16T20:45:44.751798Z",
+      "status": "pass",
+      "facts": [
+        {
+          "name": "test.count",
+          "value": 22
+        }
+      ]
+    }
+  ],
+  "approval": {
+    "required": false,
+    "approval_id": null,
+    "status": "not_required",
+    "current_chat": false
+  },
+  "redaction": {
+    "status": "verified_clean",
+    "scanner": "scripts/architecture/check-release-manifests.py",
+    "safe_to_store": true,
+    "credential_values_included": false,
+    "environment_values_included": false
+  }
+}

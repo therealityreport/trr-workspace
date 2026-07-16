@@ -1,0 +1,1477 @@
+{
+  "schema_version": 1,
+  "policy": {
+    "production_hotspot_lines": 1000,
+    "route_page_target_lines": 500,
+    "review_window_days": 30
+  },
+  "discovery": {
+    "mode": "code_owned",
+    "source_trees": [
+      {
+        "root": "TRR-Backend/api",
+        "extensions": [
+          ".py"
+        ]
+      },
+      {
+        "root": "TRR-Backend/trr_backend",
+        "extensions": [
+          ".py"
+        ]
+      },
+      {
+        "root": "TRR-APP/apps/web/src",
+        "extensions": [
+          ".css",
+          ".js",
+          ".jsx",
+          ".ts",
+          ".tsx"
+        ]
+      }
+    ]
+  },
+  "hotspots": [
+    {
+      "path": "TRR-Backend/api/routers/admin_brands.py",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 3873,
+      "target_lines": 1000,
+      "reason": "A legacy backend API router combines multiple handlers and remains above the production-module line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Move cohesive handlers into bounded routers and services under frozen API contracts until this router is below target."
+    },
+    {
+      "path": "TRR-Backend/api/routers/admin_cast_screentime.py",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 2363,
+      "target_lines": 1000,
+      "reason": "A legacy backend API router combines multiple handlers and remains above the production-module line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Move cohesive handlers into bounded routers and services under frozen API contracts until this router is below target."
+    },
+    {
+      "path": "TRR-Backend/api/routers/admin_image_counts.py",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 2273,
+      "target_lines": 1000,
+      "reason": "A legacy backend API router combines multiple handlers and remains above the production-module line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Move cohesive handlers into bounded routers and services under frozen API contracts until this router is below target."
+    },
+    {
+      "path": "TRR-Backend/api/routers/admin_person_images.py",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 17207,
+      "target_lines": 1000,
+      "reason": "A legacy backend API router combines multiple handlers and remains above the production-module line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Move cohesive handlers into bounded routers and services under frozen API contracts until this router is below target."
+    },
+    {
+      "path": "TRR-Backend/api/routers/admin_scrape.py",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 2320,
+      "target_lines": 1000,
+      "reason": "A legacy backend API router combines multiple handlers and remains above the production-module line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Move cohesive handlers into bounded routers and services under frozen API contracts until this router is below target."
+    },
+    {
+      "path": "TRR-Backend/api/routers/admin_show_bravo.py",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 4520,
+      "target_lines": 1000,
+      "reason": "A legacy backend API router combines multiple handlers and remains above the production-module line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Move cohesive handlers into bounded routers and services under frozen API contracts until this router is below target."
+    },
+    {
+      "path": "TRR-Backend/api/routers/admin_show_links.py",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 8269,
+      "target_lines": 1000,
+      "reason": "A legacy backend API router combines multiple handlers and remains above the production-module line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Move cohesive handlers into bounded routers and services under frozen API contracts until this router is below target."
+    },
+    {
+      "path": "TRR-Backend/api/routers/admin_show_news.py",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1883,
+      "target_lines": 1000,
+      "reason": "A legacy backend API router combines multiple handlers and remains above the production-module line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Move cohesive handlers into bounded routers and services under frozen API contracts until this router is below target."
+    },
+    {
+      "path": "TRR-Backend/api/routers/admin_show_roles.py",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1539,
+      "target_lines": 1000,
+      "reason": "A legacy backend API router combines multiple handlers and remains above the production-module line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Move cohesive handlers into bounded routers and services under frozen API contracts until this router is below target."
+    },
+    {
+      "path": "TRR-Backend/api/routers/admin_show_sync.py",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 6501,
+      "target_lines": 1000,
+      "reason": "A legacy backend API router combines multiple handlers and remains above the production-module line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Move cohesive handlers into bounded routers and services under frozen API contracts until this router is below target."
+    },
+    {
+      "path": "TRR-Backend/api/routers/socials/__init__.py",
+      "owner": "Task 2",
+      "classification": "existing_hotspot",
+      "line_ceiling": 9385,
+      "target_lines": 300,
+      "reason": "Legacy social router registration shell still contains implementation handlers.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Move handlers into platform and capability routers while preserving route registration, wire shapes, and rollback aliases."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/db/pg.py",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1477,
+      "target_lines": 1000,
+      "reason": "A legacy backend production module combines multiple responsibilities and remains above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded services, repositories, or integrations behind existing contracts until this module is below target."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/ingestion/cast_photo_sources.py",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1230,
+      "target_lines": 1000,
+      "reason": "A legacy backend production module combines multiple responsibilities and remains above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded services, repositories, or integrations behind existing contracts until this module is below target."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/ingestion/fandom_person_scraper.py",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1022,
+      "target_lines": 1000,
+      "reason": "A legacy backend production module combines multiple responsibilities and remains above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded services, repositories, or integrations behind existing contracts until this module is below target."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/ingestion/show_importer.py",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 2493,
+      "target_lines": 1000,
+      "reason": "A legacy backend production module combines multiple responsibilities and remains above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded services, repositories, or integrations behind existing contracts until this module is below target."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/ingestion/show_metadata_enricher.py",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1149,
+      "target_lines": 1000,
+      "reason": "A legacy backend production module combines multiple responsibilities and remains above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded services, repositories, or integrations behind existing contracts until this module is below target."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/integrations/fandom.py",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1572,
+      "target_lines": 1000,
+      "reason": "A legacy backend production module combines multiple responsibilities and remains above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded services, repositories, or integrations behind existing contracts until this module is below target."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/integrations/free_logo_sources.py",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 2109,
+      "target_lines": 1000,
+      "reason": "A legacy backend production module combines multiple responsibilities and remains above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded services, repositories, or integrations behind existing contracts until this module is below target."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/integrations/getty.py",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 2208,
+      "target_lines": 1000,
+      "reason": "A legacy backend production module combines multiple responsibilities and remains above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded services, repositories, or integrations behind existing contracts until this module is below target."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/integrations/getty_local_prefetch.py",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1539,
+      "target_lines": 1000,
+      "reason": "A legacy backend production module combines multiple responsibilities and remains above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded services, repositories, or integrations behind existing contracts until this module is below target."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/integrations/imdb/fullcredits_cast_parser.py",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1194,
+      "target_lines": 1000,
+      "reason": "A legacy backend production module combines multiple responsibilities and remains above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded services, repositories, or integrations behind existing contracts until this module is below target."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/integrations/imdb/person_gallery.py",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1042,
+      "target_lines": 1000,
+      "reason": "A legacy backend production module combines multiple responsibilities and remains above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded services, repositories, or integrations behind existing contracts until this module is below target."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/integrations/nbcumv.py",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1204,
+      "target_lines": 1000,
+      "reason": "A legacy backend production module combines multiple responsibilities and remains above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded services, repositories, or integrations behind existing contracts until this module is below target."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/media/bravotv/get_images_pipeline.py",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 2335,
+      "target_lines": 1000,
+      "reason": "A legacy backend production module combines multiple responsibilities and remains above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded services, repositories, or integrations behind existing contracts until this module is below target."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/media/bravotv/run_service.py",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1138,
+      "target_lines": 1000,
+      "reason": "A legacy backend production module combines multiple responsibilities and remains above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded services, repositories, or integrations behind existing contracts until this module is below target."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/media/s3_mirror.py",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 2788,
+      "target_lines": 1000,
+      "reason": "A legacy backend production module combines multiple responsibilities and remains above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded services, repositories, or integrations behind existing contracts until this module is below target."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/modal_jobs.py",
+      "owner": "Task 5",
+      "classification": "existing_hotspot",
+      "line_ceiling": 2125,
+      "target_lines": 1000,
+      "reason": "The Modal job composition and compatibility surface remains above the production-module line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded job groups and dispatch adapters while preserving the pinned trr-backend-jobs app and invocation contracts."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/pipeline/admin_operations.py",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1026,
+      "target_lines": 1000,
+      "reason": "A legacy backend production module combines multiple responsibilities and remains above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded services, repositories, or integrations behind existing contracts until this module is below target."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/repositories/admin_operations.py",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1379,
+      "target_lines": 1000,
+      "reason": "A legacy backend production module combines multiple responsibilities and remains above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded services, repositories, or integrations behind existing contracts until this module is below target."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/repositories/admin_show_reads.py",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 3837,
+      "target_lines": 1000,
+      "reason": "A legacy backend production module combines multiple responsibilities and remains above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded services, repositories, or integrations behind existing contracts until this module is below target."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/repositories/brand_families.py",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1600,
+      "target_lines": 1000,
+      "reason": "A legacy backend production module combines multiple responsibilities and remains above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded services, repositories, or integrations behind existing contracts until this module is below target."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/repositories/brands_franchises.py",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1002,
+      "target_lines": 1000,
+      "reason": "A legacy backend production module combines multiple responsibilities and remains above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded services, repositories, or integrations behind existing contracts until this module is below target."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/repositories/cast_screentime.py",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1911,
+      "target_lines": 1000,
+      "reason": "A legacy backend production module combines multiple responsibilities and remains above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded services, repositories, or integrations behind existing contracts until this module is below target."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/repositories/media_assets.py",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1020,
+      "target_lines": 1000,
+      "reason": "A legacy backend production module combines multiple responsibilities and remains above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded services, repositories, or integrations behind existing contracts until this module is below target."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/repositories/reddit_refresh.py",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 6101,
+      "target_lines": 1000,
+      "reason": "A legacy backend production module combines multiple responsibilities and remains above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded services, repositories, or integrations behind existing contracts until this module is below target."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/repositories/social_sync_orchestrator.py",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 2193,
+      "target_lines": 1000,
+      "reason": "A legacy backend production module combines multiple responsibilities and remains above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded services, repositories, or integrations behind existing contracts until this module is below target."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/repositories/tagging_references.py",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1311,
+      "target_lines": 1000,
+      "reason": "A legacy backend production module combines multiple responsibilities and remains above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded services, repositories, or integrations behind existing contracts until this module is below target."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/scraping/bravo_parser.py",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1233,
+      "target_lines": 1000,
+      "reason": "A legacy backend production module combines multiple responsibilities and remains above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded services, repositories, or integrations behind existing contracts until this module is below target."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/scraping/url_image_scraper.py",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1476,
+      "target_lines": 1000,
+      "reason": "A legacy backend production module combines multiple responsibilities and remains above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded services, repositories, or integrations behind existing contracts until this module is below target."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/socials/analytics/read_models.py",
+      "owner": "Task 2",
+      "classification": "existing_hotspot",
+      "line_ceiling": 3889,
+      "target_lines": 1000,
+      "reason": "A legacy social production module remains above the line target while Task 2 decomposes capability seams.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract capability-specific services, repositories, types, and composition code without changing wire or job behavior."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/socials/control_plane/budget.py",
+      "owner": "Task 2",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1409,
+      "target_lines": 1000,
+      "reason": "A legacy social production module remains above the line target while Task 2 decomposes capability seams.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract capability-specific services, repositories, types, and composition code without changing wire or job behavior."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/socials/control_plane/dispatch_runtime.py",
+      "owner": "Task 2",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1141,
+      "target_lines": 1000,
+      "reason": "A legacy social production module remains above the line target while Task 2 decomposes capability seams.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract capability-specific services, repositories, types, and composition code without changing wire or job behavior."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/socials/control_plane/run_lifecycle.py",
+      "owner": "Task 2",
+      "classification": "existing_hotspot",
+      "line_ceiling": 2660,
+      "target_lines": 1000,
+      "reason": "A legacy social production module remains above the line target while Task 2 decomposes capability seams.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract capability-specific services, repositories, types, and composition code without changing wire or job behavior."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/socials/facebook/scraper.py",
+      "owner": "Task 2",
+      "classification": "existing_hotspot",
+      "line_ceiling": 2250,
+      "target_lines": 1000,
+      "reason": "A legacy social production module remains above the line target while Task 2 decomposes capability seams.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract capability-specific services, repositories, types, and composition code without changing wire or job behavior."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/socials/instagram/catalog_ingest.py",
+      "owner": "Task 2",
+      "classification": "existing_hotspot",
+      "line_ceiling": 2875,
+      "target_lines": 1000,
+      "reason": "A legacy social production module remains above the line target while Task 2 decomposes capability seams.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract capability-specific services, repositories, types, and composition code without changing wire or job behavior."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/socials/instagram/comments_scrapling/fetcher.py",
+      "owner": "Task 2",
+      "classification": "existing_hotspot",
+      "line_ceiling": 8924,
+      "target_lines": 1000,
+      "reason": "A legacy social production module remains above the line target while Task 2 decomposes capability seams.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract capability-specific services, repositories, types, and composition code without changing wire or job behavior."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/socials/instagram/comments_scrapling/job_runner.py",
+      "owner": "Task 2",
+      "classification": "existing_hotspot",
+      "line_ceiling": 5952,
+      "target_lines": 1000,
+      "reason": "A legacy social production module remains above the line target while Task 2 decomposes capability seams.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract capability-specific services, repositories, types, and composition code without changing wire or job behavior."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/socials/instagram/media_completion.py",
+      "owner": "Task 2",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1118,
+      "target_lines": 1000,
+      "reason": "A legacy social production module remains above the line target while Task 2 decomposes capability seams.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract capability-specific services, repositories, types, and composition code without changing wire or job behavior."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/socials/instagram/permalink_metadata.py",
+      "owner": "Task 2",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1800,
+      "target_lines": 1000,
+      "reason": "A legacy social production module remains above the line target while Task 2 decomposes capability seams.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract capability-specific services, repositories, types, and composition code without changing wire or job behavior."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/socials/instagram/post_normalizer.py",
+      "owner": "Task 2",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1217,
+      "target_lines": 1000,
+      "reason": "A legacy social production module remains above the line target while Task 2 decomposes capability seams.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract capability-specific services, repositories, types, and composition code without changing wire or job behavior."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/socials/instagram/posts_scrapling/fetcher.py",
+      "owner": "Task 2",
+      "classification": "existing_hotspot",
+      "line_ceiling": 2198,
+      "target_lines": 1000,
+      "reason": "A legacy social production module remains above the line target while Task 2 decomposes capability seams.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract capability-specific services, repositories, types, and composition code without changing wire or job behavior."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/socials/instagram/posts_scrapling/job_runner.py",
+      "owner": "Task 2",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1735,
+      "target_lines": 1000,
+      "reason": "A legacy social production module remains above the line target while Task 2 decomposes capability seams.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract capability-specific services, repositories, types, and composition code without changing wire or job behavior."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/socials/instagram/profile_stages.py",
+      "owner": "Task 2",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1467,
+      "target_lines": 1000,
+      "reason": "A legacy social production module remains above the line target while Task 2 decomposes capability seams.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract capability-specific services, repositories, types, and composition code without changing wire or job behavior."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/socials/instagram/public_probe.py",
+      "owner": "Task 2",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1109,
+      "target_lines": 1000,
+      "reason": "A legacy social production module remains above the line target while Task 2 decomposes capability seams.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract capability-specific services, repositories, types, and composition code without changing wire or job behavior."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/socials/instagram/scraper.py",
+      "owner": "Task 2",
+      "classification": "existing_hotspot",
+      "line_ceiling": 5500,
+      "target_lines": 1000,
+      "reason": "A legacy social production module remains above the line target while Task 2 decomposes capability seams.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract capability-specific services, repositories, types, and composition code without changing wire or job behavior."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/socials/pipelines/account_catalog/launch.py",
+      "owner": "Task 2",
+      "classification": "existing_hotspot",
+      "line_ceiling": 3136,
+      "target_lines": 1000,
+      "reason": "A legacy social production module remains above the line target while Task 2 decomposes capability seams.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract capability-specific services, repositories, types, and composition code without changing wire or job behavior."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/socials/pipelines/account_catalog/progress.py",
+      "owner": "Task 2",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1674,
+      "target_lines": 1000,
+      "reason": "A legacy social production module remains above the line target while Task 2 decomposes capability seams.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract capability-specific services, repositories, types, and composition code without changing wire or job behavior."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/socials/pipelines/comments/instagram.py",
+      "owner": "Task 2",
+      "classification": "existing_hotspot",
+      "line_ceiling": 8291,
+      "target_lines": 1000,
+      "reason": "A legacy social production module remains above the line target while Task 2 decomposes capability seams.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract capability-specific services, repositories, types, and composition code without changing wire or job behavior."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/socials/read_models/account_profile/common.py",
+      "owner": "Task 2",
+      "classification": "existing_hotspot",
+      "line_ceiling": 3250,
+      "target_lines": 1000,
+      "reason": "A legacy social production module remains above the line target while Task 2 decomposes capability seams.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract capability-specific services, repositories, types, and composition code without changing wire or job behavior."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/socials/social_season_analytics_impl.py",
+      "owner": "Task 2",
+      "classification": "existing_hotspot",
+      "line_ceiling": 68316,
+      "target_lines": 1000,
+      "reason": "Legacy social analytics implementation remains the final social import SCC and compatibility surface.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract import-neutral types, platform services, repositories, and composition roots until the compatibility module is a thin re-export shell."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/socials/socialblade/scraper.py",
+      "owner": "Task 2",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1692,
+      "target_lines": 1000,
+      "reason": "A legacy social production module remains above the line target while Task 2 decomposes capability seams.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract capability-specific services, repositories, types, and composition code without changing wire or job behavior."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/socials/threads/scraper.py",
+      "owner": "Task 2",
+      "classification": "existing_hotspot",
+      "line_ceiling": 2239,
+      "target_lines": 1000,
+      "reason": "A legacy social production module remains above the line target while Task 2 decomposes capability seams.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract capability-specific services, repositories, types, and composition code without changing wire or job behavior."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/socials/tiktok/scraper.py",
+      "owner": "Task 2",
+      "classification": "existing_hotspot",
+      "line_ceiling": 3124,
+      "target_lines": 1000,
+      "reason": "A legacy social production module remains above the line target while Task 2 decomposes capability seams.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract capability-specific services, repositories, types, and composition code without changing wire or job behavior."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/socials/twitter/posts_catalog/catalog.py",
+      "owner": "Task 2",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1442,
+      "target_lines": 1000,
+      "reason": "A legacy social production module remains above the line target while Task 2 decomposes capability seams.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract capability-specific services, repositories, types, and composition code without changing wire or job behavior."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/socials/twitter/scraper.py",
+      "owner": "Task 2",
+      "classification": "existing_hotspot",
+      "line_ceiling": 3571,
+      "target_lines": 1000,
+      "reason": "A legacy social production module remains above the line target while Task 2 decomposes capability seams.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract capability-specific services, repositories, types, and composition code without changing wire or job behavior."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/socials/youtube/scraper.py",
+      "owner": "Task 2",
+      "classification": "existing_hotspot",
+      "line_ceiling": 4345,
+      "target_lines": 1000,
+      "reason": "A legacy social production module remains above the line target while Task 2 decomposes capability seams.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract capability-specific services, repositories, types, and composition code without changing wire or job behavior."
+    },
+    {
+      "path": "TRR-Backend/trr_backend/vision/people_count_engine.py",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1105,
+      "target_lines": 1000,
+      "reason": "A legacy backend production module combines multiple responsibilities and remains above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded services, repositories, or integrations behind existing contracts until this module is below target."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/app/admin/cast-screentime/CastScreentimePageClient.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 3334,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/app/admin/dev-dashboard/page.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1253,
+      "target_lines": 500,
+      "reason": "A legacy Next.js route or page combines orchestration and presentation above the route/page line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded feature components, hooks, and adapters while preserving route behavior and focused wiring tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/app/admin/fonts/_components/QuestionsTab.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 3250,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/app/admin/networks/page.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1477,
+      "target_lines": 500,
+      "reason": "A legacy Next.js route or page combines orchestration and presentation above the route/page line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded feature components, hooks, and adapters while preserving route behavior and focused wiring tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/app/admin/reddit-post-details/page.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1870,
+      "target_lines": 500,
+      "reason": "A legacy Next.js route or page combines orchestration and presentation above the route/page line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded feature components, hooks, and adapters while preserving route behavior and focused wiring tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/app/admin/reddit-window-posts/page.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 2427,
+      "target_lines": 500,
+      "reason": "A legacy Next.js route or page combines orchestration and presentation above the route/page line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded feature components, hooks, and adapters while preserving route behavior and focused wiring tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/app/admin/scrape-images/page.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1730,
+      "target_lines": 500,
+      "reason": "A legacy Next.js route or page combines orchestration and presentation above the route/page line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded feature components, hooks, and adapters while preserving route behavior and focused wiring tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/app/admin/social/page.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 3802,
+      "target_lines": 500,
+      "reason": "A legacy Next.js route or page combines orchestration and presentation above the route/page line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded feature components, hooks, and adapters while preserving route behavior and focused wiring tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/app/admin/surveys/[surveyKey]/page.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1897,
+      "target_lines": 500,
+      "reason": "A legacy Next.js route or page combines orchestration and presentation above the route/page line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded feature components, hooks, and adapters while preserving route behavior and focused wiring tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/app/admin/trr-shows/[showId]/page.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 12034,
+      "target_lines": 500,
+      "reason": "Admin show workspace still owns several large tab render trees and orchestration state.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Continue one-tab-at-a-time presentational extraction while keeping state, effects, fetches, and mutations in the route controller until dedicated hooks are separately proven."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/app/admin/trr-shows/[showId]/seasons/[seasonNumber]/page.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 6856,
+      "target_lines": 500,
+      "reason": "A legacy Next.js route or page combines orchestration and presentation above the route/page line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded feature components, hooks, and adapters while preserving route behavior and focused wiring tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/app/admin/trr-shows/people/[personId]/PersonPageClient.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 11957,
+      "target_lines": 500,
+      "reason": "Admin person workspace combines tab rendering and page orchestration in one legacy client component.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract cohesive person tabs behind frozen props and focused wiring tests after the show workspace tab seams are established."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/app/admin/trr-shows/people/[personId]/refresh-progress.ts",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1150,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/app/api/admin/reddit/communities/[communityId]/discover/route.ts",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1185,
+      "target_lines": 500,
+      "reason": "A legacy Next.js route or page combines orchestration and presentation above the route/page line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded feature components, hooks, and adapters while preserving route behavior and focused wiring tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/app/bravodle/play/page.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 2162,
+      "target_lines": 500,
+      "reason": "A legacy Next.js route or page combines orchestration and presentation above the route/page line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded feature components, hooks, and adapters while preserving route behavior and focused wiring tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/app/realitease/play/page.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 2200,
+      "target_lines": 500,
+      "reason": "A legacy Next.js route or page combines orchestration and presentation above the route/page line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded feature components, hooks, and adapters while preserving route behavior and focused wiring tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/app/shows/settings/page.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1347,
+      "target_lines": 500,
+      "reason": "A legacy Next.js route or page combines orchestration and presentation above the route/page line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded feature components, hooks, and adapters while preserving route behavior and focused wiring tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/admin/BrandLogoOptionsModal.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1826,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/admin/BravotvImageRunPanel.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1050,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/admin/ImageLightbox.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 2518,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/admin/ImageScrapeDrawer.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1936,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/admin/ShowBrandEditor.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1626,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/admin/SocialAccountProfilePage.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 13938,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/admin/SurveyQuestionsEditor.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 2040,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/admin/SystemHealthModal.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 3596,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/admin/UnifiedBrandsWorkspace.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1183,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/admin/cast-socialblade-comparison.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 2018,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/admin/design-docs/ArticleDetailPage.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 6182,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/admin/design-docs/NytInteractiveShell.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1021,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/admin/design-docs/VotingDeadlinesArticle.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 2477,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/admin/design-docs/free-agent-data.ts",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 3010,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/admin/design-docs/sections/BrandNYMagSection.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1249,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/admin/design-docs/sections/BrandNYTCookingSection.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1254,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/admin/design-docs/sections/BrandNYTMagazineSection.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1186,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/admin/design-docs/sections/BrandNYTOpinionSection.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1171,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/admin/design-docs/sections/BrandNYTStoreSection.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1222,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/admin/design-docs/sections/BrandNYTStyleSection.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1149,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/admin/design-docs/sections/CardsSection.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1864,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/admin/design-docs/sections/ChartsSection.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1508,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/admin/design-docs/sections/IllustrationsSection.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1664,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/admin/design-docs/sections/brand-athletic/BrandAthleticComponents.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 2142,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/admin/design-docs/sections/brand-nyt/BrandNYTComponents.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1591,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/admin/design-docs/sections/games/HubComponents.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 2014,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/admin/design-docs/sections/games/game-palettes.ts",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1296,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/admin/design-system/ComponentsTab.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1694,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/admin/design-system/DesignSystemPageClient.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 2763,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/admin/design-system/TypographyTab.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 2368,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/admin/instagram/InstagramCatalogBackfillMockupView.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1269,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/admin/instagram/InstagramCommentsPanel.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 2153,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/admin/reddit-sources-manager.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 10150,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/admin/season-social-analytics-section.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 8903,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/admin/show-tabs/ShowSettingsTab.tsx",
+      "owner": "Task 4",
+      "classification": "temporary_exception",
+      "line_ceiling": 1306,
+      "target_lines": 1000,
+      "reason": "The first behavior-preserving Settings extraction is intentionally presentational but remains above the production-file target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Split metadata, link management, roles, and Reddit sections into focused presentational children without moving page-owned mutations."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/admin/social-growth-section.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1159,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/admin/social-week/WeekDetailPageView.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 9186,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/flashback-ranker.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1970,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/components/survey/ReunionSeatingPredictionInput.tsx",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1161,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/lib/admin/api-references/generated/inventory.ts",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 24689,
+      "target_lines": 1000,
+      "reason": "Generated production output remains above the structural line target and needs an explicit expiring ratchet.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Split generator output into stable domain modules and update the generator plus digest checks; never hand-edit generated output."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/lib/admin/api-references/generator.ts",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1501,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/lib/admin/design-docs-config.ts",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 4542,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/lib/admin/design-docs-pipeline-validators.ts",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1305,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/lib/admin/design-docs-pipeline.ts",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1106,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/lib/admin/show-admin-routes.ts",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1288,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/lib/admin/social-account-profile.ts",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1919,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/lib/bravodle/manager.ts",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 2277,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/lib/fonts/generated/additional-trr-font-catalog.ts",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 2777,
+      "target_lines": 1000,
+      "reason": "Generated production output remains above the structural line target and needs an explicit expiring ratchet.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Split generator output into stable domain modules and update the generator plus digest checks; never hand-edit generated output."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/lib/photo-metadata.ts",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1970,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/lib/realitease/manager.ts",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 2571,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/lib/server/admin/brand-profile-repository.ts",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1031,
+      "target_lines": 1000,
+      "reason": "A legacy app server adapter or service remains above the production-module line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Move backend-owned data cohorts to strict API adapters or split app-local responsibilities behind tested interfaces."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/lib/server/admin/dev-dashboard-service.ts",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1147,
+      "target_lines": 1000,
+      "reason": "A legacy app server adapter or service remains above the production-module line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Move backend-owned data cohorts to strict API adapters or split app-local responsibilities behind tested interfaces."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/lib/server/admin/getty-local-scrape.ts",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1069,
+      "target_lines": 1000,
+      "reason": "A legacy app server adapter or service remains above the production-module line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Move backend-owned data cohorts to strict API adapters or split app-local responsibilities behind tested interfaces."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/lib/server/admin/reddit-discovery-service.ts",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 2019,
+      "target_lines": 1000,
+      "reason": "A legacy app server adapter or service remains above the production-module line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Move backend-owned data cohorts to strict API adapters or split app-local responsibilities behind tested interfaces."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/lib/server/admin/reddit-sources-repository.ts",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1616,
+      "target_lines": 1000,
+      "reason": "A legacy app server adapter or service remains above the production-module line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Move backend-owned data cohorts to strict API adapters or split app-local responsibilities behind tested interfaces."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/lib/server/admin/social-landing-repository.ts",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 2443,
+      "target_lines": 1000,
+      "reason": "A legacy app server adapter or service remains above the production-module line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Move backend-owned data cohorts to strict API adapters or split app-local responsibilities behind tested interfaces."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/lib/server/trr-api/generated/openapi.v2.d.ts",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 2612,
+      "target_lines": 1000,
+      "reason": "Generated production output remains above the structural line target and needs an explicit expiring ratchet.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Split generator output into stable domain modules and update the generator plus digest checks; never hand-edit generated output."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/lib/server/trr-api/trr-shows-repository.ts",
+      "owner": "Task 3",
+      "classification": "existing_hotspot",
+      "line_ceiling": 5449,
+      "target_lines": 1000,
+      "reason": "Legacy app repository still contains governed direct SQL across show, season, cast, people, credits, and media domains.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Remove bounded SQL cohorts only after strict backend v2 contracts, app adapters, compatibility tests, and ledger evidence pass."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/proxy.ts",
+      "owner": "Task 4",
+      "classification": "existing_hotspot",
+      "line_ceiling": 1217,
+      "target_lines": 1000,
+      "reason": "A legacy app production module combines multiple UI or domain concerns above the structural line target.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Extract bounded components, hooks, and configuration modules while preserving user-visible behavior and focused tests."
+    },
+    {
+      "path": "TRR-APP/apps/web/src/styles/cdn-fonts.css",
+      "owner": "Task 4",
+      "classification": "temporary_exception",
+      "line_ceiling": 3297,
+      "target_lines": 1000,
+      "reason": "Generated production font declarations exceed the structural line target and need an explicit expiring exception.",
+      "review_by": "2026-08-14",
+      "removal_plan": "Split the generated font stylesheet into bounded families or emit compact declarations through the owning generator; never hand-edit generated output."
+    }
+  ]
+}

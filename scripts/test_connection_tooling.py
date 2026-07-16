@@ -23,7 +23,13 @@ def run_script(*args: str) -> subprocess.CompletedProcess[str]:
     )
 
 
-def write_vercel_project(project_dir: Path, *, name: str, project_id: str) -> None:
+def write_vercel_project(
+    project_dir: Path,
+    *,
+    name: str,
+    project_id: str,
+    team_id: str = "team_EUsG2kN9TAvVDGOu4yZVEoCX",
+) -> None:
     vercel_dir = project_dir / ".vercel"
     vercel_dir.mkdir(parents=True)
     (vercel_dir / "project.json").write_text(
@@ -31,7 +37,7 @@ def write_vercel_project(project_dir: Path, *, name: str, project_id: str) -> No
             "{\n"
             f'  "projectName": "{name}",\n'
             f'  "projectId": "{project_id}",\n'
-            '  "orgId": "team_test"\n'
+            f'  "orgId": "{team_id}"\n'
             "}\n"
         ),
         encoding="utf-8",
@@ -134,6 +140,23 @@ def test_vercel_project_guard_blocks_nested_stale_project(tmp_path: Path) -> Non
     assert "production env mutation is blocked" in result.stderr
 
 
+def test_vercel_project_guard_blocks_wrong_team_even_for_right_project(tmp_path: Path) -> None:
+    project_dir = tmp_path / "TRR-APP"
+    write_vercel_project(
+        project_dir,
+        name="trr-app",
+        project_id="prj_MHpStkwr26rV5kjt0f80zqhwZpAs",
+        team_id="team_wrong",
+    )
+
+    result = run_script("scripts/vercel-project-guard.py", "--project-dir", str(project_dir))
+
+    assert result.returncode == 1
+    assert "team_wrong" in result.stderr
+    assert "team_EUsG2kN9TAvVDGOu4yZVEoCX" in result.stderr
+    assert "production env mutation is blocked" in result.stderr
+
+
 def test_vercel_project_guard_explains_missing_local_project_link(tmp_path: Path) -> None:
     project_dir = tmp_path / "TRR-APP"
 
@@ -203,10 +226,13 @@ def test_app_direct_sql_inventory_emits_owner_aliases_and_retained_exception_con
     rendered = output_path.read_text(encoding="utf-8")
     assert "## Owner Aliases" in rendered
     assert "## Retained High-Fan-Out Exceptions" in rendered
+    assert "## Governed Non-App-Local Exceptions" in rendered
     assert "`backend-shared-schema`" in rendered
-    assert "Phase 5 migration is out of this workspace-only slice" in rendered
-    assert "TRR-Backend aggregate endpoint" in rendered
-    assert "New high-fanout app direct-SQL rows must include an exception owner" in rendered
+    assert "`Task 3`" in rendered
+    assert "`2026-07-15`" in rendered
+    assert "`2026-08-14`" in rendered
+    assert "/api/v2/admin/reddit/posts/{post_id}" in rendered
+    assert "Every non-app-local direct-SQL row requires one unique exception record" in rendered
     assert "needs owner label" not in rendered
 
 

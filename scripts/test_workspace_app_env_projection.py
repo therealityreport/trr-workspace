@@ -150,8 +150,8 @@ class WorkspaceAppEnvProjectionTests(unittest.TestCase):
 
     def test_default_profile_keeps_low_pressure_modal_social_caps(self) -> None:
         text = DEFAULT_PROFILE.read_text(encoding="utf-8")
-        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT=8", text)
-        self.assertIn("WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT=8", text)
+        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT=4", text)
+        self.assertIn("WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT=4", text)
         self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_POSTS=1", text)
         self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS=1", text)
 
@@ -175,8 +175,8 @@ class WorkspaceAppEnvProjectionTests(unittest.TestCase):
         self.assertIn("WORKSPACE_TRR_APP_POSTGRES_POOL_MAX=1", text)
         self.assertIn("WORKSPACE_TRR_APP_POSTGRES_MAX_CONCURRENT_OPERATIONS=1", text)
         self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS=0", text)
-        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT=8", text)
-        self.assertIn("WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT=8", text)
+        self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT=4", text)
+        self.assertIn("WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT=4", text)
         self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_POSTS=1", text)
         self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS=1", text)
 
@@ -184,15 +184,17 @@ class WorkspaceAppEnvProjectionTests(unittest.TestCase):
         dev_text = DEV_SCRIPT.read_text(encoding="utf-8")
         status_text = STATUS_SCRIPT.read_text(encoding="utf-8")
         defaults = {
-            "WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT": "8",
-            "WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT": "8",
+            "WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT": "4",
+            "WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT": "4",
             "WORKSPACE_TRR_REMOTE_SOCIAL_POSTS": "1",
             "WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS": "1",
         }
         for key, value in defaults.items():
             self.assertIn(f'{key}="${{{key}:-{value}}}"', dev_text)
             self.assertIn(f'{key}="${{{key}:-{value}}}"', status_text)
-            self.assertIn(f"invalid {key}='${{{key}}}', using {value}.", dev_text)
+        self.assertIn("WORKSPACE_RUNTIME_CAPACITY_DISPATCH_BATCH_SIZE", dev_text)
+        self.assertIn("WORKSPACE_RUNTIME_CAPACITY_GENERAL_CONCURRENCY", dev_text)
+        self.assertIn("WORKSPACE_RUNTIME_CAPACITY_CONTEXT", status_text)
 
     def test_make_dev_defaults_to_hybrid_portless_runtime(self) -> None:
         text = MAKEFILE.read_text(encoding="utf-8")

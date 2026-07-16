@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "evidence_id": "ev.local-covered-shows.app-focused",
+  "packet_id": "local-covered-shows",
+  "gate": "gate-0",
+  "truth_scope": "local",
+  "command": {
+    "argv": [
+      "pnpm",
+      "exec",
+      "vitest",
+      "run",
+      "-c",
+      "vitest.config.mts",
+      "tests/covered-show-route-parity.test.ts",
+      "tests/covered-shows-route-cache-dedupe.test.ts",
+      "tests/covered-shows-route-metadata.test.ts",
+      "tests/covered-shows-repository-slug-query-safety.test.ts",
+      "--reporter=dot"
+    ],
+    "cwd": "/Users/thomashulihan/Projects/TRR/TRR-APP/apps/web",
+    "mutating": false,
+    "environment_variable_names": []
+  },
+  "started_at": "2026-07-16T20:46:22.709714Z",
+  "finished_at": "2026-07-16T20:46:26.048179Z",
+  "exit_code": 0,
+  "expected_result": "Covered-shows app parity, cache, metadata, and SQL-removal tests pass.",
+  "result": "pass",
+  "output": {
+    "sha256": "4fe1512a353f04843cddd9f7c82fbf75d3564aac48a02a5192c56e50fb1aa8d4",
+    "size_bytes": 2965,
+    "stored_path": null
+  },
+  "artifacts": [],
+  "target_observations": [
+    {
+      "target_type": "repository",
+      "target_id": "app",
+      "observed_at": "2026-07-16T20:46:26.048179Z",
+      "status": "pass",
+      "facts": [
+        {
+          "name": "test.count",
+          "value": 10
+        }
+      ]
+    }
+  ],
+  "approval": {
+    "required": false,
+    "approval_id": null,
+    "status": "not_required",
+    "current_chat": false
+  },
+  "redaction": {
+    "status": "verified_clean",
+    "scanner": "scripts/architecture/check-release-manifests.py",
+    "safe_to_store": true,
+    "credential_values_included": false,
+    "environment_values_included": false
+  }
+}

@@ -16,6 +16,8 @@ TEST_SKIP_INVENTORY_DOC="$ROOT/docs/workspace/test-skip-inventory.md"
 WORKSPACE_HYGIENE_REPORT_SCRIPT="$ROOT/scripts/workspace/hygiene_report.sh"
 WORKSPACE_HYGIENE_CLEAN_SCRIPT="$ROOT/scripts/workspace/hygiene_clean.sh"
 WORKSPACE_ENV_HYGIENE_SCRIPT="$ROOT/scripts/workspace/env_hygiene.py"
+RUNTIME_CAPACITY_MANIFEST="$ROOT/docs/workspace/runtime-capacity.json"
+DEPLOYMENT_TARGETS_MANIFEST="$ROOT/docs/workspace/deployment-targets.json"
 
 extract_script_default() {
   local key="$1"
@@ -453,5 +455,9 @@ assert_app_postgres_pool_contract
 assert_workspace_hygiene_contract
 assert_env_hygiene_contract
 assert_runtime_failure_lane_contract
+python3 "$ROOT/scripts/architecture/check-git-roots.py"
+python3 "$ROOT/scripts/architecture/check-durable-contracts.py" --boundary working-tree
+python3 "$ROOT/scripts/runtime_capacity.py" --manifest "$RUNTIME_CAPACITY_MANIFEST" check
+python3 "$ROOT/scripts/deployment_targets.py" --manifest "$DEPLOYMENT_TARGETS_MANIFEST" check
 
 echo "[workspace-contract] OK"

@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "evidence_id": "ev.local-identity-canonical-routes.app-focused",
+  "packet_id": "local-identity-canonical-routes",
+  "gate": "gate-0",
+  "truth_scope": "local",
+  "command": {
+    "argv": [
+      "pnpm",
+      "exec",
+      "vitest",
+      "run",
+      "-c",
+      "vitest.config.mts",
+      "tests/trr-shows-repository-resolve-slug.test.ts",
+      "tests/trr-shows-repository-slug-query-safety.test.ts",
+      "tests/public-identity-contract.test.ts",
+      "tests/public-identity-routes.test.tsx",
+      "tests/show-route-parity.test.ts",
+      "tests/admin-show-slug-reads.test.ts",
+      "--reporter=dot"
+    ],
+    "cwd": "/Users/thomashulihan/Projects/TRR/TRR-APP/apps/web",
+    "mutating": false,
+    "environment_variable_names": []
+  },
+  "started_at": "2026-07-16T20:46:22.753998Z",
+  "finished_at": "2026-07-16T20:46:26.305569Z",
+  "exit_code": 0,
+  "expected_result": "Public identity, canonical route, and slug adapter tests pass.",
+  "result": "pass",
+  "output": {
+    "sha256": "14e7802c39964448f81745f41a39cb410dfa299d79fd65307da3334fd4b0dde5",
+    "size_bytes": 389,
+    "stored_path": null
+  },
+  "artifacts": [],
+  "target_observations": [
+    {
+      "target_type": "repository",
+      "target_id": "app",
+      "observed_at": "2026-07-16T20:46:26.305569Z",
+      "status": "pass",
+      "facts": [
+        {
+          "name": "test.count",
+          "value": 74
+        }
+      ]
+    }
+  ],
+  "approval": {
+    "required": false,
+    "approval_id": null,
+    "status": "not_required",
+    "current_chat": false
+  },
+  "redaction": {
+    "status": "verified_clean",
+    "scanner": "scripts/architecture/check-release-manifests.py",
+    "safe_to_store": true,
+    "credential_values_included": false,
+    "environment_values_included": false
+  }
+}
