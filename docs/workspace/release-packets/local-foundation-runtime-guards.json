@@ -3,14 +3,14 @@
   "packet_id": "local-foundation-runtime-guards",
   "capability": "Workspace durability, safe runtime, and provider guard foundations",
   "created_at": "2026-07-16T20:52:42.770997Z",
-  "updated_at": "2026-07-16T22:58:30Z",
+  "updated_at": "2026-07-16T23:08:17Z",
   "state": "implementation_complete_parked",
   "truth_scope": "local",
   "repositories": {
     "workspace": {
-      "revision_type": "local_dirty_checkpoint",
+      "revision_type": "committed_candidate",
       "base_sha": "df55c982ecf6741808536bfb6af308cc737372cf",
-      "candidate_sha": null,
+      "candidate_sha": "136bbf02c4d2c3290f61292b0e477403035c23b1",
       "owned_paths": [
         "CONTEXT-MAP.md",
         "Makefile",
@@ -61,18 +61,18 @@
         "scripts/vercel-project-guard.py"
       ],
       "owned_path_manifest_sha256": "20232641a72e08ab7872ace6e282ec2ebc98570abbbce154ab00e69c5ff4b39b",
-      "binary_tracked_diff_sha256": "4e6891acb2de4902160a39814e01723ba0c37eafa9b2a7e2a9ed423f4ff506b0",
+      "binary_tracked_diff_sha256": "020f35baa9d2eb0d2ce383909288e2e3a0c24074f1005cf81444c669351b8661",
       "dirty_counts": {
-        "tracked_modified": 16,
+        "tracked_modified": 0,
         "tracked_added": 0,
         "tracked_deleted": 0,
         "tracked_renamed": 0,
         "tracked_copied": 0,
         "unmerged": 0,
-        "untracked": 31,
-        "total": 47
+        "untracked": 0,
+        "total": 0
       },
-      "candidate_commit_required_before_gate_4": true
+      "candidate_commit_required_before_gate_4": false
     },
     "app": {
       "revision_type": "local_dirty_checkpoint",
