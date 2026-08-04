@@ -337,7 +337,10 @@
   },
   "affected": {
     "routes": [
-      "/api/v2/admin/shows/{show_id}/seasons/{season_number}/cast-survey-roles"
+    "/api/v2/admin/shows/{show_id}/seasons/{season_number}/cast-survey-roles",
+    "/api/admin/surveys/{surveyKey}",
+    "/api/admin/trr-api/shows/{showId}/seasons/{seasonNumber}/survey-cast",
+    "/api/admin/trr-api/shows/{showId}/surveys"
     ],
     "jobs": [],
     "schedules": [],
@@ -426,10 +429,8 @@
     "app_commands": [
       [
         "TRR-APP/scripts/vercel.sh",
-        "rollback-trr",
-        "--deployment",
-        "<gate-4-previous-deployment>",
-        "--dry-run"
+        "rollback",
+        "<gate-4-previous-deployment>"
       ]
     ],
     "data_recovery": "Migrations are authored only and remain unapplied; exact rollback and verification require Gate 4 approval.",

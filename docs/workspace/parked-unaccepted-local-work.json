@@ -3,6 +3,13 @@
   "manifest_id": "parked-unaccepted-local-work",
   "truth_scope": "local",
   "captured_at": "2026-07-16T21:30:26.889248Z",
+  "lifecycle": {
+    "state": "historical_snapshot",
+    "reason": "This retained July 16 capture records the original parked local tree. Current R3 ownership and accepted postimages are tracked by the task locks, so this snapshot must not classify the live checkout.",
+    "superseded_by": [
+      "docs/workspace/architecture-task-locks.json"
+    ]
+  },
   "repositories": {
     "workspace": {
       "base_sha": "df55c982ecf6741808536bfb6af308cc737372cf"

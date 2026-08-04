@@ -612,7 +612,44 @@
           ]
         },
         "evidence_ids": {"$ref": "#/$defs/uniqueStringArray"}
-      }
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"status": {"const": "observed"}}},
+          "then": {
+            "properties": {
+              "before": {"type": "integer", "minimum": 0},
+              "after": {"type": "integer", "minimum": 0},
+              "delta": {"type": "integer"},
+              "evidence_ids": {"minItems": 1}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"status": {"const": "not_applicable"}}},
+          "then": {
+            "properties": {
+              "before": {"type": "null"},
+              "after": {"type": "null"},
+              "delta": {"const": 0}
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {"const": "pending_local_measurement"}
+            }
+          },
+          "then": {
+            "properties": {
+              "before": {"type": "null"},
+              "after": {"type": "null"},
+              "delta": {"type": "null"}
+            }
+          }
+        }
+      ]
     },
     "validationStage": {
       "type": "object",
