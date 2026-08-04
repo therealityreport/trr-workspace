@@ -359,8 +359,11 @@
   },
   "affected": {
     "routes": [
-      "/api/v2/admin/networks-streaming/summary",
-      "/api/v2/admin/networks-streaming/detail"
+    "/api/v2/admin/networks-streaming/summary",
+    "/api/v2/admin/networks-streaming/detail",
+    "/api/admin/brands/profile",
+    "/api/admin/networks-streaming/detail",
+    "/api/admin/networks-streaming/summary"
     ],
     "jobs": [],
     "schedules": [],
@@ -449,10 +452,8 @@
     "app_commands": [
       [
         "TRR-APP/scripts/vercel.sh",
-        "rollback-trr",
-        "--deployment",
-        "<gate-4-previous-deployment>",
-        "--dry-run"
+        "rollback",
+        "<gate-4-previous-deployment>"
       ]
     ],
     "data_recovery": "No migration or data mutation was performed by this local checkpoint.",

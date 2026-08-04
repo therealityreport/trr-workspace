@@ -704,10 +704,12 @@
     "routes": [
       "/api/v2/identities/people/{slug}",
       "/api/v2/identities/shows/{slug}",
-      "/api/v2/admin/shows/resolve-slug",
-      "/people/{slug}",
-      "/shows/{slug}",
-      "/shows/{slug}/seasons/{season_number}"
+    "/api/v2/admin/shows/resolve-slug",
+    "/people/{slug}",
+    "/shows/{slug}",
+    "/shows/{slug}/seasons/{season_number}",
+    "/api/admin/trr-api/shows/{showId}",
+    "/api/admin/trr-api/shows/resolve-slug"
     ],
     "jobs": [],
     "schedules": [],
@@ -796,10 +798,8 @@
     "app_commands": [
       [
         "TRR-APP/scripts/vercel.sh",
-        "rollback-trr",
-        "--deployment",
-        "<gate-4-previous-deployment>",
-        "--dry-run"
+        "rollback",
+        "<gate-4-previous-deployment>"
       ]
     ],
     "data_recovery": "Migrations are authored only and remain unapplied; exact rollback and verification require Gate 4 approval.",

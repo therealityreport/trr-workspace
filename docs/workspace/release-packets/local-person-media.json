@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "packet_id": "local-person-media",
-  "capability": "Person cover-photo and thumbnail-crop backend ownership",
+  "capability": "Person media and fandom-import backend ownership with app adapters",
   "created_at": "2026-07-16T20:52:42.770997Z",
   "updated_at": "2026-07-16T20:52:42.770997Z",
   "state": "implementation_complete_parked",
@@ -323,8 +323,12 @@
   },
   "affected": {
     "routes": [
-      "/api/v2/admin/people/{person_id}/cover-photos",
-      "/api/v2/admin/people/{person_id}/thumbnail-crops"
+    "/api/v2/admin/people/{person_id}/cover-photos",
+    "/api/v2/admin/people/{person_id}/thumbnail-crops",
+    "/api/admin/trr-api/people/{personId}/cover-photo",
+    "/api/admin/trr-api/people/{personId}/import-fandom/commit",
+    "/api/admin/trr-api/people/{personId}/photos/{photoId}/thumbnail-crop",
+    "/api/admin/trr-api/people/{personId}/photos"
     ],
     "jobs": [],
     "schedules": [],
@@ -413,10 +417,8 @@
     "app_commands": [
       [
         "TRR-APP/scripts/vercel.sh",
-        "rollback-trr",
-        "--deployment",
-        "<gate-4-previous-deployment>",
-        "--dry-run"
+        "rollback",
+        "<gate-4-previous-deployment>"
       ]
     ],
     "data_recovery": "No migration or data mutation was performed by this local checkpoint.",
