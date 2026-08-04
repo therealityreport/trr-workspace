@@ -269,8 +269,10 @@
   },
   "affected": {
     "routes": [
-      "/api/v2/admin/covered-shows",
-      "/api/v2/admin/covered-shows/{show_id}"
+    "/api/v2/admin/covered-shows",
+    "/api/v2/admin/covered-shows/{show_id}",
+    "/api/admin/covered-shows",
+    "/api/admin/covered-shows/{showId}"
     ],
     "jobs": [],
     "schedules": [],
@@ -359,10 +361,8 @@
     "app_commands": [
       [
         "TRR-APP/scripts/vercel.sh",
-        "rollback-trr",
-        "--deployment",
-        "<gate-4-previous-deployment>",
-        "--dry-run"
+        "rollback",
+        "<gate-4-previous-deployment>"
       ]
     ],
     "data_recovery": "No migration or data mutation was performed by this local checkpoint.",

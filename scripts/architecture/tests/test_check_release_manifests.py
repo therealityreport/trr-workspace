@@ -1862,7 +1862,7 @@ def test_failed_redaction_status_is_rejected(tmp_path: Path) -> None:
     evidence_data["redaction"]["status"] = "failed"
     packet_path, evidence_path = write_workspace(tmp_path, packet(), evidence_data)
 
-    with pytest.raises(module.ManifestValidationError, match="redaction status failed"):
+    with pytest.raises(module.ManifestValidationError, match="redaction.status"):
         module.validate_manifests(tmp_path, [packet_path], [evidence_path])
 
 
@@ -2214,3 +2214,157 @@ def test_parked_entry_requires_owner_reason_missing_proof_and_next_action(
             require_r0_local_set=True,
             parked_path=parked_path,
         )
+
+
+def test_direct_sql_delta_schema_requires_status_specific_measurements(
+    tmp_path: Path,
+) -> None:
+    module = load_module()
+    observed = packet()
+    observed["direct_sql_delta"] = {
+        "status": "observed",
+        "before": None,
+        "after": 3,
+        "delta": 3,
+        "evidence_ids": ["ev.packet-1.quick"],
+    }
+    observed_path, observed_evidence_path = write_workspace(
+        tmp_path / "observed", observed, evidence()
+    )
+
+    with pytest.raises(module.ManifestValidationError, match="direct_sql_delta"):
+        module.validate_manifests(
+            tmp_path / "observed", [observed_path], [observed_evidence_path]
+        )
+
+    pending = packet()
+    pending["direct_sql_delta"] = {
+        "status": "pending_local_measurement",
+        "before": 0,
+        "after": None,
+        "delta": None,
+        "evidence_ids": [],
+    }
+    pending_path, pending_evidence_path = write_workspace(
+        tmp_path / "pending", pending, evidence()
+    )
+
+    with pytest.raises(module.ManifestValidationError, match="direct_sql_delta"):
+        module.validate_manifests(
+            tmp_path / "pending", [pending_path], [pending_evidence_path]
+        )
+
+
+def test_observed_direct_sql_delta_enforces_arithmetic(tmp_path: Path) -> None:
+    module = load_module()
+    packet_data = packet()
+    packet_data["direct_sql_delta"] = {
+        "status": "observed",
+        "before": 2,
+        "after": 5,
+        "delta": 2,
+        "evidence_ids": ["ev.packet-1.quick"],
+    }
+    packet_path, evidence_path = write_workspace(tmp_path, packet_data, evidence())
+
+    with pytest.raises(module.ManifestValidationError, match="equal after minus before"):
+        module.validate_manifests(tmp_path, [packet_path], [evidence_path])
+
+
+def test_owned_app_routes_must_be_declared_in_affected_routes(tmp_path: Path) -> None:
+    module = load_module()
+    packet_data = packet()
+    owned_route = "apps/web/src/app/api/admin/trr-api/people/[personId]/import-fandom/commit/route.ts"
+    packet_data["repositories"]["app"] = local_revision(owned_route)
+    packet_data["owned_paths"].append(
+        {
+            "repository": "app",
+            "path": owned_route,
+            "task_id": 3,
+            "reviewers": ["reviewer"],
+        }
+    )
+    packet_path, evidence_path = write_workspace(tmp_path, packet_data, evidence())
+
+    with pytest.raises(module.ManifestValidationError, match="missing from affected.routes"):
+        module.validate_manifests(tmp_path, [packet_path], [evidence_path])
+
+    assert (
+        module._app_route_for_owned_path(owned_route)
+        == "/api/admin/trr-api/people/{personId}/import-fandom/commit"
+    )
+
+
+def test_workspace_vercel_rollback_command_uses_the_supported_wrapper_form(
+    tmp_path: Path,
+) -> None:
+    module = load_module()
+    packet_data = packet()
+    packet_data["rollback"]["app_commands"] = [
+        [
+            "TRR-APP/scripts/vercel.sh",
+            "rollback-trr",
+            "--deployment",
+            "<gate-4-previous-deployment>",
+            "--dry-run",
+        ]
+    ]
+    packet_path, evidence_path = write_workspace(tmp_path, packet_data, evidence())
+
+    with pytest.raises(module.ManifestValidationError, match="guarded Vercel rollback form"):
+        module.validate_manifests(tmp_path, [packet_path], [evidence_path])
+
+
+def test_historical_parked_manifest_does_not_classify_the_current_checkout(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    module = load_module()
+    packets = {}
+    workspace_paths: set[str] = set()
+    for index, packet_id in enumerate(sorted(module.REQUIRED_LOCAL_PACKET_IDS)):
+        packet_data = packet()
+        owned_path = f"owned-{index}.txt"
+        packet_data["packet_id"] = packet_id
+        packet_data["repositories"]["workspace"] = local_revision(owned_path)
+        packet_data["owned_paths"][0]["path"] = owned_path
+        packets[packet_id] = (packet_data, tmp_path / f"{packet_id}.json")
+        workspace_paths.add(owned_path)
+
+    parked = parked_manifest()
+    parked["entries"] = [
+        {
+            "repository": "workspace",
+            "path": "stale-capture.txt",
+            "status": "modified",
+            "owner": "unassigned",
+            "reason": "Captured before current ownership was assigned.",
+            "missing_proof": ["historical only"],
+            "next_action": "Consult the replacement task lock.",
+        }
+    ]
+    parked["lifecycle"] = {
+        "state": "historical_snapshot",
+        "reason": "A later task lock owns current-state classification.",
+        "superseded_by": ["docs/workspace/architecture-task-locks.json"],
+    }
+    module.validate_parked_work_manifest(parked, tmp_path / "parked.json")
+
+    monkeypatch.setattr(module, "validate_local_dirty_checkpoint", lambda *_: None)
+    monkeypatch.setattr(
+        module,
+        "repository_dirty_paths",
+        lambda repository: (
+            {owned_path: "modified" for owned_path in workspace_paths}
+            if repository.resolve() == tmp_path.resolve()
+            else {}
+        ),
+    )
+
+    module.validate_current_checkpoint(
+        tmp_path,
+        packets,
+        parked,
+        superseded={},
+        retained_records={},
+    )
