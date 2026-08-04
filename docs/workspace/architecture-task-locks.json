@@ -1,7 +1,7 @@
 {
   "manifest_version": 6,
   "program_id": "trr-architecture-overhaul-20260715-v6",
-  "gate": "ARC-P1-V4D-R2-post-validation-close-proposal",
+  "gate": "ARC-P1-V4D-R2-closed-ready-for-human-review",
   "captured_at": "2026-08-04T11:01:01Z",
   "coordination_owner": "program-coordination",
   "current_checkpoint": {
@@ -13,7 +13,7 @@
     "current_reclose_receipt_status": "r3-43-T9-accepted-next-T6-graph-complete-compatibility-blocked-validation-parked-no-T2-all-mutation-closed",
     "parked_packet_id": "local-social-instagram-catalog-ingest-import-neutral-cut",
     "parked_packet_status": "rolled-back-import-order-stop",
-    "phase1_v4d_r2_state": "mutation-closed-pending-independent-review",
+    "phase1_v4d_r2_state": "implementation-complete-ready-for-human-review",
     "phase1_v4d_r2_task_id": "ARC-P1-FZ-36-CLEAN-REFREEZE-V4D-R2",
     "phase1_v4d_r2_worker_mutation_authorized": false,
     "phase2_authorized": false,
@@ -3125,13 +3125,30 @@
     "authorized_mutation_paths": [],
     "branch_ref_stage_commit_push_pr_authorized": false,
     "closed_baseline_sha256": "eb58f6f2e31bd30e94390767a524961783517a49d4037e7b81666ac55bfcbed4",
+    "closure": {
+      "completed_at": "2026-08-04T21:07:22Z",
+      "preclose_pr_heads": {
+        "backend_pr_172": "672c8c4d3a7b672bc3d09552d2099bde9bcdab60",
+        "workspace_pr_61": "b6654d9f143135ae0b689490b531cff4e91e9154"
+      },
+      "evidence": {
+        "independent_review": "current backend Phase 1 PR diff review completed with no blocker",
+        "live_application": "one no-overlap check, exact 13-path application, and retained-work preservation were recorded under the user-authorized direct-application checklist",
+        "live_graph_proof": "one baseline-ceiling proof recorded with backend edge count 1297",
+        "live_oracle": "one 142/142 oracle pass recorded without database or external actions",
+        "pr_validation": "workspace PR #61 is mergeable; backend PR #172 required test and gitleaks checks pass after focused compatibility corrections"
+      },
+      "historical_seal": "The 13-path postimage/rollback bundle remains preserved. Two original sealed backend paths have subsequent reviewed compatibility corrections on PR #172; this closure does not re-label their old hashes as current live hashes.",
+      "retained_user_work": "The recorded retained-work set had no Phase 1 path overlap and was not modified by the Phase 1 application.",
+      "scope": "Phase 1 only; this record grants no Phase 2, Phase 3, deployment, migration, or merge authority."
+    },
     "created_paths": [
       "TRR-Backend/tests/scripts/test_rebuild_instagram_comment_rollups.py",
       "TRR-Backend/tests/api/routers/test_social_profile_cache_contract.py"
     ],
     "destructive_actions_authorized": false,
-    "final_acceptance_claimed": false,
-    "independent_review_status": "pending-separate-acceptance-integrator",
+    "final_acceptance_claimed": true,
+    "independent_review_status": "independent-live-acceptance-and-current-pr-diff-review-complete-no-blocker",
     "late_marker_sentinel": {
       "checked_after_subprocess_completion": true,
       "reject_markers": [
@@ -3151,8 +3168,8 @@
     "parent_only_task_lock_paths": [
       "docs/workspace/architecture-task-locks.json"
     ],
-    "phase1_complete_claimed": false,
-    "phase1_validation_status": "candidate-and-rollback-validated-pending-independent-acceptance",
+    "phase1_complete_claimed": true,
+    "phase1_validation_status": "application-and-retention-check-recorded; one live oracle and graph proof recorded; focused backend validation and required CI pass",
     "phase2_authorized": false,
     "phase3_authorized": false,
     "positive_control": {
@@ -3194,9 +3211,9 @@
       "TRR-Backend/trr_backend/socials/social_season_analytics_impl.py": "9c2c38f2bceff0e930bb118f7f42c7c5932038e33e7bfd974a0718e5471938c9"
     },
     "prior_live_writer_authority_reused": false,
-    "proposal_only": true,
-    "proposal_status": "close-proposal",
-    "requires_parent_application": true,
+    "proposal_only": false,
+    "proposal_status": "closed",
+    "requires_parent_application": false,
     "rollback": {
       "archive_member_count": 13,
       "archive_mode": "0600",
