@@ -2462,6 +2462,7 @@
       "next_eligible_action": "T6-remaining-R3-packet-design-read-only-live-graph-recompute"
     }
   },
+  "historical_r0_lanes_note": "Archival record only; it cannot grant or override current task ownership.",
   "historical_r0_lanes": [
     {
       "lane_id": "R0-A",

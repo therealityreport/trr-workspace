@@ -21,7 +21,7 @@ class CapacityContractError(RuntimeError):
 def load_manifest(path: Path = DEFAULT_MANIFEST) -> dict[str, Any]:
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
         raise CapacityContractError(f"unable to load {path}: {exc}") from exc
     if not isinstance(payload, dict):
         raise CapacityContractError("runtime-capacity manifest must be a JSON object")
@@ -159,7 +159,11 @@ def shell_projection(payload: dict[str, Any], context_name: str) -> dict[str, st
 
 def _parse_profile(path: Path) -> dict[str, str]:
     values: dict[str, str] = {}
-    for raw_line in path.read_text(encoding="utf-8").splitlines():
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except (OSError, UnicodeError) as exc:
+        raise CapacityContractError(f"unable to read profile {path}: {exc}") from exc
+    for raw_line in lines:
         line = raw_line.split("#", 1)[0].strip()
         if not line:
             continue
@@ -172,7 +176,18 @@ def _parse_profile(path: Path) -> dict[str, str]:
 
 def _modal_defaults() -> dict[str, str]:
     path = ROOT / "TRR-Backend" / "trr_backend" / "modal_jobs.py"
-    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    try:
+        source = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        raise CapacityContractError(
+            f"unable to read Modal runtime defaults from {path}: {exc}"
+        ) from exc
+    try:
+        tree = ast.parse(source, filename=str(path))
+    except (SyntaxError, ValueError) as exc:
+        raise CapacityContractError(
+            f"unable to parse Modal runtime defaults from {path}: {exc}"
+        ) from exc
     for node in tree.body:
         if not isinstance(node, ast.AnnAssign) or not isinstance(node.target, ast.Name):
             continue
@@ -305,7 +320,10 @@ def validate_projections(payload: dict[str, Any], root: Path = ROOT) -> None:
                 f"Modal projection {key}={modal_defaults.get(key)!r} does not match hosted matrix {expected_value}"
             )
 
-    makefile = (root / "Makefile").read_text(encoding="utf-8")
+    try:
+        makefile = (root / "Makefile").read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        raise CapacityContractError(f"unable to read Makefile: {exc}") from exc
     hybrid = contexts["workspace_hybrid"]
     for assignment in (
         f"WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT={hybrid['dispatch_batch_size']}",
@@ -317,9 +335,14 @@ def validate_projections(payload: dict[str, Any], root: Path = ROOT) -> None:
                 f"Makefile is missing hybrid projection: {assignment}"
             )
 
-    status_script = (root / "scripts" / "status-workspace.sh").read_text(
-        encoding="utf-8"
-    )
+    try:
+        status_script = (root / "scripts" / "status-workspace.sh").read_text(
+            encoding="utf-8"
+        )
+    except (OSError, UnicodeError) as exc:
+        raise CapacityContractError(
+            f"unable to read status-workspace.sh: {exc}"
+        ) from exc
     local = contexts["local_workspace"]
     for assignment in (
         'WORKSPACE_RUNTIME_CAPACITY_PROFILE="${WORKSPACE_RUNTIME_CAPACITY_PROFILE:-local_workspace}"',
@@ -382,9 +405,14 @@ def validate_projections(payload: dict[str, Any], root: Path = ROOT) -> None:
                     f"Makefile preset {target_name} is missing {key}={expected_value}"
                 )
 
-    runtime_adapter = (
-        root / "TRR-Backend" / "scripts" / "_workspace_runtime_env.py"
-    ).read_text(encoding="utf-8")
+    try:
+        runtime_adapter = (
+            root / "TRR-Backend" / "scripts" / "_workspace_runtime_env.py"
+        ).read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        raise CapacityContractError(
+            f"unable to read backend runtime adapter: {exc}"
+        ) from exc
     for workspace_key, runtime_key in (
         ("WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT", "SOCIAL_MODAL_DISPATCH_LIMIT"),
         (

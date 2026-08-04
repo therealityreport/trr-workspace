@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import os
 import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -196,6 +197,27 @@ class WorkspaceAppEnvProjectionTests(unittest.TestCase):
         self.assertIn("WORKSPACE_RUNTIME_CAPACITY_GENERAL_CONCURRENCY", dev_text)
         self.assertIn("WORKSPACE_RUNTIME_CAPACITY_CONTEXT", status_text)
 
+    def test_workspace_runtime_preserves_invalid_remote_capacity_fallback_warnings(
+        self,
+    ) -> None:
+        text = DEV_SCRIPT.read_text(encoding="utf-8")
+        self.assertIn(
+            "WARNING: invalid WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT=",
+            text,
+        )
+        self.assertIn(
+            'WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT="${WORKSPACE_RUNTIME_CAPACITY_DISPATCH_BATCH_SIZE:-4}"',
+            text,
+        )
+        self.assertIn(
+            "WARNING: invalid WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT=",
+            text,
+        )
+        self.assertIn(
+            'WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT="${WORKSPACE_RUNTIME_CAPACITY_GENERAL_CONCURRENCY:-4}"',
+            text,
+        )
+
     def test_make_dev_defaults_to_hybrid_portless_runtime(self) -> None:
         text = MAKEFILE.read_text(encoding="utf-8")
         dev_target = text[text.index("\ndev:") : text.index("\ndev-redis:", text.index("\ndev:"))]
@@ -318,6 +340,38 @@ class WorkspaceAppEnvProjectionTests(unittest.TestCase):
             text.index("\ndev-hybrid-social-safe:") : text.index("\n# Deprecated compatibility alias", text.index("\ndev-hybrid-social-safe:"))
         ]
         self.assertIn("dev-hybrid PROFILE=", social_safe_alias)
+
+    def test_dev_hybrid_aborts_before_the_launcher_when_preflight_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            temporary_root = Path(temporary_directory)
+            launcher_log = temporary_root / "launcher.log"
+            fake_bin = temporary_root / "bin"
+            fake_bin.mkdir()
+            fake_bash = fake_bin / "bash"
+            fake_bash.write_text(
+                f"#!/usr/bin/env sh\nprintf '%s\\n' \"$*\" > {str(launcher_log)!r}\nexit 99\n",
+                encoding="utf-8",
+            )
+            fake_bash.chmod(0o755)
+            env = {
+                **os.environ,
+                "PATH": f"{fake_bin}:{os.environ.get('PATH', '/usr/bin:/bin')}",
+            }
+
+            completed = subprocess.run(
+                ["make", "--no-print-directory", "MAKE=false", "dev-hybrid"],
+                cwd=ROOT,
+                env=env,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+
+            self.assertNotEqual(completed.returncode, 0)
+            if launcher_log.exists():
+                self.fail(
+                    f"launcher ran after a failed preflight: {launcher_log.read_text()}"
+                )
 
     def test_modal_instagram_auth_status_target_is_bounded(self) -> None:
         text = MAKEFILE.read_text(encoding="utf-8")
