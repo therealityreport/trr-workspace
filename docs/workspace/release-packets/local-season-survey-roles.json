@@ -429,8 +429,10 @@
     "app_commands": [
       [
         "TRR-APP/scripts/vercel.sh",
-        "rollback",
-        "<gate-4-previous-deployment>"
+        "rollback-trr",
+        "--deployment",
+        "<gate-4-previous-deployment>",
+        "--dry-run"
       ]
     ],
     "data_recovery": "Migrations are authored only and remain unapplied; exact rollback and verification require Gate 4 approval.",
