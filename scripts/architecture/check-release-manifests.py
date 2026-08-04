@@ -9,7 +9,7 @@ from datetime import datetime, timedelta, timezone
 import hashlib
 import json
 import os
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import re
 import subprocess
 from typing import Any
@@ -92,6 +92,12 @@ DIRTY_COUNT_KEYS = (
     "unmerged",
     "untracked",
 )
+APP_ROUTE_SOURCE_ROOT = PurePosixPath("apps/web/src/app")
+APP_VERCEL_ROLLBACK_COMMAND = [
+    "TRR-APP/scripts/vercel.sh",
+    "rollback",
+    "<gate-4-previous-deployment>",
+]
 
 
 class ManifestValidationError(ValueError):
@@ -135,6 +141,26 @@ def _normalized_owned_paths(owned_paths: Iterable[str]) -> list[str]:
     if len(normalized) != len(set(normalized)):
         raise ManifestValidationError("owned_paths contains duplicates")
     return sorted(normalized)
+
+
+def _app_route_for_owned_path(owned_path: str) -> str | None:
+    """Return the public Next route represented by an owned app route file."""
+    path = PurePosixPath(owned_path)
+    try:
+        relative = path.relative_to(APP_ROUTE_SOURCE_ROOT)
+    except ValueError:
+        return None
+    if relative.name != "route.ts":
+        return None
+
+    segments: list[str] = []
+    for segment in relative.parts[:-1]:
+        if (segment.startswith("(") and segment.endswith(")")) or segment.startswith("@"):
+            continue
+        if segment.startswith("[") and segment.endswith("]"):
+            segment = "{" + segment[1:-1] + "}"
+        segments.append(segment)
+    return "/" + "/".join(segments)
 
 
 def _owned_path_record(repository: Path, relative_path: str) -> bytes:
@@ -661,6 +687,18 @@ def validate_packet_semantics(packet: Mapping[str, Any], path: Path) -> None:
         )
         for repository in REPOSITORY_PATHS
     }
+    affected_routes = set(packet["affected"]["routes"])
+    missing_app_routes = sorted(
+        route
+        for owned_path in global_owned_paths["app"]
+        if (route := _app_route_for_owned_path(owned_path)) is not None
+        and route not in affected_routes
+    )
+    if missing_app_routes:
+        raise ManifestValidationError(
+            f"{path}: owned app route paths are missing from affected.routes: "
+            + ", ".join(missing_app_routes)
+        )
     for repository, revision in packet["repositories"].items():
         owned_paths = revision["owned_paths"]
         if owned_paths != sorted(owned_paths):
@@ -716,6 +754,25 @@ def validate_packet_semantics(packet: Mapping[str, Any], path: Path) -> None:
         ):
             raise ManifestValidationError(
                 f"{path}: not_applicable direct_sql_delta requires null counts and delta 0"
+            )
+    elif direct_sql_delta["status"] == "pending_local_measurement":
+        if (
+            direct_sql_delta["before"] is not None
+            or direct_sql_delta["after"] is not None
+            or direct_sql_delta["delta"] is not None
+        ):
+            raise ManifestValidationError(
+                f"{path}: pending_local_measurement direct_sql_delta requires null counts and delta"
+            )
+
+    for command in packet["rollback"]["app_commands"]:
+        if (
+            command
+            and command[0] == "TRR-APP/scripts/vercel.sh"
+            and command != APP_VERCEL_ROLLBACK_COMMAND
+        ):
+            raise ManifestValidationError(
+                f"{path}: app rollback command must use the guarded Vercel rollback form"
             )
 
     cases = {
@@ -925,8 +982,9 @@ def validate_parked_work_manifest(
         "excluded_non_architecture_paths",
         "promotion_policy",
     }
+    allowed = required | {"lifecycle"}
     missing = sorted(required - document.keys())
-    extra = sorted(document.keys() - required)
+    extra = sorted(document.keys() - allowed)
     if missing:
         raise ManifestValidationError(
             f"{path}: parked-unaccepted-local-work missing fields: {', '.join(missing)}"
@@ -943,6 +1001,32 @@ def validate_parked_work_manifest(
         )
     if document["truth_scope"] != "local":
         raise ManifestValidationError(f"{path}: parked manifest truth_scope must be local")
+    lifecycle = document.get("lifecycle")
+    if lifecycle is not None:
+        lifecycle_fields = {"state", "reason", "superseded_by"}
+        if not isinstance(lifecycle, Mapping) or set(lifecycle) != lifecycle_fields:
+            raise ManifestValidationError(
+                f"{path}: parked manifest lifecycle must contain state, reason, and superseded_by"
+            )
+        if lifecycle["state"] not in {"current_checkpoint", "historical_snapshot"}:
+            raise ManifestValidationError(
+                f"{path}: parked manifest lifecycle has invalid state"
+            )
+        if not isinstance(lifecycle["reason"], str) or not lifecycle["reason"].strip():
+            raise ManifestValidationError(
+                f"{path}: parked manifest lifecycle requires a reason"
+            )
+        if (
+            not isinstance(lifecycle["superseded_by"], list)
+            or not lifecycle["superseded_by"]
+            or any(
+                not isinstance(item, str) or not item.strip()
+                for item in lifecycle["superseded_by"]
+            )
+        ):
+            raise ManifestValidationError(
+                f"{path}: parked manifest lifecycle requires superseded_by"
+            )
     try:
         _timestamp(document["captured_at"])
     except (TypeError, ValueError) as exc:
@@ -1043,6 +1127,11 @@ def validate_parked_work_manifest(
     if not isinstance(document["promotion_policy"], str) or not document["promotion_policy"].strip():
         raise ManifestValidationError(f"{path}: promotion_policy must be non-empty")
     return document
+
+
+def _parked_manifest_tracks_current_state(parked: Mapping[str, Any]) -> bool:
+    lifecycle = parked.get("lifecycle")
+    return lifecycle is None or lifecycle["state"] == "current_checkpoint"
 
 
 def validate_required_local_packet_set(
@@ -1153,10 +1242,16 @@ def validate_current_checkpoint(
                 )
             packet_paths[repository].update(revision["owned_paths"])
 
+    active_entries = parked["entries"] if _parked_manifest_tracks_current_state(parked) else ()
+    active_exclusions = (
+        parked["excluded_non_architecture_paths"]
+        if _parked_manifest_tracks_current_state(parked)
+        else ()
+    )
     parked_paths = {
         repository: {
             entry["path"]: entry["status"]
-            for entry in parked["entries"]
+            for entry in active_entries
             if entry["repository"] == repository
         }
         for repository in REPOSITORY_PATHS
@@ -1164,7 +1259,7 @@ def validate_current_checkpoint(
     excluded_paths = {
         repository: {
             entry["path"]: entry["status"]
-            for entry in parked["excluded_non_architecture_paths"]
+            for entry in active_exclusions
             if entry["repository"] == repository
         }
         for repository in REPOSITORY_PATHS
