@@ -5,9 +5,20 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
+from scripts import runtime_capacity
+
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "docs" / "workspace" / "runtime-capacity.json"
+SOCIAL_IMPLEMENTATION = (
+    ROOT
+    / "TRR-Backend"
+    / "trr_backend"
+    / "socials"
+    / "social_season_analytics_impl.py"
+)
 
 
 def _profile(name: str) -> dict[str, str]:
@@ -40,6 +51,80 @@ def test_capacity_manifest_keeps_dispatch_concurrency_and_stage_caps_distinct() 
     assert hosted["container_job_concurrency"]["comments"] == 4
     assert hosted["container_job_concurrency"]["comments_recovery"] == 4
     assert hosted["stage_caps"]["instagram_posts_comments_platform"] == 4
+
+
+def test_social_dispatch_fallback_matches_local_capacity_authority() -> None:
+    payload = json.loads(MANIFEST.read_text(encoding="utf-8"))
+
+    runtime_capacity.validate_social_dispatch_fallback(
+        payload,
+        implementation_path=SOCIAL_IMPLEMENTATION,
+    )
+
+
+def test_social_dispatch_fallback_rejects_context_drift(tmp_path: Path) -> None:
+    payload = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    implementation = tmp_path / "social_impl.py"
+    implementation.write_text(
+        "\n".join(
+            (
+                "SOCIAL_MODAL_DISPATCH_LIMIT_DEFAULT = 12",
+                "",
+                "def _modal_dispatch_limit():",
+                "    return _resolve_int_env_with_bounds(",
+                "        'SOCIAL_MODAL_DISPATCH_LIMIT',",
+                "        SOCIAL_MODAL_DISPATCH_LIMIT_DEFAULT,",
+                "        minimum=1,",
+                "        maximum=25,",
+                "    )",
+                "",
+            )
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(
+        runtime_capacity.CapacityContractError,
+        match="social dispatch fallback 12 does not match local workspace capacity 4",
+    ):
+        runtime_capacity.validate_social_dispatch_fallback(
+            payload,
+            implementation_path=implementation,
+        )
+
+
+def test_social_dispatch_fallback_must_feed_the_returned_resolver(
+    tmp_path: Path,
+) -> None:
+    payload = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    implementation = tmp_path / "social_impl.py"
+    implementation.write_text(
+        "\n".join(
+            (
+                "SOCIAL_MODAL_DISPATCH_LIMIT_DEFAULT = 4",
+                "",
+                "def _modal_dispatch_limit():",
+                "    ignored = SOCIAL_MODAL_DISPATCH_LIMIT_DEFAULT",
+                "    return _resolve_int_env_with_bounds(",
+                "        'SOCIAL_MODAL_DISPATCH_LIMIT',",
+                "        12,",
+                "        minimum=1,",
+                "        maximum=25,",
+                "    )",
+                "",
+            )
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(
+        runtime_capacity.CapacityContractError,
+        match="_modal_dispatch_limit must pass SOCIAL_MODAL_DISPATCH_LIMIT_DEFAULT to its returned resolver",
+    ):
+        runtime_capacity.validate_social_dispatch_fallback(
+            payload,
+            implementation_path=implementation,
+        )
 
 
 def test_enabled_profile_effective_values_are_preserved_from_pre_gate_baseline() -> (
