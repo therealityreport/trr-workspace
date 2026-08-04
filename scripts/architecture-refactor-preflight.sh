@@ -8,7 +8,7 @@ resolve_python_311_bin() {
   local candidate path
   for candidate in python3.11 python3 python; do
     if [[ -x "$candidate" ]]; then
-      path="$candidate"
+      path="$(pwd -P)/$candidate"
     elif command -v "$candidate" >/dev/null 2>&1; then
       path="$(command -v "$candidate")"
     else

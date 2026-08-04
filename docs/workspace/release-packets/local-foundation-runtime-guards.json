@@ -917,10 +917,8 @@
     "app_commands": [
       [
         "TRR-APP/scripts/vercel.sh",
-        "rollback-trr",
-        "--deployment",
-        "<gate-4-previous-deployment>",
-        "--dry-run"
+        "rollback",
+        "<gate-4-previous-deployment>"
       ]
     ],
     "data_recovery": "No migration or data mutation was performed by this local checkpoint.",

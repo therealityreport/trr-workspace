@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import json
 import os
+import shlex
+import shutil
 import stat
 import subprocess
-import sys
 from pathlib import Path
 
 
@@ -12,6 +13,22 @@ ROOT = Path(__file__).resolve().parents[1]
 WRAPPER = ROOT / "scripts" / "modal-trr.sh"
 ARCHITECTURE_PROFILE = ROOT / "profiles" / "architecture-refactor.env"
 ARCHITECTURE_PREFLIGHT = ROOT / "scripts" / "architecture-refactor-preflight.sh"
+
+
+def _python_311_or_newer() -> str:
+    for candidate in ("python3.13", "python3.12", "python3.11", "python3", "python"):
+        executable = shutil.which(candidate)
+        if not executable:
+            continue
+        completed = subprocess.run(
+            [executable, "-c", "import sys; raise SystemExit(sys.version_info < (3, 11))"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if completed.returncode == 0:
+            return executable
+    raise AssertionError("A Python 3.11+ interpreter is required for preflight tests")
 
 
 def _fake_modal(tmp_path: Path) -> tuple[Path, Path]:
@@ -167,6 +184,26 @@ def test_modal_read_wrapper_rejects_cli_identity_overrides_before_exec(
         assert "CLI identity override" in completed.stderr
 
     assert not log.exists()
+
+
+def test_modal_read_wrapper_allows_unrelated_short_flags(tmp_path: Path) -> None:
+    executable, log = _fake_modal(tmp_path)
+    completed = subprocess.run(
+        ["bash", str(WRAPPER), "app", "history", "trr-backend-jobs", "-f"],
+        cwd=ROOT,
+        env={**os.environ, "MODAL_BIN": str(executable)},
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert json.loads(log.read_text(encoding="utf-8"))["argv"] == [
+        "app",
+        "history",
+        "trr-backend-jobs",
+        "-f",
+    ]
 
 
 def test_modal_rollback_dry_run_records_exact_pinned_target_without_exec(
@@ -407,7 +444,9 @@ def test_architecture_preflight_prefers_python_311_over_a_lower_default_python3(
     lower_python.chmod(lower_python.stat().st_mode | stat.S_IXUSR)
     python_311 = intercept_dir / "python3.11"
     python_311.write_text(
-        f"#!/usr/bin/env bash\nprintf '%s\\n' python3.11 >> {str(python_log)!r}\nexec {sys.executable!r} \"$@\"\n",
+        "#!/usr/bin/env bash\n"
+        f"printf '%s\\n' python3.11 >> {str(python_log)!r}\n"
+        f'exec {shlex.quote(_python_311_or_newer())} "$@"\n',
         encoding="utf-8",
     )
     python_311.chmod(python_311.stat().st_mode | stat.S_IXUSR)
@@ -427,3 +466,51 @@ def test_architecture_preflight_prefers_python_311_over_a_lower_default_python3(
     calls = python_log.read_text(encoding="utf-8").splitlines()
     assert calls.count("python3.11") >= 3
     assert "python3" not in calls
+
+
+def test_architecture_preflight_makes_a_worktree_local_python_shim_absolute(
+    tmp_path: Path,
+) -> None:
+    local_bin_dir = tmp_path / "local-bin"
+    local_bin_dir.mkdir()
+    local_python = local_bin_dir / "python3.11"
+    local_python.write_text(
+        f'#!/usr/bin/env bash\nexec {shlex.quote(_python_311_or_newer())} "$@"\n',
+        encoding="utf-8",
+    )
+    local_python.chmod(local_python.stat().st_mode | stat.S_IXUSR)
+
+    preflight_source = ARCHITECTURE_PREFLIGHT.read_text(encoding="utf-8")
+    resolver_source = preflight_source.split("\nPYTHON_BIN=", maxsplit=1)[0]
+    runner = tmp_path / "resolve-python.sh"
+    runner.write_text(
+        "#!/usr/bin/env bash\n"
+        "set -euo pipefail\n"
+        f"cd {shlex.quote(str(local_bin_dir))}\n"
+        f"{resolver_source}\n"
+        "resolve_python_311_bin\n",
+        encoding="utf-8",
+    )
+
+    completed = subprocess.run(
+        ["bash", str(runner)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    resolved_python = completed.stdout.strip()
+    assert resolved_python == str(local_python)
+
+    shim_dir = tmp_path / "shim"
+    shim_dir.mkdir()
+    shim = shim_dir / "python3"
+    shim.symlink_to(resolved_python)
+    shim_check = subprocess.run(
+        [str(shim), "-c", "import sys; assert sys.version_info >= (3, 11)"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert shim_check.returncode == 0, shim_check.stderr
