@@ -52,10 +52,17 @@ class DeploymentTargetError(RuntimeError):
     pass
 
 
+def _read_text(path: Path) -> str:
+    try:
+        return path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        raise DeploymentTargetError(f"unable to read {path}: {exc}") from exc
+
+
 def load_manifest(path: Path = DEFAULT_MANIFEST) -> dict[str, Any]:
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
         raise DeploymentTargetError(f"unable to load {path}: {exc}") from exc
     if not isinstance(payload, dict):
         raise DeploymentTargetError("deployment-targets manifest must be a JSON object")
@@ -63,7 +70,10 @@ def load_manifest(path: Path = DEFAULT_MANIFEST) -> dict[str, Any]:
 
 
 def _literal_assignments(path: Path) -> dict[str, Any]:
-    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    try:
+        tree = ast.parse(_read_text(path), filename=str(path))
+    except SyntaxError as exc:
+        raise DeploymentTargetError(f"unable to parse {path}: {exc}") from exc
     values: dict[str, Any] = {}
     for node in tree.body:
         if (
@@ -113,8 +123,13 @@ def validate_manifest(payload: dict[str, Any]) -> None:
             "Render env snapshot checkpoint must block production cutover until closed"
         )
     if checkpoint.get("permissions_mode") != "0600":
-        raise DeploymentTargetError("Render env snapshot checkpoint must declare mode 0600")
-    if checkpoint.get("live_review_condition") != "operator_action_required_missing_TRR_RENDER_API_KEY":
+        raise DeploymentTargetError(
+            "Render env snapshot checkpoint must declare mode 0600"
+        )
+    if (
+        checkpoint.get("live_review_condition")
+        != "operator_action_required_missing_TRR_RENDER_API_KEY"
+    ):
         raise DeploymentTargetError(
             "Render env snapshot checkpoint must record the current operator action"
         )
@@ -142,11 +157,18 @@ def validate_snapshot_permissions(payload: dict[str, Any], root: Path = ROOT) ->
     if not isinstance(relative_path, str) or not relative_path.strip():
         raise DeploymentTargetError("Render env snapshot checkpoint path is required")
     snapshot = root / relative_path
-    if not snapshot.exists():
-        return
-    if not snapshot.is_file():
-        raise DeploymentTargetError("Render env snapshot checkpoint path is not a file")
-    mode = stat.S_IMODE(snapshot.stat().st_mode)
+    try:
+        if not snapshot.exists():
+            return
+        if not snapshot.is_file():
+            raise DeploymentTargetError(
+                "Render env snapshot checkpoint path is not a file"
+            )
+        mode = stat.S_IMODE(snapshot.stat().st_mode)
+    except OSError as exc:
+        raise DeploymentTargetError(
+            f"unable to inspect Render env snapshot: {exc}"
+        ) from exc
     if mode & 0o077:
         raise DeploymentTargetError(
             f"Render env snapshot permissions are too broad: {mode:04o}"
@@ -193,7 +215,7 @@ def validate_projections(payload: dict[str, Any], root: Path = ROOT) -> None:
                 f"Modal guard {key} differs from deployment target"
             )
 
-    render_yaml = (root / "TRR-Backend" / "render.yaml").read_text(encoding="utf-8")
+    render_yaml = _read_text(root / "TRR-Backend" / "render.yaml")
     for expected_line in (
         f"name: {payload['render']['service_name']}",
         "repo: https://github.com/therealityreport/trr-backend.git",
@@ -210,7 +232,7 @@ def validate_projections(payload: dict[str, Any], root: Path = ROOT) -> None:
         raise DeploymentTargetError(
             "missing guarded Render implementation: scripts/render_trr.py"
         )
-    wrapper_text = render_wrapper.read_text(encoding="utf-8")
+    wrapper_text = _read_text(render_wrapper)
     for value in (
         payload["render"]["owner_id"],
         payload["render"]["service_id"],

@@ -75,17 +75,20 @@ def test_render_snapshot_checkpoint_is_metadata_only_and_open() -> None:
     assert checkpoint["inspection_policy"] == "metadata_only_never_read_values"
     assert checkpoint["status"] == "operator_review_required"
     assert checkpoint["permissions_mode"] == "0600"
-    assert checkpoint["live_review_condition"] == "operator_action_required_missing_TRR_RENDER_API_KEY"
+    assert (
+        checkpoint["live_review_condition"]
+        == "operator_action_required_missing_TRR_RENDER_API_KEY"
+    )
     assert checkpoint["production_cutover"] == "blocked_until_closed"
 
 
-def test_render_snapshot_permissions_fail_closed_when_local_snapshot_exists(tmp_path: Path) -> None:
+def test_render_snapshot_permissions_fail_closed_when_local_snapshot_exists(
+    tmp_path: Path,
+) -> None:
     snapshot = tmp_path / "snapshot.json"
     snapshot.write_text("{}\n", encoding="utf-8")
     payload = {
-        "security_checkpoints": {
-            "render_env_snapshot": {"path": "snapshot.json"}
-        }
+        "security_checkpoints": {"render_env_snapshot": {"path": "snapshot.json"}}
     }
 
     snapshot.chmod(0o644)
@@ -111,3 +114,16 @@ def test_deployment_evidence_policy_never_records_environment_values() -> None:
         ],
         "credential_output": "never",
     }
+
+
+def test_literal_assignment_parse_errors_use_deployment_target_error(
+    tmp_path: Path,
+) -> None:
+    malformed = tmp_path / "malformed.py"
+    malformed.write_text("if:\n", encoding="utf-8")
+
+    with pytest.raises(
+        deployment_targets.DeploymentTargetError,
+        match=r"unable to parse .*malformed\.py",
+    ):
+        deployment_targets._literal_assignments(malformed)

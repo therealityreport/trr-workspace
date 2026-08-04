@@ -12,9 +12,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[3]
 SCRIPT = ROOT / "scripts" / "architecture" / "check-hotspots.py"
-TEST_PRODUCTION_SOURCE_TREES = (
-    (Path("src"), frozenset({".tsx"})),
-)
+TEST_PRODUCTION_SOURCE_TREES = ((Path("src"), frozenset({".tsx"})),)
 
 
 def load_module():
@@ -293,6 +291,41 @@ def test_manifest_cannot_reconfigure_code_owned_discovery(tmp_path: Path) -> Non
     ]
 
 
+def test_manifest_source_trees_drive_production_discovery(tmp_path: Path) -> None:
+    module = load_module()
+    source = tmp_path / "src/known.tsx"
+    source.parent.mkdir()
+    source.write_text("one\ntwo\n", encoding="utf-8")
+    payload = manifest()
+    payload["discovery"] = {
+        "mode": "code_owned",
+        "source_trees": [{"root": "src", "extensions": [".tsx"]}],
+    }
+
+    assert module.validate_hotspots(tmp_path, payload) == []
+
+
+def test_listed_hotspot_line_count_errors_use_checker_error_contract(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    module = load_module()
+    source = tmp_path / "src/known.tsx"
+    source.parent.mkdir()
+    source.write_text("one\ntwo\n", encoding="utf-8")
+
+    def fail_line_count(_path: Path) -> int:
+        raise OSError("permission denied")
+
+    monkeypatch.setattr(module, "line_count", fail_line_count)
+    errors = module.validate_hotspots(
+        tmp_path,
+        manifest(),
+        production_source_trees=TEST_PRODUCTION_SOURCE_TREES,
+    )
+
+    assert any("src/known.tsx: cannot count source lines" in error for error in errors)
+
+
 def test_route_page_target_cannot_exceed_policy(tmp_path: Path) -> None:
     module = load_module()
     source = tmp_path / "TRR-APP/apps/web/src/app/example/page.tsx"
@@ -305,12 +338,12 @@ def test_route_page_target_cannot_exceed_policy(tmp_path: Path) -> None:
     errors = module.validate_hotspots(
         tmp_path,
         payload,
-        production_source_trees=(
-            (Path("TRR-APP/apps/web/src"), frozenset({".tsx"})),
-        ),
+        production_source_trees=((Path("TRR-APP/apps/web/src"), frozenset({".tsx"})),),
     )
 
-    assert any("route/page target_lines must be no greater than 1" in error for error in errors)
+    assert any(
+        "route/page target_lines must be no greater than 1" in error for error in errors
+    )
 
 
 def test_review_date_cannot_disable_the_review_window(tmp_path: Path) -> None:
@@ -345,7 +378,9 @@ def test_missing_production_source_root_fails(tmp_path: Path) -> None:
     assert errors == ["production source root does not exist: missing"]
 
 
-def test_invalid_review_window_reports_an_error_instead_of_crashing(tmp_path: Path) -> None:
+def test_invalid_review_window_reports_an_error_instead_of_crashing(
+    tmp_path: Path,
+) -> None:
     module = load_module()
     source = tmp_path / "src/known.tsx"
     source.parent.mkdir()
