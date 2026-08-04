@@ -44,6 +44,13 @@ extract_var_rows() {
     printf 'TRR_LEGACY_LOCAL_ADMIN_FALLBACK\t0\n'
     printf 'TRR_REMOTE_DEBUG_LOG_ENABLED\t0\n'
     printf 'REDIS_URL\t\n'
+    printf 'OBJECT_STORAGE_ACCESS_KEY_ID\t\n'
+    printf 'OBJECT_STORAGE_BUCKET\ttrr-media-prod\n'
+    printf 'OBJECT_STORAGE_ENDPOINT_URL\thttps://73204b3e632bd7137a1bd2c867dc8ae8.r2.cloudflarestorage.com\n'
+    printf 'OBJECT_STORAGE_PROVIDER\tr2\n'
+    printf 'OBJECT_STORAGE_PUBLIC_BASE_URL\thttps://media.thereality.report\n'
+    printf 'OBJECT_STORAGE_REGION\tauto\n'
+    printf 'OBJECT_STORAGE_SECRET_ACCESS_KEY\t\n'
   } | awk -F '\t' '!seen[$1]++' | sort
 }
 
@@ -85,6 +92,24 @@ accepted_values() {
       ;;
     REDIS_URL)
       echo "Redis connection URL"
+      ;;
+    OBJECT_STORAGE_ACCESS_KEY_ID|OBJECT_STORAGE_SECRET_ACCESS_KEY)
+      echo "secret value; never commit"
+      ;;
+    OBJECT_STORAGE_BUCKET)
+      echo '`trr-media-prod`'
+      ;;
+    OBJECT_STORAGE_ENDPOINT_URL)
+      echo "HTTPS R2 account endpoint"
+      ;;
+    OBJECT_STORAGE_PROVIDER)
+      echo '`r2`'
+      ;;
+    OBJECT_STORAGE_PUBLIC_BASE_URL)
+      echo '`https://media.thereality.report`'
+      ;;
+    OBJECT_STORAGE_REGION)
+      echo '`auto`'
       ;;
     TRR_DB_POOL_MINCONN|TRR_DB_POOL_MAXCONN|TRR_SOCIAL_PROFILE_DB_POOL_MINCONN|TRR_SOCIAL_PROFILE_DB_POOL_MAXCONN|TRR_SOCIAL_CONTROL_DB_POOL_MINCONN|TRR_SOCIAL_CONTROL_DB_POOL_MAXCONN|TRR_SOCIAL_PROGRESS_DB_POOL_MINCONN|TRR_SOCIAL_PROGRESS_DB_POOL_MAXCONN|TRR_HEALTH_DB_POOL_MINCONN|TRR_HEALTH_DB_POOL_MAXCONN)
       echo "integer"
@@ -219,6 +244,27 @@ description_for() {
     REDIS_URL)
       echo "Optional Redis connection URL for ephemeral realtime pub/sub, presence/typing, short TTL state, and cross-instance invalidation. Required before enabling multi-worker or multi-instance realtime; do not use for durable job truth."
       ;;
+    OBJECT_STORAGE_ACCESS_KEY_ID)
+      echo "R2-native bucket-scoped runtime access key ID. Keep redacted and never commit a value."
+      ;;
+    OBJECT_STORAGE_BUCKET)
+      echo "Public application media bucket. Production uses \`trr-media-prod\`."
+      ;;
+    OBJECT_STORAGE_ENDPOINT_URL)
+      echo "TRR Cloudflare R2 account S3-compatible endpoint. Production must use the exact documented account endpoint."
+      ;;
+    OBJECT_STORAGE_PROVIDER)
+      echo "Canonical object-storage provider. Production uses Cloudflare R2."
+      ;;
+    OBJECT_STORAGE_PUBLIC_BASE_URL)
+      echo "Public application media base. Production uses \`https://media.thereality.report\`."
+      ;;
+    OBJECT_STORAGE_REGION)
+      echo "S3-compatible signing region. Cloudflare R2 production uses \`auto\`."
+      ;;
+    OBJECT_STORAGE_SECRET_ACCESS_KEY)
+      echo "R2-native bucket-scoped runtime secret access key. Keep redacted and never commit a value."
+      ;;
     WORKSPACE_OPEN_BROWSER)
       echo "Enable automatic browser tab sync/open after startup."
       ;;
@@ -329,6 +375,9 @@ used_by() {
       ;;
     REDIS_URL)
       echo '`TRR-Backend/api/realtime/broker.py`, `TRR-Backend/start-api.sh`, `TRR-Backend/docs/api/run.md`'
+      ;;
+    OBJECT_STORAGE_ACCESS_KEY_ID|OBJECT_STORAGE_BUCKET|OBJECT_STORAGE_ENDPOINT_URL|OBJECT_STORAGE_PROVIDER|OBJECT_STORAGE_PUBLIC_BASE_URL|OBJECT_STORAGE_REGION|OBJECT_STORAGE_SECRET_ACCESS_KEY)
+      echo '`TRR-Backend/trr_backend/object_storage.py`, `TRR-Backend/docs/deploy/R2-setup.md`, `TRR-Backend/.env.example`'
       ;;
     TRR_BACKEND_WORKERS|TRR_BACKEND_REQUIRE_REDIS_FOR_MULTI_WORKER)
       echo '`scripts/dev-workspace.sh`, `TRR-Backend/start-api.sh`, `TRR-Backend/docs/api/run.md`'
