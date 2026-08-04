@@ -86,7 +86,9 @@ Start at `CONTEXT-MAP.md`, then relevant context docs and ADRs; see `docs/agents
 
 - Check task-relevant graph freshness before using Graphify evidence.
 - When an existing graph is stale because relevant code changed, automatically refresh it locally only after the safety preview passes.
-- Never create a missing graph automatically, use a network or LLM backend, or use stale graph evidence.
+- Never create a missing graph automatically. Never use a network backend. Never use an LLM backend. Never use stale graph evidence.
+- Never install or upgrade Graphify automatically, upload corpus content, persist generated Q&A or outcomes into the corpus, or advance a manifest before both the graph and report succeed.
+- Pass every user-controlled path, URL, branch, question, node name, label, or answer through a structured request artifact or argv; never interpolate it into shell or Python source.
 - If refresh is blocked, fails, or a semantic-document layer is stale, continue from current project files and report that Graphify evidence was omitted or partial.
 - Keep lifecycle hooks read-only and non-mutating; they report freshness but never rebuild graphs.
 - Keep app-managed transient planning and backup directories outside the corpus via `.graphifyignore`.

@@ -3,4 +3,5 @@
 .loom-backup/
 TRR-APP/
 TRR-Backend/
+/graphify-out/
 # project-manager:graphify-corpus:end
