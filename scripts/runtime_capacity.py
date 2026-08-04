@@ -6,6 +6,7 @@ import ast
 import json
 import re
 import sys
+from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
@@ -195,6 +196,19 @@ def _modal_defaults() -> dict[str, str]:
     raise CapacityContractError("unable to locate _CANONICAL_MODAL_RUNTIME_DEFAULTS")
 
 
+def _owned_return_nodes(node: ast.AST) -> Iterator[ast.Return]:
+    """Yield returns owned by a function body, excluding nested scopes."""
+    if isinstance(node, ast.Return):
+        yield node
+        return
+    if isinstance(
+        node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Lambda)
+    ):
+        return
+    for child in ast.iter_child_nodes(node):
+        yield from _owned_return_nodes(child)
+
+
 def validate_social_dispatch_fallback(
     payload: dict[str, Any],
     *,
@@ -250,9 +264,9 @@ def validate_social_dispatch_fallback(
         raise CapacityContractError("unable to locate _modal_dispatch_limit")
     returned_resolver_calls = [
         node.value
-        for node in ast.walk(dispatch_function)
-        if isinstance(node, ast.Return)
-        and isinstance(node.value, ast.Call)
+        for statement in dispatch_function.body
+        for node in _owned_return_nodes(statement)
+        if isinstance(node.value, ast.Call)
         and isinstance(node.value.func, ast.Name)
         and node.value.func.id == "_resolve_int_env_with_bounds"
     ]
