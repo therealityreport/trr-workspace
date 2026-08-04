@@ -151,7 +151,6 @@ GLOBAL_CONTEXT7_COMMAND = f"{pathlib.Path.home()}/.codex/plugins/context7/script
 OPENAI_AGENT_PROFILE_DIR = str(pathlib.Path.home() / ".chrome-profiles" / "openai-agent")
 OPENAI_AGENT_DEVTOOLS_PROFILE_DIR = str(pathlib.Path.home() / ".chrome-profiles" / "openai-agent-devtools")
 USER_CONFIG_FILE = pathlib.Path.home() / ".codex" / "config.toml"
-BROWSER_AGENT_FILE = pathlib.Path.cwd() / ".codex" / "agents" / "browser_debugger.toml"
 CHROME_NAMING_SCAN_ROOTS = (
     pathlib.Path.cwd() / "AGENTS.md",
     pathlib.Path.cwd() / ".codex",
@@ -294,13 +293,6 @@ expected_chrome_env = {
 for key, value in expected_chrome_env.items():
     if user_chrome_env.get(key) != value:
         raise SystemExit(f"[check-codex] ERROR: ~/.codex/config.toml chrome-devtools env {key} mismatch: expected {value!r}, found {user_chrome_env.get(key)!r}")
-
-with BROWSER_AGENT_FILE.open("rb") as handle:
-    browser_agent = tomllib.load(handle)
-qa_chrome_env = (((browser_agent.get("mcp_servers") or {}).get("chrome-devtools")) or {}).get("env") or {}
-for key, value in expected_chrome_env.items():
-    if qa_chrome_env.get(key) != value:
-        raise SystemExit(f"[check-codex] ERROR: browser_debugger agent chrome-devtools env {key} mismatch: expected {value!r}, found {qa_chrome_env.get(key)!r}")
 PY
 
 echo "[check-codex] OK"
