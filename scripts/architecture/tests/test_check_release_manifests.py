@@ -1364,6 +1364,55 @@ def test_default_cli_accepts_partial_local_supersession_with_retained_records(
     )
 
 
+def test_current_checkpoint_only_suppresses_superseded_state_mismatches(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    module = load_module()
+    packet_path = tmp_path / "partial.json"
+    packets = {
+        "partial": (
+            {
+                "created_at": "2026-07-16T00:00:00Z",
+                "repositories": {
+                    "workspace": {
+                        "revision_type": "local_dirty_checkpoint",
+                        "owned_paths": ["superseded.txt"],
+                    }
+                },
+            },
+            packet_path,
+        )
+    }
+    parked = {"entries": [], "excluded_non_architecture_paths": []}
+    superseded = {("partial", "workspace", "superseded.txt"): "successor"}
+    error_message = "owned-path manifest SHA-256 does not match current repository state"
+
+    def raise_validation_error(*_args) -> None:
+        raise module.ManifestValidationError(error_message)
+
+    monkeypatch.setattr(module, "validate_local_dirty_checkpoint", raise_validation_error)
+    monkeypatch.setattr(module, "repository_dirty_paths", lambda _repository: {})
+
+    module.validate_current_checkpoint(
+        tmp_path,
+        packets,
+        parked,
+        superseded,
+        retained_records={},
+    )
+
+    error_message = "local checkpoint requires a full base SHA"
+    with pytest.raises(module.ManifestValidationError, match="full base SHA"):
+        module.validate_current_checkpoint(
+            tmp_path,
+            packets,
+            parked,
+            superseded,
+            retained_records={},
+        )
+
+
 def test_default_cli_rejects_drift_in_retained_predecessor_sibling(
     tmp_path: Path,
 ) -> None:

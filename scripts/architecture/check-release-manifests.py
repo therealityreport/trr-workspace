@@ -1531,8 +1531,11 @@ def validate_current_checkpoint(
                     validate_local_dirty_checkpoint(
                         repository_root, revision, packet_path
                     )
-                except ManifestValidationError:
-                    if not superseded_paths:
+                except ManifestValidationError as exc:
+                    if (
+                        not superseded_paths
+                        or "does not match current repository state" not in str(exc)
+                    ):
                         raise
                 local_dirty_paths[repository].update(retained_paths)
             else:
