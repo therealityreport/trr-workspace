@@ -130,7 +130,9 @@ def _normalized_owned_paths(owned_paths: Iterable[str]) -> list[str]:
                 f"owned path must be a normalized repository-relative path: {raw_path}"
             )
         if raw_path in {".", ""}:
-            raise ManifestValidationError(f"owned path must identify a file: {raw_path}")
+            raise ManifestValidationError(
+                f"owned path must identify a file: {raw_path}"
+            )
         normalized.append(raw_path)
     if len(normalized) != len(set(normalized)):
         raise ManifestValidationError("owned_paths contains duplicates")
@@ -259,23 +261,31 @@ def capture_local_dirty_checkpoint(
     """Capture deterministic, secret-free provenance for owned local work."""
     repository = repository.resolve()
     normalized_paths = _normalized_owned_paths(owned_paths)
-    resolved_base = _git_bytes(
-        repository,
-        "rev-parse",
-        "--verify",
-        f"{base_sha}^{{commit}}",
-    ).decode("ascii").strip()
+    resolved_base = (
+        _git_bytes(
+            repository,
+            "rev-parse",
+            "--verify",
+            f"{base_sha}^{{commit}}",
+        )
+        .decode("ascii")
+        .strip()
+    )
     if resolved_base != base_sha:
         raise ManifestValidationError(
             f"{repository}: local checkpoint requires a full base SHA"
         )
     current_head = _git_bytes(repository, "rev-parse", "HEAD").decode("ascii").strip()
-    merge_base = _git_bytes(
-        repository,
-        "merge-base",
-        base_sha,
-        current_head,
-    ).decode("ascii").strip()
+    merge_base = (
+        _git_bytes(
+            repository,
+            "merge-base",
+            base_sha,
+            current_head,
+        )
+        .decode("ascii")
+        .strip()
+    )
     if merge_base != base_sha:
         raise ManifestValidationError(
             f"{repository}: local checkpoint base_sha is not an ancestor of current HEAD"
@@ -319,28 +329,40 @@ def capture_committed_candidate(
     """Capture a committed candidate and its reproducible owned-path contents."""
     repository = repository.resolve()
     normalized_paths = _normalized_owned_paths(owned_paths)
-    resolved_base = _git_bytes(
-        repository,
-        "rev-parse",
-        "--verify",
-        f"{base_sha}^{{commit}}",
-    ).decode("ascii").strip()
-    resolved_candidate = _git_bytes(
-        repository,
-        "rev-parse",
-        "--verify",
-        f"{candidate_sha}^{{commit}}",
-    ).decode("ascii").strip()
+    resolved_base = (
+        _git_bytes(
+            repository,
+            "rev-parse",
+            "--verify",
+            f"{base_sha}^{{commit}}",
+        )
+        .decode("ascii")
+        .strip()
+    )
+    resolved_candidate = (
+        _git_bytes(
+            repository,
+            "rev-parse",
+            "--verify",
+            f"{candidate_sha}^{{commit}}",
+        )
+        .decode("ascii")
+        .strip()
+    )
     if resolved_base != base_sha or resolved_candidate != candidate_sha:
         raise ManifestValidationError(
             f"{repository}: committed candidate requires full base and candidate SHAs"
         )
-    merge_base = _git_bytes(
-        repository,
-        "merge-base",
-        base_sha,
-        candidate_sha,
-    ).decode("ascii").strip()
+    merge_base = (
+        _git_bytes(
+            repository,
+            "merge-base",
+            base_sha,
+            candidate_sha,
+        )
+        .decode("ascii")
+        .strip()
+    )
     if merge_base != base_sha:
         raise ManifestValidationError(
             f"{repository}: candidate_sha is not descended from base_sha"
@@ -403,6 +425,8 @@ def validate_committed_candidate(
     repository: Path,
     revision: Mapping[str, Any],
     packet_path: Path,
+    *,
+    require_current_clean: bool = False,
 ) -> None:
     expected = capture_committed_candidate(
         repository,
@@ -411,17 +435,24 @@ def validate_committed_candidate(
         revision["owned_paths"],
     )
     current_head = _git_bytes(repository, "rev-parse", "HEAD").decode("ascii").strip()
-    merge_base = _git_bytes(
-        repository,
-        "merge-base",
-        revision["candidate_sha"],
-        current_head,
-    ).decode("ascii").strip()
+    merge_base = (
+        _git_bytes(
+            repository,
+            "merge-base",
+            revision["candidate_sha"],
+            current_head,
+        )
+        .decode("ascii")
+        .strip()
+    )
     if merge_base != revision["candidate_sha"]:
         raise ManifestValidationError(
             f"{packet_path}: candidate_sha is not an ancestor of current HEAD"
         )
-    if _dirty_counts(repository, revision["owned_paths"])["total"] != 0:
+    if (
+        require_current_clean
+        and _dirty_counts(repository, revision["owned_paths"])["total"] != 0
+    ):
         raise ManifestValidationError(
             f"{packet_path}: candidate owned paths are dirty in the current working tree"
         )
@@ -520,12 +551,16 @@ def _timestamp(value: str) -> datetime:
 def _workspace_manifest_path(root: Path, raw_path: Path) -> Path:
     path = raw_path if raw_path.is_absolute() else root / raw_path
     if path.is_symlink():
-        raise ManifestValidationError(f"manifest path must not be a symlink: {raw_path}")
+        raise ManifestValidationError(
+            f"manifest path must not be a symlink: {raw_path}"
+        )
     resolved = path.resolve()
     try:
         resolved.relative_to(root)
     except ValueError as exc:
-        raise ManifestValidationError(f"manifest path escapes workspace: {raw_path}") from exc
+        raise ManifestValidationError(
+            f"manifest path escapes workspace: {raw_path}"
+        ) from exc
     return resolved
 
 
@@ -555,7 +590,9 @@ def validate_evidence_semantics(evidence: Mapping[str, Any], path: Path) -> None
         )
 
     if evidence["redaction"]["status"] == "failed":
-        raise ManifestValidationError(f"{path}: redaction status failed; evidence is not safe to store")
+        raise ManifestValidationError(
+            f"{path}: redaction status failed; evidence is not safe to store"
+        )
 
     for observation in evidence["target_observations"]:
         observed_at = _timestamp(observation["observed_at"])
@@ -589,7 +626,9 @@ def packet_evidence_ids(packet: Mapping[str, Any]) -> set[str]:
     return found
 
 
-def completion_evidence_claims(packet: Mapping[str, Any]) -> list[tuple[str, list[str]]]:
+def completion_evidence_claims(
+    packet: Mapping[str, Any],
+) -> list[tuple[str, list[str]]]:
     claims = [
         ("quick validation", packet["validation"]["quick"]["evidence_ids"]),
         ("full validation", packet["validation"]["full"]["evidence_ids"]),
@@ -610,7 +649,9 @@ def completion_evidence_claims(packet: Mapping[str, Any]) -> list[tuple[str, lis
             claims.append((f"{provider} deployment", deployment["evidence_ids"]))
     for metric_group in ("baselines", "abort_thresholds"):
         for metric in packet["observation"][metric_group]:
-            claims.append((f"observation metric {metric['name']}", metric["evidence_ids"]))
+            claims.append(
+                (f"observation metric {metric['name']}", metric["evidence_ids"])
+            )
     return claims
 
 
@@ -677,9 +718,28 @@ def validate_packet_semantics(packet: Mapping[str, Any], path: Path) -> None:
             raise ManifestValidationError(
                 f"{path}: {repository} dirty_counts.total is inconsistent"
             )
-        if revision["revision_type"] == "committed_candidate" and dirty_counts["total"] != 0:
+        if (
+            revision["revision_type"] == "committed_candidate"
+            and dirty_counts["total"] != 0
+        ):
             raise ManifestValidationError(
                 f"{path}: {repository} committed candidate dirty counts must all be zero"
+            )
+
+    for supersession in packet.get("supersedes", []):
+        superseded_paths = supersession["paths"]
+        if superseded_paths != sorted(superseded_paths):
+            raise ManifestValidationError(
+                f"{path}: supersession paths must be sorted for "
+                f"{supersession['repository']}:{supersession['packet_id']}"
+            )
+        retained_paths = [
+            record["path"] for record in supersession.get("retained_path_records", [])
+        ]
+        if retained_paths != sorted(retained_paths):
+            raise ManifestValidationError(
+                f"{path}: retained predecessor path records must be sorted for "
+                f"{supersession['repository']}:{supersession['packet_id']}"
             )
 
     if packet["state"] in GATE_4_STATES:
@@ -727,7 +787,9 @@ def validate_packet_semantics(packet: Mapping[str, Any], path: Path) -> None:
             f"{path}: compatibility_matrix must contain each N/N+1 pairing exactly once"
         )
     if len(packet["contracts"]["compatibility_matrix"]) != len(cases):
-        raise ManifestValidationError(f"{path}: compatibility_matrix contains duplicates")
+        raise ManifestValidationError(
+            f"{path}: compatibility_matrix contains duplicates"
+        )
 
     backend_sha = packet["repositories"]["backend"]["candidate_sha"]
     app_sha = packet["repositories"]["app"]["candidate_sha"]
@@ -753,7 +815,9 @@ def validate_packet_semantics(packet: Mapping[str, Any], path: Path) -> None:
 
     if packet["truth_scope"] == "local":
         pending_fields = [
-            name for name, status in packet["gate_4"].items() if status != "pending_gate_4"
+            name
+            for name, status in packet["gate_4"].items()
+            if status != "pending_gate_4"
         ]
         for target_name, target in packet["targets"].items():
             if target["status"] != "pending_gate_4":
@@ -799,13 +863,21 @@ def validate_packet_semantics(packet: Mapping[str, Any], path: Path) -> None:
 
     if packet["state"] == "program_complete":
         if packet["validation"]["quick"]["status"] != "pass":
-            raise ManifestValidationError(f"{path}: program_complete requires quick validation")
+            raise ManifestValidationError(
+                f"{path}: program_complete requires quick validation"
+            )
         if packet["validation"]["full"]["status"] != "pass":
-            raise ManifestValidationError(f"{path}: program_complete requires full validation")
+            raise ManifestValidationError(
+                f"{path}: program_complete requires full validation"
+            )
         if app_build["status"] != "passed":
-            raise ManifestValidationError(f"{path}: program_complete requires app build proof")
+            raise ManifestValidationError(
+                f"{path}: program_complete requires app build proof"
+            )
         if packet["validation"]["browser"]["status"] != "pass":
-            raise ManifestValidationError(f"{path}: program_complete requires browser proof")
+            raise ManifestValidationError(
+                f"{path}: program_complete requires browser proof"
+            )
         incomplete_gate_4 = [
             name for name, status in packet["gate_4"].items() if status != "verified"
         ]
@@ -815,7 +887,9 @@ def validate_packet_semantics(packet: Mapping[str, Any], path: Path) -> None:
                 f"{', '.join(incomplete_gate_4)}"
             )
         if packet["observation"]["status"] != "passed":
-            raise ManifestValidationError(f"{path}: program_complete requires passed observation")
+            raise ManifestValidationError(
+                f"{path}: program_complete requires passed observation"
+            )
         invalid_deployments = [
             provider
             for provider, deployment in packet["deployments"].items()
@@ -840,11 +914,15 @@ def validate_packet_semantics(packet: Mapping[str, Any], path: Path) -> None:
         observation = packet["observation"]
         observation_started = observation.get("started_at")
         observation_ends = observation.get("ends_at")
-        if not isinstance(observation_started, str) or not isinstance(observation_ends, str):
+        if not isinstance(observation_started, str) or not isinstance(
+            observation_ends, str
+        ):
             raise ManifestValidationError(
                 f"{path}: program_complete requires observation started_at and ends_at"
             )
-        observed_duration = _timestamp(observation_ends) - _timestamp(observation_started)
+        observed_duration = _timestamp(observation_ends) - _timestamp(
+            observation_started
+        )
         minimum_duration = timedelta(days=observation["gate5_minimum_days"])
         if observed_duration < minimum_duration:
             raise ManifestValidationError(
@@ -936,19 +1014,27 @@ def validate_parked_work_manifest(
             f"{path}: parked-unaccepted-local-work has unexpected fields: {', '.join(extra)}"
         )
     if document["schema_version"] != 1:
-        raise ManifestValidationError(f"{path}: parked manifest schema_version must be 1")
+        raise ManifestValidationError(
+            f"{path}: parked manifest schema_version must be 1"
+        )
     if document["manifest_id"] != "parked-unaccepted-local-work":
         raise ManifestValidationError(
             f"{path}: manifest_id must be parked-unaccepted-local-work"
         )
     if document["truth_scope"] != "local":
-        raise ManifestValidationError(f"{path}: parked manifest truth_scope must be local")
+        raise ManifestValidationError(
+            f"{path}: parked manifest truth_scope must be local"
+        )
     try:
         _timestamp(document["captured_at"])
     except (TypeError, ValueError) as exc:
-        raise ManifestValidationError(f"{path}: captured_at must be a date-time") from exc
+        raise ManifestValidationError(
+            f"{path}: captured_at must be a date-time"
+        ) from exc
     repositories = document["repositories"]
-    if not isinstance(repositories, Mapping) or set(repositories) != set(REPOSITORY_PATHS):
+    if not isinstance(repositories, Mapping) or set(repositories) != set(
+        REPOSITORY_PATHS
+    ):
         raise ManifestValidationError(
             f"{path}: parked manifest repositories must be workspace, app, and backend"
         )
@@ -970,7 +1056,15 @@ def validate_parked_work_manifest(
     for index, entry in enumerate(entries):
         key = _validate_parked_path(entry, f"entries[{index}]")
         entry_keys.append(key)
-        required_entry_fields = {"repository", "path", "status", "owner", "reason", "missing_proof", "next_action"}
+        required_entry_fields = {
+            "repository",
+            "path",
+            "status",
+            "owner",
+            "reason",
+            "missing_proof",
+            "next_action",
+        }
         missing_entry_fields = sorted(required_entry_fields - entry.keys())
         if missing_entry_fields:
             raise ManifestValidationError(
@@ -1032,15 +1126,22 @@ def validate_parked_work_manifest(
         raise ManifestValidationError(f"{path}: parked entries must be sorted")
     if exclusion_keys != sorted(exclusion_keys):
         raise ManifestValidationError(f"{path}: excluded paths must be sorted")
-    if len(entry_keys) != len(set(entry_keys)) or len(exclusion_keys) != len(set(exclusion_keys)):
-        raise ManifestValidationError(f"{path}: parked path collections contain duplicates")
+    if len(entry_keys) != len(set(entry_keys)) or len(exclusion_keys) != len(
+        set(exclusion_keys)
+    ):
+        raise ManifestValidationError(
+            f"{path}: parked path collections contain duplicates"
+        )
     overlap = sorted(set(entry_keys) & set(exclusion_keys))
     if overlap:
         raise ManifestValidationError(
             f"{path}: paths cannot be both parked and excluded: "
             + ", ".join(f"{repository}:{item}" for repository, item in overlap)
         )
-    if not isinstance(document["promotion_policy"], str) or not document["promotion_policy"].strip():
+    if (
+        not isinstance(document["promotion_policy"], str)
+        or not document["promotion_policy"].strip()
+    ):
         raise ManifestValidationError(f"{path}: promotion_policy must be non-empty")
     return document
 
@@ -1057,16 +1158,22 @@ def validate_required_local_packet_set(
     for packet_id in sorted(REQUIRED_LOCAL_PACKET_IDS):
         packet, path = packets[packet_id]
         if packet["truth_scope"] != "local":
-            raise ManifestValidationError(f"{path}: required local packet truth_scope must be local")
+            raise ManifestValidationError(
+                f"{path}: required local packet truth_scope must be local"
+            )
         if packet["state"] != "implementation_complete_parked":
             raise ManifestValidationError(
                 f"{path}: required local packet state must be implementation_complete_parked"
             )
         if packet["validation"]["quick"]["status"] != "pass":
-            raise ManifestValidationError(f"{path}: required local packet quick validation must pass")
+            raise ManifestValidationError(
+                f"{path}: required local packet quick validation must pass"
+            )
         evidence_ids = packet["validation"]["evidence_ids"]
         if not evidence_ids:
-            raise ManifestValidationError(f"{path}: required local packet has no evidence")
+            raise ManifestValidationError(
+                f"{path}: required local packet has no evidence"
+            )
         invalid_evidence = [
             evidence_id
             for evidence_id in evidence_ids
@@ -1127,31 +1234,309 @@ def repository_dirty_paths(repository: Path) -> dict[str, str]:
     return dirty
 
 
+def validate_packet_supersessions(
+    packets: Mapping[str, tuple[Mapping[str, Any], Path]],
+) -> tuple[
+    dict[tuple[str, str, str], str],
+    dict[tuple[str, str, str], str],
+]:
+    """Validate explicit path ownership handoffs and return superseded owners.
+
+    The first returned mapping identifies transferred paths. The second holds
+    per-path record hashes for local predecessor paths that remain live.
+    Committed predecessors remain reproducible from their candidate trees.
+    """
+    ownership: dict[tuple[str, str], set[str]] = {}
+    for packet_id, (packet, _) in packets.items():
+        for repository, revision in packet["repositories"].items():
+            for relative_path in revision["owned_paths"]:
+                ownership.setdefault((repository, relative_path), set()).add(packet_id)
+
+    claims: set[tuple[str, str, str, str]] = set()
+    claim_paths: dict[tuple[str, str, str, str], Path] = {}
+    handoff_claims: dict[tuple[str, str, str], set[str]] = {}
+    handoff_records: dict[tuple[str, str, str], dict[str, str]] = {}
+    handoff_paths: dict[tuple[str, str, str], Path] = {}
+    for successor_id, (successor, successor_path) in packets.items():
+        for supersession in successor.get("supersedes", []):
+            predecessor_id = supersession["packet_id"]
+            repository = supersession["repository"]
+            if predecessor_id == successor_id:
+                raise ManifestValidationError(
+                    f"{successor_path}: packet cannot supersede itself"
+                )
+            predecessor_entry = packets.get(predecessor_id)
+            if predecessor_entry is None:
+                raise ManifestValidationError(
+                    f"{successor_path}: supersession references unknown packet_id: "
+                    f"{predecessor_id}"
+                )
+            predecessor = predecessor_entry[0]
+            handoff_key = (predecessor_id, repository, successor_id)
+            handoff_claims.setdefault(handoff_key, set())
+            handoff_records.setdefault(handoff_key, {})
+            handoff_paths[handoff_key] = successor_path
+            successor_owned = set(successor["repositories"][repository]["owned_paths"])
+            predecessor_owned = set(
+                predecessor["repositories"][repository]["owned_paths"]
+            )
+            for relative_path in supersession["paths"]:
+                if (
+                    relative_path not in successor_owned
+                    or relative_path not in predecessor_owned
+                ):
+                    raise ManifestValidationError(
+                        f"{successor_path}: supersession path is not owned by both packets: "
+                        f"{repository}:{relative_path}"
+                    )
+                claim = (successor_id, predecessor_id, repository, relative_path)
+                if claim in claims:
+                    raise ManifestValidationError(
+                        f"{successor_path}: duplicate supersession claim for "
+                        f"{predecessor_id}:{repository}:{relative_path}"
+                    )
+                claims.add(claim)
+                claim_paths[claim] = successor_path
+                handoff_claims[handoff_key].add(relative_path)
+            for record in supersession.get("retained_path_records", []):
+                record_path = record["path"]
+                if record_path in handoff_records[handoff_key]:
+                    raise ManifestValidationError(
+                        f"{successor_path}: duplicate retained predecessor path record "
+                        f"for {predecessor_id}:{repository}:{record_path}"
+                    )
+                handoff_records[handoff_key][record_path] = record["record_sha256"]
+
+    for successor_id, predecessor_id, repository, relative_path in sorted(claims):
+        reverse = (predecessor_id, successor_id, repository, relative_path)
+        if reverse in claims:
+            raise ManifestValidationError(
+                f"{claim_paths[(successor_id, predecessor_id, repository, relative_path)]}: "
+                "ambiguous mutual supersession for "
+                f"{repository}:{relative_path} between {predecessor_id} and {successor_id}"
+            )
+
+    superseded: dict[tuple[str, str, str], str] = {}
+    predecessor_by_successor: dict[tuple[str, str, str], str] = {}
+    for successor_id, predecessor_id, repository, relative_path in sorted(claims):
+        key = (predecessor_id, repository, relative_path)
+        existing = superseded.get(key)
+        if existing is not None and existing != successor_id:
+            raise ManifestValidationError(
+                "ambiguous supersession fork has multiple immediate successors for "
+                f"{predecessor_id}:{repository}:{relative_path}: "
+                f"{existing}, {successor_id}"
+            )
+        superseded[key] = successor_id
+        successor_key = (successor_id, repository, relative_path)
+        existing_predecessor = predecessor_by_successor.get(successor_key)
+        if existing_predecessor is not None and existing_predecessor != predecessor_id:
+            raise ManifestValidationError(
+                "ambiguous supersession merge has multiple immediate predecessors for "
+                f"{successor_id}:{repository}:{relative_path}: "
+                f"{existing_predecessor}, {predecessor_id}"
+            )
+        predecessor_by_successor[successor_key] = predecessor_id
+
+    for predecessor_id, repository, relative_path in sorted(superseded):
+        current = predecessor_id
+        visited: list[str] = []
+        while current not in visited:
+            visited.append(current)
+            next_owner = superseded.get((current, repository, relative_path))
+            if next_owner is None:
+                break
+            current = next_owner
+        else:
+            cycle_start = visited.index(current)
+            cycle = [*visited[cycle_start:], current]
+            raise ManifestValidationError(
+                "supersession cycle detected for "
+                f"{repository}:{relative_path}: {' -> '.join(cycle)}"
+            )
+
+    for successor_id, predecessor_id, repository, relative_path in sorted(claims):
+        successor = packets[successor_id][0]
+        predecessor = packets[predecessor_id][0]
+        if _timestamp(successor["created_at"]) <= _timestamp(predecessor["created_at"]):
+            raise ManifestValidationError(
+                f"{claim_paths[(successor_id, predecessor_id, repository, relative_path)]}: "
+                f"superseding packet must be newer than {predecessor_id}: "
+                f"{repository}:{relative_path}"
+            )
+
+    def reaches(
+        predecessor_id: str,
+        successor_id: str,
+        repository: str,
+        relative_path: str,
+    ) -> bool:
+        current = predecessor_id
+        visited: set[str] = set()
+        while current not in visited:
+            if current == successor_id:
+                return True
+            visited.add(current)
+            next_owner = superseded.get((current, repository, relative_path))
+            if next_owner is None:
+                return False
+            current = next_owner
+        raise ManifestValidationError(
+            "supersession cycle detected for "
+            f"{repository}:{relative_path}: {', '.join(sorted(visited))}"
+        )
+
+    for (repository, relative_path), owners in sorted(ownership.items()):
+        ordered_owners = sorted(owners)
+        for index, first in enumerate(ordered_owners):
+            for second in ordered_owners[index + 1 :]:
+                if not reaches(
+                    first, second, repository, relative_path
+                ) and not reaches(
+                    second,
+                    first,
+                    repository,
+                    relative_path,
+                ):
+                    raise ManifestValidationError(
+                        "silent owned-path overlap requires a connected supersession chain: "
+                        f"{repository}:{relative_path} is owned by {first} and {second}"
+                    )
+
+    retained_records: dict[tuple[str, str, str], str] = {}
+    handoffs_by_predecessor: dict[tuple[str, str], list[str]] = {}
+    for predecessor_id, repository, successor_id in handoff_claims:
+        handoffs_by_predecessor.setdefault((predecessor_id, repository), []).append(
+            successor_id
+        )
+
+    for predecessor_id, repository in sorted(handoffs_by_predecessor):
+        predecessor, predecessor_path = packets[predecessor_id]
+        revision = predecessor["repositories"][repository]
+        predecessor_owned_paths = set(revision["owned_paths"])
+        retained_paths = set(revision["owned_paths"])
+        ordered_successors = sorted(
+            handoffs_by_predecessor[(predecessor_id, repository)],
+            key=lambda successor_id: (
+                _timestamp(packets[successor_id][0]["created_at"]),
+                successor_id,
+            ),
+        )
+        for successor_id in ordered_successors:
+            handoff_key = (predecessor_id, repository, successor_id)
+            claimed_paths = handoff_claims[handoff_key]
+            actual_records = handoff_records[handoff_key]
+            if revision["revision_type"] == "committed_candidate":
+                if actual_records:
+                    raise ManifestValidationError(
+                        f"{predecessor_path}: committed predecessor must not use retained "
+                        f"path records for {repository}"
+                    )
+                retained_paths -= claimed_paths
+                continue
+
+            for relative_path, record_sha256 in actual_records.items():
+                if relative_path not in predecessor_owned_paths:
+                    raise ManifestValidationError(
+                        f"{handoff_paths[handoff_key]}: retained predecessor path record "
+                        f"is not owned by {predecessor_id}: "
+                        f"{repository}:{relative_path}"
+                    )
+                if relative_path in claimed_paths:
+                    raise ManifestValidationError(
+                        f"{handoff_paths[handoff_key]}: retained predecessor path record "
+                        f"is claimed in the same handoff: "
+                        f"{repository}:{relative_path}"
+                    )
+                if relative_path not in retained_paths:
+                    raise ManifestValidationError(
+                        f"{handoff_paths[handoff_key]}: retained predecessor path record "
+                        f"was already transferred: {repository}:{relative_path}"
+                    )
+                record_key = (predecessor_id, repository, relative_path)
+                previous_sha256 = retained_records.get(record_key)
+                if previous_sha256 is not None and previous_sha256 != record_sha256:
+                    raise ManifestValidationError(
+                        f"{handoff_paths[handoff_key]}: retained predecessor path record "
+                        f"conflicts with earlier handoff for "
+                        f"{predecessor_id}:{repository}:{relative_path}"
+                    )
+                retained_records[record_key] = record_sha256
+            for relative_path in claimed_paths:
+                retained_records.pop((predecessor_id, repository, relative_path), None)
+            retained_paths -= claimed_paths
+        if revision["revision_type"] == "local_dirty_checkpoint":
+            actual_retained_paths = {
+                relative_path
+                for packet_id, repository_name, relative_path in retained_records
+                if packet_id == predecessor_id and repository_name == repository
+            }
+            if actual_retained_paths != retained_paths:
+                missing = sorted(retained_paths - actual_retained_paths)
+                unexpected = sorted(actual_retained_paths - retained_paths)
+                details: list[str] = []
+                if missing:
+                    details.append("missing " + ", ".join(missing))
+                if unexpected:
+                    details.append("unexpected " + ", ".join(unexpected))
+                raise ManifestValidationError(
+                    f"{predecessor_path}: final retained predecessor path records "
+                    f"must match the live retained set for {repository}: "
+                    f"{'; '.join(details)}"
+                )
+    return superseded, retained_records
+
+
 def validate_current_checkpoint(
     root: Path,
     packets: Mapping[str, tuple[Mapping[str, Any], Path]],
     parked: Mapping[str, Any],
+    superseded: Mapping[tuple[str, str, str], str],
+    retained_records: Mapping[tuple[str, str, str], str],
 ) -> None:
-    packet_paths: dict[str, set[str]] = {name: set() for name in REPOSITORY_PATHS}
-    local_dirty_paths: dict[str, set[str]] = {
-        name: set() for name in REPOSITORY_PATHS
-    }
-    for packet_id in sorted(REQUIRED_LOCAL_PACKET_IDS):
+    local_dirty_paths: dict[str, set[str]] = {name: set() for name in REPOSITORY_PATHS}
+    ordered_packet_ids = sorted(
+        packets,
+        key=lambda packet_id: (
+            _timestamp(packets[packet_id][0]["created_at"]),
+            packet_id,
+        ),
+    )
+    for packet_id in ordered_packet_ids:
         packet, packet_path = packets[packet_id]
         for repository, revision in packet["repositories"].items():
             repository_root = (root / REPOSITORY_PATHS[repository]).resolve()
+            superseded_paths = {
+                relative_path
+                for relative_path in revision["owned_paths"]
+                if (packet_id, repository, relative_path) in superseded
+            }
             if revision["revision_type"] == "local_dirty_checkpoint":
-                validate_local_dirty_checkpoint(repository_root, revision, packet_path)
-                local_dirty_paths[repository].update(revision["owned_paths"])
+                retained_paths = set(revision["owned_paths"]) - superseded_paths
+                if superseded_paths:
+                    for relative_path in sorted(retained_paths):
+                        actual_record_sha256 = hashlib.sha256(
+                            _owned_path_record(repository_root, relative_path)
+                        ).hexdigest()
+                        expected_record_sha256 = retained_records[
+                            (packet_id, repository, relative_path)
+                        ]
+                        if actual_record_sha256 != expected_record_sha256:
+                            raise ManifestValidationError(
+                                f"{packet_path}: retained predecessor path record does "
+                                f"not match current repository state: "
+                                f"{repository}:{relative_path}"
+                            )
+                try:
+                    validate_local_dirty_checkpoint(
+                        repository_root, revision, packet_path
+                    )
+                except ManifestValidationError:
+                    if not superseded_paths:
+                        raise
+                local_dirty_paths[repository].update(retained_paths)
             else:
                 validate_committed_candidate(repository_root, revision, packet_path)
-            overlap = packet_paths[repository] & set(revision["owned_paths"])
-            if overlap:
-                raise ManifestValidationError(
-                    f"{packet_path}: owned paths overlap another local packet: "
-                    f"{', '.join(sorted(overlap))}"
-                )
-            packet_paths[repository].update(revision["owned_paths"])
 
     parked_paths = {
         repository: {
@@ -1183,7 +1568,11 @@ def validate_current_checkpoint(
     for repository, repository_path in REPOSITORY_PATHS.items():
         repository_root = (root / repository_path).resolve()
         actual = repository_dirty_paths(repository_root)
-        classified = local_dirty_paths[repository] | set(parked_paths[repository]) | set(excluded_paths[repository])
+        classified = (
+            local_dirty_paths[repository]
+            | set(parked_paths[repository])
+            | set(excluded_paths[repository])
+        )
         if repository == "workspace":
             classified |= auto_classified_workspace
         unclassified = sorted(set(actual) - classified)
@@ -1261,7 +1650,12 @@ def prepare_candidate_promotion(
         **captured,
         "owned_path_manifest_sha256": revision["owned_path_manifest_sha256"],
     }
-    validate_committed_candidate(repository_root, promoted_revision, packet_path)
+    validate_committed_candidate(
+        repository_root,
+        promoted_revision,
+        packet_path,
+        require_current_clean=True,
+    )
 
     now = datetime.now(timezone.utc)
     previous_updated_at = _timestamp(packet["updated_at"])
@@ -1311,6 +1705,8 @@ def validate_manifests(
         if packet_id in packets:
             raise ManifestValidationError(f"duplicate packet_id: {packet_id}")
         packets[packet_id] = (document, path)
+
+    superseded, retained_records = validate_packet_supersessions(packets)
 
     for raw_path in evidence_paths:
         path = _workspace_manifest_path(root, raw_path)
@@ -1396,7 +1792,13 @@ def validate_manifests(
                     f"{', '.join(mismatched_bases)}"
                 )
         if verify_current:
-            validate_current_checkpoint(root, packets, parked)
+            validate_current_checkpoint(
+                root,
+                packets,
+                parked,
+                superseded,
+                retained_records,
+            )
     return len(packets), len(evidence)
 
 
@@ -1410,11 +1812,6 @@ def main() -> int:
         "--allow-partial",
         action="store_true",
         help="Validate an explicitly incomplete packet set instead of the required R0 set.",
-    )
-    parser.add_argument(
-        "--no-verify-current",
-        action="store_true",
-        help="Validate manifest structure without comparing dirty checkpoints to the live trees.",
     )
     parser.add_argument(
         "--promote-packet",
@@ -1477,7 +1874,7 @@ def main() -> int:
             require_packets=args.require_packets,
             require_r0_local_set=not args.allow_partial,
             parked_path=DEFAULT_PARKED_WORK_MANIFEST,
-            verify_current=not args.no_verify_current,
+            verify_current=True,
         )
     except ManifestValidationError as exc:
         print(f"architecture-release-manifests: ERROR {exc}")
