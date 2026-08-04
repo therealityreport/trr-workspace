@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "packet_id": "local-recent-people-external-ids",
-  "capability": "Recent people and external-ID backend read models and app adapters",
+  "capability": "Recent people, external-ID, and social-landing backend read models and app adapters",
   "created_at": "2026-07-16T20:52:42.770997Z",
   "updated_at": "2026-07-16T20:52:42.770997Z",
   "state": "implementation_complete_parked",
@@ -359,10 +359,13 @@
   },
   "affected": {
     "routes": [
-      "/api/v2/admin/recent-people",
-      "/api/v2/admin/people/{person_id}/external-ids",
-      "/api/v2/admin/people/external-ids/batch",
-      "/api/v2/admin/shows/external-ids/batch"
+    "/api/v2/admin/recent-people",
+    "/api/v2/admin/people/{person_id}/external-ids",
+    "/api/v2/admin/people/external-ids/batch",
+    "/api/v2/admin/shows/external-ids/batch",
+    "/api/admin/recent-people",
+    "/api/admin/social/landing",
+    "/api/admin/trr-api/people/{personId}/external-ids"
     ],
     "jobs": [],
     "schedules": [],
@@ -451,10 +454,8 @@
     "app_commands": [
       [
         "TRR-APP/scripts/vercel.sh",
-        "rollback-trr",
-        "--deployment",
-        "<gate-4-previous-deployment>",
-        "--dry-run"
+        "rollback",
+        "<gate-4-previous-deployment>"
       ]
     ],
     "data_recovery": "No migration or data mutation was performed by this local checkpoint.",
