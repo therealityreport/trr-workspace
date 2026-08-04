@@ -1,29 +1,2468 @@
 {
-  "manifest_version": 4,
-  "program_id": "trr-architecture-overhaul-20260715-v5",
-  "gate": "R0-candidate-promotion-tooling-accepted-r1-ready",
-  "captured_at": "2026-07-16T22:58:30Z",
+  "manifest_version": 6,
+  "program_id": "trr-architecture-overhaul-20260715-v6",
+  "gate": "ARC-P1-V4D-R2-post-validation-close-proposal",
+  "captured_at": "2026-08-04T11:01:01Z",
   "coordination_owner": "program-coordination",
   "current_checkpoint": {
-    "state": "r0-checkpoint-commit-approved-candidate-promotion-tooling-accepted-r1-ready-after-promotion",
-    "execution_authority": ".plan-work/plan-architect/trr-architecture-overhaul-20260715/REVISED_PLAN.v5.md",
+    "state": "phase-r3-43-locally-accepted-with-follow-up-next-T6-parked-before-T2",
+    "execution_authority": ".plan-work/plan-architect/trr-architecture-overhaul-20260715/R3_REMAINING_EXECUTION_PLAN.20260729.md",
+    "active_packet_id": "local-social-purge-inactive-workers-canonical-provider-proxy-caller-cut",
+    "coordination_packet_id": "local-architecture-plan-v6-task-lock-coordination",
+    "current_reclose_packet_id": "local-social-purge-inactive-workers-canonical-provider-proxy-caller-cut",
+    "current_reclose_receipt_status": "r3-43-T9-accepted-next-T6-graph-complete-compatibility-blocked-validation-parked-no-T2-all-mutation-closed",
+    "parked_packet_id": "local-social-instagram-catalog-ingest-import-neutral-cut",
+    "parked_packet_status": "rolled-back-import-order-stop",
+    "phase1_v4d_r2_state": "mutation-closed-pending-independent-review",
+    "phase1_v4d_r2_task_id": "ARC-P1-FZ-36-CLEAN-REFREEZE-V4D-R2",
+    "phase1_v4d_r2_worker_mutation_authorized": false,
+    "phase2_authorized": false,
+    "phase3_authorized": false,
     "historical_gate_receipts_preserved": true,
     "current_reproducibility": {
-      "required_contract_trackability": "working-tree-pass-candidate-promotion-tooling-accepted",
-      "local_release_packets": "current-tree-provenance-enforced-by-live-validator-R0-B",
+      "required_contract_trackability": "r3-42-T2-frozen-after-five-read-only-T6-lanes-and-parent-reconciliation",
+      "local_release_packets": "58-packets-518-evidence-partial-validator-pass-before-r3-42",
+      "evidence_hygiene": "642-files-live-validator-pass-before-r3-42",
       "safe_runtime_loopback_proof": "pass-independently-accepted-R0-C",
-      "provider_rollback_guards": "pass-independently-accepted-R0-C",
+      "provider_rollback_guards": "pass-r3-21-worker-paths-byte-exact-restored",
       "expanded_hotspot_coverage": "pass-independently-accepted-R0-C",
-      "candidate_promotion_tooling": "pass-independently-accepted-R0-D"
+      "social_monolith_hotspot": "pass-current-68316-ceiling-68316-no-growth",
+      "dispatch_runtime_hotspot": "pass-worker-postimage-8b9768cf-1141-lines-at-1141-ceiling",
+      "global_hotspot_gate": "pass-current-144-tracked-hotspots",
+      "global_release_manifest_replay": "blocked-only-frozen-cloudflare-r2-prepare-named-secrets-retained-record-mismatch",
+      "candidate_promotion_tooling": "pass-independently-accepted-R0-D",
+      "r3_38_initial_worker": "pass-165-tests-source-exact-test-exact-then-stopped-on-test-I001-before-T8",
+      "r3_38_test_remap": "pass-independent-no-P0-P3-12-tests-project-ruff-check-format",
+      "r3_38_refrozen_worker": "pass-165-tests-project-ruff-check-format-backend-diff-graph-500-1296-social-1-23-legacy-100-8-app-zero",
+      "r3_38_t8_integration": "pass-166-tests-Ruff-format-debt-parity-graph-hotspots-workspace-diffs-r2-boundary-rollback-packet-evidence",
+      "r3_38_t9_first_review": "park-P1-rollback-member-manifest-drift-P2-three-ephemeral-receipt-helpers",
+      "r3_38_t8_evidence_correction": "pass-live-tar-member-paths-declared-durable-mode-0600-replay-helper-three-receipts-exactly-replayable-bundle-artifact-bound",
+      "r3_38_t9_rereview": "pass-fresh-acceptance-integrator-xhigh-no-P0-P3-three-corrected-receipts-byte-exact-replay-tar-members-artifacts-and-all-original-oracles-reproduced",
+      "r3_39_t6_graph": "pass-independent-graph-map-exact-overlay-500-1296-social-1-23-legacy-99-7-app-zero",
+      "r3_39_t6_compat": "pass-exact-module-identity-import-orders-late-monkeypatch-and-thirty-room-contracts",
+      "r3_39_t6_validation": "pass-rollback-evidence-finish-line-and-stop-condition-oracles-retained",
+      "r3_39_t2": "pass-exact-two-worker-path-postimages-prehashes-validation-only-hashes-and-byte-exact-rollback-bundle",
+      "r3_39_t7": "pass-gpt-5.6-sol-high-two-worker-paths-exact-133-tests-Ruff-format-graph-diff-drift-stopped-before-T8",
+      "instagram_catalog_ingest_hotspot": "pass-worker-postimage-4e6b1cd9-2875-lines-at-2875-ceiling",
+      "r3_39_t8": "pass-134-tests-Ruff-format-debt-parity-graph-hotspots-workspace-diffs-r2-boundary-rollback-packet-evidence",
+      "r3_39_t9_first_review": "park-P2-pytest-duration-and-workspace-contract-vitest-time-duration-break-exact-byte-replay-12-of-14-receipts-exact",
+      "r3_39_t8_evidence_correction": "pass-durable-focused-pytest-and-workspace-contract-stable-output-two-exact-replays-no-source-test-guard-ledger-or-bundle-change",
+      "r3_39_t9_rereview": "pass-fresh-acceptance-integrator-xhigh-all-fourteen-receipts-exact-corrected-receipts-twice-zero-P0-P3-post-oracle-dirty-snapshots-exact",
+      "r3_40_t6_graph": "pass-live-500-1296-4-40-social-1-23-legacy-99-7-seven-importers-mapped",
+      "r3_40_t6_compatibility": "pass-eager-run-lifecycle-loader-rejected-reverse-provider-deferred-health-dot-existing-queue-status-provider-proxy-preserves-repository-alias-patches",
+      "r3_40_t6_validation": "pass-targeted-direct-design-park-provider-proxy-five-import-orders-alias-patches-and-108-tests-exact",
+      "r3_40_t2": "pass-refrozen-single-router-postimage-0e99f52e-graph-92060645-source-b177ec51-five-preimage-bundle",
+      "r3_40_t7": "pass-gpt-5.6-sol-high-single-router-postimage-107-tests-Ruff-format-diff-graph-and-immutables-exact-stopped-before-T8",
+      "r3_40_rollback_artifact_correction": "pass-hidden-AppleDouble-members-detected-before-packet-validation-repacked-to-deterministic-five-member-mode-0600-archive-with-identical-preimage-bytes",
+      "r3_40_t8": "pass-108-tests-Ruff-format-debt-parity-graph-500-1296-social-1-23-legacy-98-7-hotspots-workspace-diffs-r2-boundary-five-provider-orders-and-rollback",
+      "r3_40_t9": "pass-fresh-acceptance-integrator-xhigh-fourteen-exact-receipts-108-tests-graph-98-7-hotspots-rollback-and-zero-P0-P3",
+      "r3_41_t6_graph": "pass-98-record-inventory-12-overlays-queue-status-97-7-graph-neutral",
+      "r3_41_t6_compatibility": "pass-five-import-leaders-exact-module-dictionary-and-alias-patch-before-after",
+      "r3_41_t6_validation": "broad-whole-importer-park-retained; queue-status-omission-resolved-by-targeted-probe",
+      "r3_41_t6_router": "pass-92-router-occurrences-queue-status-ranked-strongest-immediate-cut",
+      "r3_41_t6_wrapper_closeout": "pass-40-groups-7-removable-19-dependent-14-reledger",
+      "r3_41_t6_targeted_queue_status": "pass-exact-overlay-legacy-97-7-four-import-orders-provider-identity-and-focused-tests",
+      "r3_41_t2": "pass-single-router-postimage-bb3335e4-graph-source-4183561b-five-preimage-bundle",
+      "r3_41_t7": "pass-gpt-5.6-sol-high-single-router-postimage-111-tests-Ruff-format-graph-500-1296-social-1-23-legacy-97-7-app-zero-diff-immutables-and-dirty-snapshots-exact-stopped-before-T8",
+      "r3_41_t7_immutable_review": "pass-no-unsupported-caller-module-identity-package-export-import-order-or-monkeypatch-consequence",
+      "r3_41_t8_validation_prep": "pass-fourteen-receipt-ordered-matrix-exact-rollback-immutable-and-stop-contract",
+      "r3_41_t8_artifacts": "pass-three-owned-postimages-five-member-mode-0600-bundle-and-mode-0600-replay-helper",
+      "r3_41_t8_validation": "pass-112-tests-Ruff-four-clean-format-cumulative-guard-debt-parity-graph-500-1296-social-1-23-legacy-97-7-app-zero-hotspots-workspace-diffs-r2-boundary-and-two-scratch-rollback-replays",
+      "r3_41_t8_validation_prep_correction": "pass-first-replay-exposed-prep-selection-overcollection-123-passing-tests-durable-helper-corrected-to-exact-worker-suite-plus-one-new-guard-112-pass",
+      "r3_41_t8": "pass-112-tests-Ruff-format-debt-parity-graph-500-1296-social-1-23-legacy-97-7-hotspots-workspace-diffs-r2-boundary-two-scratch-rollback-replays-packet-evidence",
+      "r3_41_t8_evidence_helper_format_correction": "pass-new-helper-Ruff-check-format-mode-0600-artifact-hashes-and-prefix-refreshed",
+      "r3_41_t9": "park-fresh-acceptance-integrator-xhigh-P1-rollback-oracle-and-P1-R2-reproducibility; all-fourteen-receipts-112-tests-source-graph-compatibility-and-no-drift-pass",
+      "r3_41_t9_follow_up_mapping": "pass-four-read-only-lanes-59-path-R2-provenance-18-created-file-rollback-oracle-ten-existing-plus-one-new-artifact-refresh-and-twelve-gate-rereview-matrix",
+      "r3_41_t8_evidence_oracle_correction": "pass-evidence-only-helper-plus-seven-receipts-plus-durable-59-path-R2-manifest; two-candidate-seeded-scratch-rollbacks-remove-eighteen-created-paths-and-compare-complete-restored-state; source-graph-tests-ledger-and-bundle-immutable",
+      "r3_41_t9_rereview": "park-two-independent-acceptance-integrator-xhigh-runs-converged-P0-0-P1-2-P2-0-P3-0; runtime-oracles-and-fourteen-receipts-pass; O6-rollback-durable-receipt-O10-R2-external-nonzero-control-and-O11-R2-durable-receipt-remain-open",
+      "r3_41_o6_follow_up_map": "pass-exact-runtime-produced-rollback-actuals-nine-path-minimum-with-packet-immutable",
+      "r3_41_o10_o11_follow_up_map": "pass-read-only-manifest-input-fail-closed-order-expected-actual-R2-receipt-and-ten-path-combined-cascade",
+      "r3_41_o6_o10_o11_evidence_detail_correction": "pass-helper-26b670cf-seven-receipts-full-O6-actuals-full-O11-59-22-43-78-sets-O10-three-nonzero-controls-prefix-f614b3fe-packet-1745f2d0",
+      "r3_41_t9_final_rereview": "pass-fresh-acceptance-integrator-xhigh-zero-P0-P3-O6-O10-O11-closed-fourteen-exact-receipts-112-tests-graph-97-7-hotspots-rollback-R2-controls-and-final-dirty-snapshots",
+      "r3_42_t6_graph": "pass-exact-500-1296-4-40-social-1-23-legacy-97-7-worker-detail-overlay-96-7-graph-neutral-source-0a36885b",
+      "r3_42_t6_compatibility": "pass-existing-queue-status-provider-proxy-preserves-module-identity-import-order-and-repository-alias-patches",
+      "r3_42_t6_validation": "pass-112-worker-tests-113-integrated-tests-Ruff-rollback-hotspot-evidence-and-stop-boundary",
+      "r3_42_t6_router": "pass-read-only-9385-lines-141-decorators-140-route-functions-twelve-families-live-status-pair-provisional-future",
+      "r3_42_t6_wrapper_closeout": "pass-read-only-40-groups-7-removable-19-dependent-14-reledger",
+      "r3_42_t2": "pass-exact-single-router-worker-path-two-line-postimage-five-preimage-mode-0600-bundle-immutable-hashes-and-stop-boundary",
+      "r3_42_t7_initial": "blocked-before-mutation-on-abbreviated-test-social-season-analytics-immutable-hash-source-unchanged-report-94bb6444",
+      "r3_42_t2_immutable_hash_correction": "pass-live-file-and-frozen-validation-report-converge-on-full-15b6c00a5cea-hash-fresh-T7-assignment-required",
+      "r3_42_t7": "pass-gpt-5.6-sol-high-single-router-postimage-5fabcab2-112-tests-Ruff-format-AST-diff-graph-500-1296-social-1-23-legacy-96-7-app-zero-hotspots-immutables-and-dirty-snapshots-exact-stopped-before-T8",
+      "r3_42_t8_source_guard_ledger": "pass-three-owned-postimages-5fabcab2-e5c5da69-0a0d13a8-exact-source-authority-closed",
+      "r3_42_t8_validation": "pass-113-tests-Ruff-source-format-guard-debt-parity-graph-500-1296-social-1-23-legacy-96-7-app-zero-hotspots-workspace-contract-three-diff-checks",
+      "r3_42_t8_artifacts": "pass-seventeen-file-prefix-fourteen-schema-valid-exact-replay-receipts-mode-0600-helper-bundle-and-R2-manifest",
+      "r3_42_t8_receipt_replay": "pass-fourteen-of-fourteen-command-output-digests-exact-R2-a6dbe146-workspace-contract-e3bbcc0a",
+      "r3_42_t8_evidence_self_reference_correction": "pass-helper-39a3d560-seven-receipts-conditional-task-lock-normalization-eight-controls-rollback-87c2c6cf-prefix-56958433-all-mutation-closed",
+      "r3_42_t9": "pass-fresh-replacement-acceptance-integrator-xhigh-zero-P0-P3-fourteen-exact-receipts-113-tests-five-import-leaders-graph-hotspots-rollback-R2-authority-prefix-and-final-dirty-snapshots",
+      "r3_43_t6_graph": "pass-independent-live-500-1296-4-40-social-1-23-legacy-96-7-purge-overlay-95-7-graph-neutral-source-422aa395",
+      "r3_43_t6_compatibility": "pass-independent-existing-queue-status-provider-proxy-preserves-exact-module-identity-import-order-and-repository-alias-patches; worker-health-ranked-read-only-but-not-green",
+      "r3_43_t6_validation": "worker-health-candidate-parked-on-two-existing-behavior-failures; purge-targeted-suite-pass-123-of-123-and-failures-proven-outside-purge-truth-scope",
+      "r3_43_t6_router": "pass-read-only-9385-lines-141-decorators-140-route-functions-ninety-router-legacy-occurrences",
+      "r3_43_t6_wrapper_closeout": "pass-read-only-40-groups-7-removable-19-dependent-14-reledger-operator-URL-exact; reported-dirty-drift-dismissed-as-command-scope-mismatch",
+      "r3_43_t2": "pass-single-router-two-line-postimage-b8d8fd26-five-preimage-mode-0600-bundle-0b7de0ad-eleven-immutable-hashes-123-worker-tests-124-integrated-tests",
+      "r3_43_t7_initial": "park-after-exact-source-postimage-and-123-tests-on-frozen-nonexistent-dot-venv-bin-Ruff-executable-exit-127-no-other-oracles-run",
+      "r3_43_t7_oracle_correction": "pass-live-command-inspection-global-opt-homebrew-bin-Ruff-0.14.4-is-the-current-executable-dot-venv-has-neither-Ruff-binary-nor-module-source-mutation-closed-validation-only-rerun-required",
+      "r3_43_t7_validation_rerun": "park-exact-b8d8fd26-source-on-Ruff-E501-one-124-character-provider-call-no-other-oracles-run",
+      "r3_43_t7_formatter_postimage_refreeze": "pass-parent-in-memory-Ruff-check-and-format-new-dcb37d46-384704-bytes-9385-lines-source-4f30aef9-same-AST-signature-and-graph",
+      "r3_43_t7_formatter_postimage_attempt": "park-dcb37d46-after-123-tests-and-Ruff-check-pass-on-Ruff-format-restoring-required-blank-line-no-later-oracles-run",
+      "r3_43_t7_provider_alias_postimage_refreeze": "pass-parent-in-memory-pipefail-Ruff-check-and-format-d0eff581-384690-bytes-9385-lines-source-7b3901d7-same-live-provider-proxy-call-time-semantics-and-graph",
+      "r3_43_t7_provider_alias_postimage": "pass-fresh-replacement-deep-debugger-sol-high-report-1e2129fc-123-tests-Ruff-check-five-path-format-guard-debt-parity-five-provider-identities-two-patch-orders-graph-500-1296-social-1-23-legacy-95-7-source-7b3901d7-hotspots-diffs-AST-immutables-heads-and-dirty-snapshots-exact",
+      "r3_43_t8": "pass-124-tests-Ruff-format-debt-parity-graph-500-1296-social-1-23-legacy-95-7-hotspots-workspace-diffs-R2-boundary-two-scratch-rollback-replays-packet-evidence",
+      "r3_43_t8_evidence_correction": "pass-seven-helper-artifact-bindings-current-0813d7c4-pytest-124-graph-source-7b3901d7-rollback-current-actuals-prefix-6e5a84cd",
+      "r3_43_t8_prefix_definition_correction": "pass-historical-path-sha-size-4f5ed82f-plus-path-sha-size-mode-6e5a84cd",
+      "r3_43_t8_packet_narrative_correction": "pass-R342-preimage-lock-eight-negative-control-executions",
+      "r3_43_t9": "pass-conclusive-acceptance-integrator-xhigh-fourteen-exact-receipts-two-scratch-rollbacks-provider-compatibility-R2-separation-dirty-preservation-and-zero-P0-P3",
+      "next_t6_graph": "pass-two-stable-live-runs-500-1296-4-40-social-1-23-legacy-95-7-app-zero-account-profile-topology-ranked-only",
+      "next_t6_compatibility": "blocked-account-profile-and-analytics-require-unfrozen-provider-contract-router-alternatives-break-repository-monkeypatch-visibility",
+      "next_t6_validation": "park-134-focused-tests-hotspots-pass-but-direct-rollup-health-cache-executable-postimage-and-rollback-freeze-incomplete"
     },
-    "staging_or_commit_authorized": true,
-    "staging_or_commit_scope": "accepted-72-path-root-R0-checkpoint-plus-required-metadata-receipt-commit",
+    "staging_or_commit_authorized": false,
+    "staging_or_commit_scope": "none-r3-local-dirty-packet-only",
     "production_build_authorized": false,
     "migration_apply_authorized": false,
     "deployment_authorized": false,
-    "browser_authorized": false
+    "browser_authorized": false,
+    "source_mutation_authorized": false,
+    "source_mutation_scope": [],
+    "packet_evidence_mutation_authorized": false,
+    "packet_evidence_mutation_scope": []
   },
-  "active_r0_lanes": [
+  "accepted_r3_42_packet": {
+    "packet_id": "local-social-worker-detail-canonical-provider-proxy-caller-cut",
+    "packet_role": "r3-42-worker-detail-provider-proxy-caller-cut",
+    "task_lock_path_owner_packet_id": "local-social-worker-detail-canonical-provider-proxy-caller-cut",
+    "task_id": 2,
+    "phase": "R3",
+    "slice": "R3.42",
+    "state": "implementation_complete_parked_accepted_with_follow_up",
+    "owner": "program-coordination",
+    "scope": "single-get-social-ingest-worker-detail-function-scoped-legacy-repository-caller-cut-through-existing-canonical-queue-status-provider-proxy",
+    "t6_verdict": "pass-five-read-only-lane-reconciliation; worker-detail-exact-occurrence-is-smallest-graph-supported-compatible-and-validated-boundary",
+    "edge_before": "api.routers.socials get_social_ingest_worker_detail -> trr_backend.repositories.social_season_analytics.get_worker_detail",
+    "edge_removed": "one legacy AST occurrence; router-to-repository module edge remains through ninety other occurrences",
+    "edge_added": "none at module-graph level; router-to-control_plane.queue_status already exists through accepted health-dot and queue-status callers",
+    "expected_backend_module_count_after": 500,
+    "expected_backend_edge_count_after": 1296,
+    "expected_backend_cycle_count_after": 4,
+    "expected_backend_cyclic_module_count_after": 40,
+    "expected_social_cycle_count_after": 1,
+    "expected_social_cyclic_module_count_after": 23,
+    "expected_legacy_social_import_count_after": 96,
+    "expected_legacy_social_importer_count_after": 7,
+    "expected_app_module_count_after": 1122,
+    "expected_app_edge_count_after": 2944,
+    "expected_app_cycle_count_after": 0,
+    "expected_backend_graph_sha256_after": "92060645e321de482a11afc4f0dd5ee978f1a368a4ce9027cb08b3d924a3db29",
+    "expected_backend_source_sha256_after": "0a36885b24e6bf19d53a618a712b416d6500d9c790454913133a6563093dca1e",
+    "scc_reduction_claimed": false,
+    "observed_social_monolith_lines_before": 68316,
+    "expected_social_monolith_lines_after": 68316,
+    "social_monolith_line_ceiling": 68316,
+    "observed_router_lines_before": 9385,
+    "expected_router_lines_after": 9385,
+    "router_line_ceiling": 9385,
+    "expected_worker_source_sha256_after": "5fabcab27655c066026cc9f4e1ed56ff8f44bddddfb5072d07bd70e39feafa5b",
+    "expected_worker_source_bytes_after": 384685,
+    "expected_worker_source_lines_after": 9385,
+    "expected_endpoint_test_sha256_unchanged": "5428eb270baa0d98bfba356386d412242b751c0af9f7cbc6481858610bf098c8",
+    "expected_endpoint_test_bytes_unchanged": 381334,
+    "expected_endpoint_test_lines_unchanged": 9404,
+    "expected_worker_focused_test_count_after": 112,
+    "expected_integrated_focused_test_count_after": 113,
+    "expected_lead_guard_sha256_after": "e5c5da69ae2a8776362e9af3d06c1ebcec7851a67bb00d05244b858d035ce01a",
+    "expected_lead_guard_bytes_after": 89201,
+    "expected_lead_guard_lines_after": 2261,
+    "expected_compatibility_ledger_sha256_after": "0a0d13a827fdfb6287fc0075db097b548c0b501cfc6af9417c0d7e9b3838ec5f",
+    "expected_compatibility_ledger_bytes_after": 41419,
+    "expected_compatibility_ledger_lines_after": 149,
+    "no_effective_behavior_change": true,
+    "recovery_baseline": {
+      "workspace_head": "a788f2777acffdb18acb0abfa98fc5a7c176d925",
+      "backend_head": "0a3d2b59ec29304fb2765fd8cf996032e11c937b",
+      "app_head": "78681eac73c79e6534031fe1f050966edff9b844",
+      "manifest": ".plan-work/plan-architect/trr-architecture-overhaul-20260715/R3_CHECKPOINT_RECOVERY_MANIFEST.20260729.tsv",
+      "task_lock_sha256": "e968c1286f52d8c37adb52ad657beb935824089ee7828185dabdda0ff3970bb5",
+      "backend_graph": "pass-r3-41-500-modules-1296-edges-4-cycles-40-cyclic-social-1-23-legacy-97-7-sha256-92060645",
+      "backend_source_sha256": "4183561bf4848d858b6ca339a45ff4fd8f8260945a7c69a4e266b896f1146500",
+      "app_graph": "pass-1122-modules-2944-edges-zero-cycles-sha256-22e12763d99b09bcecb4832a71d7131cba92f006e3dd9df4b96c2f816bdf9b7c",
+      "dirty_tree_snapshot": {
+        "workspace": {
+          "status_count": 601,
+          "status_sha256": "4ca94e224eb3c7f18ecbc61a195105a769f00dceb45ce6905a6c535edfecf00a"
+        },
+        "backend": {
+          "status_count": 266,
+          "status_sha256": "cef16a9339c48bb9c4e4f9d539f7efc2dcb77cf95cd0aedc1bbd73f47127b2fe"
+        },
+        "app": {
+          "status_count": 167,
+          "status_sha256": "c54688533217e713aa3d74f367d692d684ddc426ef8331b8638a73be772ab793"
+        }
+      },
+      "dependency_preservation_stashes": {
+        "workspace": "9a89be1339daa545b310889a588be48a5abc8360",
+        "backend": "35ef28d4f6d9fecbe60dd29b23c2ea23cc5cab29",
+        "app": "4b2f4e16fa4ff049b60f38909cf0348615d69cb9",
+        "app_generated_caches": "917581a4810742105af7da4ce0914f8b9034e8c7"
+      },
+      "cloudflare_r2_write_set_path_count": 59,
+      "cloudflare_r2_write_set_sha256": "580e54c6baef557f1615add1b71886d1c2cb56f20a064eb41877f8f2f7a4227a",
+      "dependency_preservation_path_union_count": 43,
+      "dependency_preservation_inclusive_path_count": 78,
+      "r3_dependency_intersection": [],
+      "r3_cloudflare_r2_intersection": []
+    },
+    "compatibility_contract": {
+      "endpoint": "GET /api/v1/admin/socials/ingest/workers/{worker_id}/detail",
+      "route_decorator_dependency_signature_return_annotation_and_worker_id_unchanged": true,
+      "canonical_provider_after": "trr_backend.socials.control_plane.queue_status._legacy_repo",
+      "provider_call_after": "_legacy_repo().get_worker_detail(worker_id)",
+      "worker_id_remains_single_positional_argument": true,
+      "success_payload_unchanged": true,
+      "worker_not_found_404_mapping_unchanged": true,
+      "worker_heartbeat_schema_missing_503_mapping_unchanged": true,
+      "other_value_error_400_mapping_unchanged": true,
+      "unhandled_error_logging_and_internal_mapping_unchanged": true,
+      "repository_alias_patch_target_preserved": "trr_backend.repositories.social_season_analytics.get_worker_detail",
+      "repository_alias_patch_before_router_import_preserved": true,
+      "repository_alias_patch_after_router_import_preserved": true,
+      "provider_namespace_is_exact_monolith_dictionary": true,
+      "same_namespace_configuration_idempotent": true,
+      "different_namespace_configuration_rejected": true,
+      "repository_alias_or_monolith_deletion_in_scope": false,
+      "queue_status_provider_or_configuration_change_in_scope": false,
+      "worker_health_direct_import_rejected": true,
+      "new_shared_contract": false,
+      "router_family_extraction_in_scope": false,
+      "public_route_openapi_cache_sse_auth_and_wire_behavior_unchanged": true
+    },
+    "pre_mutation_path_hashes": {
+      "TRR-Backend/api/routers/socials/__init__.py": "bb3335e4b396d98bde6e3d59508ad5fd30833d301d385cf0ce72b15a50ac3229",
+      "TRR-Backend/tests/api/routers/test_socials_season_analytics.py": "5428eb270baa0d98bfba356386d412242b751c0af9f7cbc6481858610bf098c8",
+      "TRR-Backend/tests/repositories/test_social_control_plane_imports.py": "9d2f92d65429709470068b0b52d8786ff198fa34dcc3ad0099266bfbd80b97de",
+      "TRR-Backend/docs/architecture/social-compatibility-wrapper-ledger.md": "bf9cad88711501a77dd4473bf0b4df816a364aaf27b2c400f6751b58d3d50898",
+      "docs/workspace/architecture-task-locks.json": "e968c1286f52d8c37adb52ad657beb935824089ee7828185dabdda0ff3970bb5",
+      "docs/workspace/release-packets/local-social-worker-detail-canonical-provider-proxy-caller-cut.json": null,
+      "docs/workspace/architecture-evidence/local-social-worker-detail-canonical-provider-proxy-caller-cut.*": null
+    },
+    "validation_only_path_hashes": {
+      "TRR-Backend/trr_backend/socials/control_plane/queue_status.py": "5d5f235644278938bfb3397b9a2dc535633cf9bbb492d90d6f1e48283ed1b184",
+      "TRR-Backend/trr_backend/socials/control_plane/worker_health.py": "f5f4a5b26df042ecd25aeb2fc2d29ca1f3cbb67a84e0352991d6d7b243c1f3c5",
+      "TRR-Backend/trr_backend/socials/social_season_analytics_impl.py": "9c2c38f2bceff0e930bb118f7f42c7c5932038e33e7bfd974a0718e5471938c9",
+      "TRR-Backend/trr_backend/repositories/social_season_analytics.py": "5d2438410184d44ae20164ca1582587fb14affdeafc4f8d40271f88a45e1eff7",
+      "TRR-Backend/tests/api/routers/test_socials_route_shape.py": "8735992da5ba3d348bc99781ab9b67d9d6cd891146953b65499ab40358c51604",
+      "TRR-Backend/tests/api/routers/test_socials_season_analytics.py": "5428eb270baa0d98bfba356386d412242b751c0af9f7cbc6481858610bf098c8",
+      "TRR-Backend/tests/repositories/test_social_queue_status.py": "c78c31a2d7effac8033bde8adb3b976c129459b48e49ac7b09a9dac5d840399c",
+      "TRR-Backend/tests/repositories/test_social_season_analytics.py": "15b6c00a5ceaf2f189105ed29ae072badebaf5ac3a4174820b8a8cbfd13c048a",
+      "scripts/architecture/check-import-graph.py": "f1f9a354f16f2b4f6a68fad450bfda3b6b009d7dbd09cb9da3bc1276603d5802",
+      "scripts/architecture/check-hotspots.py": "43de52638b4fcb50d506b545307b0e29f83aceca73091354ecf511e5e294de2b",
+      "docs/workspace/architecture-hotspots.json": "80f9d9cf9fdeb7d5aa57b26adbf23065a2c840fdd714c7b44b472dbebda2fab6"
+    },
+    "planned_post_integration_path_hashes": {
+      "TRR-Backend/api/routers/socials/__init__.py": "5fabcab27655c066026cc9f4e1ed56ff8f44bddddfb5072d07bd70e39feafa5b",
+      "TRR-Backend/tests/repositories/test_social_control_plane_imports.py": "e5c5da69ae2a8776362e9af3d06c1ebcec7851a67bb00d05244b858d035ce01a",
+      "TRR-Backend/docs/architecture/social-compatibility-wrapper-ledger.md": "0a0d13a827fdfb6287fc0075db097b548c0b501cfc6af9417c0d7e9b3838ec5f"
+    },
+    "post_integration_path_hashes": {
+      "TRR-Backend/api/routers/socials/__init__.py": "5fabcab27655c066026cc9f4e1ed56ff8f44bddddfb5072d07bd70e39feafa5b",
+      "TRR-Backend/tests/repositories/test_social_control_plane_imports.py": "e5c5da69ae2a8776362e9af3d06c1ebcec7851a67bb00d05244b858d035ce01a",
+      "TRR-Backend/docs/architecture/social-compatibility-wrapper-ledger.md": "0a0d13a827fdfb6287fc0075db097b548c0b501cfc6af9417c0d7e9b3838ec5f"
+    },
+    "worker_owned_paths": [
+      "TRR-Backend/api/routers/socials/__init__.py"
+    ],
+    "owned_paths": [
+      "TRR-Backend/api/routers/socials/__init__.py",
+      "TRR-Backend/tests/repositories/test_social_control_plane_imports.py",
+      "TRR-Backend/docs/architecture/social-compatibility-wrapper-ledger.md"
+    ],
+    "lead_only_paths": [
+      "TRR-Backend/tests/repositories/test_social_control_plane_imports.py",
+      "TRR-Backend/docs/architecture/social-compatibility-wrapper-ledger.md",
+      "docs/workspace/architecture-task-locks.json",
+      "docs/workspace/release-packets/local-social-worker-detail-canonical-provider-proxy-caller-cut.json",
+      "docs/workspace/architecture-evidence/local-social-worker-detail-canonical-provider-proxy-caller-cut.*"
+    ],
+    "validation_only_paths": [
+      "TRR-Backend/trr_backend/socials/control_plane/queue_status.py",
+      "TRR-Backend/trr_backend/socials/control_plane/worker_health.py",
+      "TRR-Backend/trr_backend/socials/social_season_analytics_impl.py",
+      "TRR-Backend/trr_backend/repositories/social_season_analytics.py",
+      "TRR-Backend/tests/api/routers/test_socials_route_shape.py",
+      "TRR-Backend/tests/api/routers/test_socials_season_analytics.py",
+      "TRR-Backend/tests/repositories/test_social_queue_status.py",
+      "TRR-Backend/tests/repositories/test_social_season_analytics.py",
+      "scripts/architecture/check-import-graph.py",
+      "scripts/architecture/check-hotspots.py",
+      "docs/workspace/architecture-hotspots.json"
+    ],
+    "forbidden_paths": [
+      "all-other-router-endpoints-helpers-models-and-route-family-extractions",
+      "all-six-non-router-legacy-importers",
+      "TRR-Backend/trr_backend/socials/control_plane/queue_status.py",
+      "TRR-Backend/trr_backend/socials/control_plane/worker_health.py",
+      "TRR-Backend/trr_backend/socials/social_season_analytics_impl.py",
+      "TRR-Backend/trr_backend/repositories/social_season_analytics.py",
+      "TRR-APP/**",
+      "TRR-Backend/supabase/**",
+      "TRR-Backend/scripts/**",
+      "all-database-SQL-migration-runtime-Modal-deployment-environment-generated-contract-browser-build-and-cleanup-paths",
+      "the-59-path-cloudflare-r2-write-set-bound-by-sha256-580e54c6baef557f1615add1b71886d1c2cb56f20a064eb41877f8f2f7a4227a",
+      "all-current-dependency-modernization-paths-and-four-preservation-objects",
+      "all-Task-3-Task-4-Gate-3-prior-packet-and-prior-evidence-paths"
+    ],
+    "rollback": {
+      "mode": "incremental-byte-exact-path-preimages-only",
+      "temporary_preimage_bundle": "/tmp/r3-42-worker-detail-preimages.tar.gz",
+      "temporary_preimage_bundle_sha256": "03c865553c097a3ff5db3519d6ad0c21ee8e730cb015a338e61b3fe0ecda01a8",
+      "temporary_preimage_bundle_size_bytes": 145075,
+      "temporary_preimage_bundle_mode": "0600",
+      "required_durable_bundle_path": "docs/workspace/architecture-evidence/local-social-worker-detail-canonical-provider-proxy-caller-cut.rollback-preimages.tar.gz",
+      "durable_bundle_expected_sha256": "03c865553c097a3ff5db3519d6ad0c21ee8e730cb015a338e61b3fe0ecda01a8",
+      "durable_bundle_expected_size_bytes": 145075,
+      "durable_bundle_expected_mode": "0600",
+      "required_durable_replay_helper_path": "docs/workspace/architecture-evidence/local-social-worker-detail-canonical-provider-proxy-caller-cut.replay.py",
+      "bundle_members": {
+        "TRR-Backend/api/routers/socials/__init__.py": "bb3335e4b396d98bde6e3d59508ad5fd30833d301d385cf0ce72b15a50ac3229",
+        "TRR-Backend/tests/api/routers/test_socials_season_analytics.py": "5428eb270baa0d98bfba356386d412242b751c0af9f7cbc6481858610bf098c8",
+        "TRR-Backend/tests/repositories/test_social_control_plane_imports.py": "9d2f92d65429709470068b0b52d8786ff198fa34dcc3ad0099266bfbd80b97de",
+        "TRR-Backend/docs/architecture/social-compatibility-wrapper-ledger.md": "bf9cad88711501a77dd4473bf0b4df816a364aaf27b2c400f6751b58d3d50898",
+        "docs/workspace/architecture-task-locks.json": "e968c1286f52d8c37adb52ad657beb935824089ee7828185dabdda0ff3970bb5"
+      },
+      "durable_bundle_members": {
+        "TRR-Backend/api/routers/socials/__init__.py": "bb3335e4b396d98bde6e3d59508ad5fd30833d301d385cf0ce72b15a50ac3229",
+        "TRR-Backend/tests/api/routers/test_socials_season_analytics.py": "5428eb270baa0d98bfba356386d412242b751c0af9f7cbc6481858610bf098c8",
+        "TRR-Backend/tests/repositories/test_social_control_plane_imports.py": "9d2f92d65429709470068b0b52d8786ff198fa34dcc3ad0099266bfbd80b97de",
+        "TRR-Backend/docs/architecture/social-compatibility-wrapper-ledger.md": "bf9cad88711501a77dd4473bf0b4df816a364aaf27b2c400f6751b58d3d50898",
+        "docs/workspace/architecture-task-locks.json": "e968c1286f52d8c37adb52ad657beb935824089ee7828185dabdda0ff3970bb5"
+      },
+      "rollback_target_manifest_sha256": "13fa7d46d056c4af2363f58f42db4cc00897bfa29589c4ed5b9c9390c81b07e6",
+      "created_packet_evidence_path_count": 18,
+      "r3_owned_plus_created_path_count": 22,
+      "r3_path_manifest_sha256": "80027f32938b18efc6311526becffad5cf37bb97039898a8cfb0f09af411bf6c",
+      "created_packet_evidence_and_helper_preimage": "absent-remove-only-new-prefix",
+      "broad_stash_restore_forbidden": true,
+      "head_relative_reversal_forbidden": true
+    },
+    "acceptance": {
+      "t6_mapping": "pass-five-read-only-lane-reconciliation-and-parent-exact-overlay-import-order-and-fresh-process-proof",
+      "t2_boundary": "frozen-one-worker-path-exact-two-line-postimage-five-preimages-eleven-immutable-hashes-112-worker-tests-113-integrated-tests-graph-hotspots-and-stop-conditions",
+      "next_mutation_authorized": false,
+      "next_mutation_authorization_basis": "R3.42 is locally accepted with follow-up after fresh replacement gpt-5.6-sol/xhigh T9 returned P0=P1=P2=P3=0; all mutation remains closed and only the next read-only live T6 mapping is eligible",
+      "next_mutation_scope": [],
+      "focused_tests_before": "pass-112-collected",
+      "focused_ruff_before": "pass-worker-postimage-in-scratch; cumulative-guard-check-pass-and-single-preexisting-format-debt-preserved",
+      "import_graph_before": "pass-500-1296-4-40-social-1-23-legacy-97-7-app-zero-graph-92060645-source-4183561b",
+      "expected_import_graph_after": "500-1296-4-40-social-1-23-legacy-96-7-app-zero-graph-92060645-source-0a36885b",
+      "hotspot_before": "router-9385-monolith-68316",
+      "focused_tests_after": "pass-113",
+      "focused_ruff_after": "pass-source-and-guard-check-source-format-and-guard-debt-parity-0-0-1-1",
+      "import_graph_after": "pass-500-1296-4-40-social-1-23-legacy-96-7-app-zero-graph-92060645-source-0a36885b",
+      "hotspot_after": "pass-144-router-9385-monolith-68316-no-growth",
+      "workspace_contract_after": "pass-terminal-marker",
+      "diff_checks_after": "pass-three-roots",
+      "independent_review": "pass-fresh-replacement-acceptance-integrator-xhigh-zero-P0-P3-fourteen-exact-receipts-five-import-leaders-final-dirty-snapshots",
+      "next_task": "T6-remaining-R3-packet-design-read-only-live-graph-recompute"
+    },
+    "assignments": [
+      {
+        "task_name": "r3_42_t6_live_graph_and_candidate_simulation",
+        "selected_role": "deep_debugger",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "high",
+        "purpose": "authoritative-seven-importer-graph-recompute-ranking-and-exact-overlays",
+        "status": "complete",
+        "result": "worker-detail-provider-proxy-ranked-first; legacy-97-to-96-no-module-edge-or-SCC-delta",
+        "assignment": "/tmp/r3_next_t6_live_graph_assignment.json",
+        "assignment_sha256": "4fbf4ba0d6754c8ed8b6f99859b28f7bab77890ff09eaa3ee276b3bef03eb42d",
+        "report": "/tmp/r3-next-t6-live-graph-report.json",
+        "report_sha256": "def60c8c4000eb93f1e8c5fa3101cc44a14b17a9fa7635a5a8b6d103d4821dfa"
+      },
+      {
+        "task_name": "r3_42_t6_compatibility_and_ownership_map",
+        "selected_role": "deep_debugger",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "high",
+        "purpose": "callers-module-identity-monkeypatch-wrapper-package-export-and-ownership-map",
+        "status": "complete",
+        "result": "worker-detail-existing-provider-proxy-preserves-supported-alias-patch-contract-and-has-no-unsupported-callers",
+        "assignment": "/tmp/r3_next_t6_compatibility_assignment.json",
+        "assignment_sha256": "c6fc19e8934daaf84188860b91c768c9ff107e4895338928cd0b475415700e24",
+        "report": "/tmp/r3-next-t6-compatibility-report.json",
+        "report_sha256": "662af326f3614281610904a8fbae1778b5ad8964d715a1e25a1485d4fad00470"
+      },
+      {
+        "task_name": "r3_42_t6_validation_rollback_finish_line_map",
+        "selected_role": "deep_debugger",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "high",
+        "purpose": "focused-tests-Ruff-rollback-immutable-hotspot-evidence-and-finish-line-effect",
+        "status": "complete",
+        "result": "worker-detail-ranked-first-112-worker-tests-113-integrated-tests-exact-graph-and-stop-contract",
+        "assignment": "/tmp/r3_next_t6_validation_assignment.json",
+        "assignment_sha256": "5472c88830f058ee57ab9838c370bee8871c17845107e480f60ab0e58f9afac4",
+        "report": "/tmp/r3-next-t6-validation-report.json",
+        "report_sha256": "ab8bb0b1032292fb7811afa739384c5238896d4b6aa2b7957813a37d38839700"
+      },
+      {
+        "task_name": "r3_42_t6_router_family_map",
+        "selected_role": "deep_debugger",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "high",
+        "purpose": "read-only-router-family-and-canonical-seam-map",
+        "status": "complete",
+        "result": "twelve-families-9385-lines-live-status-pair-provisional-future-no-router-freeze",
+        "assignment": "/tmp/r3_next_t6_router_assignment.json",
+        "assignment_sha256": "89c9e7334024d8e7a35509fda7d1cbb3e7ee294be6a3f5a0ac2f299bba14a04b",
+        "report": "/tmp/r3-next-t6-router-report.json",
+        "report_sha256": "fb7522fee7ce4b601ce478a324f1912e3d9cda49fd4644e34a689e15bb248d01"
+      },
+      {
+        "task_name": "r3_42_t6_wrapper_closeout_map",
+        "selected_role": "acceptance_integrator",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "xhigh",
+        "purpose": "read-only-wrapper-and-final-closeout-inventory",
+        "status": "complete",
+        "result": "forty-groups-seven-removable-nineteen-dependent-fourteen-reledger",
+        "assignment": "/tmp/r3_next_t6_wrapper_closeout_assignment.json",
+        "assignment_sha256": "5ee843e3b5e2efe837e2c23ba9ca418662e68ecd022d5cb1ea8cb0bdc9a9ea37",
+        "report": "/tmp/r3-next-t6-wrapper-closeout-report.json",
+        "report_sha256": "779683ad0406b815cf08e137cce485f57fdb190045357e06cbf459a648b034e0"
+      },
+      {
+        "task_name": "r3_42_parent_T6_reconciliation_and_T2_freeze",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "xhigh",
+        "purpose": "reconcile-five-lane-evidence-prove-exact-postimages-and-freeze-smallest-safe-boundary",
+        "status": "complete",
+        "result": "worker-detail-two-line-provider-proxy-cut-selected-and-frozen"
+      },
+      {
+        "task_name": "r3_42_T7_worker_detail_provider_proxy_worker",
+        "selected_role": "deep_debugger",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "high",
+        "purpose": "perform-only-the-frozen-worker-owned-router-mutation-and-stop-before-T8",
+        "status": "blocked-before-mutation",
+        "result": "immutable-test-hash-abbreviated-in-T2-live-file-and-T6-report-proved-full-hash-source-unchanged",
+        "assignment": "/tmp/r3_42_t7_worker_assignment.json",
+        "assignment_sha256": "4cc7c33d827941064d52806b4fd6f9103ba40c96f0be62850fd8b28c86d979b7",
+        "report": "/tmp/r3-42-t7-worker-report.json",
+        "report_sha256": "94bb64441981ba6466503d888ba4d7032299fa61f2a2821c08f5a6e9c80491a2"
+      },
+      {
+        "task_name": "r3_42_T7_worker_detail_provider_proxy_worker_v2",
+        "selected_role": "deep_debugger",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "high",
+        "purpose": "perform-only-the-corrected-T2-frozen-worker-owned-router-mutation-and-stop-before-T8",
+        "status": "complete",
+        "result": "single-router-postimage-5fabcab2-112-tests-Ruff-format-AST-diff-graph-hotspots-immutables-and-dirty-snapshots-pass-stopped-before-T8",
+        "assignment": "/tmp/r3_42_t7_worker_assignment_v2.json",
+        "assignment_sha256": "5fb9a489ce2994e475beed0eea9f6983a7a9305db7b1e5280aeb9afecbeeb213",
+        "report": "/tmp/r3-42-t7-worker-report-v2.json",
+        "report_sha256": "89a51c3d378dd3667149518e3917e77f58f210de3639074301856df5876a74fa"
+      },
+      {
+        "task_name": "r3_42_T7_immutable_caller_review_v2",
+        "selected_role": "implementation_reviewer",
+        "selected_model": "gpt-5.6-terra",
+        "selected_reasoning_effort": "high",
+        "purpose": "read-only-postimage-caller-module-identity-import-order-monkeypatch-and-route-contract-review",
+        "status": "blocked-on-expected-serialized-lead-lock-drift",
+        "result": "source-compatibility-positive-but-not-final-acceptance-lock-changed-during-read-only-review",
+        "assignment": "/tmp/r3_42_t7_immutable_review_assignment_v2.json",
+        "assignment_sha256": "829c3ae8c6a388389b5b9c7ce7995d03aaec9a6cfcea1faa0e1dc26c9b4ac8fd",
+        "report": "/tmp/r3-42-t7-immutable-review-report-v2.json",
+        "report_sha256": "d20f345974adfc5e35fee80acabfa596165d4ff9d4db4660f00321dc5d014c65"
+      },
+      {
+        "task_name": "r3_42_T8_validation_preparation_v2",
+        "selected_role": "deep_debugger",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "high",
+        "purpose": "read-only-exact-T8-command-receipt-rollback-immutable-R2-evidence-and-stop-matrix",
+        "status": "complete",
+        "result": "fourteen-step-fourteen-receipt-read-only-matrix-complete-serialized-parent-lock-drift-recorded",
+        "assignment": "/tmp/r3_42_t8_validation_prep_assignment_v2.json",
+        "assignment_sha256": "7bf258d5f16d086ab9a0257c6e11a51104102343a26530e6376058228e8a283d",
+        "report": "/tmp/r3-42-t8-validation-prep-report-v2.json",
+        "report_sha256": "5606d7b4be82d39da813581e0eb5da2408709f3cfa99872d9615ac05309f030f"
+      },
+      {
+        "task_name": "r3_42_evidence_self_reference_map",
+        "selected_role": "deep_debugger",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "high",
+        "purpose": "read-only-root-cause-and-smallest-evidence-correction-map",
+        "status": "interrupted-after-root-cause-before-typed-report",
+        "result": "proved-task-lock-self-reference-and-ten-path-fanout-but-did-not-finish-typed-report-within-bounded-deadline",
+        "assignment": "/tmp/r3_42_evidence_self_reference_map_assignment.json",
+        "assignment_sha256": "c144ea653836239f260d7ca41adebea761ece88434cc08bfdc92088e41fd02e0"
+      },
+      {
+        "task_name": "r3_42_evidence_self_reference_verify_v2",
+        "selected_role": "exact_locator",
+        "selected_model": "gpt-5.6-terra",
+        "selected_reasoning_effort": "medium",
+        "purpose": "independently-verify-conditional-normalization-built-in-task-lock-drift-control-ten-path-fanout-and-preimages",
+        "status": "complete",
+        "result": "pass-two-exact-simulated-replays-four-task-lock-controls-original-restored-target-and-ten-path-fanout",
+        "assignment": "/tmp/r3_42_evidence_self_reference_verify_assignment_v2.json",
+        "assignment_sha256": "5593bc1ee5810d836168f118517f228db7db2c1d1ee94d944897d826414749a8",
+        "report": "/tmp/r3-42-evidence-self-reference-verify-report-v2.json",
+        "report_sha256": "58d3a373202fc5661e4e332af277ac82e6ce66f18bdd067f5ebc03db0f4209b1"
+      },
+      {
+        "task_name": "r3_42_T9_independent_review",
+        "selected_role": "acceptance_integrator",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "xhigh",
+        "purpose": "fresh-read-only-fourteen-receipt-compatibility-rollback-evidence-authority-and-drift-review",
+        "status": "interrupted-after-fourteen-exact-receipts-before-typed-report",
+        "result": "fourteen-of-fourteen-receipts-exact-zero-provisional-findings-then-two-report-finalization-turns-stalled-and-were-replaced",
+        "assignment": "/tmp/r3_42_t9_final_review_assignment.json",
+        "assignment_sha256": "741e1c9b77f282f5714cf031ba4e0280f32c0ef91a7083a3d2ef883558715740"
+      },
+      {
+        "task_name": "r3_42_T9_independent_review_replacement",
+        "selected_role": "acceptance_integrator",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "xhigh",
+        "purpose": "fresh-replacement-read-only-final-R3.42-acceptance-readiness-review",
+        "status": "complete",
+        "result": "accepted-with-follow-up-P0-0-P1-0-P2-0-P3-0-fourteen-exact-receipts-113-tests-five-import-leaders-graph-hotspots-rollback-R2-authority-prefix-and-final-dirty-snapshots-pass",
+        "assignment": "/tmp/r3_42_t9_final_review_replacement_assignment.json",
+        "assignment_sha256": "e6221b9529a8833c42d81297252434c3f89e759f11d27a762af9249b6ef20c9b",
+        "report": "/tmp/r3-42-t9-final-review-replacement-report.json",
+        "report_sha256": "14469b2e2d6a54ced758bf1d0cb76b355fb3c4745fe698c07f853ed9065f411f"
+      },
+      {
+        "task_name": "r3_42_parent_T9_acceptance_checkpoint",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "xhigh",
+        "purpose": "record-reviewer-verdict-close-all-mutation-and-expose-only-next-read-only-T6",
+        "status": "complete",
+        "result": "R3.42-locally-accepted-with-follow-up-graph-96-7-tests-113-evidence-17-files-mapping-lanes-graph-compatibility-validation-complete-router-and-wrapper-maps-complete"
+      }
+    ],
+    "stop_conditions": [
+      "any-HEAD-canonical-dirty-snapshot-task-lock-assignment-prehash-immutable-hash-or-live-writer-drift",
+      "any-required-change-beyond-the-two-frozen-replacements-in-get_social_ingest_worker_detail",
+      "any-postimage-byte-line-graph-source-legacy-count-SCC-or-app-cycle-mismatch",
+      "any-route-signature-dependency-worker-id-payload-logging-ValueError-exception-auth-OpenAPI-cache-or-SSE-change",
+      "any-focused-test-Ruff-format-AST-diff-graph-hotspot-immutable-or-dirty-snapshot-failure",
+      "any-need-to-write-a-test-guard-ledger-lock-packet-evidence-rollback-provider-worker-health-monolith-alias-app-R2-dependency-modernization-or-excluded-path",
+      "any-concurrent-writer-on-the-router-or-a-lead-owned-serialized-path",
+      "any-staging-commit-build-browser-migration-deployment-Modal-cleanup-Task3-Task4-or-Gate3-need"
+    ],
+    "frozen_at": "2026-07-31T02:14:12.900Z",
+    "t8_owned_postimages": {
+      "TRR-Backend/api/routers/socials/__init__.py": "5fabcab27655c066026cc9f4e1ed56ff8f44bddddfb5072d07bd70e39feafa5b",
+      "TRR-Backend/tests/repositories/test_social_control_plane_imports.py": "e5c5da69ae2a8776362e9af3d06c1ebcec7851a67bb00d05244b858d035ce01a",
+      "TRR-Backend/docs/architecture/social-compatibility-wrapper-ledger.md": "0a0d13a827fdfb6287fc0075db097b548c0b501cfc6af9417c0d7e9b3838ec5f"
+    },
+    "t8_complete_packet_evidence_prefix": {
+      "status": "complete-frozen-all-mutation-closed-fresh-independent-T9-required",
+      "evidence_file_count": 17,
+      "json_evidence_receipt_count": 14,
+      "evidence_manifest_algorithm": "lexicographically-sorted-workspace-relative-path-tab-sha256-tab-size-LF",
+      "evidence_manifest_sha256": "56958433ed8adada10bb7e8fa4c0063da6847981285101ce946a61dd062b3141",
+      "replay_helper": {
+        "path": "docs/workspace/architecture-evidence/local-social-worker-detail-canonical-provider-proxy-caller-cut.replay.py",
+        "sha256": "39a3d560b51d891fc4e92ec91201eb381ecc8148531a6d1f7692916a95c4658b",
+        "size_bytes": 47921,
+        "mode": "0600",
+        "ruff_check": "pass",
+        "ruff_format": "pass"
+      },
+      "rollback_bundle": {
+        "path": "docs/workspace/architecture-evidence/local-social-worker-detail-canonical-provider-proxy-caller-cut.rollback-preimages.tar.gz",
+        "sha256": "03c865553c097a3ff5db3519d6ad0c21ee8e730cb015a338e61b3fe0ecda01a8",
+        "size_bytes": 145075,
+        "mode": "0600",
+        "member_count": 5
+      },
+      "r2_write_set_manifest": {
+        "path": "docs/workspace/architecture-evidence/local-social-worker-detail-canonical-provider-proxy-caller-cut.r2-write-set.paths",
+        "sha256": "580e54c6baef557f1615add1b71886d1c2cb56f20a064eb41877f8f2f7a4227a",
+        "size_bytes": 3049,
+        "mode": "0600",
+        "path_count": 59
+      },
+      "receipts": {
+        "app-diff-check": {
+          "sha256": "2fa18cd705a621d16749643313abe86ad06e0a123af6f60b9706dc4382eb5636",
+          "size_bytes": 1187,
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_size_bytes": 0
+        },
+        "backend-diff-check": {
+          "sha256": "f309f9d7ba923f4bcfd4996c12e3b40546323e3e7c5344b580082265d912be66",
+          "size_bytes": 1199,
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_size_bytes": 0
+        },
+        "evidence-hygiene": {
+          "sha256": "1db5b9a64a4cc871e8a7cfe386f014f8026817c5238fd79c8015ed02fd69c444",
+          "size_bytes": 1691,
+          "output_sha256": "adf88cf28294a64b0d30b6d6db3d129815abbd9658c50fc4f9ec0c36270e9cb6",
+          "output_size_bytes": 23
+        },
+        "formatter-debt-parity": {
+          "sha256": "ea549b596bedf4f860cb552af10dd71a9b89c87c3543e54833359192941f6500",
+          "size_bytes": 2246,
+          "output_sha256": "1bbc53c86fd158e0d43f1b8e907bc033dbf1c66d4b9f597ab00932a92a3a2445",
+          "output_size_bytes": 68
+        },
+        "hotspot-target": {
+          "sha256": "a0d64546aa8367699f49b93780529f66995c733803dae480ae8aa82a0d855f8e",
+          "size_bytes": 1715,
+          "output_sha256": "273d73550e730f5a08dfb12b452a55e2af48b39683c3043c87ee0c76d4b93d8a",
+          "output_size_bytes": 38
+        },
+        "import-graph": {
+          "sha256": "61e7c701ed8dcf0be736bccc22e2c48db4107138da686783dea1684c67671d8c",
+          "size_bytes": 2943,
+          "output_sha256": "66d72773945fd9003dafa76ef9e0538c4a8f4426515df056e6890a8142ba6567",
+          "output_size_bytes": 5887
+        },
+        "partial-release-manifest": {
+          "sha256": "1536bb21076e1953ae22eb92363035ab3f57a42c13f1ca136e34619dba3af34e",
+          "size_bytes": 1767,
+          "output_sha256": "066ddd7898f636ade147a71fce3da9a359ef033b148509429bc88938833d3289",
+          "output_size_bytes": 82
+        },
+        "pytest": {
+          "sha256": "4e19034b3cbfb400ebe3ae639b7c208ae44f9a07dc35d77f6cdf2541c26b7272",
+          "size_bytes": 2014,
+          "output_sha256": "252241176af43a94975953954e6bcf976b70a880d7954a0587a590d96d5a4dd9",
+          "output_size_bytes": 32,
+          "passed": 113
+        },
+        "r2-dependency-boundary": {
+          "sha256": "12cdc127b9b47a796fbb0ef18dcb3104c7600f829f5bc9bd5951d9048f7cace5",
+          "size_bytes": 50341,
+          "output_sha256": "a6dbe146e20e286dc0d559b7eca2ce2c0acd9459ff46590e977bfb01ecd891f1",
+          "output_size_bytes": 12553
+        },
+        "rollback-hashes": {
+          "sha256": "d888b7ded8570d6ab66b9e95b77ca3b5a9f96334d9ed2b05234b782bef0203a7",
+          "size_bytes": 36961,
+          "output_sha256": "87c2c6cfed2ca790723429d5eaafe49a40b38788a741ea0a65e9d01f4219f168",
+          "output_size_bytes": 36026
+        },
+        "ruff-format": {
+          "sha256": "9e32e968796e3092f0b117a5889d80f5b75e23335f3c24bc6de821f3f733f9ea",
+          "size_bytes": 1425,
+          "output_sha256": "177f260a5645724013185e4b140c7045cc39e56c0c97b120f5cb23599f85f0de",
+          "output_size_bytes": 26
+        },
+        "ruff": {
+          "sha256": "402803068bc29ae989d2e6cd8d38901f7f13b0fc29dcbb3e552f44f02baac07f",
+          "size_bytes": 1474,
+          "output_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+          "output_size_bytes": 19
+        },
+        "workspace-contract": {
+          "sha256": "276bd21d1e29fce609cd965d955230482c7f892d642bc3365f3239d7538bf7e1",
+          "size_bytes": 1674,
+          "output_sha256": "e3bbcc0a024b85a71e741c6224065db3778e2a913e3fc88f4bd2890f89a5cf33",
+          "output_size_bytes": 51
+        },
+        "workspace-diff-check": {
+          "sha256": "7f06b09ca3770d6aff8576a1e86a5eadd2bd6528a42e5d7406470b298b469cde",
+          "size_bytes": 1191,
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_size_bytes": 0
+        }
+      }
+    },
+    "t8_integration_result": {
+      "status": "complete-fresh-independent-T9-pending",
+      "focused_tests": "pass-113",
+      "ruff": "pass-five-path-check-four-clean-format-and-cumulative-guard-debt-parity",
+      "import_graph": "pass-exact-500-1296-4-40-social-1-23-legacy-96-7-app-1122-2944-zero-graph-92060645-source-0a36885b",
+      "hotspots": "pass-144-router-9385-monolith-68316",
+      "workspace_contract": "pass-terminal-marker",
+      "diff_checks": "pass-three-roots",
+      "r2_dependency_boundary": "pass-R2-59-R3-22-dependency-43-78-empty-intersections-plus-three-fail-closed-controls",
+      "rollback": "pass-five-byte-exact-preimages-eighteen-created-path-removals-two-normalized-scratch-replays-eight-negative-controls-including-two-task-lock-byte-drifts-live-domain-unchanged-target-13fa7d46",
+      "packet_and_evidence": "pass-59-packets-532-evidence-658-hygiene-files-seventeen-file-prefix-56958433",
+      "full_release": "blocked-only-frozen-cloudflare-r2-prepare-named-secrets-retained-record-mismatch",
+      "heads": {
+        "workspace": "a788f2777acffdb18acb0abfa98fc5a7c176d925",
+        "backend": "0a3d2b59ec29304fb2765fd8cf996032e11c937b",
+        "app": "78681eac73c79e6534031fe1f050966edff9b844"
+      },
+      "dirty_snapshots": {
+        "workspace": {
+          "status_count": 619,
+          "status_porcelain_v2_z_sha256": "685a68c7f3b0da138746c97c6b8ffe6745c0760f008c36426517e2d5c858044a"
+        },
+        "backend": {
+          "status_count": 266,
+          "status_porcelain_v2_z_sha256": "cef16a9339c48bb9c4e4f9d539f7efc2dcb77cf95cd0aedc1bbd73f47127b2fe"
+        },
+        "app": {
+          "status_count": 167,
+          "status_porcelain_v2_z_sha256": "c54688533217e713aa3d74f367d692d684ddc426ef8331b8638a73be772ab793"
+        }
+      },
+      "receipt_replay": "pass-fourteen-of-fourteen-exact-command-output-sha256-and-size-after-self-reference-correction",
+      "source_test_ledger_graph_bundle_R2_dependency_app_mutation_authorized": false,
+      "fresh_independent_t9_required": true,
+      "completed_at": "2026-07-31T02:55:26Z"
+    },
+    "t8_evidence_self_reference_correction_freeze": {
+      "status": "authorized-exact-ten-path-cascade",
+      "root_cause": "rollback comparison manifests normalized created packet and receipt JSON but hashed the evolving task-lock bytes; the final T8 lock freeze therefore changed seventeen structured rollback digest fields after receipt capture",
+      "design": "conditionally normalize the candidate task-lock comparison entry only when its SHA differs from the frozen rollback preimage; retain exact candidate byte-and-mode verification, exact restored preimage byte-and-mode verification, and restored target 13fa7d46",
+      "built_in_control": "each of two scratch replays mutates one task-lock byte, observes equal normalized before-and-after digests, and is rejected by _require_candidate_state before rollback apply",
+      "authorized_path_count": 10,
+      "authorized_paths": [
+        "docs/workspace/architecture-task-locks.json",
+        "docs/workspace/release-packets/local-social-worker-detail-canonical-provider-proxy-caller-cut.json",
+        "docs/workspace/architecture-evidence/local-social-worker-detail-canonical-provider-proxy-caller-cut.replay.py",
+        "docs/workspace/architecture-evidence/local-social-worker-detail-canonical-provider-proxy-caller-cut.evidence-hygiene.json",
+        "docs/workspace/architecture-evidence/local-social-worker-detail-canonical-provider-proxy-caller-cut.formatter-debt-parity.json",
+        "docs/workspace/architecture-evidence/local-social-worker-detail-canonical-provider-proxy-caller-cut.partial-release-manifest.json",
+        "docs/workspace/architecture-evidence/local-social-worker-detail-canonical-provider-proxy-caller-cut.pytest.json",
+        "docs/workspace/architecture-evidence/local-social-worker-detail-canonical-provider-proxy-caller-cut.r2-dependency-boundary.json",
+        "docs/workspace/architecture-evidence/local-social-worker-detail-canonical-provider-proxy-caller-cut.rollback-hashes.json",
+        "docs/workspace/architecture-evidence/local-social-worker-detail-canonical-provider-proxy-caller-cut.workspace-contract.json"
+      ],
+      "preimages": {
+        "docs/workspace/architecture-task-locks.json": "b7727b3f037148d514a4cfbc5dd82a90592c38a6232dcffa7bd4f6a9c2285e6f",
+        "docs/workspace/release-packets/local-social-worker-detail-canonical-provider-proxy-caller-cut.json": "223c59975cac1aff42226041a12fbd08c2e6d19fb3813600aca47b004f689f03",
+        "docs/workspace/architecture-evidence/local-social-worker-detail-canonical-provider-proxy-caller-cut.replay.py": "dd82848db45b0d9264b1c54a1766489cd2d330ca7c7d9d8e915b475042364fdc",
+        "docs/workspace/architecture-evidence/local-social-worker-detail-canonical-provider-proxy-caller-cut.evidence-hygiene.json": "00a942bacaf833e0335796279fc2c330be7ef96605b0deac2aa4d74be4705d1d",
+        "docs/workspace/architecture-evidence/local-social-worker-detail-canonical-provider-proxy-caller-cut.formatter-debt-parity.json": "d287c064569286991b061f7013e07e63306b4204fca56877d5d002d7f3aa3748",
+        "docs/workspace/architecture-evidence/local-social-worker-detail-canonical-provider-proxy-caller-cut.partial-release-manifest.json": "73f6e897e869fba8603c0f5dffba416917840cbf2fff85e8b9b9437c078e12ed",
+        "docs/workspace/architecture-evidence/local-social-worker-detail-canonical-provider-proxy-caller-cut.pytest.json": "d1e63589f85abc5594195cebab60022970a2773b53e49e2037cd12b9a201438c",
+        "docs/workspace/architecture-evidence/local-social-worker-detail-canonical-provider-proxy-caller-cut.r2-dependency-boundary.json": "dd142c58cbefcb985df490e6eefc594882106c0cb5843c686b2fe5b81c005896",
+        "docs/workspace/architecture-evidence/local-social-worker-detail-canonical-provider-proxy-caller-cut.rollback-hashes.json": "71e677befbb64b2e7dcd4bda5d9049ec2e060ff49fa2fcc59607ebb63b6cc53a",
+        "docs/workspace/architecture-evidence/local-social-worker-detail-canonical-provider-proxy-caller-cut.workspace-contract.json": "da76d0f74b3410067d7bc3c23de563286ae2d9a35c1a231d2ea920b5eb88509c"
+      },
+      "external_preimage_bundle": {
+        "path": "/tmp/r3-42-selfref-correction-preimages.tar.gz",
+        "sha256": "65e954b9652ffac7d67a32e9fff92c6248d27e1a071b654fba6a30100da0d267",
+        "size_bytes": 52810,
+        "mode": "0600",
+        "member_count": 10
+      },
+      "proposed_helper": {
+        "path": "/tmp/r3-42-replay-conditional-final.py",
+        "sha256": "39a3d560b51d891fc4e92ec91201eb381ecc8148531a6d1f7692916a95c4658b",
+        "size_bytes": 47921,
+        "ruff_check": "pass",
+        "ruff_format": "pass"
+      },
+      "simulated_output": {
+        "sha256": "f8056074c7b56fe3fb80b2b2841f272300d3e686789a7ef436fba09b2bf2cd22",
+        "size_bytes": 36026,
+        "run_count": 2,
+        "byte_identical": true,
+        "restored_target_manifest_sha256": "13fa7d46d056c4af2363f58f42db4cc00897bfa29589c4ed5b9c9390c81b07e6",
+        "task_lock_control_count": 2
+      },
+      "verification_assignment": "/tmp/r3_42_evidence_self_reference_verify_assignment_v2.json",
+      "verification_assignment_sha256": "5593bc1ee5810d836168f118517f228db7db2c1d1ee94d944897d826414749a8",
+      "verification_report": "/tmp/r3-42-evidence-self-reference-verify-report-v2.json",
+      "verification_report_sha256": "58d3a373202fc5661e4e332af277ac82e6ce66f18bdd067f5ebc03db0f4209b1",
+      "source_test_guard_ledger_bundle_R2_dependency_app_mutation_authorized": false,
+      "fresh_independent_t9_required_after_correction": true,
+      "frozen_at": "2026-07-31T03:15:13Z"
+    },
+    "t8_evidence_self_reference_correction_result": {
+      "status": "complete-all-mutation-closed-fresh-independent-T9-required",
+      "helper": {
+        "sha256": "39a3d560b51d891fc4e92ec91201eb381ecc8148531a6d1f7692916a95c4658b",
+        "size_bytes": 47921,
+        "mode": "0600",
+        "ruff_check": "pass",
+        "ruff_format": "pass"
+      },
+      "receipt_hashes": {
+        "evidence-hygiene": "1db5b9a64a4cc871e8a7cfe386f014f8026817c5238fd79c8015ed02fd69c444",
+        "formatter-debt-parity": "ea549b596bedf4f860cb552af10dd71a9b89c87c3543e54833359192941f6500",
+        "partial-release-manifest": "1536bb21076e1953ae22eb92363035ab3f57a42c13f1ca136e34619dba3af34e",
+        "pytest": "4e19034b3cbfb400ebe3ae639b7c208ae44f9a07dc35d77f6cdf2541c26b7272",
+        "r2-dependency-boundary": "12cdc127b9b47a796fbb0ef18dcb3104c7600f829f5bc9bd5951d9048f7cace5",
+        "rollback-hashes": "d888b7ded8570d6ab66b9e95b77ca3b5a9f96334d9ed2b05234b782bef0203a7",
+        "workspace-contract": "276bd21d1e29fce609cd965d955230482c7f892d642bc3365f3239d7538bf7e1"
+      },
+      "rollback": {
+        "structured_output_sha256": "87c2c6cfed2ca790723429d5eaafe49a40b38788a741ea0a65e9d01f4219f168",
+        "structured_output_size_bytes": 36026,
+        "run_count": 2,
+        "byte_identical": true,
+        "replay_count_per_run": 2,
+        "negative_control_count_per_run": 4,
+        "task_lock_byte_drift_control_count_per_run": 1,
+        "restored_target_manifest_sha256": "13fa7d46d056c4af2363f58f42db4cc00897bfa29589c4ed5b9c9390c81b07e6",
+        "candidate_and_restored_byte_mode_checks_preserved": true
+      },
+      "evidence_prefix": {
+        "file_count": 17,
+        "json_receipt_count": 14,
+        "manifest_sha256": "56958433ed8adada10bb7e8fa4c0063da6847981285101ce946a61dd062b3141"
+      },
+      "packet_sha256_before_final_lock_refresh": "3d470b7f708c5b379c8c7a807538016808151b6544b688db1cc15bcf00955d41",
+      "packet_size_bytes": 15882,
+      "validation": {
+        "packet_scoped_manifest": "pass-59-packets-532-evidence",
+        "evidence_hygiene": "pass-658-files",
+        "all_fourteen_receipts_exact": true,
+        "graph": "pass-500-1296-4-40-social-1-23-legacy-96-7-app-zero",
+        "hotspots": "pass-144-router-9385-monolith-68316",
+        "focused_tests": "pass-113",
+        "full_release": "blocked-only-frozen-cloudflare-r2-prepare_named_secrets-retained-record-mismatch"
+      },
+      "source_test_guard_ledger_bundle_R2_dependency_app_mutation": false,
+      "fresh_independent_t9_required": true,
+      "completed_at": "2026-07-31T03:20:47Z"
+    },
+    "t9_acceptance_result": {
+      "status": "accepted_with_follow_up",
+      "reviewer": {
+        "task_name": "r3_42_t9_final_review_replacement",
+        "role": "acceptance_integrator",
+        "model": "gpt-5.6-sol",
+        "reasoning_effort": "xhigh",
+        "assignment": "/tmp/r3_42_t9_final_review_replacement_assignment.json",
+        "assignment_sha256": "e6221b9529a8833c42d81297252434c3f89e759f11d27a762af9249b6ef20c9b",
+        "report": "/tmp/r3-42-t9-final-review-replacement-report.json",
+        "report_sha256": "14469b2e2d6a54ced758bf1d0cb76b355fb3c4745fe698c07f853ed9065f411f",
+        "report_size_bytes": 23671,
+        "severity_counts": {
+          "P0": 0,
+          "P1": 0,
+          "P2": 0,
+          "P3": 0
+        }
+      },
+      "validation": {
+        "receipt_replay": "pass-fourteen-of-fourteen-exact-exit-stdout-sha256-size-zero-stderr",
+        "focused_tests": "pass-113",
+        "compatibility": "pass-five-of-five-import-order-module-identity-package-export-and-repository-alias-monkeypatch-leaders",
+        "graph": "pass-500-1296-4-40-social-1-23-legacy-96-7-app-1122-2944-zero",
+        "hotspots": "pass-144-router-9385-monolith-68316",
+        "rollback": "pass-87c2c6cf-36026-target-13fa7d46-eight-controls-exact-candidate-and-restored-bytes",
+        "evidence": "pass-seventeen-files-fourteen-json-prefix-56958433",
+        "r2_dependency_boundary": "pass-59-22-43-78-empty-intersections-plus-fail-closed-controls",
+        "authority": "pass-all-mutation-staging-commit-build-browser-migration-deployment-authority-false",
+        "final_dirty_snapshots": "pass-workspace-619-685a68c7-backend-266-cef16a93-app-167-c5468853"
+      },
+      "read_only_mapping_status": {
+        "live_graph_agent": "complete-worker-detail-ranked-first-legacy-97-to-96-no-module-edge-or-SCC-delta",
+        "compatibility_agent": "complete-no-unsupported-callers-module-identity-import-order-and-alias-patch-contract-preserved",
+        "validation_agent": "complete-113-integrated-tests-Ruff-rollback-hotspot-evidence-and-stop-contract",
+        "router_agent": "complete-twelve-families-mapped-no-router-path-frozen",
+        "wrapper_closeout_agent": "complete-forty-groups-seven-removable-nineteen-dependent-fourteen-reledger"
+      },
+      "next_mutation_authorized": false,
+      "next_mutation_scope": [],
+      "next_eligible_action": "T6-read-only-live-graph-caller-compatibility-validation-router-and-wrapper-recompute",
+      "external_follow_up": "frozen-Cloudflare-R2-prepare_named_secrets-retained-record-mismatch-remains-separate-and-not-green",
+      "accepted_at": "2026-07-31T03:55:40Z"
+    }
+  },
+  "active_r3_packet": {
+    "packet_id": "local-social-purge-inactive-workers-canonical-provider-proxy-caller-cut",
+    "packet_role": "r3-43-purge-inactive-workers-provider-proxy-caller-cut",
+    "task_lock_path_owner_packet_id": "local-social-purge-inactive-workers-canonical-provider-proxy-caller-cut",
+    "task_id": 2,
+    "phase": "R3",
+    "slice": "R3.43",
+    "state": "implementation_complete_parked_accepted_with_follow_up",
+    "owner": "program-coordination",
+    "scope": "single-purge-social-ingest-inactive-workers-function-scoped-legacy-repository-caller-cut-through-existing-canonical-queue-status-provider-proxy",
+    "t6_verdict": "pass-five-read-only-lane-reconciliation-plus-targeted-purge-validation; mechanically-smallest-purge-occurrence-is-the-smallest-fully-green-graph-supported-compatible-boundary; worker-health-remains-parked-on-two-existing-behavior-failures",
+    "edge_before": "api.routers.socials purge_social_ingest_inactive_workers -> trr_backend.repositories.social_season_analytics.purge_inactive_workers",
+    "edge_removed": "one legacy AST occurrence; router-to-repository module edge remains through eighty-nine other occurrences",
+    "edge_added": "none at module-graph level; router-to-control_plane.queue_status already exists through accepted health-dot, queue-status, and worker-detail callers",
+    "expected_backend_module_count_after": 500,
+    "expected_backend_edge_count_after": 1296,
+    "expected_backend_cycle_count_after": 4,
+    "expected_backend_cyclic_module_count_after": 40,
+    "expected_social_cycle_count_after": 1,
+    "expected_social_cyclic_module_count_after": 23,
+    "expected_legacy_social_import_count_after": 95,
+    "expected_legacy_social_importer_count_after": 7,
+    "expected_app_module_count_after": 1122,
+    "expected_app_edge_count_after": 2944,
+    "expected_app_cycle_count_after": 0,
+    "expected_backend_graph_sha256_after": "92060645e321de482a11afc4f0dd5ee978f1a368a4ce9027cb08b3d924a3db29",
+    "expected_backend_source_sha256_after": "7b3901d7860066fd17b435c661898da306fbba46ae7ed837528cbc7b12a49b49",
+    "scc_reduction_claimed": false,
+    "observed_social_monolith_lines_before": 68316,
+    "expected_social_monolith_lines_after": 68316,
+    "social_monolith_line_ceiling": 68316,
+    "observed_router_lines_before": 9385,
+    "expected_router_lines_after": 9385,
+    "router_line_ceiling": 9385,
+    "expected_worker_source_sha256_after": "d0eff58131f093c1dfe6ce4db80a141cf7ce0233504eea4e283e23e428eb6255",
+    "expected_worker_source_bytes_after": 384690,
+    "expected_worker_source_lines_after": 9385,
+    "expected_endpoint_test_sha256_unchanged": "5428eb270baa0d98bfba356386d412242b751c0af9f7cbc6481858610bf098c8",
+    "expected_endpoint_test_bytes_unchanged": 381334,
+    "expected_endpoint_test_lines_unchanged": 9404,
+    "expected_worker_focused_test_count_after": 123,
+    "expected_integrated_focused_test_count_after": 124,
+    "expected_lead_guard_sha256_after": "185d54e7c5e8670908a3534bd807a9db2fa2e16906a17c9b4cc1a3ce81dc9cec",
+    "expected_lead_guard_bytes_after": 91232,
+    "expected_lead_guard_lines_after": 2317,
+    "expected_compatibility_ledger_sha256_after": "1254b91a845710780127d83a128c3f1d23fef7a07c9ae53f0b48f3ec1f447d54",
+    "expected_compatibility_ledger_bytes_after": 41502,
+    "expected_compatibility_ledger_lines_after": 149,
+    "no_effective_behavior_change": true,
+    "recovery_baseline": {
+      "workspace_head": "a788f2777acffdb18acb0abfa98fc5a7c176d925",
+      "backend_head": "0a3d2b59ec29304fb2765fd8cf996032e11c937b",
+      "app_head": "78681eac73c79e6534031fe1f050966edff9b844",
+      "manifest": ".plan-work/plan-architect/trr-architecture-overhaul-20260715/R3_CHECKPOINT_RECOVERY_MANIFEST.20260729.tsv",
+      "task_lock_sha256": "61f372a200a8c1fa19f0256da0a042fd67afe99a7ea5c353e5f6df98a2042430",
+      "backend_graph": "pass-r3-42-500-modules-1296-edges-4-cycles-40-cyclic-social-1-23-legacy-96-7-sha256-92060645",
+      "backend_source_sha256": "0a36885b24e6bf19d53a618a712b416d6500d9c790454913133a6563093dca1e",
+      "app_graph": "pass-1122-modules-2944-edges-zero-cycles-sha256-22e12763d99b09bcecb4832a71d7131cba92f006e3dd9df4b96c2f816bdf9b7c",
+      "dirty_tree_snapshot": {
+        "workspace": {
+          "status_count": 619,
+          "status_sha256": "685a68c7f3b0da138746c97c6b8ffe6745c0760f008c36426517e2d5c858044a"
+        },
+        "backend": {
+          "status_count": 266,
+          "status_sha256": "cef16a9339c48bb9c4e4f9d539f7efc2dcb77cf95cd0aedc1bbd73f47127b2fe"
+        },
+        "app": {
+          "status_count": 167,
+          "status_sha256": "c54688533217e713aa3d74f367d692d684ddc426ef8331b8638a73be772ab793"
+        }
+      },
+      "dependency_preservation_stashes": {
+        "workspace": "9a89be1339daa545b310889a588be48a5abc8360",
+        "backend": "35ef28d4f6d9fecbe60dd29b23c2ea23cc5cab29",
+        "app": "4b2f4e16fa4ff049b60f38909cf0348615d69cb9",
+        "app_generated_caches": "917581a4810742105af7da4ce0914f8b9034e8c7"
+      },
+      "cloudflare_r2_write_set_path_count": 59,
+      "cloudflare_r2_write_set_sha256": "580e54c6baef557f1615add1b71886d1c2cb56f20a064eb41877f8f2f7a4227a",
+      "dependency_preservation_path_union_count": 43,
+      "dependency_preservation_inclusive_path_count": 78,
+      "r3_dependency_intersection": [],
+      "r3_cloudflare_r2_intersection": []
+    },
+    "compatibility_contract": {
+      "endpoint": "POST /api/v1/admin/socials/ingest/workers/purge-inactive",
+      "route_decorator_dependency_signature_request_model_return_annotation_and_auth_unchanged": true,
+      "signature_source_and_ast_unchanged_from_pre_packet_state": true,
+      "canonical_provider_after": "trr_backend.socials.control_plane.queue_status._legacy_repo",
+      "provider_import_after": "from trr_backend.socials.control_plane.queue_status import _legacy_repo as _repo",
+      "provider_call_after": "_repo().purge_inactive_workers(stale_after_seconds=(payload.stale_after_seconds if payload else None))",
+      "provider_alias_is_function_scoped_and_resolves_the_same_live_proxy_at_call_time": true,
+      "stale_after_seconds_expression_unchanged": true,
+      "success_payload_and_status_unchanged": true,
+      "unhandled_error_logging_and_internal_500_mapping_unchanged": true,
+      "underlying_delete_transaction_and_missing_schema_behavior_unchanged": true,
+      "repository_alias_patch_target_preserved": "trr_backend.repositories.social_season_analytics.purge_inactive_workers",
+      "repository_alias_patch_before_router_import_preserved": true,
+      "repository_alias_patch_after_router_import_preserved": true,
+      "provider_namespace_is_exact_monolith_dictionary": true,
+      "same_namespace_configuration_idempotent": true,
+      "different_namespace_configuration_rejected": true,
+      "repository_alias_or_monolith_deletion_in_scope": false,
+      "queue_status_provider_or_configuration_change_in_scope": false,
+      "worker_health_candidate_or_baseline_failure_repair_in_scope": false,
+      "new_shared_contract": false,
+      "router_family_extraction_in_scope": false,
+      "public_route_openapi_cache_sse_auth_and_wire_behavior_unchanged": true,
+      "validation_invokes_only_test_doubles_or_repository_test_transactions": true
+    },
+    "pre_mutation_path_hashes": {
+      "TRR-Backend/api/routers/socials/__init__.py": "5fabcab27655c066026cc9f4e1ed56ff8f44bddddfb5072d07bd70e39feafa5b",
+      "TRR-Backend/tests/api/routers/test_socials_season_analytics.py": "5428eb270baa0d98bfba356386d412242b751c0af9f7cbc6481858610bf098c8",
+      "TRR-Backend/tests/repositories/test_social_control_plane_imports.py": "e5c5da69ae2a8776362e9af3d06c1ebcec7851a67bb00d05244b858d035ce01a",
+      "TRR-Backend/docs/architecture/social-compatibility-wrapper-ledger.md": "0a0d13a827fdfb6287fc0075db097b548c0b501cfc6af9417c0d7e9b3838ec5f",
+      "docs/workspace/architecture-task-locks.json": "61f372a200a8c1fa19f0256da0a042fd67afe99a7ea5c353e5f6df98a2042430",
+      "docs/workspace/release-packets/local-social-purge-inactive-workers-canonical-provider-proxy-caller-cut.json": null,
+      "docs/workspace/architecture-evidence/local-social-purge-inactive-workers-canonical-provider-proxy-caller-cut.*": null
+    },
+    "validation_only_path_hashes": {
+      "TRR-Backend/trr_backend/socials/control_plane/queue_status.py": "5d5f235644278938bfb3397b9a2dc535633cf9bbb492d90d6f1e48283ed1b184",
+      "TRR-Backend/trr_backend/socials/control_plane/worker_health.py": "f5f4a5b26df042ecd25aeb2fc2d29ca1f3cbb67a84e0352991d6d7b243c1f3c5",
+      "TRR-Backend/trr_backend/socials/social_season_analytics_impl.py": "9c2c38f2bceff0e930bb118f7f42c7c5932038e33e7bfd974a0718e5471938c9",
+      "TRR-Backend/trr_backend/repositories/social_season_analytics.py": "5d2438410184d44ae20164ca1582587fb14affdeafc4f8d40271f88a45e1eff7",
+      "TRR-Backend/tests/api/routers/test_socials_route_shape.py": "8735992da5ba3d348bc99781ab9b67d9d6cd891146953b65499ab40358c51604",
+      "TRR-Backend/tests/api/routers/test_socials_season_analytics.py": "5428eb270baa0d98bfba356386d412242b751c0af9f7cbc6481858610bf098c8",
+      "TRR-Backend/tests/repositories/test_social_queue_status.py": "c78c31a2d7effac8033bde8adb3b976c129459b48e49ac7b09a9dac5d840399c",
+      "TRR-Backend/tests/repositories/test_social_season_analytics.py": "15b6c00a5ceaf2f189105ed29ae072badebaf5ac3a4174820b8a8cbfd13c048a",
+      "scripts/architecture/check-import-graph.py": "f1f9a354f16f2b4f6a68fad450bfda3b6b009d7dbd09cb9da3bc1276603d5802",
+      "scripts/architecture/check-hotspots.py": "43de52638b4fcb50d506b545307b0e29f83aceca73091354ecf511e5e294de2b",
+      "docs/workspace/architecture-hotspots.json": "80f9d9cf9fdeb7d5aa57b26adbf23065a2c840fdd714c7b44b472dbebda2fab6"
+    },
+    "planned_post_integration_path_hashes": {
+      "TRR-Backend/api/routers/socials/__init__.py": "d0eff58131f093c1dfe6ce4db80a141cf7ce0233504eea4e283e23e428eb6255",
+      "TRR-Backend/tests/repositories/test_social_control_plane_imports.py": "185d54e7c5e8670908a3534bd807a9db2fa2e16906a17c9b4cc1a3ce81dc9cec",
+      "TRR-Backend/docs/architecture/social-compatibility-wrapper-ledger.md": "1254b91a845710780127d83a128c3f1d23fef7a07c9ae53f0b48f3ec1f447d54"
+    },
+    "worker_owned_paths": [
+      "TRR-Backend/api/routers/socials/__init__.py"
+    ],
+    "owned_paths": [
+      "TRR-Backend/api/routers/socials/__init__.py",
+      "TRR-Backend/tests/repositories/test_social_control_plane_imports.py",
+      "TRR-Backend/docs/architecture/social-compatibility-wrapper-ledger.md"
+    ],
+    "lead_only_paths": [
+      "TRR-Backend/tests/repositories/test_social_control_plane_imports.py",
+      "TRR-Backend/docs/architecture/social-compatibility-wrapper-ledger.md",
+      "docs/workspace/architecture-task-locks.json",
+      "docs/workspace/release-packets/local-social-purge-inactive-workers-canonical-provider-proxy-caller-cut.json",
+      "docs/workspace/architecture-evidence/local-social-purge-inactive-workers-canonical-provider-proxy-caller-cut.*"
+    ],
+    "validation_only_paths": [
+      "TRR-Backend/trr_backend/socials/control_plane/queue_status.py",
+      "TRR-Backend/trr_backend/socials/control_plane/worker_health.py",
+      "TRR-Backend/trr_backend/socials/social_season_analytics_impl.py",
+      "TRR-Backend/trr_backend/repositories/social_season_analytics.py",
+      "TRR-Backend/tests/api/routers/test_socials_route_shape.py",
+      "TRR-Backend/tests/api/routers/test_socials_season_analytics.py",
+      "TRR-Backend/tests/repositories/test_social_queue_status.py",
+      "TRR-Backend/tests/repositories/test_social_season_analytics.py",
+      "scripts/architecture/check-import-graph.py",
+      "scripts/architecture/check-hotspots.py",
+      "docs/workspace/architecture-hotspots.json"
+    ],
+    "forbidden_paths": [
+      "all-other-router-endpoints-helpers-models-and-route-family-extractions",
+      "the-worker-health-router-occurrence-and-its-two-existing-behavior-failures",
+      "all-six-non-router-legacy-importers",
+      "TRR-Backend/trr_backend/socials/control_plane/queue_status.py",
+      "TRR-Backend/trr_backend/socials/control_plane/worker_health.py",
+      "TRR-Backend/trr_backend/socials/social_season_analytics_impl.py",
+      "TRR-Backend/trr_backend/repositories/social_season_analytics.py",
+      "TRR-APP/**",
+      "TRR-Backend/supabase/**",
+      "TRR-Backend/scripts/**",
+      "all-database-SQL-migration-runtime-Modal-deployment-environment-generated-contract-browser-build-and-cleanup-paths",
+      "the-59-path-cloudflare-r2-write-set-bound-by-sha256-580e54c6baef557f1615add1b71886d1c2cb56f20a064eb41877f8f2f7a4227a",
+      "all-current-dependency-modernization-paths-and-four-preservation-objects",
+      "all-Task-3-Task-4-Gate-3-prior-packet-and-prior-evidence-paths"
+    ],
+    "rollback": {
+      "mode": "incremental-byte-exact-path-preimages-only",
+      "temporary_preimage_bundle": "/tmp/r3-43-purge-inactive-workers-preimages.tar.gz",
+      "temporary_preimage_bundle_sha256": "0b7de0ad099ff9a2e358afc34544d4425edb6a2a1623a3c36eb24c49265d1406",
+      "temporary_preimage_bundle_size_bytes": 150633,
+      "temporary_preimage_bundle_mode": "0600",
+      "required_durable_bundle_path": "docs/workspace/architecture-evidence/local-social-purge-inactive-workers-canonical-provider-proxy-caller-cut.rollback-preimages.tar.gz",
+      "durable_bundle_expected_sha256": "0b7de0ad099ff9a2e358afc34544d4425edb6a2a1623a3c36eb24c49265d1406",
+      "durable_bundle_expected_size_bytes": 150633,
+      "durable_bundle_expected_mode": "0600",
+      "required_durable_replay_helper_path": "docs/workspace/architecture-evidence/local-social-purge-inactive-workers-canonical-provider-proxy-caller-cut.replay.py",
+      "bundle_members": {
+        "TRR-Backend/api/routers/socials/__init__.py": "5fabcab27655c066026cc9f4e1ed56ff8f44bddddfb5072d07bd70e39feafa5b",
+        "TRR-Backend/tests/api/routers/test_socials_season_analytics.py": "5428eb270baa0d98bfba356386d412242b751c0af9f7cbc6481858610bf098c8",
+        "TRR-Backend/tests/repositories/test_social_control_plane_imports.py": "e5c5da69ae2a8776362e9af3d06c1ebcec7851a67bb00d05244b858d035ce01a",
+        "TRR-Backend/docs/architecture/social-compatibility-wrapper-ledger.md": "0a0d13a827fdfb6287fc0075db097b548c0b501cfc6af9417c0d7e9b3838ec5f",
+        "docs/workspace/architecture-task-locks.json": "61f372a200a8c1fa19f0256da0a042fd67afe99a7ea5c353e5f6df98a2042430"
+      },
+      "created_packet_evidence_path_count": 18,
+      "created_packet_evidence_and_helper_preimage": "absent-remove-only-new-prefix",
+      "broad_stash_restore_forbidden": true,
+      "head_relative_reversal_forbidden": true,
+      "durable_bundle_members": {
+        "TRR-Backend/api/routers/socials/__init__.py": "5fabcab27655c066026cc9f4e1ed56ff8f44bddddfb5072d07bd70e39feafa5b",
+        "TRR-Backend/tests/api/routers/test_socials_season_analytics.py": "5428eb270baa0d98bfba356386d412242b751c0af9f7cbc6481858610bf098c8",
+        "TRR-Backend/tests/repositories/test_social_control_plane_imports.py": "e5c5da69ae2a8776362e9af3d06c1ebcec7851a67bb00d05244b858d035ce01a",
+        "TRR-Backend/docs/architecture/social-compatibility-wrapper-ledger.md": "0a0d13a827fdfb6287fc0075db097b548c0b501cfc6af9417c0d7e9b3838ec5f",
+        "docs/workspace/architecture-task-locks.json": "61f372a200a8c1fa19f0256da0a042fd67afe99a7ea5c353e5f6df98a2042430"
+      }
+    },
+    "acceptance": {
+      "t6_mapping": "pass-five-read-only-lane-reconciliation-plus-targeted-purge-suite-and-parent-patch-order-proof",
+      "t2_boundary": "frozen-one-worker-path-exact-two-line-postimage-five-preimages-eleven-immutable-hashes-123-worker-tests-124-integrated-tests-graph-hotspots-and-stop-conditions",
+      "next_mutation_authorized": false,
+      "next_mutation_authorization_basis": "R3.43 remains locally accepted, but the next T6 joins parked every ranked candidate before T2: whole-importer cuts require an unfrozen provider contract, router alternatives regress repository-path monkeypatch visibility, and validation lacks direct export/cache coverage plus an executable postimage and exact rollback membership. All mutation remains closed.",
+      "next_mutation_scope": [],
+      "focused_tests_before": "pass-123-collected-targeted-purge-and-shared-provider-suite",
+      "focused_ruff_before": "pass-current-source-and-project-guard-check; planned-source-format-projection-retained",
+      "import_graph_before": "pass-500-1296-4-40-social-1-23-legacy-96-7-app-zero-graph-92060645-source-0a36885b",
+      "expected_import_graph_after": "500-1296-4-40-social-1-23-legacy-95-7-app-zero-graph-92060645-source-7b3901d7",
+      "hotspot_before": "pass-144-router-9385-monolith-68316",
+      "worker_health_baseline": "parked-separate-two-failures-heartbeat-metadata-and-remote-instagram-auth-summary-outside-purge-truth-scope",
+      "t7_source": "pass-exact-b8d8fd26-384688-bytes-9385-lines-two-frozen-replacements-only",
+      "t7_focused_tests": "pass-123",
+      "t7_initial_stop": "nonexistent-dot-venv-bin-Ruff-executable-exit-127-before-Ruff-format-graph-hotspot-diff-AST-immutable-and-final-dirty-oracles",
+      "corrected_ruff_executable": "/opt/homebrew/bin/ruff",
+      "corrected_ruff_version": "0.14.4",
+      "formatter_refreeze": "dcb37d46-superseded-after-Ruff-format-required-blank-line-conflict",
+      "provider_alias_refreeze": "d0eff581-384690-bytes-9385-lines-pipefail-Ruff-check-pass-pipefail-Ruff-format-pass-signature-blank-lines-call-order-and-error-semantics-unchanged",
+      "t7_final_report": "pass-fresh-replacement-deep-debugger-sol-high-1e2129fc-no-repository-writes",
+      "next_task": "parked-before-T2-requires-new-read-only-provider-contract-and-direct-test-design-authority",
+      "t8_boundary": "pass-124-tests-fourteen-receipts-seventeen-file-prefix-two-rollbacks-R2-separation-all-mutation-closed",
+      "independent_review": "pass-conclusive-acceptance-integrator-xhigh-zero-P0-P3-fourteen-exact-receipts-two-scratch-rollbacks-provider-compatibility-R2-separation-dirty-preservation-and-final-drift"
+    },
+    "assignments": [
+      {
+        "task_name": "r3_post_42_t6_live_graph",
+        "selected_role": "deep_debugger",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "high",
+        "purpose": "authoritative-seven-importer-graph-recompute-ranking-and-exact-overlays",
+        "status": "complete",
+        "result": "purge-inactive-ranked-mechanically-smallest; legacy-96-to-95-no-module-edge-or-SCC-delta",
+        "assignment": "/tmp/r3_post_42_t6_live_graph_assignment.json",
+        "assignment_sha256": "a14b24c9c102876afd33b73635a9b51bc8399797aa39dfe06bf4c1789309226f",
+        "report": "/tmp/r3-post-42-t6-live-graph-report.json",
+        "report_sha256": "4d39945ad7446436c71ec6b5130cb16483c84cd3fe198a580edae9f6ecda610f"
+      },
+      {
+        "task_name": "r3_post_42_t6_compatibility",
+        "selected_role": "deep_debugger",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "high",
+        "purpose": "callers-module-identity-monkeypatch-wrapper-package-export-and-ownership-map",
+        "status": "complete",
+        "result": "provider-proxy-compatible-for-purge; worker-health-ranked-read-only-but-requires-green-oracle",
+        "assignment": "/tmp/r3_post_42_t6_compatibility_assignment.json",
+        "assignment_sha256": "d13ecbb17ad41f37c806afb35bcdf20063fbf6e1279003d61ba849d3df8add54",
+        "report": "/tmp/r3-post-42-t6-compatibility-report.json",
+        "report_sha256": "4e3db3bf402b401a829a822891ef96d21793c28c584fa0ca98ecd3b26d1bdc43"
+      },
+      {
+        "task_name": "r3_post_42_t6_validation",
+        "selected_role": "deep_debugger",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "high",
+        "purpose": "focused-tests-Ruff-rollback-immutable-hotspot-evidence-and-finish-line-effect",
+        "status": "blocked_for_worker_health_candidate",
+        "result": "worker-health-120-of-122-two-existing-behavior-failures; purge-remained-eligible-for-targeted-independent-proof",
+        "assignment": "/tmp/r3_post_42_t6_validation_assignment.json",
+        "assignment_sha256": "31b0963efba4ec06b85c1d5dbde26f49a110e01c8b02faceb50e1e1544accd4b",
+        "report": "/tmp/r3-post-42-t6-validation-report.json",
+        "report_sha256": "4c8f783c336116b9cecdba926388c9e4f68ee9eec058a415db4ae00df03fd5d0"
+      },
+      {
+        "task_name": "r3_post_42_t6_router",
+        "selected_role": "deep_debugger",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "high",
+        "purpose": "read-only-router-family-and-canonical-seam-map",
+        "status": "complete",
+        "result": "twelve-families-9385-lines-ninety-router-legacy-occurrences-no-family-freeze",
+        "assignment": "/tmp/r3_post_42_t6_router_assignment.json",
+        "assignment_sha256": "2ae31c7aaa0a4c02e5a63faa7bb70d00f39e8bb22d3f37e9406a0f1e38d05f3b",
+        "report": "/tmp/r3-post-42-t6-router-report.json",
+        "report_sha256": "f83765b03ae5ae042de0663a578b39b4b66bf847cc5d2e4eedd12d6926c54ae6"
+      },
+      {
+        "task_name": "r3_post_42_t6_wrapper_closeout",
+        "selected_role": "acceptance_integrator",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "xhigh",
+        "purpose": "read-only-wrapper-inventory-and-R3-closeout-obligation-refresh",
+        "status": "complete",
+        "result": "forty-groups-seven-removable-nineteen-dependent-fourteen-reledger; dirty-drift-finding-dismissed-by-parent-as-missing-untracked-files-all-command-scope",
+        "assignment": "/tmp/r3_post_42_t6_wrapper_closeout_assignment.json",
+        "assignment_sha256": "798f53ff5238a0bad4b38cbc7fbc48c8d8768131eec6bf05a67e2f3c68990e0a",
+        "report": "/tmp/r3-post-42-t6-wrapper-closeout-report.json",
+        "report_sha256": "375608a4a6e1b644324bb43f1b78d9c35af69b2b75ae17b4f15072afea1e2b56"
+      },
+      {
+        "task_name": "r3_post_42_t6_purge_targeted_validation",
+        "selected_role": "deep_debugger",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "high",
+        "purpose": "resolve-candidate-local-purge-oracle-after-worker-health-baseline-failures",
+        "status": "interrupted_after-substantive-checks-before-typed-report",
+        "result": "live-gates-graph-hotspots-exact-and-123-of-123-suite-pass; parent-completed-fresh-process-patch-before-and-patch-after-proofs-and-overlay-reconciliation",
+        "assignment": "/tmp/r3_post_42_t6_purge_targeted_validation_assignment.json",
+        "assignment_sha256": "ba73094270087bbab4f79658b863b40264b242d50c11d15b5c3964de26a553fd",
+        "report": null,
+        "report_sha256": null
+      },
+      {
+        "task_name": "r3_43_t7_purge_inactive_workers",
+        "selected_role": "deep_debugger",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "high",
+        "purpose": "implement-the-frozen-two-line-router-caller-cut-and-run-worker-oracles",
+        "status": "blocked-after-source-complete",
+        "result": "source-postimage-exact-and-123-tests-pass; frozen-dot-venv-bin-Ruff-command-exit-127-because-executable-is-absent; stopped-before-all-later-oracles",
+        "assignment": "/tmp/r3_43_t7_purge_inactive_workers_assignment.json",
+        "assignment_sha256": "7833dc82dcca86cbe20917b7b8a16957a2048241000c3eb589cfce7ff9a9e070",
+        "report": "/tmp/r3-43-t7-purge-inactive-workers-report.json",
+        "report_sha256": "0f2ffe121aaf797c697191c09da9822e58307e1e18328094d4e8d5122b2f3737"
+      },
+      {
+        "task_name": "r3_43_t7_validation_rerun",
+        "selected_role": "deep_debugger",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "high",
+        "purpose": "complete-corrected-read-only-T7-validation-over-b8d8fd26",
+        "status": "blocked-on-source-style-postimage",
+        "result": "all-preflight-values-pass; opt-homebrew-Ruff-0.14.4-reports-E501-at-line-7361-124-greater-than-120; no-later-oracles-run",
+        "assignment": "/tmp/r3_43_t7_validation_rerun_assignment.json",
+        "assignment_sha256": "a7bd18b4708a64e6f6237f766823257ad3ba271e4761c9d4cdb12860c6337a12",
+        "report": "/tmp/r3-43-t7-validation-rerun-report.json",
+        "report_sha256": "23f22d73f74290cc216ca1fa37edb751cf8ea5a5c7c2e76a847193e10ca90c0c"
+      },
+      {
+        "task_name": "r3_43_t9_acceptance_conclusive",
+        "selected_role": "acceptance_integrator",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "xhigh",
+        "purpose": "fresh-risk-first-conclusive-review-of-receipts-rollback-provider-compatibility-R2-separation-dirty-preservation-authority-and-drift",
+        "status": "complete",
+        "result": "ACCEPT-P0-0-P1-0-P2-0-P3-0-fourteen-of-fourteen-exact-receipts-two-of-two-scratch-rollbacks-and-all-final-oracles-pass",
+        "assignment": "/tmp/R343-T9-ACCEPT-CONCLUSIVE-assignment.json",
+        "assignment_sha256": "d8cc703224156ca7809b40ee0d10da51c7dac28bf216f529ce825e490419da8e",
+        "report": "/tmp/R343-T9-ACCEPT-CONCLUSIVE-report.json",
+        "report_sha256": "8c69b8d3e2e74eaf779f1f7ee43694ca28d06fd9c65488b75ce73e10e64b314e"
+      },
+      {
+        "task_name": "next_t6_graph",
+        "selected_role": "repository_mapper",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "medium",
+        "purpose": "read-only-exact-remaining-importer-map-two-stable-graph-runs-and-candidate-overlay-ranking",
+        "status": "complete",
+        "result": "account-profile-ranked-topologically-first-with-1296-to-1295-95-to-94-7-to-6-social-cyclic-23-to-22-compatibility-unproven",
+        "assignment": "/tmp/NEXT-T6-GRAPH-assignment.json",
+        "assignment_sha256": "a2b13c3fa8c1b2837e6b5e4b29a6adc4d7b1192d213de64b066725315da894d6",
+        "report": "/tmp/NEXT-T6-GRAPH-report.json",
+        "report_sha256": "b5b6f758066e59edbcd01918196b66c0503fa6343a3489bc1f98ab5e11d394ea"
+      },
+      {
+        "task_name": "next_t6_compat",
+        "selected_role": "deep_debugger",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "high",
+        "purpose": "read-only-callers-identities-wrappers-import-orders-and-monkeypatch-contract-map",
+        "status": "blocked",
+        "result": "account-profile-and-analytics-deletions-need-undefined-provider-contract; three-router-alternatives-break-repository-path-monkeypatch-visibility; no-compatible-candidate",
+        "assignment": "/tmp/NEXT-T6-COMPAT-assignment.json",
+        "assignment_sha256": "869d0397e33b51bf062745fedf700cd3692ea7e83c71502734005da8daec88f9",
+        "report": "/tmp/NEXT-T6-COMPAT-report.json",
+        "report_sha256": "218fb3ed0a624edfc39e753f02c4bec4da335a12629f177d2adec7103e0499a5"
+      },
+      {
+        "task_name": "next_t6_validation",
+        "selected_role": "senior_scout",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "medium",
+        "purpose": "read-only-tests-rollback-ceilings-receipts-stop-conditions-and-finish-line-map",
+        "status": "complete-parked-before-T2",
+        "result": "134-focused-tests-and-144-hotspots-pass-current-tree; direct-rollup-health-cache-executable-postimage-and-rollback-freeze-gaps-remain",
+        "assignment": "/tmp/NEXT-T6-VALIDATION-assignment.json",
+        "assignment_sha256": "7ae97e62164be9e712314208aa0d78b72414fd790da36e5148842ae2f252a31c",
+        "report": "/tmp/NEXT-T6-VALIDATION-report.json",
+        "report_sha256": "ad24c46b7b6418bf322ba0a85d057384d5b2092b30546c9dc352b6ad03f2afd0"
+      }
+    ],
+    "stop_conditions": [
+      "any-HEAD-canonical-dirty-snapshot-task-lock-assignment-prehash-immutable-hash-or-live-writer-drift",
+      "any-required-change-beyond-the-two-frozen-replacements-in-purge_social_ingest_inactive_workers",
+      "any-postimage-d0eff581-byte-384690-line-9385-graph-source-7b3901d7-legacy-count-SCC-or-app-cycle-mismatch",
+      "any-route-decorator-signature-dependency-request-model-stale-after-seconds-expression-payload-logging-exception-auth-OpenAPI-cache-or-SSE-change",
+      "any-underlying-purge-transaction-delete-missing-schema-or-repository-alias-monkeypatch-behavior-change",
+      "any-focused-test-Ruff-format-AST-diff-graph-hotspot-immutable-or-dirty-snapshot-failure",
+      "any-attempt-to-repair-or-mask-the-two-existing-worker-health-behavior-failures",
+      "any-need-to-write-a-test-guard-ledger-lock-packet-evidence-rollback-provider-worker-health-monolith-alias-app-R2-dependency-modernization-or-excluded-path",
+      "any-concurrent-writer-on-the-router-or-a-lead-owned-serialized-path",
+      "any-staging-commit-build-browser-migration-deployment-Modal-cleanup-Task3-Task4-or-Gate3-need"
+    ],
+    "frozen_at": "2026-07-31T04:27:59Z",
+    "t7_validation_oracle_correction": {
+      "status": "superseded-by-Ruff-line-neutral-postimage-refreeze",
+      "root_cause": "The T7 assignment named ./.venv/bin/ruff, but the live backend virtual environment contains neither a Ruff executable nor the Ruff module.",
+      "live_executable": "/opt/homebrew/bin/ruff",
+      "live_version": "ruff 0.14.4",
+      "corrected_check_command": "/opt/homebrew/bin/ruff check api/routers/socials/__init__.py tests/api/routers/test_socials_season_analytics.py tests/api/routers/test_socials_route_shape.py tests/repositories/test_social_queue_status.py tests/repositories/test_social_control_plane_worker_health.py tests/repositories/test_social_control_plane_imports.py",
+      "corrected_format_command": "/opt/homebrew/bin/ruff format --check api/routers/socials/__init__.py tests/api/routers/test_socials_season_analytics.py tests/api/routers/test_socials_route_shape.py tests/repositories/test_social_queue_status.py tests/repositories/test_social_control_plane_worker_health.py",
+      "cumulative_guard_debt_parity": "run /opt/homebrew/bin/ruff check and format --check on tests/repositories/test_social_control_plane_imports.py separately; require check pass and preserve the existing format nonzero result until lead-owned guard integration",
+      "source_mutation_authorized": false,
+      "validation_only_rerun_authorized": false,
+      "correction_frozen_at": "2026-07-31T04:39:30Z"
+    },
+    "t7_formatter_postimage_refreeze": {
+      "status": "superseded-after-live-Ruff-format-restored-required-blank-line",
+      "trigger": "Ruff E501 at api/routers/socials/__init__.py:7361 on the behavior-exact b8d8fd26 intermediate postimage",
+      "intermediate_source_sha256": "b8d8fd2675c43842b4f7a9cab810d77ec66f617b10325984f43779a800f321c9",
+      "exact_changes": [
+        "Place both existing parameters on one semantically identical line inside the existing parenthesized signature.",
+        "Remove the optional blank line between the function-scoped provider import and try block.",
+        "Wrap the provider call into the formatter-exact three-line call while preserving the stale_after_seconds expression."
+      ],
+      "expected_source_sha256": "dcb37d462b876dc6b4e9ce7539878158cad8c9a6a960ab98fd0e20c793209fc8",
+      "expected_source_bytes": 384704,
+      "expected_source_lines": 9385,
+      "expected_backend_source_sha256": "4f30aef9620c80251add0adec1ddf2b628c3d223ddeb2d0ea36d00f2630e6240",
+      "expected_graph_sha256": "92060645e321de482a11afc4f0dd5ee978f1a368a4ce9027cb08b3d924a3db29",
+      "parent_in_memory_ruff_check": "pass",
+      "parent_in_memory_ruff_format_check": "pass",
+      "AST_signature_decorator_import_call_argument_exception_logging_and_return_semantics_unchanged": true,
+      "hotspot_growth": 0,
+      "source_mutation_authorized": false,
+      "authorized_path": "TRR-Backend/api/routers/socials/__init__.py",
+      "authorized_function": "purge_social_ingest_inactive_workers",
+      "refrozen_at": "2026-07-31T04:44:30Z"
+    },
+    "t7_provider_alias_postimage_refreeze": {
+      "status": "frozen-single-worker-source-mutation-authorized",
+      "trigger": "The dcb37d46 intermediate passed 123 tests and Ruff check, but Ruff format required the blank line removed for line neutrality.",
+      "intermediate_source_sha256": "dcb37d462b876dc6b4e9ce7539878158cad8c9a6a960ab98fd0e20c793209fc8",
+      "exact_changes": [
+        "Restore the original two-line parameter layout and trailing comma.",
+        "Alias the same function-scoped _legacy_repo import as _repo.",
+        "Restore the formatter-required blank line and use the shorter _repo() call on one line."
+      ],
+      "expected_source_sha256": "d0eff58131f093c1dfe6ce4db80a141cf7ce0233504eea4e283e23e428eb6255",
+      "expected_source_bytes": 384690,
+      "expected_source_lines": 9385,
+      "expected_backend_source_sha256": "7b3901d7860066fd17b435c661898da306fbba46ae7ed837528cbc7b12a49b49",
+      "expected_graph_sha256": "92060645e321de482a11afc4f0dd5ee978f1a368a4ce9027cb08b3d924a3db29",
+      "parent_in_memory_pipefail_ruff_check": "pass",
+      "parent_in_memory_pipefail_ruff_format_check": "pass",
+      "provider_module_function_alias_call_argument_exception_logging_and_return_semantics_unchanged": true,
+      "hotspot_growth": 0,
+      "source_mutation_authorized": true,
+      "authorized_path": "TRR-Backend/api/routers/socials/__init__.py",
+      "authorized_function": "purge_social_ingest_inactive_workers",
+      "refrozen_at": "2026-07-31T04:53:30Z"
+    },
+    "post_integration_path_hashes": {
+      "TRR-Backend/api/routers/socials/__init__.py": "d0eff58131f093c1dfe6ce4db80a141cf7ce0233504eea4e283e23e428eb6255",
+      "TRR-Backend/tests/repositories/test_social_control_plane_imports.py": "185d54e7c5e8670908a3534bd807a9db2fa2e16906a17c9b4cc1a3ce81dc9cec",
+      "TRR-Backend/docs/architecture/social-compatibility-wrapper-ledger.md": "1254b91a845710780127d83a128c3f1d23fef7a07c9ae53f0b48f3ec1f447d54"
+    },
+    "t8": {
+      "status": "complete_evidence_corrected",
+      "completed_at": "2026-07-31T22:03:01Z",
+      "receipt_count": 14,
+      "receipts": {
+        "app-diff-check": {
+          "evidence_id": "ev.local-social-purge-inactive-workers-canonical-provider-proxy-caller-cut.app-diff-check",
+          "exit_code": 0,
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_size_bytes": 0
+        },
+        "backend-diff-check": {
+          "evidence_id": "ev.local-social-purge-inactive-workers-canonical-provider-proxy-caller-cut.backend-diff-check",
+          "exit_code": 0,
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_size_bytes": 0
+        },
+        "evidence-hygiene": {
+          "evidence_id": "ev.local-social-purge-inactive-workers-canonical-provider-proxy-caller-cut.evidence-hygiene",
+          "exit_code": 0,
+          "output_sha256": "adf88cf28294a64b0d30b6d6db3d129815abbd9658c50fc4f9ec0c36270e9cb6",
+          "output_size_bytes": 23
+        },
+        "formatter-debt-parity": {
+          "evidence_id": "ev.local-social-purge-inactive-workers-canonical-provider-proxy-caller-cut.formatter-debt-parity",
+          "exit_code": 0,
+          "output_sha256": "1bbc53c86fd158e0d43f1b8e907bc033dbf1c66d4b9f597ab00932a92a3a2445",
+          "output_size_bytes": 68
+        },
+        "hotspot-target": {
+          "evidence_id": "ev.local-social-purge-inactive-workers-canonical-provider-proxy-caller-cut.hotspot-target",
+          "exit_code": 0,
+          "output_sha256": "273d73550e730f5a08dfb12b452a55e2af48b39683c3043c87ee0c76d4b93d8a",
+          "output_size_bytes": 38
+        },
+        "import-graph": {
+          "evidence_id": "ev.local-social-purge-inactive-workers-canonical-provider-proxy-caller-cut.import-graph",
+          "exit_code": 0,
+          "output_sha256": "6de773652b6824b3a7e46c9c342e5a2083032e991f2858120b43d36e7de0e9f0",
+          "output_size_bytes": 5887
+        },
+        "partial-release-manifest": {
+          "evidence_id": "ev.local-social-purge-inactive-workers-canonical-provider-proxy-caller-cut.partial-release-manifest",
+          "exit_code": 0,
+          "output_sha256": "066ddd7898f636ade147a71fce3da9a359ef033b148509429bc88938833d3289",
+          "output_size_bytes": 82
+        },
+        "pytest": {
+          "evidence_id": "ev.local-social-purge-inactive-workers-canonical-provider-proxy-caller-cut.pytest",
+          "exit_code": 0,
+          "output_sha256": "ddf9b21c6de5ff3adf40c74fdb857a10ed470eed0494c403449d0fe15ff61466",
+          "output_size_bytes": 32
+        },
+        "r2-dependency-boundary": {
+          "evidence_id": "ev.local-social-purge-inactive-workers-canonical-provider-proxy-caller-cut.r2-dependency-boundary",
+          "exit_code": 0,
+          "output_sha256": "7d9f07f6dcb56f7e9fa40630c7cb969c8be979cd4845ca775c5ba8e09b855787",
+          "output_size_bytes": 12724
+        },
+        "rollback-hashes": {
+          "evidence_id": "ev.local-social-purge-inactive-workers-canonical-provider-proxy-caller-cut.rollback-hashes",
+          "exit_code": 0,
+          "output_sha256": "95ef4ac2b8bb6029a181c7f8e6a9efcd47c509e4d2c306dca0aa958745e83446",
+          "output_size_bytes": 37934
+        },
+        "ruff-format": {
+          "evidence_id": "ev.local-social-purge-inactive-workers-canonical-provider-proxy-caller-cut.ruff-format",
+          "exit_code": 0,
+          "output_sha256": "177f260a5645724013185e4b140c7045cc39e56c0c97b120f5cb23599f85f0de",
+          "output_size_bytes": 26
+        },
+        "ruff": {
+          "evidence_id": "ev.local-social-purge-inactive-workers-canonical-provider-proxy-caller-cut.ruff",
+          "exit_code": 0,
+          "output_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+          "output_size_bytes": 19
+        },
+        "workspace-contract": {
+          "evidence_id": "ev.local-social-purge-inactive-workers-canonical-provider-proxy-caller-cut.workspace-contract",
+          "exit_code": 0,
+          "output_sha256": "e3bbcc0a024b85a71e741c6224065db3778e2a913e3fc88f4bd2890f89a5cf33",
+          "output_size_bytes": 51
+        },
+        "workspace-diff-check": {
+          "evidence_id": "ev.local-social-purge-inactive-workers-canonical-provider-proxy-caller-cut.workspace-diff-check",
+          "exit_code": 0,
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_size_bytes": 0
+        }
+      },
+      "evidence_file_count": 17,
+      "evidence_prefix_manifest_sha256": "4f5ed82f76b98ef4a67b21523ec08242944ec5e4ceea156875343110ed0e052b",
+      "packet_and_evidence_path_count": 18,
+      "rollback_replay_count": 2,
+      "rollback_restored_manifest_sha256": "473e89aa877cd05046d493272cb406088368e9c62ba7dbc1abeba1298ecc910c",
+      "mutation_authority_closed": true,
+      "worker_health_external_failures_preserved": true,
+      "full_release_external_blocker": "backend:scripts/modal/prepare_named_secrets.py retained predecessor record mismatch",
+      "evidence_corrected_at": "2026-07-31T22:17:58Z",
+      "evidence_correction": {
+        "trigger_report": "/tmp/R343-T9-ACCEPT-report.json",
+        "trigger_report_sha256": "4a0a33071aacb2d51d045311e4ddb066342d5870936d3d595d8007f73fc459b1",
+        "scope": "seven helper-backed artifact bindings, pytest count and label, import-graph expected source, rollback structured actuals, prefix and receipt records only",
+        "source_test_ledger_bundle_r2_unchanged": true
+      },
+      "evidence_prefix_manifest_with_mode_sha256": "6e5a84cdb85f3f35adc58867b80c7b2843f881b3bde91eb13e4a073c7a0e65d3",
+      "evidence_prefix_manifest_contract": "historical path<TAB>sha256<TAB>size<LF>; companion with-mode digest binds required file modes",
+      "prefix_definition_corrected_at": "2026-07-31T22:27:42Z",
+      "packet_narrative_corrected_at": "2026-07-31T22:34:49Z",
+      "packet_narrative_correction": {
+        "trigger_report": "/tmp/R343-T9-ACCEPT-FINAL-report.json",
+        "trigger_report_sha256": "ba7b597d922c48e911490e08fef333c0f61939bc1c474a328d91110d28aeadd8",
+        "scope": "release packet rollback.data_recovery prose only",
+        "source_test_ledger_helper_bundle_r2_receipts_unchanged": true
+      }
+    },
+    "t9": {
+      "status": "complete_accepted",
+      "prior_reports": [
+        "/tmp/R343-T9-ACCEPT-report.json",
+        "/tmp/R343-T9-ACCEPT-REPLACEMENT-report.json",
+        "/tmp/R343-T9-ACCEPT-FINAL-report.json"
+      ],
+      "mutation_authorized": false,
+      "verdict": "accepted_with_follow_up",
+      "assignment": "/tmp/R343-T9-ACCEPT-CONCLUSIVE-assignment.json",
+      "assignment_sha256": "d8cc703224156ca7809b40ee0d10da51c7dac28bf216f529ce825e490419da8e",
+      "report": "/tmp/R343-T9-ACCEPT-CONCLUSIVE-report.json",
+      "report_sha256": "8c69b8d3e2e74eaf779f1f7ee43694ca28d06fd9c65488b75ce73e10e64b314e",
+      "role": "acceptance_integrator",
+      "model": "gpt-5.6-sol",
+      "effort": "xhigh",
+      "finding_counts": {
+        "P0": 0,
+        "P1": 0,
+        "P2": 0,
+        "P3": 0
+      },
+      "next_eligible_action": "T6-remaining-R3-packet-design-read-only-live-graph-recompute"
+    },
+    "next_t6": {
+      "status": "parked_before_T2",
+      "completed_at": "2026-07-31T23:16:13Z",
+      "graph_report": "/tmp/NEXT-T6-GRAPH-report.json",
+      "graph_report_sha256": "b5b6f758066e59edbcd01918196b66c0503fa6343a3489bc1f98ab5e11d394ea",
+      "compat_report": "/tmp/NEXT-T6-COMPAT-report.json",
+      "compat_report_sha256": "218fb3ed0a624edfc39e753f02c4bec4da335a12629f177d2adec7103e0499a5",
+      "validation_report": "/tmp/NEXT-T6-VALIDATION-report.json",
+      "validation_report_sha256": "ad24c46b7b6418bf322ba0a85d057384d5b2092b30546c9dc352b6ad03f2afd0",
+      "parent_reconciliation": "park-all-ranked-candidates-before-T2-no-executable-compatible-postimage",
+      "next_mutation_authorized": false,
+      "t2_frozen": false,
+      "t7_assignment_created": false,
+      "next_safe_action": "new-read-only-provider-contract-and-direct-test-design-only-after-explicit-resumption"
+    }
+  },
+  "accepted_r3_packet": {
+    "packet_id": "local-social-queue-status-canonical-provider-proxy-caller-cut",
+    "packet_role": "r3-41-queue-status-endpoint-provider-proxy-caller-cut",
+    "task_lock_path_owner_packet_id": "local-social-queue-status-canonical-provider-proxy-caller-cut",
+    "task_id": 2,
+    "phase": "R3",
+    "slice": "R3.41",
+    "state": "implementation_complete_parked_accepted_with_follow_up",
+    "owner": "program-coordination",
+    "scope": "single-get-social-ingest-queue-status-function-scoped-legacy-repository-caller-cut-through-existing-canonical-queue-status-provider-proxy",
+    "t6_verdict": "pass-four-lane-convergence-plus-targeted-validation; whole-importer-candidates-parked; queue-status-is-smallest-strongly-proved-boundary",
+    "edge_before": "api.routers.socials get_social_ingest_queue_status -> trr_backend.repositories.social_season_analytics.get_queue_status",
+    "edge_removed": "one legacy AST occurrence; router-to-repository module edge remains through ninety-one other occurrences",
+    "edge_added": "none at module-graph level; router-to-control_plane.queue_status already exists through accepted health-dot caller",
+    "expected_backend_module_count_after": 500,
+    "expected_backend_edge_count_after": 1296,
+    "expected_backend_cycle_count_after": 4,
+    "expected_backend_cyclic_module_count_after": 40,
+    "expected_social_cycle_count_after": 1,
+    "expected_social_cyclic_module_count_after": 23,
+    "expected_legacy_social_import_count_after": 97,
+    "expected_legacy_social_importer_count_after": 7,
+    "expected_app_module_count_after": 1122,
+    "expected_app_edge_count_after": 2944,
+    "expected_app_cycle_count_after": 0,
+    "expected_backend_graph_sha256_after": "92060645e321de482a11afc4f0dd5ee978f1a368a4ce9027cb08b3d924a3db29",
+    "expected_backend_source_sha256_after": "4183561bf4848d858b6ca339a45ff4fd8f8260945a7c69a4e266b896f1146500",
+    "scc_reduction_claimed": false,
+    "observed_social_monolith_lines_before": 68316,
+    "expected_social_monolith_lines_after": 68316,
+    "social_monolith_line_ceiling": 68316,
+    "observed_router_lines_before": 9385,
+    "expected_router_lines_after": 9385,
+    "router_line_ceiling": 9385,
+    "expected_worker_source_sha256_after": "bb3335e4b396d98bde6e3d59508ad5fd30833d301d385cf0ce72b15a50ac3229",
+    "expected_worker_source_bytes_after": 384677,
+    "expected_worker_source_lines_after": 9385,
+    "expected_endpoint_test_sha256_unchanged": "5428eb270baa0d98bfba356386d412242b751c0af9f7cbc6481858610bf098c8",
+    "expected_endpoint_test_bytes_unchanged": 381334,
+    "expected_endpoint_test_lines_unchanged": 9404,
+    "expected_worker_focused_test_count_after": 111,
+    "expected_integrated_focused_test_count_after": 112,
+    "expected_lead_guard_sha256_after": "9d2f92d65429709470068b0b52d8786ff198fa34dcc3ad0099266bfbd80b97de",
+    "expected_lead_guard_bytes_after": 87132,
+    "expected_lead_guard_lines_after": 2206,
+    "expected_compatibility_ledger_sha256_after": "bf9cad88711501a77dd4473bf0b4df816a364aaf27b2c400f6751b58d3d50898",
+    "expected_compatibility_ledger_bytes_after": 41356,
+    "expected_compatibility_ledger_lines_after": 149,
+    "no_effective_behavior_change": true,
+    "recovery_baseline": {
+      "workspace_head": "a788f2777acffdb18acb0abfa98fc5a7c176d925",
+      "backend_head": "0a3d2b59ec29304fb2765fd8cf996032e11c937b",
+      "app_head": "78681eac73c79e6534031fe1f050966edff9b844",
+      "manifest": ".plan-work/plan-architect/trr-architecture-overhaul-20260715/R3_CHECKPOINT_RECOVERY_MANIFEST.20260729.tsv",
+      "task_lock_sha256": "8bcdaa269acf540ff21113d8332638a600f027772a44f14326997dd95660fd01",
+      "backend_graph": "pass-r3-40-500-modules-1296-edges-4-cycles-40-cyclic-social-1-23-legacy-98-7-sha256-92060645",
+      "backend_source_sha256": "b177ec517581438a0ce0b73c04f442927b7ebf94a08186943c6332687e810fee",
+      "app_graph": "pass-1122-modules-2944-edges-zero-cycles-sha256-22e12763d99b09bcecb4832a71d7131cba92f006e3dd9df4b96c2f816bdf9b7c",
+      "dirty_tree_snapshot": {
+        "workspace": {
+          "status_count": 583,
+          "status_sha256": "29a08e69817a6a20fe3290df3ee57cb81f16e586be629ff1069c8a826b4f0834"
+        },
+        "backend": {
+          "status_count": 266,
+          "status_sha256": "cef16a9339c48bb9c4e4f9d539f7efc2dcb77cf95cd0aedc1bbd73f47127b2fe"
+        },
+        "app": {
+          "status_count": 167,
+          "status_sha256": "c54688533217e713aa3d74f367d692d684ddc426ef8331b8638a73be772ab793"
+        }
+      },
+      "dependency_preservation_stashes": {
+        "workspace": "9a89be1339daa545b310889a588be48a5abc8360",
+        "backend": "35ef28d4f6d9fecbe60dd29b23c2ea23cc5cab29",
+        "app": "4b2f4e16fa4ff049b60f38909cf0348615d69cb9",
+        "app_generated_caches": "917581a4810742105af7da4ce0914f8b9034e8c7"
+      },
+      "cloudflare_r2_write_set_path_count": 59,
+      "cloudflare_r2_write_set_sha256": "580e54c6baef557f1615add1b71886d1c2cb56f20a064eb41877f8f2f7a4227a",
+      "dependency_preservation_path_union_count": 43,
+      "dependency_preservation_inclusive_path_count": 78,
+      "r3_dependency_intersection": [],
+      "r3_cloudflare_r2_intersection": []
+    },
+    "compatibility_contract": {
+      "endpoint": "GET /api/v1/admin/socials/ingest/queue-status",
+      "route_decorator_dependency_signature_query_defaults_bounds_and_return_annotation_unchanged": true,
+      "full_diagnostics_branch_and_effective_boolean_resolution_unchanged": true,
+      "queue_status_keyword_arguments_unchanged": [
+        "fresh",
+        "include_recent_failures",
+        "include_stuck_jobs",
+        "include_runs_summary",
+        "summary_only",
+        "statement_timeout_ms"
+      ],
+      "response_logging_exception_and_http_mapping_unchanged": true,
+      "canonical_provider_after": "trr_backend.socials.control_plane.queue_status._legacy_repo",
+      "provider_call_after": "_legacy_repo().get_queue_status",
+      "repository_alias_patch_target_preserved": "trr_backend.repositories.social_season_analytics.get_queue_status",
+      "repository_alias_patch_before_router_import_preserved": true,
+      "repository_alias_patch_after_router_import_preserved": true,
+      "provider_namespace_is_exact_monolith_dictionary": true,
+      "same_namespace_configuration_idempotent": true,
+      "different_namespace_configuration_rejected": true,
+      "repository_alias_or_monolith_deletion_in_scope": false,
+      "queue_status_provider_or_configuration_change_in_scope": false,
+      "new_shared_contract": false,
+      "router_family_extraction_in_scope": false,
+      "public_route_openapi_cache_sse_auth_and_wire_behavior_unchanged": true
+    },
+    "pre_mutation_path_hashes": {
+      "TRR-Backend/api/routers/socials/__init__.py": "0e99f52e99507794931b0e99933d6aa0c530e01ebe8a5c6dd4d15359ac60a04c",
+      "TRR-Backend/tests/api/routers/test_socials_season_analytics.py": "5428eb270baa0d98bfba356386d412242b751c0af9f7cbc6481858610bf098c8",
+      "TRR-Backend/tests/repositories/test_social_control_plane_imports.py": "94e9f8de45225f769843efd2ff55d907ee4d7d82e4a599ece9edc3a91623fbeb",
+      "TRR-Backend/docs/architecture/social-compatibility-wrapper-ledger.md": "4177a330a1521b7c43f2dab7ef9b6d8f93d85632759bfb736f3af6bc684f2a68",
+      "docs/workspace/architecture-task-locks.json": "8bcdaa269acf540ff21113d8332638a600f027772a44f14326997dd95660fd01",
+      "docs/workspace/release-packets/local-social-queue-status-canonical-provider-proxy-caller-cut.json": null,
+      "docs/workspace/architecture-evidence/local-social-queue-status-canonical-provider-proxy-caller-cut.*": null
+    },
+    "validation_only_path_hashes": {
+      "TRR-Backend/trr_backend/socials/control_plane/queue_status.py": "5d5f235644278938bfb3397b9a2dc535633cf9bbb492d90d6f1e48283ed1b184",
+      "TRR-Backend/trr_backend/socials/social_season_analytics_impl.py": "9c2c38f2bceff0e930bb118f7f42c7c5932038e33e7bfd974a0718e5471938c9",
+      "TRR-Backend/trr_backend/repositories/social_season_analytics.py": "5d2438410184d44ae20164ca1582587fb14affdeafc4f8d40271f88a45e1eff7",
+      "TRR-Backend/tests/api/routers/test_socials_route_shape.py": "8735992da5ba3d348bc99781ab9b67d9d6cd891146953b65499ab40358c51604",
+      "TRR-Backend/tests/repositories/test_social_queue_status.py": "c78c31a2d7effac8033bde8adb3b976c129459b48e49ac7b09a9dac5d840399c",
+      "scripts/architecture/check-import-graph.py": "f1f9a354f16f2b4f6a68fad450bfda3b6b009d7dbd09cb9da3bc1276603d5802",
+      "scripts/architecture/check-hotspots.py": "43de52638b4fcb50d506b545307b0e29f83aceca73091354ecf511e5e294de2b",
+      "docs/workspace/architecture-hotspots.json": "80f9d9cf9fdeb7d5aa57b26adbf23065a2c840fdd714c7b44b472dbebda2fab6",
+      "TRR-Backend/tests/api/routers/test_socials_season_analytics.py": "5428eb270baa0d98bfba356386d412242b751c0af9f7cbc6481858610bf098c8"
+    },
+    "planned_post_integration_path_hashes": {
+      "TRR-Backend/api/routers/socials/__init__.py": "bb3335e4b396d98bde6e3d59508ad5fd30833d301d385cf0ce72b15a50ac3229",
+      "TRR-Backend/tests/repositories/test_social_control_plane_imports.py": "9d2f92d65429709470068b0b52d8786ff198fa34dcc3ad0099266bfbd80b97de",
+      "TRR-Backend/docs/architecture/social-compatibility-wrapper-ledger.md": "bf9cad88711501a77dd4473bf0b4df816a364aaf27b2c400f6751b58d3d50898"
+    },
+    "worker_owned_paths": [
+      "TRR-Backend/api/routers/socials/__init__.py"
+    ],
+    "owned_paths": [
+      "TRR-Backend/api/routers/socials/__init__.py",
+      "TRR-Backend/tests/repositories/test_social_control_plane_imports.py",
+      "TRR-Backend/docs/architecture/social-compatibility-wrapper-ledger.md"
+    ],
+    "lead_only_paths": [
+      "TRR-Backend/tests/repositories/test_social_control_plane_imports.py",
+      "TRR-Backend/docs/architecture/social-compatibility-wrapper-ledger.md",
+      "docs/workspace/architecture-task-locks.json",
+      "docs/workspace/release-packets/local-social-queue-status-canonical-provider-proxy-caller-cut.json",
+      "docs/workspace/architecture-evidence/local-social-queue-status-canonical-provider-proxy-caller-cut.*"
+    ],
+    "validation_only_paths": [
+      "TRR-Backend/trr_backend/socials/control_plane/queue_status.py",
+      "TRR-Backend/trr_backend/socials/social_season_analytics_impl.py",
+      "TRR-Backend/trr_backend/repositories/social_season_analytics.py",
+      "TRR-Backend/tests/api/routers/test_socials_route_shape.py",
+      "TRR-Backend/tests/repositories/test_social_queue_status.py",
+      "scripts/architecture/check-import-graph.py",
+      "scripts/architecture/check-hotspots.py",
+      "docs/workspace/architecture-hotspots.json"
+    ],
+    "forbidden_paths": [
+      "all-other-router-endpoints-helpers-models-and-route-family-extractions",
+      "all-six-non-router-legacy-importers",
+      "TRR-Backend/trr_backend/socials/control_plane/queue_status.py",
+      "TRR-Backend/trr_backend/socials/social_season_analytics_impl.py",
+      "TRR-Backend/trr_backend/repositories/social_season_analytics.py",
+      "TRR-APP/**",
+      "TRR-Backend/supabase/**",
+      "TRR-Backend/scripts/**",
+      "all-database-SQL-migration-runtime-Modal-deployment-environment-generated-contract-browser-build-and-cleanup-paths",
+      "the-59-path-cloudflare-r2-write-set-bound-by-sha256-580e54c6baef557f1615add1b71886d1c2cb56f20a064eb41877f8f2f7a4227a",
+      "all-current-dependency-modernization-paths-and-four-preservation-objects",
+      "all-Task-3-Task-4-Gate-3-prior-packet-and-prior-evidence-paths"
+    ],
+    "rollback": {
+      "mode": "incremental-byte-exact-path-preimages-only",
+      "temporary_preimage_bundle": "/tmp/r3-41-queue-status-preimages.tar.gz",
+      "temporary_preimage_bundle_sha256": "3ff5a5d05ac20748a98af8248d2bf3373049776329b9e9fa7f07672eedd2eb95",
+      "temporary_preimage_bundle_size_bytes": 128921,
+      "temporary_preimage_bundle_mode": "0600",
+      "required_durable_bundle_path": "docs/workspace/architecture-evidence/local-social-queue-status-canonical-provider-proxy-caller-cut.rollback-preimages.tar.gz",
+      "durable_bundle_sha256": "3ff5a5d05ac20748a98af8248d2bf3373049776329b9e9fa7f07672eedd2eb95",
+      "durable_bundle_size_bytes": 128921,
+      "durable_bundle_mode": "0600",
+      "required_durable_replay_helper_path": "docs/workspace/architecture-evidence/local-social-queue-status-canonical-provider-proxy-caller-cut.replay.py",
+      "durable_replay_helper_sha256": "26b670cf5db78331fc26ebd15c8833aa2cfc29109e86fc63dbba583755fa401c",
+      "durable_replay_helper_size_bytes": 45327,
+      "durable_replay_helper_mode": "0600",
+      "durable_bundle_members": {
+        "TRR-Backend/api/routers/socials/__init__.py": "0e99f52e99507794931b0e99933d6aa0c530e01ebe8a5c6dd4d15359ac60a04c",
+        "TRR-Backend/tests/api/routers/test_socials_season_analytics.py": "5428eb270baa0d98bfba356386d412242b751c0af9f7cbc6481858610bf098c8",
+        "TRR-Backend/tests/repositories/test_social_control_plane_imports.py": "94e9f8de45225f769843efd2ff55d907ee4d7d82e4a599ece9edc3a91623fbeb",
+        "TRR-Backend/docs/architecture/social-compatibility-wrapper-ledger.md": "4177a330a1521b7c43f2dab7ef9b6d8f93d85632759bfb736f3af6bc684f2a68",
+        "docs/workspace/architecture-task-locks.json": "8bcdaa269acf540ff21113d8332638a600f027772a44f14326997dd95660fd01"
+      },
+      "created_packet_evidence_and_helper_preimage": "absent-remove-only-new-prefix",
+      "broad_stash_restore_forbidden": true,
+      "head_relative_reversal_forbidden": true
+    },
+    "acceptance": {
+      "t6_mapping": "pass-graph-compatibility-router-and-targeted-provider-proxy-convergence; validation-whole-importer-park-retained",
+      "t2_boundary": "pass-one-worker-path-exact-postimage-five-preimages-eight-immutable-hashes-111-worker-tests-112-integrated-tests-graph-hotspots-and-stop-conditions",
+      "next_mutation_authorized": false,
+      "next_mutation_authorization_basis": "r3-41-is-locally-accepted-with-follow-up-only-the-next-read-only-live-T6-mapping-is-eligible",
+      "next_mutation_scope": [],
+      "focused_tests_before": "pass-111",
+      "focused_ruff_before": "pass-worker-postimage-in-scratch; cumulative-guard-check-pass-and-single-preexisting-format-debt-preserved",
+      "import_graph_before": "pass-500-1296-4-40-social-1-23-legacy-98-7-app-zero-graph-92060645",
+      "expected_import_graph_after": "500-1296-4-40-social-1-23-legacy-97-7-app-zero-graph-92060645-source-4183561b",
+      "hotspot_before": "router-9385-monolith-68316",
+      "focused_tests_after": "pass-integrated-112",
+      "focused_ruff_after": "pass-five-path-check-four-clean-format-and-cumulative-guard-debt-parity-0-0-1-1",
+      "import_graph_after": "pass-500-1296-4-40-social-1-23-legacy-97-7-app-zero-graph-92060645-source-4183561b",
+      "hotspot_after": "pass-144-router-9385-monolith-68316-no-growth",
+      "rollback_after": "pass-two-fresh-candidate-seeded-scratch-replays-five-byte-exact-preimage-restores-eighteen-created-path-removals-negative-controls-protected-sentinel-and-complete-restored-state-digest-d5d5fca0",
+      "next_task": "T6-remaining-R3-packet-design-read-only-live-graph-recompute",
+      "packet_and_evidence": "pass-58-packets-518-evidence-642-hygiene-files-seven-final-helper-bound-receipts",
+      "independent_review": "pass-fresh-acceptance-integrator-xhigh-zero-P0-P3-O6-O10-O11-closed-fourteen-exact-receipts"
+    },
+    "assignments": [
+      {
+        "task_name": "r3_41_t6_live_graph_and_candidate_simulation",
+        "selected_role": "deep_debugger",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "high",
+        "purpose": "authoritative-seven-importer-graph-map-and-twelve-exact-overlays",
+        "status": "complete",
+        "result": "queue-status-occurrence-graph-safe-legacy-98-to-97-no-module-edge-delta",
+        "assignment": "/tmp/r3_41_t6_live_graph_assignment.json",
+        "assignment_sha256": "90af48ec6bf8de2b7c106d161b0ce436b894f25674864bbe747d09d12fe412e6",
+        "report": "/tmp/r3-41-t6-live-graph-report.json",
+        "report_sha256": "e74e069f1da8994cf7335671ec25d59e09ee2cda655e2c3f141b7b2a793bbd20"
+      },
+      {
+        "task_name": "r3_41_t6_compatibility_and_ownership_map",
+        "selected_role": "deep_debugger",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "high",
+        "purpose": "callers-module-identity-monkeypatch-wrapper-and-import-order-map",
+        "status": "complete",
+        "result": "queue-status-provider-proxy-recommended-whole-importer-loaders-rejected",
+        "assignment": "/tmp/r3_41_t6_compatibility_assignment.json",
+        "assignment_sha256": "bcc0d9ceaeb0a6f9b4a47f658e471707dfd1d32697760b73a66a10004870ef5b",
+        "report": "/tmp/r3-41-t6-compatibility-report.json",
+        "report_sha256": "999ec6f55f18b692ad1dac9f006c0281b3116dd46f493e6b446c68476974d424"
+      },
+      {
+        "task_name": "r3_41_t6_validation_rollback_finish_line_map_initial",
+        "selected_role": "deep_debugger",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "high",
+        "purpose": "validation-rollback-hotspot-and-finish-line-map",
+        "status": "failed-assignment-boundary-only",
+        "result": "stopped-after-two-undeclared-temporary-writes; no-repository-path-changed; parent-restored-authoritative-graph",
+        "assignment": "/tmp/r3_41_t6_validation_assignment.json",
+        "assignment_sha256": "d1073b336d68b6fcd34ca884c83aeedbd0bb80a7daded3a5f7fd03a661c85aef",
+        "report": "/tmp/r3-41-t6-validation-report.json",
+        "report_sha256": "9ad95c4d1a8bae37d40e4db23ca6359ba825ca448eea7810e62f83fc610e94ef"
+      },
+      {
+        "task_name": "r3_41_t6_validation_rollback_finish_line_map_reassigned",
+        "selected_role": "deep_debugger",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "high",
+        "purpose": "corrected-explicit-output-validation-map",
+        "status": "complete-with-broad-candidate-park-superseded-for-this-boundary",
+        "result": "whole-importer-provider-candidates-parked; queue-status-occurrence-not-assessed; rollback-receipt-and-stop-contract-retained",
+        "assignment": "/tmp/r3_41_t6_validation_retry_assignment.json",
+        "assignment_sha256": "1eec407a84c03c6c40c2022cd01833a792bb5b1930a98409756ccb3bc46591db",
+        "report": "/tmp/r3-41-t6-validation-retry-report.json",
+        "report_sha256": "9300e9f4761dca9681a7a27f0264bdf02f4fbe89313c1cadd0e178c430d79948"
+      },
+      {
+        "task_name": "r3_41_t6_router_endpoint_family_and_next_cut_map",
+        "selected_role": "deep_debugger",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "high",
+        "purpose": "router-occurrence-family-and-eventual-registration-only-map",
+        "status": "complete",
+        "result": "queue-status-ranked-strongest-immediate-cut-router-92-to-91",
+        "assignment": "/tmp/r3_41_t6_router_assignment.json",
+        "assignment_sha256": "ab09cbcd3dc41baae0d88a76d2eeeb3efcff01816d3856bf770d5313197d47ab",
+        "report": "/tmp/r3-41-t6-router-report.json",
+        "report_sha256": "38fd89ea0b3641dd600dc3e96fe1d00351eb4d725a0a2095a14065c78c3d5e94"
+      },
+      {
+        "task_name": "r3_41_t6_wrapper_and_closeout_inventory",
+        "selected_role": "acceptance_integrator",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "xhigh",
+        "purpose": "forty-group-wrapper-and-closeout-refresh",
+        "status": "complete",
+        "result": "40-groups-7-removable-now-19-dependent-14-reledger-required",
+        "assignment": "/tmp/r3_41_t6_wrapper_closeout_xhigh_assignment.json",
+        "assignment_sha256": "393ba5986616a4081bf8458914925121ba234c9b64fe08cc1d369b38ca3314b4",
+        "report": "/tmp/r3-41-t6-wrapper-closeout-report.json",
+        "report_sha256": "a0eab22f257eb396a44d6955dd1b36b18d832b2f3bf853c3bce55dec09df97e2"
+      },
+      {
+        "task_name": "r3_41_t6_queue_status_provider_proxy_targeted_probe",
+        "selected_role": "deep_debugger",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "high",
+        "purpose": "resolve-validation-omission-with-exact-overlay-import-patch-and-test-proof",
+        "status": "complete",
+        "result": "targeted-queue-status-provider-proxy-boundary-pass",
+        "assignment": "/tmp/r3_41_t6_queue_status_probe_assignment.json",
+        "assignment_sha256": "90ae3969205c7671a6665eeb8dfd85b3606953879a32ccfb69c7ea9dc832f34f",
+        "report": "/tmp/r3-41-t6-queue-status-probe-report.json",
+        "report_sha256": "8837f0a8bb40d15051e8f21dc58fa7cc89c7e5e93192a9c8bc88969d97bf93e1"
+      },
+      {
+        "task_name": "r3_41_parent_T6_reconciliation",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "xhigh",
+        "purpose": "reconcile-five-lane-and-targeted-evidence-and-select-smallest-safe-cut",
+        "status": "complete",
+        "result": "queue-status-provider-proxy-selected-whole-importer-candidates-parked"
+      },
+      {
+        "task_name": "r3_41_T2_freeze",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "xhigh",
+        "purpose": "freeze-exact-one-worker-path-postimage-graph-tests-rollback-immutable-and-stop-boundaries",
+        "status": "complete",
+        "result": "ready-for-one-T7-worker-only"
+      },
+      {
+        "task_name": "r3_41_T7_queue_status_provider_proxy_worker",
+        "selected_role": "deep_debugger",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "high",
+        "purpose": "single-router-queue-status-provider-proxy-import-and-call-substitution",
+        "status": "complete",
+        "assignment": "/tmp/r3_41_t7_worker_assignment.json",
+        "result": "exact-router-postimage-111-tests-Ruff-format-graph-hotspot-diff-immutables-and-dirty-snapshots-pass-stopped-before-T8",
+        "assignment_sha256": "6cdcfed61c47d38734992eb2493e9cdd62ed0083db5da64389d4e2637bbe0033",
+        "report": "/tmp/r3-41-t7-worker-report.json",
+        "report_sha256": "0dafed98232e13d86c72015527c0c33e9b55583570b4452c89aee8da82f20bfe"
+      },
+      {
+        "task_name": "r3_41_T7_immutable_caller_review",
+        "selected_role": "repository_mapper",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "medium",
+        "purpose": "read-only-immutable-caller-module-identity-and-monkeypatch-review",
+        "status": "complete",
+        "assignment": "/tmp/r3_41_t7_immutable_caller_assignment.json",
+        "assignment_sha256": "600d82fac617bf70605bfc3a4c5ce407fc877ebafcae47ccbb1c2f6edb07bd84",
+        "report": "/tmp/r3-41-t7-immutable-caller-review.json",
+        "result": "pass-no-unsupported-caller-module-identity-package-export-import-order-or-monkeypatch-consequence",
+        "report_sha256": "3dbdc5069c43a4560e53ecba15aef70e6022f2f22bcaaacd64e179a331c1dd49"
+      },
+      {
+        "task_name": "r3_41_T8_validation_preparation",
+        "selected_role": "senior_scout",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "medium",
+        "purpose": "read-only-T8-command-rollback-receipt-and-stop-matrix",
+        "status": "complete",
+        "assignment": "/tmp/r3_41_t8_validation_prep_assignment.json",
+        "assignment_sha256": "1a50679314a117b647ef003a92863f37e0df96f49807cf38eb87d58bbf811087",
+        "report": "/tmp/r3-41-t8-validation-prep.json",
+        "result": "pass-fourteen-receipt-ordered-validation-rollback-and-stop-matrix",
+        "report_sha256": "959bbdb5a54b2aa8b3b5dc19af88cf82e9b702984df3afdc68796f9d5bc9cc16"
+      },
+      {
+        "task_name": "r3_41_parent_T8_integration",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "xhigh",
+        "purpose": "serialized-lead-owned-guard-ledger-lock-packet-evidence-and-validation",
+        "status": "complete",
+        "result": "112-tests-Ruff-format-debt-parity-graph-hotspots-workspace-diffs-r2-boundary-two-scratch-rollback-replays-packet-evidence-pass"
+      },
+      {
+        "task_name": "r3_41_T9_independent_review",
+        "selected_role": "acceptance_integrator",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "xhigh",
+        "purpose": "fresh-risk-first-graph-behavior-compatibility-receipt-lineage-rollback-boundary-and-serialization-review",
+        "status": "complete",
+        "result": "park-P0-0-P1-2-P2-0-P3-0-rollback-oracle-and-R2-reproducibility-findings",
+        "assignment": "/tmp/r3_41_t9_assignment.json",
+        "assignment_sha256": "56d9f788a0dc463a7caefc6cbf8f94019157d1e1e08fd2336675294eca9ff15b",
+        "report": "/tmp/r3-41-t9-review-report.json",
+        "report_sha256": "cf975938815ef053e356e438e331f78f8304f146aceb3db3972177ea922d46ab"
+      },
+      {
+        "task_name": "r3_41_parent_T8_evidence_helper_format_correction",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "xhigh",
+        "purpose": "format-only-new-durable-helper-and-refresh-exact-artifact-hashes-before-T9",
+        "status": "complete",
+        "result": "helper-Ruff-format-pass-check-pass-mode-0600-all-seven-artifact-references-and-prefix-manifest-refreshed"
+      },
+      {
+        "task_name": "r3_41_T9_rollback_oracle_remediation_map",
+        "selected_role": "risk_owner",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "xhigh",
+        "purpose": "read-only-candidate-seeded-complete-incremental-rollback-oracle-design",
+        "status": "complete",
+        "result": "five-preimage-restores-plus-seventeen-current-created-deletions-two-fresh-roots-and-complete-declared-tree-equality; parent-reconciled-final-new-manifest-to-eighteen-deletions",
+        "assignment": "/tmp/r3_41_rollback_oracle_map_assignment.json",
+        "assignment_sha256": "3e7bf42bb5ba1d2316c71b535c05da40f0d159a5a5ea977603e4d00da2846303",
+        "report": "/tmp/r3-41-rollback-oracle-map-report.json",
+        "report_sha256": "9e678aed064b0d5d81b665f975938f5e4cd3cc2bc9d2f4bd568a04c9bd09e920"
+      },
+      {
+        "task_name": "r3_41_T9_R2_reproducibility_remediation_map",
+        "selected_role": "risk_owner",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "xhigh",
+        "purpose": "read-only-authoritative-59-path-provenance-and-recomputation-design",
+        "status": "complete",
+        "result": "accepted-R3.15-object-proves-59-path-580e54c6-set-but-is-GC-prunable; persist-byte-exact-R3-owned-3049-byte-manifest",
+        "assignment": "/tmp/r3_41_r2_repro_map_assignment.json",
+        "assignment_sha256": "c7728b4f0522da1657551e1653b4d80a175abcad081729d65a71f7b2bc3333c0",
+        "report": "/tmp/r3-41-r2-repro-map-report.json",
+        "report_sha256": "74a6007e4cc2453d7ab8e90a1dbdc5f916e1a913cde1ea2d96d5e234ac8d7794"
+      },
+      {
+        "task_name": "r3_41_T9_evidence_dependency_refresh_map",
+        "selected_role": "repository_mapper",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "medium",
+        "purpose": "read-only-transitive-helper-receipt-packet-lock-and-prefix-hash-map",
+        "status": "complete",
+        "result": "ten-existing-files-plus-one-new-manifest-exact-refresh-surface-eight-existing-prefix-artifacts-immutable",
+        "assignment": "/tmp/r3_41_evidence_dependency_map_assignment.json",
+        "assignment_sha256": "1593b4855a165cb96439d0a5f829141571494146a3f956273aaef9412b099417",
+        "report": "/tmp/r3-41-evidence-dependency-map-report.json",
+        "report_sha256": "0e3f0ab6273646adb8c0601bfba10806c609951798c7348a6e4112590f14d23c"
+      },
+      {
+        "task_name": "r3_41_T9_remediation_acceptance_oracle_review",
+        "selected_role": "acceptance_integrator",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "xhigh",
+        "purpose": "read-only-twelve-gate-evidence-only-closure-and-rereview-matrix",
+        "status": "complete",
+        "result": "twelve-gate-matrix-defined-current-disposition-park-fresh-xhigh-T9-required",
+        "assignment": "/tmp/r3_41_remediation_oracle_review_assignment.json",
+        "assignment_sha256": "36fe5b6dd3a65d2a305da5a8285873d44a6979844c83cb5d9d7009c6603b6d77",
+        "report": "/tmp/r3-41-remediation-oracle-review-report.json",
+        "report_sha256": "e0a7062cd833a12002c77eaf4cf68923404759562f5098598c0983c4c9ee0f7a"
+      },
+      {
+        "task_name": "r3_41_parent_T8_bounded_evidence_oracle_correction",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "xhigh",
+        "purpose": "serialized-evidence-only-closure-of-two-T9-P1-findings-with-no-source-test-ledger-bundle-R2-or-dependency-mutation",
+        "status": "complete",
+        "result": "durable-59-path-R2-manifest-derived-empty-intersections-two-candidate-seeded-complete-rollback-replays-seven-receipts-refreshed-seventeen-file-prefix-frozen"
+      },
+      {
+        "task_name": "r3_41_T9_independent_rereview",
+        "selected_role": "acceptance_integrator",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "xhigh",
+        "purpose": "fresh-independent-read-only-rereview-of-two-corrected-P1-oracles-and-full-R3.41-acceptance-matrix",
+        "status": "stopped-after-substantive-review-before-typed-report",
+        "result": "park-O6-O10-O11-runtime-oracles-and-fourteen-receipts-pass-but-frozen-durable-evidence-form-incomplete",
+        "assignment": "/tmp/r3_41_t9_rereview_assignment.json",
+        "assignment_sha256": "61b5d27e3e696008310767da1cb3fb6cbd0cf55e3325b437d803ecf9834e5042"
+      },
+      {
+        "task_name": "r3_41_T9_independent_rereview_replacement",
+        "selected_role": "acceptance_integrator",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "xhigh",
+        "purpose": "fresh-replacement-independent-read-only-confirmation-and-typed-verdict",
+        "status": "stopped-after-matching-substantive-review-before-typed-report",
+        "result": "independently-confirmed-park-O6-O10-O11-with-exact-frozen-identity-and-no-repository-write"
+      },
+      {
+        "task_name": "r3_41_parent_T9_rereview_checkpoint",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "xhigh",
+        "purpose": "record-two-matching-independent-verdicts-disable-all-mutation-and-expose-only-smallest-read-only-follow-up",
+        "status": "complete",
+        "result": "park-P0-0-P1-2-P2-0-P3-0-O6-O10-O11-open",
+        "report": "/tmp/r3-41-t9-rereview-report.json",
+        "report_sha256": "f82bd926626b132e0612368c3cb0ae182bc5da45fefb59c193b613b786d31821",
+        "report_provenance": "parent-transcription-of-two-matching-independent-Sol-xhigh-team-message-verdicts-after-both-reviewers-stalled-before-typed-file-emission"
+      },
+      {
+        "task_name": "r3_41_O6_rollback_receipt_follow_up_map",
+        "selected_role": "risk_owner",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "xhigh",
+        "purpose": "read-only-exact-runtime-produced-O6-facts-hidden-hash-cascade-validation-rollback-and-stop-map",
+        "status": "complete",
+        "result": "exact-nine-path-O6-cascade-mapped-with-packet-immutable-and-no-blocker",
+        "assignment": "/tmp/r3_41_o6_receipt_map_assignment.json",
+        "assignment_sha256": "77adfd297659ccc88f82dc129e35285fe38bf972498e0728943bb34efe9b0b2c",
+        "report": "/tmp/r3-41-o6-receipt-map-report.json",
+        "report_sha256": "f31c5f8e1f59d04e41b0b0477a1ba31c163efb080b42a2280f5cf2cd0ce25b90"
+      },
+      {
+        "task_name": "r3_41_O10_O11_R2_receipt_control_follow_up_map",
+        "selected_role": "risk_owner",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "xhigh",
+        "purpose": "read-only-disposable-manifest-fail-closed-control-expected-actual-receipt-cascade-validation-rollback-and-stop-map",
+        "status": "complete",
+        "result": "exact-ten-path-combined-cascade-mapped-read-only-manifest-input-and-no-blocker",
+        "assignment": "/tmp/r3_41_o10_o11_map_assignment.json",
+        "assignment_sha256": "4f9a405e2b80cb3e3679a60394764f5aff57459cf35ee115701ead649bd75d9e",
+        "report": "/tmp/r3-41-o10-o11-map-report.json",
+        "report_sha256": "47c1cba870c41a0f1ce1e07d01500ea14c394847d80439ce87b6d99b1c4903fb"
+      },
+      {
+        "task_name": "r3_41_parent_T2_O6_O10_O11_evidence_correction_freeze",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "xhigh",
+        "purpose": "reconcile-maps-freeze-exact-ten-path-authority-preimages-oracles-and-stop-conditions",
+        "status": "complete",
+        "result": "ten-path-evidence-only-correction-frozen-source-test-ledger-bundle-R2-dependency-app-and-unrelated-receipts-forbidden"
+      },
+      {
+        "task_name": "r3_41_parent_T8_O6_O10_O11_evidence_detail_correction",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "xhigh",
+        "purpose": "serialized-parent-only-exact-ten-path-evidence-correction-and-final-freeze",
+        "status": "complete",
+        "result": "O6-runtime-actuals-O10-three-external-nonzero-controls-O11-complete-sets-seven-helper-bound-receipts-packet-prefix-and-all-false-authority"
+      },
+      {
+        "task_name": "r3_41_T9_fresh_independent_evidence_detail_rereview",
+        "selected_role": "acceptance_integrator",
+        "selected_model": "gpt-5.6-sol",
+        "selected_reasoning_effort": "xhigh",
+        "purpose": "fresh-independent-read-only-O6-O10-O11-and-full-R3.41-acceptance-rereview",
+        "status": "complete",
+        "result": "accept-P0-0-P1-0-P2-0-P3-0-O6-O10-O11-closed-fourteen-exact-receipts-112-tests-and-no-drift",
+        "assignment": "/tmp/r3_41_t9_evidence_detail_rereview_assignment.json",
+        "assignment_sha256": "0b54ef658cf993b53c22ab417756f4f812553955a9874e0593385b40f863c7ab",
+        "report": "/tmp/r3-41-t9-evidence-detail-rereview-report.json",
+        "report_sha256": "82212f2330852bccf1b527c3afa39d87a87ab8143eae0259d769707e2f648036"
+      }
+    ],
+    "stop_conditions": [
+      "Any HEAD dirty-set task-lock worker-prehash validation-only-hash or live-graph drift before T7 mutation",
+      "Any non-empty intersection with Cloudflare R2 or dependency-modernization paths",
+      "Any worker source postimage drift from bb3335e4b396d98bde6e3d59508ad5fd30833d301d385cf0ce72b15a50ac3229",
+      "Any endpoint-test drift from unchanged preimage 5428eb270baa0d98bfba356386d412242b751c0af9f7cbc6481858610bf098c8",
+      "Any router line count above 9385 or monolith line count above 68316",
+      "Any graph result other than 500-1296-4-40 social-1-23 legacy-97-7 app-zero graph-92060645 source-4183561b",
+      "Any route decorator path method dependency signature query default bound return annotation auth response logging exception mapping status OpenAPI cache or SSE drift",
+      "Any full-diagnostics branch effective boolean or queue-status keyword argument drift",
+      "Any loss of repository-alias patch visibility before or after router import",
+      "Any queue-status route caller that still imports either legacy social module",
+      "Any unconfigured queue-status provider or supported fresh-import failure",
+      "Any need to modify queue-status monolith repository-alias endpoint-tests package-root another-router-function app script SQL migration runtime Modal deployment environment generated-contract browser build or cleanup path",
+      "Any focused test Ruff formatter-debt-parity diff graph hotspot packet evidence rollback workspace-contract or hygiene failure",
+      "Any O6 actual copied from an expected constant instead of returned runtime observation",
+      "Any O10 overlap control rejected by canonical count or digest before reporting the actual non-empty R3/R2 intersection",
+      "Any missing O11 actual sorted set intersection preservation identity or normalized control envelope",
+      "Any durable R2 manifest byte size mode or mtime drift or any live declared-domain mutation during disposable controls",
+      "Any mutation or hash cascade outside the exact ten-path evidence-only correction surface",
+      "Any concurrent writer on a serialized lead-owned path"
+    ],
+    "post_integration_path_hashes": {
+      "TRR-Backend/api/routers/socials/__init__.py": "bb3335e4b396d98bde6e3d59508ad5fd30833d301d385cf0ce72b15a50ac3229",
+      "TRR-Backend/tests/repositories/test_social_control_plane_imports.py": "9d2f92d65429709470068b0b52d8786ff198fa34dcc3ad0099266bfbd80b97de",
+      "TRR-Backend/docs/architecture/social-compatibility-wrapper-ledger.md": "bf9cad88711501a77dd4473bf0b4df816a364aaf27b2c400f6751b58d3d50898",
+      "docs/workspace/architecture-evidence/local-social-queue-status-canonical-provider-proxy-caller-cut.replay.py": "26b670cf5db78331fc26ebd15c8833aa2cfc29109e86fc63dbba583755fa401c",
+      "docs/workspace/architecture-evidence/local-social-queue-status-canonical-provider-proxy-caller-cut.rollback-preimages.tar.gz": "3ff5a5d05ac20748a98af8248d2bf3373049776329b9e9fa7f07672eedd2eb95"
+    },
+    "t8_validation_results": {
+      "path": "/tmp/r3-41-t8-validation-results.json",
+      "sha256": "a9b7f1e0eeb4e9490d775aa040427712618ea6c1db57b843ba0b4d4892d2e854",
+      "command_count": 13,
+      "all_exit_zero": true
+    },
+    "t8_complete_dirty_tree_snapshot": {
+      "workspace": {
+        "status_count": 601,
+        "status_sha256": "4ca94e224eb3c7f18ecbc61a195105a769f00dceb45ce6905a6c535edfecf00a"
+      },
+      "backend": {
+        "status_count": 266,
+        "status_sha256": "cef16a9339c48bb9c4e4f9d539f7efc2dcb77cf95cd0aedc1bbd73f47127b2fe"
+      },
+      "app": {
+        "status_count": 167,
+        "status_sha256": "c54688533217e713aa3d74f367d692d684ddc426ef8331b8638a73be772ab793"
+      }
+    },
+    "t8_complete_packet_evidence_prefix": {
+      "packet_path": "docs/workspace/release-packets/local-social-queue-status-canonical-provider-proxy-caller-cut.json",
+      "packet_sha256_before_t9_lock_refresh": "cdd0f232fb5a1dcc586a57ee2ac5312d0c664e5c4914ada2dc513a0a18cb345f",
+      "workspace_provenance_task_lock_sha256": "4b8fbe6a5f4fc24c5515e430a78015fc8d25dbc9c851c1ce687565996ce6d9f7",
+      "evidence_file_count": 17,
+      "json_evidence_receipt_count": 14,
+      "evidence_manifest_sha256": "339177b12c36493f69df4cacbfb4876d7b869384815291cb1f5129bf39688326",
+      "rollback_bundle_mode": "0600",
+      "replay_helper_mode": "0600"
+    },
+    "t9_evidence_correction_result": {
+      "task_lock_preimage_sha256": "12c92839d162da7307c24e18efc175a09c0903b6657eb98bfc6d678fa266a80d",
+      "finding_ids": [
+        "R3-41-T9-P1-ROLLBACK-ORACLE",
+        "R3-41-T9-P1-R2-REPRODUCIBILITY"
+      ],
+      "new_r2_manifest_path": "docs/workspace/architecture-evidence/local-social-queue-status-canonical-provider-proxy-caller-cut.r2-write-set.paths",
+      "new_r2_manifest_sha256": "580e54c6baef557f1615add1b71886d1c2cb56f20a064eb41877f8f2f7a4227a",
+      "new_r2_manifest_size_bytes": 3049,
+      "new_r2_manifest_line_count": 59,
+      "new_r2_manifest_mode": "0600",
+      "new_r2_manifest_provenance": "accepted-R3.15-workspace-preservation-object-939b786ded773e7d03c0ac549fe9234dbce9fd4b-docs/workspace/architecture-task-locks.json-blob-a9b9de529f5254b0982103ee84af2de3751d8b2e-json-pointer-active_r3_packet/concurrency_exception/complete_write_set_paths",
+      "expected_evidence_prefix_file_count": 17,
+      "expected_json_receipt_count": 14,
+      "expected_created_path_count": 18,
+      "expected_r3_owned_plus_created_path_count": 22,
+      "expected_r3_path_manifest_sha256": "242d976361a38ace5cf7a6eef33f97c2fe04831c8a572ed648e010a1f09775e6",
+      "r3_path_manifest_simulation_correction": "read-only-R2-lane-simulated-35aebd78-was-rejected-by-first-fail-closed-live-replay; independently-recomputed-old-21-path-fe671aae-and-final-22-path-242d9763",
+      "expected_r2_intersection": [],
+      "derived_r2_intersection": [],
+      "derived_dependency_intersection": [],
+      "dependency_preservation_path_union_count": 43,
+      "dependency_preservation_inclusive_path_count": 78,
+      "rollback_preimage_write_count": 5,
+      "rollback_created_unlink_count": 18,
+      "rollback_scratch_replay_count": 2,
+      "rollback_target_manifest_sha256": "d5d5fca0c6886075a863f0356ec578a41b84f27a30eb8a5f2fa4254d0078d369",
+      "rollback_output_sha256": "7a72d10e73f643d5ff769b2eb7bc1459a82442bc4114d3443168893b9565ca46",
+      "r2_boundary_output_sha256": "11569f1ba907376fab56271a8bb64e9dd44681feb3a85f1d40b02a1a75f654a0",
+      "replay_helper_sha256": "cbc254de8c4fbb85c2417255cf3d6a9ea2fde5d26186628ffec5a2719ee6a25a",
+      "replay_helper_size_bytes": 32388,
+      "packet_sha256_before_t9_lock_refresh": "cdd0f232fb5a1dcc586a57ee2ac5312d0c664e5c4914ada2dc513a0a18cb345f",
+      "evidence_prefix_manifest_sha256": "339177b12c36493f69df4cacbfb4876d7b869384815291cb1f5129bf39688326",
+      "immutable_existing_prefix_file_count": 8,
+      "source_test_ledger_graph_and_bundle_mutation_authorized": false,
+      "correction_status": "complete-frozen",
+      "fresh_independent_t9_required": true
+    },
+    "t9_rereview": {
+      "verdict": "park",
+      "finding_counts": {
+        "P0": 0,
+        "P1": 2,
+        "P2": 0,
+        "P3": 0
+      },
+      "open_oracles": [
+        "O6-ROLLBACK-DURABLE-RECEIPT",
+        "O10-R2-NEGATIVE-CONTROLS",
+        "O11-R2-DURABLE-RECEIPT"
+      ],
+      "runtime_oracles": "pass",
+      "deterministic_receipts": "pass-14-of-14-exact",
+      "focused_tests": "pass-112",
+      "source_graph_compatibility_and_dirty_snapshot_drift": "pass-none",
+      "report_path": "/tmp/r3-41-t9-rereview-report.json",
+      "report_sha256": "f82bd926626b132e0612368c3cb0ae182bc5da45fefb59c193b613b786d31821",
+      "next_eligible_action": "read-only-map-smallest-evidence-only-O6-O10-O11-follow-up",
+      "mutation_authorized": false
+    },
+    "t9_rereview_evidence_detail_correction_freeze": {
+      "status": "complete-frozen-no-authority",
+      "finding_ids": [
+        "R3-41-T9-REREVIEW-P1-ROLLBACK-DURABLE-RECEIPT",
+        "R3-41-T9-REREVIEW-P1-R2-DURABLE-RECEIPT-AND-FAIL-CLOSED-CONTROL"
+      ],
+      "oracle_ids": [
+        "O6-ROLLBACK-DURABLE-RECEIPT",
+        "O10-R2-NEGATIVE-CONTROLS",
+        "O11-R2-DURABLE-RECEIPT"
+      ],
+      "map_reports": {
+        "/tmp/r3-41-o6-receipt-map-report.json": "f31c5f8e1f59d04e41b0b0477a1ba31c163efb080b42a2280f5cf2cd0ce25b90",
+        "/tmp/r3-41-o10-o11-map-report.json": "47c1cba870c41a0f1ce1e07d01500ea14c394847d80439ce87b6d99b1c4903fb"
+      },
+      "authorized_path_count": 10,
+      "authorized_paths": [
+        "docs/workspace/architecture-evidence/local-social-queue-status-canonical-provider-proxy-caller-cut.replay.py",
+        "docs/workspace/architecture-evidence/local-social-queue-status-canonical-provider-proxy-caller-cut.r2-dependency-boundary.json",
+        "docs/workspace/architecture-evidence/local-social-queue-status-canonical-provider-proxy-caller-cut.rollback-hashes.json",
+        "docs/workspace/architecture-evidence/local-social-queue-status-canonical-provider-proxy-caller-cut.evidence-hygiene.json",
+        "docs/workspace/architecture-evidence/local-social-queue-status-canonical-provider-proxy-caller-cut.formatter-debt-parity.json",
+        "docs/workspace/architecture-evidence/local-social-queue-status-canonical-provider-proxy-caller-cut.partial-release-manifest.json",
+        "docs/workspace/architecture-evidence/local-social-queue-status-canonical-provider-proxy-caller-cut.pytest.json",
+        "docs/workspace/architecture-evidence/local-social-queue-status-canonical-provider-proxy-caller-cut.workspace-contract.json",
+        "docs/workspace/release-packets/local-social-queue-status-canonical-provider-proxy-caller-cut.json",
+        "docs/workspace/architecture-task-locks.json"
+      ],
+      "preimages": {
+        "docs/workspace/architecture-evidence/local-social-queue-status-canonical-provider-proxy-caller-cut.replay.py": {
+          "sha256": "cbc254de8c4fbb85c2417255cf3d6a9ea2fde5d26186628ffec5a2719ee6a25a",
+          "size_bytes": 32388,
+          "mode": "0600"
+        },
+        "docs/workspace/architecture-evidence/local-social-queue-status-canonical-provider-proxy-caller-cut.r2-dependency-boundary.json": {
+          "sha256": "1fab884980af96ce720c295ad8f8a055eb3600c9ff3de3222785454b3cda19b2",
+          "size_bytes": 3356,
+          "mode": "0644"
+        },
+        "docs/workspace/architecture-evidence/local-social-queue-status-canonical-provider-proxy-caller-cut.rollback-hashes.json": {
+          "sha256": "c215e045c459ab13b0076e75762a5bcadf7cab41627748ee2bc90383b0350c6b",
+          "size_bytes": 3255,
+          "mode": "0644"
+        },
+        "docs/workspace/architecture-evidence/local-social-queue-status-canonical-provider-proxy-caller-cut.evidence-hygiene.json": {
+          "sha256": "8d7b03e28121899cac9fe872f1064265f2c79c665b32cf52f116f51d7c88efe7",
+          "size_bytes": 1661,
+          "mode": "0644"
+        },
+        "docs/workspace/architecture-evidence/local-social-queue-status-canonical-provider-proxy-caller-cut.formatter-debt-parity.json": {
+          "sha256": "7e6ce845cafe587f8f617a0e73086e37d7b80de338a5bbd51ceb2582d1cd7b29",
+          "size_bytes": 1697,
+          "mode": "0644"
+        },
+        "docs/workspace/architecture-evidence/local-social-queue-status-canonical-provider-proxy-caller-cut.partial-release-manifest.json": {
+          "sha256": "574fb30c275d938c1ce1afebea9191ff9df9e65bded3d2996bf5122d7500cd2e",
+          "size_bytes": 1729,
+          "mode": "0644"
+        },
+        "docs/workspace/architecture-evidence/local-social-queue-status-canonical-provider-proxy-caller-cut.pytest.json": {
+          "sha256": "b92bf2cc1172181e22fb5ca30af5f5fef3e831915c52af833eb2e1441d27f2bf",
+          "size_bytes": 1722,
+          "mode": "0644"
+        },
+        "docs/workspace/architecture-evidence/local-social-queue-status-canonical-provider-proxy-caller-cut.workspace-contract.json": {
+          "sha256": "48888cccc811981c350e9f6ab3aee79da9813a69411347d138e5c84ee05d5ecc",
+          "size_bytes": 1636,
+          "mode": "0644"
+        },
+        "docs/workspace/release-packets/local-social-queue-status-canonical-provider-proxy-caller-cut.json": {
+          "sha256": "24e9d0dac8dbf3a1f0684bbb049b5c8b58d88e74e62e06c8539e94e4447f2ff4",
+          "size_bytes": 16262,
+          "mode": "0644"
+        },
+        "docs/workspace/architecture-task-locks.json": {
+          "sha256": "59b8034aac59d233ee14b38bcf04ebf8d7de62a076dc81eb7ff9c3d61d2fb7a3",
+          "size_bytes": 102719,
+          "mode": "0600"
+        }
+      },
+      "external_preimage_bundle": {
+        "path": "/tmp/r3-41-o6-o10-o11-preimages.tar.gz",
+        "sha256": "e8bfbc5320ea7adda5837fb38be36fba709f078512cbd7ec830950d9a2ff4239",
+        "size_bytes": 36459,
+        "member_count": 10
+      },
+      "o6_contract": "helper-returned-runtime-actuals-exact-eighteen-created-paths-candidate-and-restored-manifests-two-normalized-replays-five-restored-hashes-complete-deletions-sentinel-six-named-negative-controls-and-live-domain-nonmutation",
+      "o10_contract": "read-only-optional-manifest-input-derives-intersection-before-canonical-count-digest-and-emits-deterministic-JSON-failure-envelope-with-nonzero-exit",
+      "o11_contract": "distinct-expected-and-actual-fields-exact-R2-and-R3-sets-two-intersections-four-preservation-identities-43-78-dependency-sets-four-control-results-and-zero-live-or-durable-manifest-mutation",
+      "immutable_hashes": {
+        "TRR-Backend/api/routers/socials/__init__.py": "bb3335e4b396d98bde6e3d59508ad5fd30833d301d385cf0ce72b15a50ac3229",
+        "TRR-Backend/tests/api/routers/test_socials_season_analytics.py": "5428eb270baa0d98bfba356386d412242b751c0af9f7cbc6481858610bf098c8",
+        "TRR-Backend/tests/repositories/test_social_control_plane_imports.py": "9d2f92d65429709470068b0b52d8786ff198fa34dcc3ad0099266bfbd80b97de",
+        "TRR-Backend/docs/architecture/social-compatibility-wrapper-ledger.md": "bf9cad88711501a77dd4473bf0b4df816a364aaf27b2c400f6751b58d3d50898",
+        "docs/workspace/architecture-evidence/local-social-queue-status-canonical-provider-proxy-caller-cut.rollback-preimages.tar.gz": "3ff5a5d05ac20748a98af8248d2bf3373049776329b9e9fa7f07672eedd2eb95",
+        "docs/workspace/architecture-evidence/local-social-queue-status-canonical-provider-proxy-caller-cut.r2-write-set.paths": "580e54c6baef557f1615add1b71886d1c2cb56f20a064eb41877f8f2f7a4227a"
+      },
+      "serialized_parent_only": true,
+      "source_mutation_authorized": false,
+      "fresh_independent_t9_required_after_correction": true,
+      "completed_at": "2026-07-31T01:08:30Z"
+    },
+    "lead_result": {
+      "status": "complete-parked-by-T9-rereview-O6-O10-O11",
+      "task_name": "r3_41_parent_T9_rereview_checkpoint",
+      "assigned_model": "gpt-5.6-sol",
+      "assigned_reasoning_effort": "xhigh",
+      "changed_paths": [
+        "TRR-Backend/api/routers/socials/__init__.py",
+        "TRR-Backend/tests/repositories/test_social_control_plane_imports.py",
+        "TRR-Backend/docs/architecture/social-compatibility-wrapper-ledger.md",
+        "docs/workspace/architecture-task-locks.json",
+        "docs/workspace/release-packets/local-social-queue-status-canonical-provider-proxy-caller-cut.json",
+        "docs/workspace/architecture-evidence/local-social-queue-status-canonical-provider-proxy-caller-cut.*"
+      ],
+      "focused_tests": "pass-112",
+      "ruff": "pass-five-path-check-four-clean-format-and-guard-debt-parity",
+      "import_graph": "pass-exact-500-1296-4-40-social-1-23-legacy-97-7-app-zero-graph-92060645-source-4183561b",
+      "hotspots": "pass-144-monolith-68316-router-9385",
+      "workspace_contract": "pass",
+      "diff_checks": "pass-three-roots",
+      "r2_dependency_boundary": "pass-59-43-78-four-preservation-objects-zero-intersection",
+      "rollback": "pass-mode-0600-five-byte-exact-preimages-two-candidate-seeded-complete-scratch-replays-eighteen-created-path-removals-negative-controls-and-restored-state-d5d5fca0",
+      "packet_and_evidence": "pass-58-packets-518-evidence-642-hygiene-files-seventeen-file-R3.41-prefix",
+      "forbidden_action_observed": false
+    },
+    "integration_result": {
+      "status": "complete-parked-by-T9-rereview-O6-O10-O11",
+      "focused_tests": "pass-112",
+      "ruff": "pass",
+      "import_graph": "pass-exact-500-1296-4-40-social-1-23-legacy-97-7-app-1122-2944-zero",
+      "hotspots": "pass-144",
+      "workspace_contract": "pass",
+      "diff_checks": "pass-three-roots",
+      "r2_dependency_boundary": "pass-durable-59-path-manifest-derived-R3-22-and-dependency-43-78-empty-intersections-plus-negative-controls",
+      "rollback": "pass-bundle-3ff5a5d05ac20748a98af8248d2bf3373049776329b9e9fa7f07672eedd2eb95-two-complete-candidate-seeded-replays",
+      "packet_and_evidence": "pass-58-packets-518-evidence-642-hygiene-files-seventeen-file-prefix-339177b1",
+      "full_release": "expected-blocked-only-frozen-cloudflare-r2-prepare-named-secrets-retained-record-mismatch",
+      "independent_review": "park-two-independent-Sol-xhigh-runs-P0-0-P1-2-P2-0-P3-0-O6-O10-O11-open"
+    },
+    "t9_evidence_detail_correction_result": {
+      "status": "complete-fresh-independent-T9-pending",
+      "task_lock_freeze_sha256": "de5d6d70a3cc97b1e1176d24d34cf2db67c0186511e0b404754dee8429d45075",
+      "task_lock_pre_final_refresh_sha256": "b8191c0e0e101bc989175f49fef309d8eefe25592c4343c6c05473ade1655f61",
+      "packet_sha256_before_final_lock_refresh": "1745f2d0c30d8db1a54ae52b61e1bfb29d3eb93036f66c78bfabf649cc2abde2",
+      "packet_size_bytes": 16382,
+      "evidence_prefix_file_count": 17,
+      "json_evidence_receipt_count": 14,
+      "evidence_prefix_manifest_sha256": "f614b3fe710541e9194d13818fdf5127996c993163233bcbf662db5469563729",
+      "replay_helper": {
+        "path": "docs/workspace/architecture-evidence/local-social-queue-status-canonical-provider-proxy-caller-cut.replay.py",
+        "sha256": "26b670cf5db78331fc26ebd15c8833aa2cfc29109e86fc63dbba583755fa401c",
+        "size_bytes": 45327,
+        "mode": "0600",
+        "ruff_check": "pass",
+        "ruff_format": "pass"
+      },
+      "corrected_receipts": {
+        "docs/workspace/architecture-evidence/local-social-queue-status-canonical-provider-proxy-caller-cut.r2-dependency-boundary.json": {
+          "sha256": "444ed5df4808a81a4bbfa602c94a7202872ee7fb5c9dc6d256b7a7093d5373ac",
+          "size_bytes": 34503,
+          "correction": "distinct-expected-actual-complete-59-22-43-78-sets-four-preservation-objects-two-intersections-four-controls"
+        },
+        "docs/workspace/architecture-evidence/local-social-queue-status-canonical-provider-proxy-caller-cut.rollback-hashes.json": {
+          "sha256": "9a75c8c40e32b225865e0279c323651df914d960eb72487c9be9c668ab4d2034",
+          "size_bytes": 18262,
+          "correction": "eighteen-created-paths-two-runtime-replays-five-restored-hashes-complete-deletions-sentinel-six-controls-live-nonmutation"
+        },
+        "docs/workspace/architecture-evidence/local-social-queue-status-canonical-provider-proxy-caller-cut.evidence-hygiene.json": {
+          "sha256": "6a84a4fbf6a0dcd0c9265c58e60b29d007fd341665de69fb755a400489d02105",
+          "size_bytes": 1661
+        },
+        "docs/workspace/architecture-evidence/local-social-queue-status-canonical-provider-proxy-caller-cut.formatter-debt-parity.json": {
+          "sha256": "b85b63fb9fd1c95ca8129f1e78f00bd8bccf0fcd5caff60218676049a6182f71",
+          "size_bytes": 1697
+        },
+        "docs/workspace/architecture-evidence/local-social-queue-status-canonical-provider-proxy-caller-cut.partial-release-manifest.json": {
+          "sha256": "52bed11b041564717d0cafbe40163c15d29eb8f5695febae3fe1ca7c53e157ff",
+          "size_bytes": 1729
+        },
+        "docs/workspace/architecture-evidence/local-social-queue-status-canonical-provider-proxy-caller-cut.pytest.json": {
+          "sha256": "6852838b7134515712085ab4fb3d94e37daf4bea99ea5a3569a995e20827bbd4",
+          "size_bytes": 1722
+        },
+        "docs/workspace/architecture-evidence/local-social-queue-status-canonical-provider-proxy-caller-cut.workspace-contract.json": {
+          "sha256": "13d2e1822b01f9ed6c2e33358887a9e5c5e1e0c4dcc811f03786ff7c6021deb3",
+          "size_bytes": 1636
+        }
+      },
+      "r2_positive": {
+        "json_output_sha256": "c69e9b20db3bd037fe566466dab3a170172d22097c69e74ee6abc6cf8cbe28b7",
+        "json_output_size_bytes": 12534,
+        "text_output_sha256": "11569f1ba907376fab56271a8bb64e9dd44681feb3a85f1d40b02a1a75f654a0",
+        "text_output_size_bytes": 100,
+        "r2_path_count": 59,
+        "r3_path_count": 22,
+        "dependency_tracked_path_count": 43,
+        "dependency_inclusive_path_count": 78,
+        "r3_r2_intersection": [],
+        "r3_dependency_intersection": []
+      },
+      "r2_controls": [
+        {
+          "id": "derived-r3-overlap",
+          "input_sha256": "0ef2e40508b77792e15aa546e6bea7b2c86752368b3c21893c8f832999737585",
+          "input_size_bytes": 3093,
+          "input_path_count": 60,
+          "exit_code": 1,
+          "failure_code": "r3_r2_intersection_nonempty",
+          "actual_intersection": [
+            "TRR-Backend/api/routers/socials/__init__.py"
+          ],
+          "output_sha256": "8632248f1091da38ae8b9e21347b0e37a7dcee31dd70eec04fbe7a409d12b31e",
+          "output_size_bytes": 848
+        },
+        {
+          "id": "duplicate-path",
+          "input_sha256": "a459a9238f27dc03c1ea7b3767505be2818704b4dfcefee8b332fb7e3c0bea53",
+          "input_size_bytes": 3079,
+          "input_path_count": 60,
+          "unique_path_count": 59,
+          "exit_code": 1,
+          "failure_code": "r2_manifest_duplicate_path",
+          "output_sha256": "bbadc951ab37f3d6f71815ce658270e9b99a6841a38fbe7339ec60f810dad5db",
+          "output_size_bytes": 685
+        },
+        {
+          "id": "one-byte-canonical-tamper",
+          "input_sha256": "b881774d5785c71fad87f56105f0943f186666bc5ec00affe549127ce742538e",
+          "input_size_bytes": 3049,
+          "input_path_count": 59,
+          "exit_code": 1,
+          "failure_code": "r2_manifest_canonical_identity_mismatch",
+          "output_sha256": "10942fde0ebf213d8a54dd5c201c223db126fe56b08562cd560411d7208402bd",
+          "output_size_bytes": 790
+        }
+      ],
+      "durable_r2_manifest": {
+        "path": "docs/workspace/architecture-evidence/local-social-queue-status-canonical-provider-proxy-caller-cut.r2-write-set.paths",
+        "sha256": "580e54c6baef557f1615add1b71886d1c2cb56f20a064eb41877f8f2f7a4227a",
+        "size_bytes": 3049,
+        "path_count": 59,
+        "mode": "0600",
+        "mtime_ns_before": 1785454499484530700,
+        "mtime_ns_after": 1785454499484530700,
+        "mutation": false
+      },
+      "rollback": {
+        "structured_output_scope": "receipt-generating-prewrite-historical",
+        "structured_output_sha256": "8c4451de893bd52a5bb2260151b8cf895b6bf00cac138387ab288dc2bcb0792d",
+        "structured_output_size_bytes": 32744,
+        "historical_candidate_manifest_sha256": "108d73d854e58b68c5283e18bd5a375082fe999585c5a3b564bf9136a3bec6e2",
+        "restored_manifest_sha256": "d5d5fca0c6886075a863f0356ec578a41b84f27a30eb8a5f2fa4254d0078d369",
+        "replay_count": 2,
+        "created_path_count": 18,
+        "preimage_write_count": 5,
+        "created_unlink_count": 18,
+        "negative_control_count": 6,
+        "provider_order_count": 5,
+        "live_domain_unchanged": true
+      },
+      "validation": {
+        "packet_scoped": "pass-58-packets-518-evidence",
+        "evidence_hygiene": "pass-642-files",
+        "seven_helper_bound_receipts": "final-helper-identity-exact",
+        "full_release_manifest": "blocked-only-frozen-cloudflare-r2-backend-scripts-modal-prepare_named_secrets-retained-record-mismatch"
+      },
+      "immutable_hashes": {
+        "TRR-Backend/api/routers/socials/__init__.py": "bb3335e4b396d98bde6e3d59508ad5fd30833d301d385cf0ce72b15a50ac3229",
+        "TRR-Backend/tests/api/routers/test_socials_season_analytics.py": "5428eb270baa0d98bfba356386d412242b751c0af9f7cbc6481858610bf098c8",
+        "TRR-Backend/tests/repositories/test_social_control_plane_imports.py": "9d2f92d65429709470068b0b52d8786ff198fa34dcc3ad0099266bfbd80b97de",
+        "TRR-Backend/docs/architecture/social-compatibility-wrapper-ledger.md": "bf9cad88711501a77dd4473bf0b4df816a364aaf27b2c400f6751b58d3d50898",
+        "docs/workspace/architecture-evidence/local-social-queue-status-canonical-provider-proxy-caller-cut.rollback-preimages.tar.gz": "3ff5a5d05ac20748a98af8248d2bf3373049776329b9e9fa7f07672eedd2eb95",
+        "docs/workspace/architecture-evidence/local-social-queue-status-canonical-provider-proxy-caller-cut.r2-write-set.paths": "580e54c6baef557f1615add1b71886d1c2cb56f20a064eb41877f8f2f7a4227a"
+      },
+      "live_repository_mutation": false,
+      "source_test_ledger_bundle_r2_dependency_app_mutation": false,
+      "fresh_independent_t9_required": true
+    },
+    "t9_final_rereview": {
+      "verdict": "accepted_with_follow_up",
+      "assignment": "/tmp/r3_41_t9_evidence_detail_rereview_assignment.json",
+      "assignment_sha256": "0b54ef658cf993b53c22ab417756f4f812553955a9874e0593385b40f863c7ab",
+      "report": "/tmp/r3-41-t9-evidence-detail-rereview-report.json",
+      "report_sha256": "82212f2330852bccf1b527c3afa39d87a87ab8143eae0259d769707e2f648036",
+      "role": "acceptance_integrator",
+      "model": "gpt-5.6-sol",
+      "effort": "xhigh",
+      "repository_mutation_authorized": false,
+      "parent_retains_final_acceptance": true,
+      "parent_acceptance_recorded": true,
+      "finding_counts": {
+        "P0": 0,
+        "P1": 0,
+        "P2": 0,
+        "P3": 0
+      },
+      "closed_oracles": [
+        "O6-ROLLBACK-DURABLE-RECEIPT",
+        "O10-R2-NEGATIVE-CONTROLS",
+        "O11-R2-DURABLE-RECEIPT"
+      ],
+      "next_eligible_action": "T6-remaining-R3-packet-design-read-only-live-graph-recompute"
+    }
+  },
+  "historical_r0_lanes": [
     {
       "lane_id": "R0-A",
       "owner": "durable-contracts-worker",
@@ -125,8 +2564,15 @@
       ]
     }
   ],
-  "packet_2a_readiness": {
-    "state": "ready-after-r0-candidate-promotion",
+  "packet_2a_history": {
+    "state": "historical-completed-through-packet-2d",
+    "historical_only": true,
+    "completed_packet_ids": [
+      "local-core-show-season-episode-reads",
+      "local-core-cast-credit-reads",
+      "local-core-people-reads",
+      "local-admin-media-assets-links"
+    ],
     "coordination_owner": "program-coordination",
     "backend_first": true,
     "product_live_mutation_authorized": false,
@@ -135,7 +2581,7 @@
     "deployment_authorized": false,
     "browser_authorized": false,
     "backend_data_worker": {
-      "state": "ready-after-r0-candidate-promotion",
+      "state": "historical-complete",
       "owned_paths": [
         "TRR-Backend/trr_backend/repositories/core_show_reads.py",
         "TRR-Backend/trr_backend/services/core_show_reads.py",
@@ -144,7 +2590,7 @@
       ]
     },
     "backend_contract_worker": {
-      "state": "ready-after-r0-candidate-promotion",
+      "state": "historical-complete",
       "owned_paths": [
         "TRR-Backend/api/schemas/v2/core_show_reads.py",
         "TRR-Backend/api/routers/v2/core_show_reads.py",
@@ -155,7 +2601,7 @@
       ]
     },
     "app_adapter_worker": {
-      "state": "blocked-until-backend-contract-freeze",
+      "state": "historical-complete",
       "owned_paths": [
         "TRR-APP/apps/web/src/lib/server/trr-api/trr-shows-repository.ts",
         "TRR-APP/apps/web/tests/trr-shows-repository*.test.ts"
@@ -171,10 +2617,17 @@
       "docs/workspace/release-packets/**",
       "docs/workspace/architecture-evidence/**"
     ],
-    "target_app_direct_sql_delta": {
+    "historical_packet_2a_app_direct_sql_delta": {
       "before": 261,
       "after": 251,
       "delta": -10
+    },
+    "current_app_direct_sql_inventory": {
+      "total": 178,
+      "app_local": 133,
+      "admin_read_model": 26,
+      "backend_shared_schema": 19,
+      "remaining_non_app_local": 45
     }
   },
   "lead_only_paths": [
@@ -262,6 +2715,75 @@
         "R0-C": "accept",
         "lead-integration": "accept"
       }
+    },
+    "r3_43_t8": {
+      "state": "complete",
+      "completed_at": "2026-07-31T22:03:01Z",
+      "focused_tests": 124,
+      "legacy_social_import_count": 95,
+      "legacy_social_importer_count": 7,
+      "social_cycle_count": 1,
+      "social_cyclic_module_count": 23,
+      "app_cycle_count": 0,
+      "receipt_count": 14,
+      "evidence_file_count": 17,
+      "rollback_replays": 2,
+      "mutation_authority_closed": true
+    },
+    "r3_43_t8_evidence_correction": {
+      "state": "complete",
+      "completed_at": "2026-07-31T22:17:58Z",
+      "helper_sha256": "0813d7c4cd1d7b50918c6beb3fef3ef5bf05c6ad6fc4a45a22b39d2a82f59ee6",
+      "helper_size_bytes": 48813,
+      "pytest_count": 124,
+      "graph_source_sha256": "7b3901d7860066fd17b435c661898da306fbba46ae7ed837528cbc7b12a49b49",
+      "rollback_output_sha256": "95ef4ac2b8bb6029a181c7f8e6a9efcd47c509e4d2c306dca0aa958745e83446",
+      "evidence_prefix_manifest_sha256": "6e5a84cdb85f3f35adc58867b80c7b2843f881b3bde91eb13e4a073c7a0e65d3",
+      "mutation_authority_closed": true
+    },
+    "r3_43_t8_prefix_definition_correction": {
+      "state": "complete",
+      "completed_at": "2026-07-31T22:27:42Z",
+      "historical_manifest_sha256": "4f5ed82f76b98ef4a67b21523ec08242944ec5e4ceea156875343110ed0e052b",
+      "with_mode_manifest_sha256": "6e5a84cdb85f3f35adc58867b80c7b2843f881b3bde91eb13e4a073c7a0e65d3",
+      "file_count": 17,
+      "mutation_authority_closed": true
+    },
+    "r3_43_t8_packet_narrative_correction": {
+      "state": "complete",
+      "completed_at": "2026-07-31T22:34:49Z",
+      "restored_lock": "accepted R3.42",
+      "negative_control_executions": 8,
+      "mutation_authority_closed": true
+    },
+    "r3_43_t9": {
+      "state": "complete_accepted_with_follow_up",
+      "completed_at": "2026-07-31T22:44:51Z",
+      "report": "/tmp/R343-T9-ACCEPT-CONCLUSIVE-report.json",
+      "report_sha256": "8c69b8d3e2e74eaf779f1f7ee43694ca28d06fd9c65488b75ce73e10e64b314e",
+      "finding_counts": {
+        "P0": 0,
+        "P1": 0,
+        "P2": 0,
+        "P3": 0
+      },
+      "receipt_count": 14,
+      "rollback_replays": 2,
+      "mutation_authority_closed": true,
+      "next_eligible_action": "T6-remaining-R3-packet-design-read-only-live-graph-recompute"
+    },
+    "next_t6": {
+      "state": "parked_before_T2",
+      "completed_at": "2026-07-31T23:16:13Z",
+      "graph": "complete",
+      "compatibility": "blocked",
+      "validation": "complete_parked",
+      "focused_tests": 134,
+      "tracked_hotspots": 144,
+      "candidate_selected": false,
+      "t2_frozen": false,
+      "t7_assignment_created": false,
+      "mutation_authority_closed": true
     }
   },
   "baseline": {
@@ -291,8 +2813,12 @@
           "status_porcelain_v2_z_sha256": null,
           "digest_status": "not-reproducible-from-original-capture",
           "stash_count": 3,
-          "remote_names": ["origin"],
-          "remote_urls": ["https://github.com/therealityreport/trr-workspace.git"],
+          "remote_names": [
+            "origin"
+          ],
+          "remote_urls": [
+            "https://github.com/therealityreport/trr-workspace.git"
+          ],
           "worktree_count": 1
         },
         {
@@ -304,8 +2830,12 @@
           "status_porcelain_v2_z_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
           "digest_status": "exact-clean-digest-under-canonical-method",
           "stash_count": 6,
-          "remote_names": ["origin"],
-          "remote_urls": ["https://github.com/therealityreport/trr-app.git"],
+          "remote_names": [
+            "origin"
+          ],
+          "remote_urls": [
+            "https://github.com/therealityreport/trr-app.git"
+          ],
           "worktree_count": 1
         },
         {
@@ -317,8 +2847,12 @@
           "status_porcelain_v2_z_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
           "digest_status": "exact-clean-digest-under-canonical-method",
           "stash_count": 7,
-          "remote_names": ["origin"],
-          "remote_urls": ["https://github.com/therealityreport/trr-backend.git"],
+          "remote_names": [
+            "origin"
+          ],
+          "remote_urls": [
+            "https://github.com/therealityreport/trr-backend.git"
+          ],
           "worktree_count": 1
         },
         {
@@ -351,8 +2885,12 @@
           "status_entry_count": 35,
           "status_porcelain_v2_z_sha256": "99cc3eebfc964613898ebbabf70d9287488f20101ae9b7594ae7edc7bd577cd2",
           "stash_count": 3,
-          "remote_names": ["origin"],
-          "remote_urls": ["https://github.com/therealityreport/trr-workspace.git"],
+          "remote_names": [
+            "origin"
+          ],
+          "remote_urls": [
+            "https://github.com/therealityreport/trr-workspace.git"
+          ],
           "worktree_count": 1
         },
         {
@@ -363,8 +2901,12 @@
           "status_entry_count": 0,
           "status_porcelain_v2_z_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
           "stash_count": 6,
-          "remote_names": ["origin"],
-          "remote_urls": ["https://github.com/therealityreport/trr-app.git"],
+          "remote_names": [
+            "origin"
+          ],
+          "remote_urls": [
+            "https://github.com/therealityreport/trr-app.git"
+          ],
           "worktree_count": 1
         },
         {
@@ -375,8 +2917,12 @@
           "status_entry_count": 13,
           "status_porcelain_v2_z_sha256": "e65f60be74e6af8a5357c0a372ad331dd644971563a5e2e1a859d1d72b86bf14",
           "stash_count": 7,
-          "remote_names": ["origin"],
-          "remote_urls": ["https://github.com/therealityreport/trr-backend.git"],
+          "remote_names": [
+            "origin"
+          ],
+          "remote_urls": [
+            "https://github.com/therealityreport/trr-backend.git"
+          ],
           "worktree_count": 1
         },
         {
@@ -571,5 +3117,153 @@
         "coordinator-named-social-capacity-config-consumer-only"
       ]
     }
-  ]
+  ],
+  "phase1_v4d_r2": {
+    "all_other_mutation_authorized": false,
+    "api_main_immutable_sha256": "cbb5a443d18bde4012b9c3836c0af5232cb8662e5d4f50fa8c9b0e075f1e20d6",
+    "authorized_mutation_paths": [],
+    "branch_ref_stage_commit_push_pr_authorized": false,
+    "closed_baseline_sha256": "eb58f6f2e31bd30e94390767a524961783517a49d4037e7b81666ac55bfcbed4",
+    "created_paths": [
+      "TRR-Backend/tests/scripts/test_rebuild_instagram_comment_rollups.py",
+      "TRR-Backend/tests/api/routers/test_social_profile_cache_contract.py"
+    ],
+    "destructive_actions_authorized": false,
+    "final_acceptance_claimed": false,
+    "independent_review_status": "pending-separate-acceptance-integrator",
+    "late_marker_sentinel": {
+      "checked_after_subprocess_completion": true,
+      "reject_markers": [
+        "EXTERNAL_DENY",
+        "Better Stack log shipping muted"
+      ],
+      "stdout_and_stderr": true
+    },
+    "live_external_actions_authorized": false,
+    "open_proposal_sha256": "a2a625a8e6a9817434af87b5de62e16e1efb0bc674d967e72743ee1ba4138838",
+    "oracle_environment": {
+      "TRR_DISABLE_BETTER_STACK": "1",
+      "TRR_DISABLE_SENTRY": "1",
+      "candidate_dotenv_absence_not_relied_upon": true,
+      "set_after_environment_copy_before_pytest": true
+    },
+    "parent_only_task_lock_paths": [
+      "docs/workspace/architecture-task-locks.json"
+    ],
+    "phase1_complete_claimed": false,
+    "phase1_validation_status": "candidate-and-rollback-validated-pending-independent-acceptance",
+    "phase2_authorized": false,
+    "phase3_authorized": false,
+    "positive_control": {
+      "control_path": "harness/synthetic_socket_control_test.py",
+      "control_sha256": "5014a24c63c2634fcc0b8e9a0a51417e4da5dd0202e318ba6000364a6754c7f3",
+      "expected_classification": "EXPECTED_NONZERO_ASSERTION_GATED_SOCKET_DENIAL_CONTROL",
+      "real_connection_possible": false,
+      "receipt_path": "controls/positive-socket-control.json",
+      "receipt_sha256": "27f7862b6674e060320bb09c7b24b20760936ba5c726f84bfc879d8380cdecae"
+    },
+    "postimage_sha256": {
+      "TRR-Backend/docs/architecture/social-compatibility-wrapper-ledger.md": "39cf48dedb800a3d0d53d3ea4cb37c56910bbcfde7acffb5d7731f47fd87f8eb",
+      "TRR-Backend/scripts/socials/instagram/rebuild_comment_rollups.py": "0886c97ed72b0dfce1673b07959470b754fb48ba9760ef52bbc29169efb1e0f1",
+      "TRR-Backend/tests/api/routers/test_social_profile_cache_contract.py": "28e32df37196723ab0a4117425b57b453910db1b29d34f8ca3b18ce6b126d3c2",
+      "TRR-Backend/tests/api/routers/test_social_profile_reads_import_boundary.py": "9ec6781bf6294bcc5ec0a8b5eeddfe6e2f6e6d65e5b54e4d15b09a5590d9852a",
+      "TRR-Backend/tests/api/test_health.py": "82a8e95d95998ff940d35cf8fe4fc0f5e277899defbe750dc2f6222d68b7373d",
+      "TRR-Backend/tests/repositories/test_social_control_plane_imports.py": "fc08c105db5782ed9c817e7b378f6e7e8629ad5b895983454c4d5981478017a2",
+      "TRR-Backend/tests/repositories/test_social_season_analytics.py": "94053bf2e86195dd8bb988ffa7b4f0ef53cafb3a3d4158f1c96962dd150c24b3",
+      "TRR-Backend/tests/repositories/test_social_shared_accounts_import_boundary.py": "14556398a288e54674ebf017175df58ea468494bcece9991162c933a2b018fda",
+      "TRR-Backend/tests/scripts/test_rebuild_instagram_comment_rollups.py": "b99c40713578d252182ba74a7ac6f3542914afb76ed30776d8ae81f28568055a",
+      "TRR-Backend/trr_backend/socials/account_catalog/__init__.py": "cda8f22fcd29b5ccc35e83aa64e7f65441c65bd53991e1cd75fec1e4723f28da",
+      "TRR-Backend/trr_backend/socials/profile_dashboard.py": "c121c4ee277d3fd0e2e938bc83047f07cd901856d7cf5c65d69fb14e2a4e860f",
+      "TRR-Backend/trr_backend/socials/read_models/account_profile/common.py": "6ed144635e17b9ec80d27afdea952e6eef33aabfd69ae094c3c73b0b6e33387a",
+      "TRR-Backend/trr_backend/socials/social_season_analytics_impl.py": "1d958f1d696bf5791da3d5cda2963bdec5eca26188327c04fec43d920de7120a"
+    },
+    "preimage_sha256_or_absent": {
+      "TRR-Backend/docs/architecture/social-compatibility-wrapper-ledger.md": "1254b91a845710780127d83a128c3f1d23fef7a07c9ae53f0b48f3ec1f447d54",
+      "TRR-Backend/scripts/socials/instagram/rebuild_comment_rollups.py": "87e5d5ad4951f7c984ae1dbae11c9992f0aecb4e1441b04a63597c21f3496114",
+      "TRR-Backend/tests/api/routers/test_social_profile_cache_contract.py": "ABSENT",
+      "TRR-Backend/tests/api/routers/test_social_profile_reads_import_boundary.py": "514be1a3d7cdc5457628babf6866c1261b01b42433ad857ed3b9fe13a0d14ede",
+      "TRR-Backend/tests/api/test_health.py": "9489b527fd63b72a7897a09e7413cd9b53a8139f6972884fcab6746c55c7074c",
+      "TRR-Backend/tests/repositories/test_social_control_plane_imports.py": "185d54e7c5e8670908a3534bd807a9db2fa2e16906a17c9b4cc1a3ce81dc9cec",
+      "TRR-Backend/tests/repositories/test_social_season_analytics.py": "15b6c00a5ceaf2f189105ed29ae072badebaf5ac3a4174820b8a8cbfd13c048a",
+      "TRR-Backend/tests/repositories/test_social_shared_accounts_import_boundary.py": "1331e4573b4eb693627d8c703dd3cea34c2f40debf44d2f8c7b8070d832cc0ee",
+      "TRR-Backend/tests/scripts/test_rebuild_instagram_comment_rollups.py": "ABSENT",
+      "TRR-Backend/trr_backend/socials/account_catalog/__init__.py": "b573999f74785cb34bf238f3bc5a2ea95cdd809d0f1a24442eaff3854c34b45e",
+      "TRR-Backend/trr_backend/socials/profile_dashboard.py": "dba6e795dd320094aee3a7072af8a479ac9d87af7ad08ee406400cb05102a4e4",
+      "TRR-Backend/trr_backend/socials/read_models/account_profile/common.py": "7c2cd728ce25e03b38ad2f432c1b631b9d08a20766dc1535e6f435d4af0c7c9a",
+      "TRR-Backend/trr_backend/socials/social_season_analytics_impl.py": "9c2c38f2bceff0e930bb118f7f42c7c5932038e33e7bfd974a0718e5471938c9"
+    },
+    "prior_live_writer_authority_reused": false,
+    "proposal_only": true,
+    "proposal_status": "close-proposal",
+    "requires_parent_application": true,
+    "rollback": {
+      "archive_member_count": 13,
+      "archive_mode": "0600",
+      "archive_path": "rollback/rollback-preimages.tar",
+      "archive_sha256": "e41d4b3abbeb675b544fd6c07e5563243e4e41249d56af4fbae33889eea74e3e",
+      "broad_restore_forbidden": true,
+      "created_deletion_count": 2,
+      "existing_preimage_count": 12,
+      "head_relative_reversal_forbidden": true,
+      "mode": "deterministic-byte-exact-path-preimages-plus-created-path-deletion"
+    },
+    "single_writer": true,
+    "source_mutation_scope": [],
+    "task_id": "ARC-P1-FZ-36-CLEAN-REFREEZE-V4D-R2",
+    "validation_evidence": {
+      "candidate_gate": {
+        "path": "receipts/candidate-gate.json",
+        "sha256": "0259d34411367212675cd095671aa35c4a9bd840062f3209097291c6990598fa"
+      },
+      "contract": {
+        "path": "contracts/repaired-provider-import-caller-identity.json",
+        "sha256": "30dd1268b24a442c14b8b890bc7f651850d85e904b7bbf891dadddc768ebe2df"
+      },
+      "corrected_runner": {
+        "path": "scripts/run_oracle.py",
+        "sha256": "34615b90b2f13cabe341e45ff927db9037f3d50b3eadf207e949336ece7471f6"
+      },
+      "graph_proof": {
+        "path": "graph/import-graph-proof.json",
+        "sha256": "f0d26eaea8badd5e3c6be5a2bbbdf475592686bd0747cb332ccf9142a7926cb9"
+      },
+      "handler_absence_probe": {
+        "path": "harness/handler_absence_probe.py",
+        "sha256": "6dc9d79005dd6255628ac94f5c987cb5d730929867e16872de98c043770ca589"
+      },
+      "node_manifest_142": {
+        "path": "validation/node-manifest.json",
+        "sha256": "006f07620bc9cf4a4c5dfb971eba28ba4c66dac25eece2c2308b48f6ea6869c0"
+      },
+      "offline_stability": {
+        "path": "validation/offline-stability.json",
+        "sha256": "d8fb56367e214e669183519920d6ce6652cc6d2f1db6a4ce295f7978b2fd0f09"
+      },
+      "positive_socket_control": {
+        "path": "controls/positive-socket-control.json",
+        "sha256": "27f7862b6674e060320bb09c7b24b20760936ba5c726f84bfc879d8380cdecae"
+      },
+      "rollback_manifest": {
+        "path": "receipts/rollback-manifest.json",
+        "sha256": "04c4fc1da125dbfdbe62b7f256e36835c3d5be9297c344251d9502633a629c15"
+      }
+    },
+    "worker_mutation_authorized": false,
+    "worker_paths": [
+      "TRR-Backend/trr_backend/socials/read_models/account_profile/common.py",
+      "TRR-Backend/trr_backend/socials/social_season_analytics_impl.py",
+      "TRR-Backend/trr_backend/socials/account_catalog/__init__.py",
+      "TRR-Backend/trr_backend/socials/profile_dashboard.py",
+      "TRR-Backend/scripts/socials/instagram/rebuild_comment_rollups.py",
+      "TRR-Backend/tests/repositories/test_social_control_plane_imports.py",
+      "TRR-Backend/tests/repositories/test_social_shared_accounts_import_boundary.py",
+      "TRR-Backend/tests/api/routers/test_social_profile_reads_import_boundary.py",
+      "TRR-Backend/tests/api/test_health.py",
+      "TRR-Backend/tests/repositories/test_social_season_analytics.py",
+      "TRR-Backend/tests/scripts/test_rebuild_instagram_comment_rollups.py",
+      "TRR-Backend/tests/api/routers/test_social_profile_cache_contract.py",
+      "TRR-Backend/docs/architecture/social-compatibility-wrapper-ledger.md"
+    ],
+    "writer_handoff_status": "closed-after-phase1-validation"
+  }
 }

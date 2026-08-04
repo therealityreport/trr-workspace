@@ -27,6 +27,7 @@ Keep these concerns in `trr_backend.socials.scrapling_transport`:
   - `DEFAULT_MAX_TRANSIENT_RETRIES`
   - `DEFAULT_BASE_BACKOFF_SECONDS`
   - `DEFAULT_TRANSPORT`
+  - `SCRAPLING_BROWSER_LOCALE` (`en-US`) for deterministic browser-backed requests
 - clear runtime errors when `scrapling[fetchers]` is missing
 - a stable `scrapling_proxy_conflict` reason when callers mix session-level and
   per-request proxy modes
