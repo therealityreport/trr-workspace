@@ -33,6 +33,47 @@ def line_count(path: Path) -> int:
         return sum(1 for _ in source)
 
 
+def manifest_production_source_trees(
+    manifest: dict[str, Any],
+) -> tuple[tuple[Path, frozenset[str]], ...]:
+    """Parse the manifest's production discovery boundary when it is declared."""
+
+    discovery = manifest.get("discovery")
+    if discovery is None:
+        return PRODUCTION_SOURCE_TREES
+    if not isinstance(discovery, dict) or discovery.get("mode") != "code_owned":
+        raise HotspotValidationError("discovery.mode must be code_owned")
+    raw_source_trees = discovery.get("source_trees")
+    if not isinstance(raw_source_trees, list) or not raw_source_trees:
+        raise HotspotValidationError("discovery.source_trees must be a non-empty array")
+
+    source_trees: list[tuple[Path, frozenset[str]]] = []
+    for index, raw_source_tree in enumerate(raw_source_trees):
+        if not isinstance(raw_source_tree, dict):
+            raise HotspotValidationError(
+                f"discovery.source_trees[{index}] must be an object"
+            )
+        raw_root = raw_source_tree.get("root")
+        raw_extensions = raw_source_tree.get("extensions")
+        if not isinstance(raw_root, str) or not raw_root:
+            raise HotspotValidationError(
+                f"discovery.source_trees[{index}].root must be a non-empty string"
+            )
+        if (
+            not isinstance(raw_extensions, list)
+            or not raw_extensions
+            or any(
+                not isinstance(extension, str) or not extension.startswith(".")
+                for extension in raw_extensions
+            )
+        ):
+            raise HotspotValidationError(
+                f"discovery.source_trees[{index}].extensions must be a non-empty extension array"
+            )
+        source_trees.append((Path(raw_root), frozenset(raw_extensions)))
+    return tuple(source_trees)
+
+
 def _positive_integer(value: Any) -> bool:
     return isinstance(value, int) and not isinstance(value, bool) and value > 0
 
@@ -56,7 +97,9 @@ def resolve_manifest_path(root: Path, raw_path: Path) -> Path:
     try:
         resolved.relative_to(root)
     except ValueError as exc:
-        raise HotspotValidationError(f"manifest path escapes workspace: {raw_path}") from exc
+        raise HotspotValidationError(
+            f"manifest path escapes workspace: {raw_path}"
+        ) from exc
     return resolved
 
 
@@ -128,11 +171,14 @@ def validate_hotspots(
     *,
     fail_expired: bool = False,
     as_of: date | None = None,
-    production_source_trees: tuple[
-        tuple[Path, frozenset[str]], ...
-    ] = PRODUCTION_SOURCE_TREES,
+    production_source_trees: tuple[tuple[Path, frozenset[str]], ...] | None = None,
 ) -> list[str]:
     errors: list[str] = []
+    if production_source_trees is None:
+        try:
+            production_source_trees = manifest_production_source_trees(manifest)
+        except HotspotValidationError as exc:
+            return [str(exc)]
     root = root.resolve()
     policy = manifest.get("policy")
     if not isinstance(policy, dict):
@@ -151,9 +197,13 @@ def validate_hotspots(
         review_window = 30
 
     records = manifest.get("hotspots")
-    if not isinstance(records, list) or not all(isinstance(record, dict) for record in records):
+    if not isinstance(records, list) or not all(
+        isinstance(record, dict) for record in records
+    ):
         return [*errors, "hotspots must be an array of objects"]
-    paths = [record.get("path") for record in records if isinstance(record.get("path"), str)]
+    paths = [
+        record.get("path") for record in records if isinstance(record.get("path"), str)
+    ]
     for path, count in sorted(Counter(paths).items()):
         if count > 1:
             errors.append(f"duplicate hotspot path: {path}")
@@ -162,8 +212,15 @@ def validate_hotspots(
     listed_paths: set[str] = set()
     for index, record in enumerate(records):
         relative = record.get("path")
-        label = relative if isinstance(relative, str) and relative else f"hotspots[{index}]"
-        if not isinstance(relative, str) or not relative or relative.startswith("/") or ".." in Path(relative).parts:
+        label = (
+            relative if isinstance(relative, str) and relative else f"hotspots[{index}]"
+        )
+        if (
+            not isinstance(relative, str)
+            or not relative
+            or relative.startswith("/")
+            or ".." in Path(relative).parts
+        ):
             errors.append(f"{label}: path must be workspace-relative")
             continue
         listed_paths.add(relative)
@@ -189,7 +246,9 @@ def validate_hotspots(
             errors.append(f"{label}: line_ceiling must be a positive integer")
             continue
         if not _positive_integer(target) or target > ceiling:
-            errors.append(f"{label}: target_lines must be positive and no greater than line_ceiling")
+            errors.append(
+                f"{label}: target_lines must be positive and no greater than line_ceiling"
+            )
         relative_path = Path(relative)
         if (
             relative.startswith("TRR-APP/apps/web/src/app/")
@@ -200,7 +259,11 @@ def validate_hotspots(
             errors.append(
                 f"{label}: route/page target_lines must be no greater than {route_target}"
             )
-        current_lines = line_count(source_path)
+        try:
+            current_lines = line_count(source_path)
+        except (OSError, UnicodeError) as exc:
+            errors.append(f"{label}: cannot count source lines: {exc}")
+            continue
         if current_lines > ceiling:
             errors.append(
                 f"{label}: grew past line ceiling current={current_lines} ceiling={ceiling}"
@@ -208,7 +271,9 @@ def validate_hotspots(
 
         review_by = record.get("review_by")
         try:
-            review_date = date.fromisoformat(review_by) if isinstance(review_by, str) else None
+            review_date = (
+                date.fromisoformat(review_by) if isinstance(review_by, str) else None
+            )
         except ValueError:
             review_date = None
         if review_date is None or review_date.isoformat() != review_by:
