@@ -9,14 +9,15 @@ Use when you've added or modified files since the last run. Only re-extracts cha
 ```bash
 $(cat graphify-out/.graphify_python) -c "
 import sys, json
-from graphify.detect import detect_incremental, save_manifest
+from graphify.detect import detect_incremental
 from pathlib import Path
 
 result = detect_incremental(Path('INPUT_PATH'))
 new_total = result.get('new_total', 0)
-print(json.dumps(result, indent=2, ensure_ascii=False))
 Path('graphify-out/.graphify_incremental.json').write_text(json.dumps(result, ensure_ascii=False), encoding=\"utf-8\")
 deleted = list(result.get('deleted_files', []))
+changed_categories = sum(bool(paths) for paths in result.get('new_files', {}).values())
+print(f'[graphify update] Detected {new_total} new/changed file(s) across {changed_categories} categor(ies); {len(deleted)} deletion(s).')
 if new_total == 0 and not deleted:
     print('No files changed since last run. Nothing to update.')
     raise SystemExit(0)
