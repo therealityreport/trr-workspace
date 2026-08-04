@@ -12,9 +12,10 @@ Guarded release operations are dry-run by default:
   scripts/modal-trr.sh evidence [--execute]
   scripts/modal-trr.sh rollback --version vN [--execute]
 
-Executing rollback additionally requires TRR_MODAL_ROLLBACK_APPROVED=1 in the
-same command invocation. Dry-run output is deterministic JSON and does not
-contact Modal.
+Executing rollback requires TRR_MODAL_ROLLBACK_APPROVED=1. Supply it directly
+to a rollback command; an exported value remains active for later commands in
+the same environment. Dry-run output is deterministic JSON and does not contact
+Modal.
 
 Examples:
   scripts/modal-trr.sh profile current
@@ -196,7 +197,7 @@ if [[ "${1:-}" == "rollback" ]]; then
     exit 0
   fi
   if [[ "${TRR_MODAL_ROLLBACK_APPROVED:-}" != "1" ]]; then
-    echo "modal-trr.sh rollback execution requires TRR_MODAL_ROLLBACK_APPROVED=1 from the current approved invocation." >&2
+    echo "modal-trr.sh rollback execution requires TRR_MODAL_ROLLBACK_APPROVED=1." >&2
     exit 2
   fi
   verify_pinned_modal_identity || exit $?

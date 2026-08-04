@@ -4,6 +4,7 @@ import json
 import os
 import stat
 import subprocess
+import sys
 from pathlib import Path
 
 
@@ -245,7 +246,7 @@ def test_modal_rollback_rejects_invalid_version_before_exec(tmp_path: Path) -> N
     assert not log.exists()
 
 
-def test_modal_rollback_execute_requires_current_approval_before_exec(
+def test_modal_rollback_execute_requires_explicit_approval_before_exec(
     tmp_path: Path,
 ) -> None:
     executable, log = _fake_modal(tmp_path)
@@ -262,7 +263,23 @@ def test_modal_rollback_execute_requires_current_approval_before_exec(
 
     assert completed.returncode == 2
     assert "TRR_MODAL_ROLLBACK_APPROVED=1" in completed.stderr
+    assert "current approved invocation" not in completed.stderr
     assert not log.exists()
+
+
+def test_modal_rollback_help_discloses_environment_approval_persistence() -> None:
+    completed = subprocess.run(
+        ["bash", str(WRAPPER), "--help"],
+        cwd=ROOT,
+        env=os.environ.copy(),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0
+    assert "an exported value remains active for later commands" in completed.stdout
+    assert "same command invocation" not in completed.stdout
 
 
 def test_modal_rollback_execute_verifies_workspace_then_uses_exact_target(
@@ -318,7 +335,9 @@ def test_modal_rollback_execute_stops_on_workspace_identity_mismatch(
 
     assert completed.returncode == 2
     assert identity_check.is_file()
-    assert "expected active profile/workspace admin-56995/admin-56995" in completed.stderr
+    assert (
+        "expected active profile/workspace admin-56995/admin-56995" in completed.stderr
+    )
     assert not log.exists()
 
 
@@ -372,3 +391,39 @@ def test_architecture_preflight_forces_loopback_and_intercepts_no_provider_comma
     assert "db_apply=off" in completed.stdout
     assert "remote_workers=off" in completed.stdout
     assert not log.exists(), f"intercepted prohibited command(s): {log.read_text()}"
+
+
+def test_architecture_preflight_prefers_python_311_over_a_lower_default_python3(
+    tmp_path: Path,
+) -> None:
+    intercept_dir = tmp_path / "bin"
+    intercept_dir.mkdir()
+    python_log = tmp_path / "python.log"
+    lower_python = intercept_dir / "python3"
+    lower_python.write_text(
+        f"#!/usr/bin/env bash\nprintf '%s\\n' python3 >> {str(python_log)!r}\nexit 1\n",
+        encoding="utf-8",
+    )
+    lower_python.chmod(lower_python.stat().st_mode | stat.S_IXUSR)
+    python_311 = intercept_dir / "python3.11"
+    python_311.write_text(
+        f"#!/usr/bin/env bash\nprintf '%s\\n' python3.11 >> {str(python_log)!r}\nexec {sys.executable!r} \"$@\"\n",
+        encoding="utf-8",
+    )
+    python_311.chmod(python_311.stat().st_mode | stat.S_IXUSR)
+
+    env = os.environ.copy()
+    env["PATH"] = f"{intercept_dir}:{env['PATH']}"
+    completed = subprocess.run(
+        ["bash", str(ARCHITECTURE_PREFLIGHT)],
+        cwd=ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    calls = python_log.read_text(encoding="utf-8").splitlines()
+    assert calls.count("python3.11") >= 3
+    assert "python3" not in calls
