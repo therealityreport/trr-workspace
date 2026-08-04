@@ -244,3 +244,12 @@ def test_shell_wrapper_exposes_only_guarded_commands() -> None:
     assert completed.returncode == 0
     for command in ("preflight", "deploy", "status", "rollback"):
         assert command in completed.stdout
+
+
+def test_render_repo_identity_normalizes_case_and_git_url_forms() -> None:
+    assert (
+        render_trr._normalize_repo(
+            "HTTPS://GITHUB.COM/TherealityReport/TRR-Backend.GIT/"
+        )
+        == "therealityreport/trr-backend"
+    )

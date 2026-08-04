@@ -19,7 +19,7 @@
       "repository": "backend",
       "path": "api/routers/admin_brands.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -31,7 +31,7 @@
       "repository": "backend",
       "path": "api/routers/admin_show_sync.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -43,7 +43,7 @@
       "repository": "backend",
       "path": "api/routers/socials/__init__.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -55,7 +55,7 @@
       "repository": "backend",
       "path": "docs/media-scraping/bravotv-workspace-migration.md",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -67,7 +67,7 @@
       "repository": "backend",
       "path": "docs/media-scraping/source-coverage-matrix.md",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -79,7 +79,7 @@
       "repository": "backend",
       "path": "scripts/db/apply_release_manifest.py",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -91,7 +91,7 @@
       "repository": "backend",
       "path": "scripts/media/README.md",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -103,7 +103,7 @@
       "repository": "backend",
       "path": "scripts/media/nbcumv_bulk_download.py",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -115,7 +115,7 @@
       "repository": "backend",
       "path": "scripts/socials/instagram/one_post_media_mirror.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -127,7 +127,7 @@
       "repository": "backend",
       "path": "tests/api/routers/test_admin_brands.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -139,7 +139,7 @@
       "repository": "backend",
       "path": "tests/api/routers/test_admin_show_sync.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -151,7 +151,7 @@
       "repository": "backend",
       "path": "tests/api/routers/test_socials_analytics_import_boundary.py",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -163,7 +163,7 @@
       "repository": "backend",
       "path": "tests/api/routers/test_socials_season_analytics.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -175,7 +175,7 @@
       "repository": "backend",
       "path": "tests/api/routers/test_socials_tiktok_preview.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -187,7 +187,7 @@
       "repository": "backend",
       "path": "tests/api/routers/test_socials_tiktok_scrape.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -199,7 +199,7 @@
       "repository": "backend",
       "path": "tests/api/routers/test_socials_twitter_admin_routes.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -211,7 +211,7 @@
       "repository": "backend",
       "path": "tests/api/test_admin_socials_landing_summary.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -223,7 +223,7 @@
       "repository": "backend",
       "path": "tests/clients/test_screenalytics_adapter.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -235,7 +235,7 @@
       "repository": "backend",
       "path": "tests/integrations/test_nbcumv.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -247,7 +247,7 @@
       "repository": "backend",
       "path": "tests/media/bravotv/test_nbcumv_bulk_download.py",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -259,7 +259,7 @@
       "repository": "backend",
       "path": "tests/repositories/test_facebook_cookie_loader.py",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -271,7 +271,7 @@
       "repository": "backend",
       "path": "tests/repositories/test_shared_job_executor.py",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -283,7 +283,7 @@
       "repository": "backend",
       "path": "tests/repositories/test_social_cookie_sources.py",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -295,7 +295,7 @@
       "repository": "backend",
       "path": "tests/repositories/test_social_dispatch_stage_claims.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -307,7 +307,7 @@
       "repository": "backend",
       "path": "tests/repositories/test_social_model_types.py",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -319,7 +319,7 @@
       "repository": "backend",
       "path": "tests/repositories/test_social_windowing_port.py",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -331,7 +331,7 @@
       "repository": "backend",
       "path": "tests/repositories/test_threads_cookie_loader.py",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -343,7 +343,7 @@
       "repository": "backend",
       "path": "tests/repositories/test_tiktok_cookie_loader.py",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -355,7 +355,7 @@
       "repository": "backend",
       "path": "tests/scripts/test_apply_release_manifest.py",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -367,7 +367,7 @@
       "repository": "backend",
       "path": "tests/socials/test_instagram_scraper_public_graphql.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -379,7 +379,7 @@
       "repository": "backend",
       "path": "tests/socials/test_socialblade_auth.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -391,7 +391,7 @@
       "repository": "backend",
       "path": "tests/socials/threads/posts_scrapling/test_session.py",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -403,7 +403,7 @@
       "repository": "backend",
       "path": "tests/socials/tiktok/test_tiktok_direct_scrape.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -415,7 +415,7 @@
       "repository": "backend",
       "path": "tests/socials/twitter/test_twitter_direct_scrape.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -427,7 +427,7 @@
       "repository": "backend",
       "path": "tests/socials/youtube/test_youtube_direct_scrape.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -439,7 +439,7 @@
       "repository": "backend",
       "path": "trr_backend/integrations/nbcumv.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -451,7 +451,7 @@
       "repository": "backend",
       "path": "trr_backend/media/bravotv/nbcumv_bulk_download.py",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -463,7 +463,7 @@
       "repository": "backend",
       "path": "trr_backend/socials/api/handlers/live_status.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -475,7 +475,7 @@
       "repository": "backend",
       "path": "trr_backend/socials/control_plane/models.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -487,7 +487,7 @@
       "repository": "backend",
       "path": "trr_backend/socials/control_plane/windowing.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -499,7 +499,7 @@
       "repository": "backend",
       "path": "trr_backend/socials/cookie_sources.py",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -511,7 +511,7 @@
       "repository": "backend",
       "path": "trr_backend/socials/facebook/document_fetch.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -523,7 +523,7 @@
       "repository": "backend",
       "path": "trr_backend/socials/instagram/auth_resolver.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -535,7 +535,7 @@
       "repository": "backend",
       "path": "trr_backend/socials/instagram/auth_session_context.py",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -547,7 +547,7 @@
       "repository": "backend",
       "path": "trr_backend/socials/instagram/cookie_refresh.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -559,7 +559,7 @@
       "repository": "backend",
       "path": "trr_backend/socials/instagram/cookie_refresh_runtime.py",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -571,7 +571,7 @@
       "repository": "backend",
       "path": "trr_backend/socials/instagram/jobs.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -583,7 +583,7 @@
       "repository": "backend",
       "path": "trr_backend/socials/instagram/scraper.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -595,7 +595,7 @@
       "repository": "backend",
       "path": "trr_backend/socials/model_types.py",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -607,7 +607,7 @@
       "repository": "backend",
       "path": "trr_backend/socials/pipelines/facebook_cookie_loader.py",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -619,7 +619,7 @@
       "repository": "backend",
       "path": "trr_backend/socials/pipelines/job_handler_types.py",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -631,7 +631,7 @@
       "repository": "backend",
       "path": "trr_backend/socials/pipelines/job_handlers.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -643,7 +643,7 @@
       "repository": "backend",
       "path": "trr_backend/socials/pipelines/shared_job_executor.py",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -655,7 +655,7 @@
       "repository": "backend",
       "path": "trr_backend/socials/pipelines/threads_cookie_loader.py",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -667,7 +667,7 @@
       "repository": "backend",
       "path": "trr_backend/socials/pipelines/tiktok_cookie_loader.py",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -679,7 +679,7 @@
       "repository": "backend",
       "path": "trr_backend/socials/socialblade/auth.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -691,7 +691,7 @@
       "repository": "backend",
       "path": "trr_backend/socials/socialblade/cookies.py",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -703,7 +703,7 @@
       "repository": "backend",
       "path": "trr_backend/socials/socialblade/fetcher.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -715,7 +715,7 @@
       "repository": "backend",
       "path": "trr_backend/socials/socialblade/parser.py",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -727,7 +727,7 @@
       "repository": "backend",
       "path": "trr_backend/socials/socialblade/runtime_fetch.py",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -739,7 +739,7 @@
       "repository": "backend",
       "path": "trr_backend/socials/socialblade/scraper.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -751,7 +751,7 @@
       "repository": "backend",
       "path": "trr_backend/socials/socialblade/session.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -763,7 +763,7 @@
       "repository": "backend",
       "path": "trr_backend/socials/threads/jobs.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -775,7 +775,7 @@
       "repository": "backend",
       "path": "trr_backend/socials/threads/posts_scrapling/session.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -787,7 +787,7 @@
       "repository": "backend",
       "path": "trr_backend/socials/tiktok/direct_scrape.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -799,7 +799,7 @@
       "repository": "backend",
       "path": "trr_backend/socials/tiktok/jobs.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -811,7 +811,7 @@
       "repository": "backend",
       "path": "trr_backend/socials/tiktok/posts_scrapling/session.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -823,7 +823,7 @@
       "repository": "backend",
       "path": "trr_backend/socials/twitter/direct_scrape.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -835,7 +835,7 @@
       "repository": "backend",
       "path": "trr_backend/socials/windowing.py",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
@@ -847,7 +847,7 @@
       "repository": "backend",
       "path": "trr_backend/socials/youtube/direct_scrape.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
+      "owner": "unassigned",
       "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
       "missing_proof": [
         "bounded packet acceptance",
