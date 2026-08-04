@@ -2303,10 +2303,8 @@ def test_workspace_vercel_rollback_command_uses_the_supported_wrapper_form(
     packet_data["rollback"]["app_commands"] = [
         [
             "TRR-APP/scripts/vercel.sh",
-            "rollback-trr",
-            "--deployment",
+            "rollback",
             "<gate-4-previous-deployment>",
-            "--dry-run",
         ]
     ]
     packet_path, evidence_path = write_workspace(tmp_path, packet_data, evidence())

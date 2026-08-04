@@ -95,8 +95,10 @@ DIRTY_COUNT_KEYS = (
 APP_ROUTE_SOURCE_ROOT = PurePosixPath("apps/web/src/app")
 APP_VERCEL_ROLLBACK_COMMAND = [
     "TRR-APP/scripts/vercel.sh",
-    "rollback",
+    "rollback-trr",
+    "--deployment",
     "<gate-4-previous-deployment>",
+    "--dry-run",
 ]
 
 
