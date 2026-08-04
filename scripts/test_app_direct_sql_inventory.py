@@ -108,6 +108,31 @@ const result = await pgQuery<Row>(sql);
     assert [symbol for symbol, _ in module.scan_call_sites(source)] == ["query"]
 
 
+def test_scanner_skips_regex_literals_after_control_flow_keywords() -> None:
+    module = load_inventory_module()
+    source = """
+import { query as pgQuery } from "@/lib/server/postgres";
+function returned(value) {
+  return /pgQuery<Row>(sql)/.test(value);
+}
+function thrown() {
+  throw /pgQuery<Row>(sql)/;
+}
+switch (value) {
+  case /pgQuery<Row>(sql)/.source:
+    break;
+  default:
+    break;
+}
+if (value) {
+  value = false;
+} else /pgQuery<Row>(sql)/.test(value);
+const result = await pgQuery<Row>(sql);
+"""
+
+    assert [symbol for symbol, _ in module.scan_call_sites(source)] == ["query"]
+
+
 def test_scanner_resolves_namespace_postgres_call() -> None:
     module = load_inventory_module()
     source = """
@@ -441,6 +466,23 @@ def test_exception_validator_is_clock_aware_and_rejects_over_30_day_windows() ->
     assert any("exceeds 30 days" in error for error in overlong_errors)
 
 
+def test_exception_validator_does_not_consult_clock_without_expiry_checks(
+    monkeypatch,
+) -> None:
+    module = load_inventory_module()
+    use = _sample_use(module)
+    valid = _valid_exception(module, use)
+
+    class DateWithoutClock(date):
+        @classmethod
+        def today(cls):
+            raise AssertionError("non-expiry validation must not consult the clock")
+
+    monkeypatch.setattr(module, "date", DateWithoutClock)
+
+    assert module.validate_exception_records([use], [valid], fail_expired=False) == []
+
+
 def test_exception_validator_rejects_stale_function_context() -> None:
     module = load_inventory_module()
     use = _sample_use(module)
@@ -513,3 +555,21 @@ def test_default_run_is_clean_checkout_safe_and_explicit_outputs_are_reproducibl
     assert markdown.is_file()
     assert inventory.is_file()
     assert ledger.is_file()
+
+
+def test_default_run_does_not_render_unrequested_json_outputs(
+    monkeypatch,
+    capsys,
+) -> None:
+    module = load_inventory_module()
+    monkeypatch.setattr(module, "collect_uses", lambda: [])
+    monkeypatch.setattr(module, "render_markdown", lambda *_args: "# Inventory\n")
+
+    def fail_if_rendered(*_args):
+        raise AssertionError("unrequested JSON output must not be rendered")
+
+    monkeypatch.setattr(module, "render_inventory_json", fail_if_rendered)
+    monkeypatch.setattr(module, "render_api_ledger_json", fail_if_rendered)
+
+    assert module.main([]) == 0
+    assert capsys.readouterr().out == "# Inventory\n"

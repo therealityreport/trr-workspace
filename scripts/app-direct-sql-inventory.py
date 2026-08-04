@@ -25,6 +25,7 @@ SCAN_ROOTS = (
 CALL_SYMBOLS = frozenset(
     ("query", "withTransaction", "withAuthTransaction", "queryWithAuth")
 )
+REGEX_PREFIX_KEYWORDS = frozenset(("return", "throw", "case", "else"))
 POSTGRES_MODULE_PATTERN = r"(?:@/lib/server/postgres|(?:\.\.?/)+postgres)"
 NAMED_POSTGRES_IMPORT_RE = re.compile(
     rf"\bimport\s*(?!type\b)\{{(?P<body>[^{{}}]*)\}}\s*from\s*['\"]{POSTGRES_MODULE_PATTERN}['\"]",
@@ -372,7 +373,12 @@ def _looks_like_regex_literal(text: str, index: int) -> bool:
     previous = index - 1
     while previous >= 0 and text[previous].isspace():
         previous -= 1
-    return previous < 0 or text[previous] in "=([{,:;!?&|+-*%^~<>"
+    if previous < 0 or text[previous] in "=([{,:;!?&|+-*%^~<>":
+        return True
+    token_end = previous + 1
+    while previous >= 0 and (text[previous].isalnum() or text[previous] in "_$"):
+        previous -= 1
+    return text[previous + 1 : token_end] in REGEX_PREFIX_KEYWORDS
 
 
 def _skip_regex_literal(text: str, index: int) -> int:
@@ -897,7 +903,7 @@ def validate_exception_records(
         use = current[row_id]
         errors.append(f"missing exception: {row_id} ({use.path}:{use.line_number})")
 
-    effective_as_of = as_of or date.today()
+    effective_as_of = (as_of or date.today()) if fail_expired else None
     for index, record in enumerate(records):
         row_id = record.get("id")
         label = row_id if isinstance(row_id, str) and row_id else f"exception[{index}]"
@@ -1238,23 +1244,20 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"  - {error}", file=sys.stderr)
             return 1
 
-    rendered_markdown = render_markdown(uses, records)
-    rendered_inventory = render_inventory_json(uses, records)
-    rendered_ledger = render_api_ledger_json(uses, records)
     outputs: list[tuple[Path, str]] = []
     if output is not None:
-        outputs.append((output, rendered_markdown))
+        outputs.append((output, render_markdown(uses, records)))
     if inventory_json is not None:
-        outputs.append((inventory_json, rendered_inventory))
+        outputs.append((inventory_json, render_inventory_json(uses, records)))
     if api_ledger is not None:
-        outputs.append((api_ledger, rendered_ledger))
+        outputs.append((api_ledger, render_api_ledger_json(uses, records)))
 
     if args.check:
         return (
             0 if all(_check_output(path, expected) for path, expected in outputs) else 1
         )
     if not outputs:
-        sys.stdout.write(rendered_markdown)
+        sys.stdout.write(render_markdown(uses, records))
         return 0
     for path, rendered in outputs:
         path.parent.mkdir(parents=True, exist_ok=True)
