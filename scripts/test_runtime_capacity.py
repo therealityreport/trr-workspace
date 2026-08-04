@@ -5,6 +5,9 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
+from scripts import runtime_capacity
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "docs" / "workspace" / "runtime-capacity.json"
@@ -110,3 +113,25 @@ def test_runtime_capacity_projection_check_passes() -> None:
 
     assert completed.returncode == 0, completed.stderr or completed.stdout
     assert "runtime-capacity: OK" in completed.stdout
+
+
+def test_missing_profile_override_uses_capacity_contract_error(tmp_path: Path) -> None:
+    payload = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    payload["profile_contexts"] = {}
+    payload["profile_overrides"] = {
+        "missing": {
+            "remote_social_enabled": False,
+            "stage_caps": {
+                "posts": 0,
+                "comments": 0,
+                "media_mirror": 0,
+                "comment_media_mirror": 0,
+            },
+        }
+    }
+
+    with pytest.raises(
+        runtime_capacity.CapacityContractError,
+        match=r"unable to read profile .*missing\.env",
+    ):
+        runtime_capacity.validate_projections(payload, root=tmp_path)

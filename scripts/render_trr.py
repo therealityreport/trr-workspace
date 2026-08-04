@@ -119,7 +119,7 @@ def load_target(path: Path = DEFAULT_MANIFEST) -> dict[str, str]:
 
 
 def _normalize_repo(value: Any) -> str:
-    repo = str(value or "").strip().removesuffix(".git").rstrip("/")
+    repo = str(value or "").strip().rstrip("/").lower().removesuffix(".git")
     for prefix in ("https://github.com/", "http://github.com/", "git@github.com:"):
         if repo.startswith(prefix):
             repo = repo[len(prefix) :]
