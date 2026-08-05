@@ -1,0 +1,469 @@
+{
+  "schema_version": 2,
+  "packet_id": "local-person-media",
+  "capability": "Person cover-photo and thumbnail-crop backend ownership",
+  "created_at": "2026-07-16T20:52:42.770997Z",
+  "updated_at": "2026-07-16T20:52:42.770997Z",
+  "state": "implementation_complete_parked",
+  "truth_scope": "local",
+  "repositories": {
+    "workspace": {
+      "revision_type": "local_dirty_checkpoint",
+      "base_sha": "df55c982ecf6741808536bfb6af308cc737372cf",
+      "candidate_sha": null,
+      "owned_paths": [],
+      "owned_path_manifest_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "binary_tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "dirty_counts": {
+        "tracked_modified": 0,
+        "tracked_added": 0,
+        "tracked_deleted": 0,
+        "tracked_renamed": 0,
+        "tracked_copied": 0,
+        "unmerged": 0,
+        "untracked": 0,
+        "total": 0
+      },
+      "candidate_commit_required_before_gate_4": true
+    },
+    "app": {
+      "revision_type": "local_dirty_checkpoint",
+      "base_sha": "78681eac73c79e6534031fe1f050966edff9b844",
+      "candidate_sha": null,
+      "owned_paths": [
+        "apps/web/src/app/api/admin/trr-api/people/[personId]/cover-photo/route.ts",
+        "apps/web/src/app/api/admin/trr-api/people/[personId]/import-fandom/commit/route.ts",
+        "apps/web/src/app/api/admin/trr-api/people/[personId]/photos/[photoId]/thumbnail-crop/route.ts",
+        "apps/web/src/app/api/admin/trr-api/people/[personId]/photos/route.ts",
+        "apps/web/src/lib/server/admin/person-cover-photos-repository.ts",
+        "apps/web/src/lib/server/admin/person-thumbnail-crops-repository.ts",
+        "apps/web/tests/person-cover-photo-route.test.ts",
+        "apps/web/tests/person-cover-photos-repository.test.ts",
+        "apps/web/tests/person-fandom-import-routes.test.ts",
+        "apps/web/tests/person-gallery-route-cache-dedupe.test.ts",
+        "apps/web/tests/person-thumbnail-crop-route.test.ts",
+        "apps/web/tests/person-thumbnail-crops-repository.test.ts"
+      ],
+      "owned_path_manifest_sha256": "40f1fc176137c22799cda162311fbe710b88d9678614b985f24d374c8da3f1f1",
+      "binary_tracked_diff_sha256": "79f6ea9a32a87eb28c669df6c62f83a995466a6731cf721f1d7a4bac5e5d5898",
+      "dirty_counts": {
+        "tracked_modified": 10,
+        "tracked_added": 0,
+        "tracked_deleted": 0,
+        "tracked_renamed": 0,
+        "tracked_copied": 0,
+        "unmerged": 0,
+        "untracked": 2,
+        "total": 12
+      },
+      "candidate_commit_required_before_gate_4": true
+    },
+    "backend": {
+      "revision_type": "local_dirty_checkpoint",
+      "base_sha": "0a3d2b59ec29304fb2765fd8cf996032e11c937b",
+      "candidate_sha": null,
+      "owned_paths": [
+        "api/routers/v2/person_media.py",
+        "api/schemas/v2/person_media.py",
+        "tests/api/routers/test_v2_admin_person_media.py",
+        "tests/repositories/test_person_media_admin.py",
+        "tests/services/test_person_media_admin_service.py",
+        "trr_backend/repositories/person_media_admin.py",
+        "trr_backend/services/person_media_admin.py"
+      ],
+      "owned_path_manifest_sha256": "41968d96407b298931b613526ef5c1f3ddde034aef63fed59cc6f4c17836ee23",
+      "binary_tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "dirty_counts": {
+        "tracked_modified": 0,
+        "tracked_added": 0,
+        "tracked_deleted": 0,
+        "tracked_renamed": 0,
+        "tracked_copied": 0,
+        "unmerged": 0,
+        "untracked": 7,
+        "total": 7
+      },
+      "candidate_commit_required_before_gate_4": true
+    }
+  },
+  "owned_paths": [
+    {
+      "repository": "app",
+      "path": "apps/web/src/app/api/admin/trr-api/people/[personId]/cover-photo/route.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/app/api/admin/trr-api/people/[personId]/import-fandom/commit/route.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/app/api/admin/trr-api/people/[personId]/photos/[photoId]/thumbnail-crop/route.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/app/api/admin/trr-api/people/[personId]/photos/route.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/lib/server/admin/person-cover-photos-repository.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/lib/server/admin/person-thumbnail-crops-repository.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/person-cover-photo-route.test.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/person-cover-photos-repository.test.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/person-fandom-import-routes.test.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/person-gallery-route-cache-dedupe.test.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/person-thumbnail-crop-route.test.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/person-thumbnail-crops-repository.test.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "api/routers/v2/person_media.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "api/schemas/v2/person_media.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "tests/api/routers/test_v2_admin_person_media.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "tests/repositories/test_person_media_admin.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "tests/services/test_person_media_admin_service.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "trr_backend/repositories/person_media_admin.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "trr_backend/services/person_media_admin.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    }
+  ],
+  "contracts": {
+    "openapi_sha256": "5d38fa8a429cea94ae0d5a352cc7b04276aedb081051bb79350de09169c3e188",
+    "generated_types_sha256": "a712dd696581c6ccb3fa5ce0611385af9714ebf36a1f7d41e4b1d488c4206460",
+    "compatibility_matrix": [
+      {
+        "app_revision": "N",
+        "backend_revision": "N",
+        "status": "pass",
+        "evidence_ids": [
+          "ev.local-person-media.backend-focused",
+          "ev.local-person-media.app-focused"
+        ]
+      },
+      {
+        "app_revision": "N",
+        "backend_revision": "N+1",
+        "status": "pass",
+        "evidence_ids": [
+          "ev.local-person-media.backend-focused",
+          "ev.local-person-media.app-focused"
+        ]
+      },
+      {
+        "app_revision": "N+1",
+        "backend_revision": "N",
+        "status": "pass",
+        "evidence_ids": [
+          "ev.local-person-media.backend-focused",
+          "ev.local-person-media.app-focused"
+        ]
+      },
+      {
+        "app_revision": "N+1",
+        "backend_revision": "N+1",
+        "status": "pass",
+        "evidence_ids": [
+          "ev.local-person-media.backend-focused",
+          "ev.local-person-media.app-focused"
+        ]
+      }
+    ]
+  },
+  "migrations": {
+    "expected_pending": [],
+    "backfill": {
+      "required": false,
+      "idempotent": true,
+      "resumable": true,
+      "batch_size": null,
+      "validation": {
+        "row_counts": false,
+        "checksums": false,
+        "evidence_ids": []
+      }
+    },
+    "rls_grants": {
+      "expected_change": false,
+      "evidence_ids": []
+    }
+  },
+  "direct_sql_delta": {
+    "status": "observed",
+    "before": 8,
+    "after": 0,
+    "delta": -8,
+    "evidence_ids": [
+      "ev.local-person-media.app-focused"
+    ]
+  },
+  "targets": {
+    "preview": {
+      "status": "pending_gate_4",
+      "database_url_env": "TRR_PREVIEW_DATABASE_URL",
+      "project_ref_env": "TRR_PREVIEW_SUPABASE_PROJECT_REF"
+    },
+    "production": {
+      "status": "pending_gate_4",
+      "database_url_env": "TRR_PRODUCTION_DATABASE_URL",
+      "project_ref": "vwxfvzutyufrkhfgoeaa"
+    }
+  },
+  "affected": {
+    "routes": [
+      "/api/v2/admin/people/{person_id}/cover-photos",
+      "/api/v2/admin/people/{person_id}/thumbnail-crops"
+    ],
+    "jobs": [],
+    "schedules": [],
+    "data_sets": [],
+    "aliases": []
+  },
+  "validation": {
+    "quick": {
+      "status": "pass",
+      "evidence_ids": [
+        "ev.local-person-media.backend-focused",
+        "ev.local-person-media.app-focused"
+      ]
+    },
+    "full": {
+      "status": "pending",
+      "evidence_ids": []
+    },
+    "app_build": {
+      "status": "pending_gate_4",
+      "current_chat_approval_id": null,
+      "evidence_ids": []
+    },
+    "browser": {
+      "status": "pending_gate_4",
+      "evidence_ids": []
+    },
+    "evidence_ids": [
+      "ev.local-person-media.backend-focused",
+      "ev.local-person-media.app-focused"
+    ]
+  },
+  "deployments": {
+    "render": {
+      "status": "pending_gate_4",
+      "service_id": "srv-d6phk5vkijhs73fcsk7g",
+      "candidate_sha": null,
+      "deployment_id": null,
+      "previous_deployment_id": null,
+      "direct_url": "https://trr-backend-api.onrender.com",
+      "evidence_ids": []
+    },
+    "modal": {
+      "status": "pending_gate_4",
+      "profile": "admin-56995",
+      "workspace": "admin-56995",
+      "app_name": "trr-backend-jobs",
+      "app_ref": "trr_backend.modal_jobs",
+      "candidate_sha": null,
+      "affected_functions": [],
+      "evidence_ids": []
+    },
+    "vercel": {
+      "status": "pending_gate_4",
+      "team_id": "team_EUsG2kN9TAvVDGOu4yZVEoCX",
+      "project_id": "prj_MHpStkwr26rV5kjt0f80zqhwZpAs",
+      "candidate_sha": null,
+      "deployment_id": null,
+      "previous_deployment_id": null,
+      "aliases": [
+        "https://trr-app.vercel.app"
+      ],
+      "evidence_ids": []
+    }
+  },
+  "rollback": {
+    "backend_commands": [
+      [
+        "scripts/render-trr.sh",
+        "rollback",
+        "--service-id",
+        "srv-d6phk5vkijhs73fcsk7g",
+        "--deploy-id",
+        "<gate-4-previous-deploy-id>",
+        "--commit",
+        "<gate-4-candidate-backend-sha>"
+      ],
+      [
+        "scripts/modal-trr.sh",
+        "rollback",
+        "--version",
+        "<gate-4-previous-version>",
+        "--dry-run"
+      ]
+    ],
+    "app_commands": [
+      [
+        "TRR-APP/scripts/vercel.sh",
+        "rollback-trr",
+        "--deployment",
+        "<gate-4-previous-deployment>",
+        "--dry-run"
+      ]
+    ],
+    "data_recovery": "No migration or data mutation was performed by this local checkpoint.",
+    "evidence_ids": []
+  },
+  "observation": {
+    "baselines": [
+      {
+        "name": "affected_route_5xx",
+        "value": 0,
+        "unit": "percent",
+        "window": "15m",
+        "evidence_ids": []
+      }
+    ],
+    "abort_thresholds": [
+      {
+        "name": "affected_route_5xx",
+        "value": 1,
+        "unit": "percent",
+        "window": "15m",
+        "evidence_ids": []
+      }
+    ],
+    "active_canary_minutes": 30,
+    "passive_monitoring_hours": 24,
+    "gate5_minimum_days": 7,
+    "status": "not_started"
+  },
+  "review": {
+    "verdict": "accepted_with_follow_up",
+    "reviewers": [
+      "r0-b-checkpoint-revalidation"
+    ],
+    "basis": "Current focused checks pass; integrated independent review and all Gate 4 proof remain pending.",
+    "evidence_ids": [
+      "ev.local-person-media.backend-focused",
+      "ev.local-person-media.app-focused"
+    ]
+  },
+  "gate_4": {
+    "candidate_commits": "pending_gate_4",
+    "preview": "pending_gate_4",
+    "production": "pending_gate_4",
+    "app_build": "pending_gate_4",
+    "browser": "pending_gate_4",
+    "deployments": "pending_gate_4"
+  },
+  "approvals": []
+}

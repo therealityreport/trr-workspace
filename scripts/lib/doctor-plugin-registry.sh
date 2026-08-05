@@ -247,12 +247,23 @@ if entry.get("enabled") is not True:
     print(f"{plugin_key} disabled")
     raise SystemExit(1)
 
-manifests = sorted(glob.glob(manifest_glob))
+manifests = [pathlib.Path(path) for path in glob.glob(manifest_glob)]
 if not manifests:
     print(f"{plugin_key} enabled; manifest missing")
     raise SystemExit(1)
 
-print(f"enabled; manifest={manifests[-1]}")
+def manifest_version_key(manifest: pathlib.Path) -> tuple[tuple[int, ...], str]:
+    # Cache builds are named from the plugin version (for example,
+    # 0.4.12+codex...). A lexical glob sort would incorrectly pick 0.4.9
+    # over 0.4.12, so compare the numeric release components instead.
+    version_text = manifest.parent.parent.name.split("+", 1)[0]
+    try:
+        return tuple(int(part) for part in version_text.split(".")), manifest.parent.parent.name
+    except ValueError:
+        return (), manifest.parent.parent.name
+
+selected_manifest = max(manifests, key=manifest_version_key)
+print(f"enabled; manifest={selected_manifest}")
 PY
 }
 

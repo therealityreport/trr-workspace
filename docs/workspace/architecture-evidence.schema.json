@@ -1,0 +1,287 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://thereality.report/schemas/architecture-evidence.schema.json",
+  "title": "TRR architecture evidence item",
+  "description": "Secret-free evidence for one command or observation at exactly one truth scope.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "evidence_id",
+    "packet_id",
+    "gate",
+    "truth_scope",
+    "command",
+    "started_at",
+    "finished_at",
+    "exit_code",
+    "expected_result",
+    "result",
+    "output",
+    "artifacts",
+    "target_observations",
+    "approval",
+    "redaction"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "evidence_id": {
+      "$ref": "#/$defs/identifier"
+    },
+    "packet_id": {
+      "$ref": "#/$defs/identifier"
+    },
+    "gate": {
+      "type": "string",
+      "pattern": "^([0-5][A-F]?|gate-[0-5][a-f]?)$",
+      "maxLength": 20
+    },
+    "truth_scope": {
+      "description": "Exactly one scope; local, preview, and production proof never substitute for one another.",
+      "enum": ["local", "preview", "production"]
+    },
+    "command": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["argv", "cwd", "mutating", "environment_variable_names"],
+      "properties": {
+        "argv": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          }
+        },
+        "cwd": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "mutating": {
+          "type": "boolean"
+        },
+        "environment_variable_names": {
+          "description": "Names only; values are forbidden.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]*$"
+          }
+        }
+      }
+    },
+    "started_at": {
+      "$ref": "#/$defs/timestamp"
+    },
+    "finished_at": {
+      "$ref": "#/$defs/timestamp"
+    },
+    "exit_code": {
+      "type": "integer",
+      "minimum": -255,
+      "maximum": 255
+    },
+    "expected_result": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "result": {
+      "enum": ["pass", "fail", "blocked", "skipped"]
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sha256", "size_bytes", "stored_path"],
+      "properties": {
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "stored_path": {
+          "anyOf": [
+            {"type": "string", "maxLength": 1000},
+            {"type": "null"}
+          ]
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/artifact"
+      }
+    },
+    "target_observations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/targetObservation"
+      }
+    },
+    "approval": {
+      "$ref": "#/$defs/approval"
+    },
+    "redaction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "scanner",
+        "safe_to_store",
+        "credential_values_included",
+        "environment_values_included"
+      ],
+      "properties": {
+        "status": {
+          "enum": ["not_needed", "redacted", "verified_clean", "failed"]
+        },
+        "scanner": {
+          "anyOf": [
+            {"type": "string", "maxLength": 500},
+            {"type": "null"}
+          ]
+        },
+        "safe_to_store": {
+          "const": true
+        },
+        "credential_values_included": {
+          "const": false
+        },
+        "environment_values_included": {
+          "const": false
+        }
+      }
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]{2,127}$"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "size_bytes", "mode", "redacted"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "mode": {
+          "type": "string",
+          "pattern": "^0[0-7]{3}$"
+        },
+        "redacted": {
+          "type": "boolean"
+        }
+      }
+    },
+    "safeFact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "value"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9._-]*$",
+          "maxLength": 200
+        },
+        "value": {
+          "anyOf": [
+            {"type": "string", "maxLength": 1000},
+            {"type": "number"},
+            {"type": "boolean"},
+            {"type": "null"}
+          ]
+        }
+      }
+    },
+    "targetObservation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["target_type", "target_id", "observed_at", "status", "facts"],
+      "properties": {
+        "target_type": {
+          "enum": ["repository", "local_portless", "supabase", "render", "modal", "vercel", "browser"]
+        },
+        "target_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "observed_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "status": {
+          "enum": ["pass", "fail", "blocked", "unavailable"]
+        },
+        "facts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/safeFact"
+          }
+        }
+      }
+    },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required", "approval_id", "status", "current_chat"],
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "approval_id": {
+          "anyOf": [
+            {"type": "string", "maxLength": 200},
+            {"type": "null"}
+          ]
+        },
+        "status": {
+          "enum": ["not_required", "pending", "approved", "denied", "expired"]
+        },
+        "current_chat": {
+          "type": "boolean"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"required": {"const": true}},
+            "required": ["required"]
+          },
+          "then": {
+            "properties": {
+              "approval_id": {"type": "string", "minLength": 1},
+              "status": {"enum": ["pending", "approved", "denied", "expired"]}
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,507 @@
+{
+  "schema_version": 2,
+  "packet_id": "local-recent-people-external-ids",
+  "capability": "Recent people and external-ID backend read models and app adapters",
+  "created_at": "2026-07-16T20:52:42.770997Z",
+  "updated_at": "2026-07-16T20:52:42.770997Z",
+  "state": "implementation_complete_parked",
+  "truth_scope": "local",
+  "repositories": {
+    "workspace": {
+      "revision_type": "local_dirty_checkpoint",
+      "base_sha": "df55c982ecf6741808536bfb6af308cc737372cf",
+      "candidate_sha": null,
+      "owned_paths": [],
+      "owned_path_manifest_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "binary_tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "dirty_counts": {
+        "tracked_modified": 0,
+        "tracked_added": 0,
+        "tracked_deleted": 0,
+        "tracked_renamed": 0,
+        "tracked_copied": 0,
+        "unmerged": 0,
+        "untracked": 0,
+        "total": 0
+      },
+      "candidate_commit_required_before_gate_4": true
+    },
+    "app": {
+      "revision_type": "local_dirty_checkpoint",
+      "base_sha": "78681eac73c79e6534031fe1f050966edff9b844",
+      "candidate_sha": null,
+      "owned_paths": [
+        "apps/web/src/app/api/admin/recent-people/route.ts",
+        "apps/web/src/app/api/admin/social/landing/route.ts",
+        "apps/web/src/app/api/admin/trr-api/people/[personId]/external-ids/route.ts",
+        "apps/web/src/lib/server/admin/recent-people-repository.ts",
+        "apps/web/src/lib/server/admin/social-landing-repository.ts",
+        "apps/web/src/lib/server/trr-api/admin-external-id-reads.ts",
+        "apps/web/tests/admin-external-id-reads.test.ts",
+        "apps/web/tests/person-external-ids-route.test.ts",
+        "apps/web/tests/recent-people-route.test.ts",
+        "apps/web/tests/social-landing-repository.test.ts",
+        "apps/web/tests/social-landing-route-cache.test.ts"
+      ],
+      "owned_path_manifest_sha256": "e6f237769eae001c03213808eb176bf9ce1636984f17a856b214281ec6abf9a0",
+      "binary_tracked_diff_sha256": "78953b416110ef74584c31554e04ed3369adddc0aeaedc0913eba57c6600fc90",
+      "dirty_counts": {
+        "tracked_modified": 8,
+        "tracked_added": 0,
+        "tracked_deleted": 1,
+        "tracked_renamed": 0,
+        "tracked_copied": 0,
+        "unmerged": 0,
+        "untracked": 2,
+        "total": 11
+      },
+      "candidate_commit_required_before_gate_4": true
+    },
+    "backend": {
+      "revision_type": "local_dirty_checkpoint",
+      "base_sha": "0a3d2b59ec29304fb2765fd8cf996032e11c937b",
+      "candidate_sha": null,
+      "owned_paths": [
+        "api/routers/admin_people_reads.py",
+        "api/routers/v2/external_ids.py",
+        "api/routers/v2/recent_people.py",
+        "api/schemas/v2/external_ids.py",
+        "api/schemas/v2/recent_people.py",
+        "tests/api/routers/test_v2_admin_external_ids.py",
+        "tests/api/routers/test_v2_admin_recent_people.py",
+        "tests/repositories/test_external_id_reads.py",
+        "tests/services/test_person_read_cache.py",
+        "trr_backend/repositories/external_id_reads.py",
+        "trr_backend/repositories/person_external_ids.py",
+        "trr_backend/services/person_read_cache.py"
+      ],
+      "owned_path_manifest_sha256": "52cebfba995b4a749ff28e829ce7517ad2d9b547052b94c4e61ef2df5854bd51",
+      "binary_tracked_diff_sha256": "d822becb8b2989db34620ad95360f40f9d39d49c2ea0c987d0e80571cc9fdd26",
+      "dirty_counts": {
+        "tracked_modified": 2,
+        "tracked_added": 0,
+        "tracked_deleted": 0,
+        "tracked_renamed": 0,
+        "tracked_copied": 0,
+        "unmerged": 0,
+        "untracked": 10,
+        "total": 12
+      },
+      "candidate_commit_required_before_gate_4": true
+    }
+  },
+  "owned_paths": [
+    {
+      "repository": "app",
+      "path": "apps/web/src/app/api/admin/recent-people/route.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/app/api/admin/social/landing/route.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/app/api/admin/trr-api/people/[personId]/external-ids/route.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/lib/server/admin/recent-people-repository.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/lib/server/admin/social-landing-repository.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/lib/server/trr-api/admin-external-id-reads.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/admin-external-id-reads.test.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/person-external-ids-route.test.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/recent-people-route.test.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/social-landing-repository.test.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/social-landing-route-cache.test.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "api/routers/admin_people_reads.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "api/routers/v2/external_ids.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "api/routers/v2/recent_people.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "api/schemas/v2/external_ids.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "api/schemas/v2/recent_people.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "tests/api/routers/test_v2_admin_external_ids.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "tests/api/routers/test_v2_admin_recent_people.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "tests/repositories/test_external_id_reads.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "tests/services/test_person_read_cache.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "trr_backend/repositories/external_id_reads.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "trr_backend/repositories/person_external_ids.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "trr_backend/services/person_read_cache.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    }
+  ],
+  "contracts": {
+    "openapi_sha256": "5d38fa8a429cea94ae0d5a352cc7b04276aedb081051bb79350de09169c3e188",
+    "generated_types_sha256": "a712dd696581c6ccb3fa5ce0611385af9714ebf36a1f7d41e4b1d488c4206460",
+    "compatibility_matrix": [
+      {
+        "app_revision": "N",
+        "backend_revision": "N",
+        "status": "pass",
+        "evidence_ids": [
+          "ev.local-recent-people-external-ids.backend-focused",
+          "ev.local-recent-people-external-ids.app-focused"
+        ]
+      },
+      {
+        "app_revision": "N",
+        "backend_revision": "N+1",
+        "status": "pass",
+        "evidence_ids": [
+          "ev.local-recent-people-external-ids.backend-focused",
+          "ev.local-recent-people-external-ids.app-focused"
+        ]
+      },
+      {
+        "app_revision": "N+1",
+        "backend_revision": "N",
+        "status": "pass",
+        "evidence_ids": [
+          "ev.local-recent-people-external-ids.backend-focused",
+          "ev.local-recent-people-external-ids.app-focused"
+        ]
+      },
+      {
+        "app_revision": "N+1",
+        "backend_revision": "N+1",
+        "status": "pass",
+        "evidence_ids": [
+          "ev.local-recent-people-external-ids.backend-focused",
+          "ev.local-recent-people-external-ids.app-focused"
+        ]
+      }
+    ]
+  },
+  "migrations": {
+    "expected_pending": [],
+    "backfill": {
+      "required": false,
+      "idempotent": true,
+      "resumable": true,
+      "batch_size": null,
+      "validation": {
+        "row_counts": false,
+        "checksums": false,
+        "evidence_ids": []
+      }
+    },
+    "rls_grants": {
+      "expected_change": false,
+      "evidence_ids": []
+    }
+  },
+  "direct_sql_delta": {
+    "status": "observed",
+    "before": 4,
+    "after": 0,
+    "delta": -4,
+    "evidence_ids": [
+      "ev.local-recent-people-external-ids.app-focused"
+    ]
+  },
+  "targets": {
+    "preview": {
+      "status": "pending_gate_4",
+      "database_url_env": "TRR_PREVIEW_DATABASE_URL",
+      "project_ref_env": "TRR_PREVIEW_SUPABASE_PROJECT_REF"
+    },
+    "production": {
+      "status": "pending_gate_4",
+      "database_url_env": "TRR_PRODUCTION_DATABASE_URL",
+      "project_ref": "vwxfvzutyufrkhfgoeaa"
+    }
+  },
+  "affected": {
+    "routes": [
+      "/api/v2/admin/recent-people",
+      "/api/v2/admin/people/{person_id}/external-ids",
+      "/api/v2/admin/people/external-ids/batch",
+      "/api/v2/admin/shows/external-ids/batch"
+    ],
+    "jobs": [],
+    "schedules": [],
+    "data_sets": [],
+    "aliases": []
+  },
+  "validation": {
+    "quick": {
+      "status": "pass",
+      "evidence_ids": [
+        "ev.local-recent-people-external-ids.backend-focused",
+        "ev.local-recent-people-external-ids.app-focused"
+      ]
+    },
+    "full": {
+      "status": "pending",
+      "evidence_ids": []
+    },
+    "app_build": {
+      "status": "pending_gate_4",
+      "current_chat_approval_id": null,
+      "evidence_ids": []
+    },
+    "browser": {
+      "status": "pending_gate_4",
+      "evidence_ids": []
+    },
+    "evidence_ids": [
+      "ev.local-recent-people-external-ids.backend-focused",
+      "ev.local-recent-people-external-ids.app-focused"
+    ]
+  },
+  "deployments": {
+    "render": {
+      "status": "pending_gate_4",
+      "service_id": "srv-d6phk5vkijhs73fcsk7g",
+      "candidate_sha": null,
+      "deployment_id": null,
+      "previous_deployment_id": null,
+      "direct_url": "https://trr-backend-api.onrender.com",
+      "evidence_ids": []
+    },
+    "modal": {
+      "status": "pending_gate_4",
+      "profile": "admin-56995",
+      "workspace": "admin-56995",
+      "app_name": "trr-backend-jobs",
+      "app_ref": "trr_backend.modal_jobs",
+      "candidate_sha": null,
+      "affected_functions": [],
+      "evidence_ids": []
+    },
+    "vercel": {
+      "status": "pending_gate_4",
+      "team_id": "team_EUsG2kN9TAvVDGOu4yZVEoCX",
+      "project_id": "prj_MHpStkwr26rV5kjt0f80zqhwZpAs",
+      "candidate_sha": null,
+      "deployment_id": null,
+      "previous_deployment_id": null,
+      "aliases": [
+        "https://trr-app.vercel.app"
+      ],
+      "evidence_ids": []
+    }
+  },
+  "rollback": {
+    "backend_commands": [
+      [
+        "scripts/render-trr.sh",
+        "rollback",
+        "--service-id",
+        "srv-d6phk5vkijhs73fcsk7g",
+        "--deploy-id",
+        "<gate-4-previous-deploy-id>",
+        "--commit",
+        "<gate-4-candidate-backend-sha>"
+      ],
+      [
+        "scripts/modal-trr.sh",
+        "rollback",
+        "--version",
+        "<gate-4-previous-version>",
+        "--dry-run"
+      ]
+    ],
+    "app_commands": [
+      [
+        "TRR-APP/scripts/vercel.sh",
+        "rollback-trr",
+        "--deployment",
+        "<gate-4-previous-deployment>",
+        "--dry-run"
+      ]
+    ],
+    "data_recovery": "No migration or data mutation was performed by this local checkpoint.",
+    "evidence_ids": []
+  },
+  "observation": {
+    "baselines": [
+      {
+        "name": "affected_route_5xx",
+        "value": 0,
+        "unit": "percent",
+        "window": "15m",
+        "evidence_ids": []
+      }
+    ],
+    "abort_thresholds": [
+      {
+        "name": "affected_route_5xx",
+        "value": 1,
+        "unit": "percent",
+        "window": "15m",
+        "evidence_ids": []
+      }
+    ],
+    "active_canary_minutes": 30,
+    "passive_monitoring_hours": 24,
+    "gate5_minimum_days": 7,
+    "status": "not_started"
+  },
+  "review": {
+    "verdict": "accepted_with_follow_up",
+    "reviewers": [
+      "r0-b-checkpoint-revalidation"
+    ],
+    "basis": "Current focused checks pass; integrated independent review and all Gate 4 proof remain pending.",
+    "evidence_ids": [
+      "ev.local-recent-people-external-ids.backend-focused",
+      "ev.local-recent-people-external-ids.app-focused"
+    ]
+  },
+  "gate_4": {
+    "candidate_commits": "pending_gate_4",
+    "preview": "pending_gate_4",
+    "production": "pending_gate_4",
+    "app_build": "pending_gate_4",
+    "browser": "pending_gate_4",
+    "deployments": "pending_gate_4"
+  },
+  "approvals": []
+}

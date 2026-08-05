@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "evidence_id": "ev.local-season-survey-roles.app-focused",
+  "packet_id": "local-season-survey-roles",
+  "gate": "gate-0",
+  "truth_scope": "local",
+  "command": {
+    "argv": [
+      "pnpm",
+      "exec",
+      "vitest",
+      "run",
+      "-c",
+      "vitest.config.mts",
+      "tests/season-cast-survey-roles-repository.test.ts",
+      "tests/season-cast-survey-route.test.ts",
+      "tests/survey-detail-route.test.ts",
+      "tests/survey-from-show-route.test.ts",
+      "--reporter=dot"
+    ],
+    "cwd": "/Users/thomashulihan/Projects/TRR/TRR-APP/apps/web",
+    "mutating": false,
+    "environment_variable_names": []
+  },
+  "started_at": "2026-07-16T20:46:35.517538Z",
+  "finished_at": "2026-07-16T20:46:39.312821Z",
+  "exit_code": 0,
+  "expected_result": "Season survey-role app adapter, route, and SQL-removal tests pass.",
+  "result": "pass",
+  "output": {
+    "sha256": "a7c53869d45f6b0adaad9c8442fc40bf7252bcd9d12f7a1035e6055889dca4f4",
+    "size_bytes": 1955,
+    "stored_path": null
+  },
+  "artifacts": [],
+  "target_observations": [
+    {
+      "target_type": "repository",
+      "target_id": "app",
+      "observed_at": "2026-07-16T20:46:39.312821Z",
+      "status": "pass",
+      "facts": [
+        {
+          "name": "test.count",
+          "value": 14
+        }
+      ]
+    }
+  ],
+  "approval": {
+    "required": false,
+    "approval_id": null,
+    "status": "not_required",
+    "current_chat": false
+  },
+  "redaction": {
+    "status": "verified_clean",
+    "scanner": "scripts/architecture/check-release-manifests.py",
+    "safe_to_store": true,
+    "credential_values_included": false,
+    "environment_values_included": false
+  }
+}

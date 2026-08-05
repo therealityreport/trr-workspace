@@ -102,7 +102,7 @@ if trusted_project != "trusted":
     raise SystemExit(1)
 
 service_tier = data.get("service_tier")
-if service_tier is not None and service_tier not in {"fast", "flex", "priority"}:
+if service_tier is not None and service_tier not in {"default", "fast", "flex", "priority"}:
     raise SystemExit(1)
 
 servers = data.get("mcp_servers") or {}
@@ -132,7 +132,11 @@ def matches_expected(actual, expected):
     if isinstance(expected, bool):
         return isinstance(actual, bool) and actual == expected
     if isinstance(expected, int):
-        return isinstance(actual, int) and not isinstance(actual, bool) and actual == expected
+        return (
+            isinstance(actual, (int, float))
+            and not isinstance(actual, bool)
+            and actual == expected
+        )
     if isinstance(expected, str):
         return isinstance(actual, str) and actual == expected
     if isinstance(expected, list):
@@ -154,7 +158,14 @@ for name, expectations in required.items():
     if not isinstance(server, dict):
         raise SystemExit(1)
     for key, value in expectations.items():
-        if not matches_expected(server.get(key), value):
+        actual = server.get(key)
+        if key == "env":
+            if not isinstance(actual, dict) or any(actual.get(env_key) != env_value for env_key, env_value in value.items()):
+                raise SystemExit(1)
+            continue
+        if key == "enabled" and value is True and actual is None:
+            continue
+        if not matches_expected(actual, value):
             raise SystemExit(1)
 
 for name in servers:
@@ -236,7 +247,7 @@ def emit_table(lines: list[str], table_path: list[str], mapping: Mapping[str, ob
 
 data = load_existing(source)
 data.pop("model_reasoning_effort", None)
-if data.get("service_tier") not in {None, "fast", "flex", "priority"}:
+if data.get("service_tier") not in {None, "default", "fast", "flex", "priority"}:
     data["service_tier"] = "fast"
 projects = data.get("projects")
 if not isinstance(projects, dict):
@@ -344,8 +355,16 @@ bootstrap_user_files() {
 validate_config() {
     local expected_wrapper="${ROOT}/scripts/codex-chrome-devtools-mcp.sh"
     local expected_global_wrapper="${HOME}/.codex/bin/codex-chrome-devtools-mcp-global.sh"
+    local universal_role_doctor="${CODEX_UNIVERSAL_ROLE_DOCTOR:-${HOME}/.codex/skills/subagent-routing/scripts/sync-universal-roles.py}"
     local python_bin
     python_bin="$(resolve_python_311_bin)"
+
+  if [[ ! -f "$universal_role_doctor" ]]; then
+    echo "[codex-config-sync] ERROR: universal role doctor not found: ${universal_role_doctor}" >&2
+    return 1
+  fi
+
+  "$python_bin" "$universal_role_doctor" --check --json
 
   "$python_bin" - "$PROJECT_CONFIG_FILE" "$USER_CONFIG_FILE" "$USER_AGENTS_FILE" "$expected_wrapper" "$expected_global_wrapper" "$ROOT" <<'PY'
 import pathlib
@@ -415,15 +434,6 @@ required_top_level = {
     "project_doc_max_bytes": 65536,
     "project_doc_fallback_filenames": [],
 }
-required_agents = {
-    "pr_explorer": "./agents/pr_explorer.toml",
-    "reviewer": "./agents/reviewer.toml",
-    "docs_researcher": "./agents/docs_researcher.toml",
-    "code_mapper": "./agents/code_mapper.toml",
-    "browser_debugger": "./agents/browser_debugger.toml",
-    "ui_fixer": "./agents/ui_fixer.toml",
-}
-
 errors = []
 servers = data.get("mcp_servers") or {}
 agents = data.get("agents") or {}
@@ -432,7 +442,11 @@ def matches_expected(actual, expected):
     if isinstance(expected, bool):
         return isinstance(actual, bool) and actual == expected
     if isinstance(expected, int):
-        return isinstance(actual, int) and not isinstance(actual, bool) and actual == expected
+        return (
+            isinstance(actual, (int, float))
+            and not isinstance(actual, bool)
+            and actual == expected
+        )
     if isinstance(expected, str):
         return isinstance(actual, str) and actual == expected
     if isinstance(expected, list):
@@ -473,19 +487,8 @@ unexpected = sorted(name for name in servers if name not in required_servers)
 for name in unexpected:
     errors.append(f"[mcp_servers.{name}] is no longer allowed in the tracked project config")
 
-if "max_threads" in agents:
-    errors.append("[agents] max_threads is incompatible with multi_agent_v2; remove it")
-for agent_name, config_file in required_agents.items():
-    agent_settings = agents.get(agent_name)
-    if not isinstance(agent_settings, dict):
-        errors.append(f"missing [agents.{agent_name}]")
-        continue
-    if agent_settings.get("config_file") != config_file:
-        errors.append(
-            f"[agents.{agent_name}] expected config_file={config_file!r}, found {agent_settings.get('config_file')!r}"
-        )
-    elif not (project_config_path.parent / config_file).exists():
-        errors.append(f"[agents.{agent_name}] config file not found: {project_config_path.parent / config_file}")
+if agents:
+    errors.append("project [agents] registrations are no longer allowed; use the global universal role catalog")
 
 if not user_config_path.exists():
     errors.append(f"user config file not found: {user_config_path}")
@@ -499,8 +502,8 @@ else:
 
     user_servers = user_data.get("mcp_servers") or {}
     user_service_tier = user_data.get("service_tier")
-    if user_service_tier is not None and user_service_tier not in {"fast", "flex", "priority"}:
-        errors.append(f"user config service_tier must be one of 'fast', 'flex', or 'priority'; found {user_service_tier!r}")
+    if user_service_tier is not None and user_service_tier not in {"default", "fast", "flex", "priority"}:
+        errors.append(f"user config service_tier must be one of 'default', 'fast', 'flex', or 'priority'; found {user_service_tier!r}")
     for name, expectations in required_user_servers.items():
         server = user_servers.get(name)
         if not isinstance(server, dict):
@@ -508,6 +511,12 @@ else:
             continue
         for key, value in expectations.items():
             actual = server.get(key)
+            if key == "env":
+                if not isinstance(actual, dict) or any(actual.get(env_key) != env_value for env_key, env_value in value.items()):
+                    errors.append(f"user [mcp_servers.{name}] expected env entries={value!r}, found {actual!r}")
+                continue
+            if key == "enabled" and value is True and actual is None:
+                continue
             if not matches_expected(actual, value):
                 errors.append(f"user [mcp_servers.{name}] expected {key}={value!r}, found {actual!r}")
 

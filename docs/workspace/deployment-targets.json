@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "authority": "TRR non-secret production deployment identity tuple",
+  "supabase": {
+    "project_ref": "vwxfvzutyufrkhfgoeaa",
+    "credential_env": "TRR_SUPABASE_ACCESS_TOKEN"
+  },
+  "vercel": {
+    "team_id": "team_EUsG2kN9TAvVDGOu4yZVEoCX",
+    "team_slug": "the-reality-reports-projects",
+    "project_id": "prj_MHpStkwr26rV5kjt0f80zqhwZpAs",
+    "project_name": "trr-app",
+    "production_aliases": [
+      "https://trr-app.vercel.app"
+    ],
+    "direct_deployment_urls": [
+      "https://trr-4c2watu7j-the-reality-reports-projects.vercel.app"
+    ]
+  },
+  "render": {
+    "owner_id": "tea-d6pglsu3jp1c73cctvf0",
+    "service_id": "srv-d6phk5vkijhs73fcsk7g",
+    "service_name": "trr-backend-api",
+    "repo": "therealityreport/trr-backend",
+    "branch": "main",
+    "direct_url": "https://trr-backend-api.onrender.com",
+    "credential_env": "TRR_RENDER_API_KEY"
+  },
+  "modal": {
+    "profile": "admin-56995",
+    "workspace": "admin-56995",
+    "environment": "main",
+    "app_name": "trr-backend-jobs",
+    "app_ref": "trr_backend.modal_jobs"
+  },
+  "security_checkpoints": {
+    "render_env_snapshot": {
+      "path": ".artifacts/env-inventory/20260330-173748/render/env-vars.json",
+      "inspection_policy": "metadata_only_never_read_values",
+      "status": "operator_review_required",
+      "permissions_mode": "0600",
+      "permissions_verified_at": "2026-07-16T05:52:21Z",
+      "live_review_condition": "operator_action_required_missing_TRR_RENDER_API_KEY",
+      "production_cutover": "blocked_until_closed"
+    }
+  },
+  "evidence_policy": {
+    "environment_values": "prohibited",
+    "allowed_artifacts": [
+      "safe_identifiers",
+      "redacted_key_metadata",
+      "hashes"
+    ],
+    "credential_output": "never"
+  },
+  "verification_policy": {
+    "live_reverify_before_mutation": true,
+    "unavailable_auth_condition": "operator_action_required",
+    "local_validation_is_not_production_proof": true
+  }
+}

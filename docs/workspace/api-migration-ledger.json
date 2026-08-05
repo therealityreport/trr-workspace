@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "generated_by": "scripts/app-direct-sql-inventory.py",
+  "counts": {
+    "total_non_app_local": 0,
+    "admin-read-model": 0,
+    "backend-shared-schema": 0
+  },
+  "rows": []
+}

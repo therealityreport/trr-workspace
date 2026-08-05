@@ -1,6 +1,6 @@
 .PHONY: \
-	dev dev-lite dev-cloud dev-hybrid dev-hybrid-bg dev-hybrid-media-safe dev-hybrid-media-safe-posts dev-hybrid-media-safe-comments dev-hybrid-media-safe-bravotv dev-hybrid-social-safe dev-portless stop-portless portless-status portless-repair open-admin dev-local dev-full dev-redis \
-	preflight preflight-local preflight-cloud preflight-hybrid preflight-strict preflight-diagnostics env-contract env-contract-report env-hygiene check-policy codex-check git-branch-report handoff-check handoff-sync smoke browser-smoke-admin-details status status-json backend-restart-diagnose stop logs logs-prune cleanup-disk help \
+	dev dev-lite dev-cloud dev-hybrid dev-architecture-refactor architecture-refactor-check dev-hybrid-bg dev-hybrid-media-safe dev-hybrid-media-safe-posts dev-hybrid-media-safe-comments dev-hybrid-media-safe-bravotv dev-hybrid-social-safe dev-portless stop-portless portless-status portless-repair open-admin dev-local dev-full dev-redis \
+	preflight preflight-local preflight-cloud preflight-hybrid preflight-strict preflight-diagnostics env-contract env-contract-report env-hygiene architecture-contracts-check architecture-durable-contracts-check architecture-durable-candidate-check architecture-evidence-hygiene-check architecture-git-roots-check architecture-guard-tests architecture-hotspots-check architecture-release-manifests-check openapi-v2-contract-generate openapi-v2-contract-check runtime-capacity-check deployment-targets-check modal-invocation-check check-policy codex-check git-branch-report handoff-check handoff-sync smoke browser-smoke-admin-details status status-json backend-restart-diagnose stop logs logs-prune cleanup-disk help \
 	app-direct-sql-inventory redacted-env-inventory vercel-project-guard vercel-auth-doctor vercel-cleanup-doctor vercel-link-trr vercel-preview-ready migration-ownership-lint rls-grants-snapshot db-pressure-rehearsal supabase-mcp-access supabase-advisor-snapshot supabase-preview-branch-cleanup \
 	bootstrap doctor doctor-json app-check app-validate-quick test test-fast test-full test-changed test-env-sensitive \
 	workspace-contract-check workspace-hygiene-report workspace-hygiene-clean-dry-run \
@@ -62,18 +62,30 @@ dev-cloud:
 # Explicit hybrid path: local app/backend use direct DB; Modal/remote workers use session/pooler.
 # Social scraping is enabled with conservative post discovery and downstream fan-out.
 dev-hybrid:
-	@$(MAKE) --no-print-directory preflight-hybrid
-	@WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS=1 \
-	WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT=8 \
-	WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT=8 \
-	WORKSPACE_TRR_REMOTE_SOCIAL_POSTS=1 \
-	WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS=8 \
-	SOCIAL_POSTS_COMMENTS_PLATFORM_CAP_INSTAGRAM=8 \
-	SOCIAL_PLATFORM_CAP_PER_ACCOUNT_SCALING=false \
-	WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR=1 \
-	WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR=1 \
-	WORKSPACE_USE_PORTLESS_URLS=1 \
-	PROFILE="$${PROFILE:-local-cloud}" WORKSPACE_DEV_MODE=hybrid bash scripts/dev-workspace.sh
+	@if [ "$${PROFILE:-}" = "architecture-refactor" ]; then \
+		$(MAKE) --no-print-directory dev-architecture-refactor; \
+	else \
+		$(MAKE) --no-print-directory preflight-hybrid; \
+		WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS=1 \
+		WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT=8 \
+		WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT=8 \
+		WORKSPACE_TRR_REMOTE_SOCIAL_POSTS=1 \
+		WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS=8 \
+		SOCIAL_POSTS_COMMENTS_PLATFORM_CAP_INSTAGRAM=8 \
+		SOCIAL_PLATFORM_CAP_PER_ACCOUNT_SCALING=false \
+		WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR=1 \
+		WORKSPACE_TRR_REMOTE_SOCIAL_COMMENT_MEDIA_MIRROR=1 \
+		WORKSPACE_USE_PORTLESS_URLS=1 \
+		PROFILE="$${PROFILE:-local-cloud}" WORKSPACE_DEV_MODE=hybrid bash scripts/dev-workspace.sh; \
+	fi
+
+dev-architecture-refactor:
+	@bash scripts/architecture-refactor-preflight.sh
+	@WORKSPACE_USE_PORTLESS_URLS=1 PROFILE=architecture-refactor WORKSPACE_DEV_MODE=local bash scripts/dev-workspace.sh
+
+architecture-refactor-check:
+	@bash scripts/architecture-refactor-preflight.sh
+	@WORKSPACE_USE_PORTLESS_URLS=1 PROFILE=architecture-refactor WORKSPACE_DEV_MODE=local bash scripts/dev-workspace.sh --assert-no-side-effects
 
 # Post-recovery hybrid path: keeps comments fast and allows two media mirror
 # lanes now that stale media claims have been cleared.
@@ -374,6 +386,68 @@ redacted-env-inventory:
 
 env-hygiene:
 	@WORKSPACE_ENV_HYGIENE_INCLUDE_ADJACENT=1 python3 scripts/workspace/env_hygiene.py --check
+
+architecture-git-roots-check:
+	@python3 scripts/architecture/check-git-roots.py
+
+architecture-contracts-check:
+	@$(MAKE) --no-print-directory architecture-git-roots-check
+	@$(MAKE) --no-print-directory architecture-durable-contracts-check
+	@$(MAKE) --no-print-directory architecture-guard-tests
+	@$(MAKE) --no-print-directory architecture-evidence-hygiene-check
+	@$(MAKE) --no-print-directory architecture-hotspots-check
+	@$(MAKE) --no-print-directory architecture-release-manifests-check
+	@$(MAKE) --no-print-directory openapi-v2-contract-check
+	@python3 scripts/architecture/check-import-graph.py --check-baseline
+	@python3 scripts/app-direct-sql-inventory.py --check --fail-expired
+	@$(MAKE) --no-print-directory runtime-capacity-check
+	@$(MAKE) --no-print-directory deployment-targets-check
+	@$(MAKE) --no-print-directory modal-invocation-check
+	@$(MAKE) --no-print-directory vercel-project-guard
+
+architecture-evidence-hygiene-check:
+	@python3 scripts/architecture/check-evidence-hygiene.py
+
+architecture-durable-contracts-check:
+	@python3 scripts/architecture/check-durable-contracts.py --boundary working-tree
+
+architecture-durable-candidate-check:
+	@python3 scripts/architecture/check-durable-contracts.py --boundary candidate
+
+architecture-guard-tests:
+	@TRR-Backend/.venv/bin/python -m pytest -q \
+		scripts/architecture/tests/test_check_durable_contracts.py \
+		scripts/architecture/tests/test_check_evidence_hygiene.py \
+		scripts/architecture/tests/test_check_git_roots.py \
+		scripts/architecture/tests/test_check_hotspots.py \
+		scripts/architecture/tests/test_check_import_graph.py \
+		scripts/architecture/tests/test_check_release_manifests.py
+
+architecture-hotspots-check:
+	@python3 scripts/architecture/check-hotspots.py --fail-expired
+
+architecture-release-manifests-check:
+	@TRR-Backend/.venv/bin/python scripts/architecture/check-release-manifests.py
+
+openapi-v2-contract-generate:
+	@cd TRR-Backend && ./.venv/bin/python -m scripts.dev.export_v2_openapi
+	@mkdir -p TRR-APP/apps/web/src/lib/server/trr-api/generated
+	@cp TRR-Backend/docs/api/openapi.v2.json TRR-APP/apps/web/src/lib/server/trr-api/generated/openapi.v2.json
+	@pnpm -C TRR-APP/apps/web run generate:trr-v2-api-types
+
+openapi-v2-contract-check:
+	@cd TRR-Backend && ./.venv/bin/python -m scripts.dev.export_v2_openapi --check
+	@cmp -s TRR-Backend/docs/api/openapi.v2.json TRR-APP/apps/web/src/lib/server/trr-api/generated/openapi.v2.json || { echo "openapi-v2-contract: ERROR app snapshot differs from backend"; exit 1; }
+	@pnpm -C TRR-APP/apps/web run generated:trr-v2-api-types:check
+
+runtime-capacity-check:
+	@python3 scripts/runtime_capacity.py check
+
+deployment-targets-check:
+	@python3 scripts/deployment_targets.py check
+
+modal-invocation-check:
+	@cd TRR-Backend && ./.venv/bin/python scripts/modal/check_invocations.py
 
 vercel-project-guard:
 	@python3 scripts/vercel-project-guard.py --project-dir TRR-APP

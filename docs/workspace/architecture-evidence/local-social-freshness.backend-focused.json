@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "evidence_id": "ev.local-social-freshness.backend-focused",
+  "packet_id": "local-social-freshness",
+  "gate": "gate-0",
+  "truth_scope": "local",
+  "command": {
+    "argv": [
+      ".venv/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "tests/repositories/test_social_control_plane_imports.py",
+      "tests/repositories/test_social_season_analytics.py",
+      "-k",
+      "account_catalog_freshness or live_profile_total"
+    ],
+    "cwd": "/Users/thomashulihan/Projects/TRR/TRR-Backend",
+    "mutating": false,
+    "environment_variable_names": []
+  },
+  "started_at": "2026-07-16T20:46:09.483434Z",
+  "finished_at": "2026-07-16T20:46:11.025138Z",
+  "exit_code": 0,
+  "expected_result": "Account-catalog freshness composition and live-profile-total tests pass.",
+  "result": "pass",
+  "output": {
+    "sha256": "af797b67b0b7da0b982c5ca895ccf81f1d2ba25f891090065be3b9ef76eacf84",
+    "size_bytes": 115,
+    "stored_path": null
+  },
+  "artifacts": [],
+  "target_observations": [
+    {
+      "target_type": "repository",
+      "target_id": "backend",
+      "observed_at": "2026-07-16T20:46:11.025138Z",
+      "status": "pass",
+      "facts": [
+        {
+          "name": "test.count",
+          "value": 6
+        }
+      ]
+    }
+  ],
+  "approval": {
+    "required": false,
+    "approval_id": null,
+    "status": "not_required",
+    "current_chat": false
+  },
+  "redaction": {
+    "status": "verified_clean",
+    "scanner": "scripts/architecture/check-release-manifests.py",
+    "safe_to_store": true,
+    "credential_values_included": false,
+    "environment_values_included": false
+  }
+}

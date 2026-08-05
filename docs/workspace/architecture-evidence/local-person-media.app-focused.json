@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "evidence_id": "ev.local-person-media.app-focused",
+  "packet_id": "local-person-media",
+  "gate": "gate-0",
+  "truth_scope": "local",
+  "command": {
+    "argv": [
+      "pnpm",
+      "exec",
+      "vitest",
+      "run",
+      "-c",
+      "vitest.config.mts",
+      "tests/person-cover-photos-repository.test.ts",
+      "tests/person-thumbnail-crops-repository.test.ts",
+      "tests/person-cover-photo-route.test.ts",
+      "tests/person-thumbnail-crop-route.test.ts",
+      "tests/person-gallery-route-cache-dedupe.test.ts",
+      "--reporter=dot"
+    ],
+    "cwd": "/Users/thomashulihan/Projects/TRR/TRR-APP/apps/web",
+    "mutating": false,
+    "environment_variable_names": []
+  },
+  "started_at": "2026-07-16T20:46:35.506706Z",
+  "finished_at": "2026-07-16T20:46:39.424831Z",
+  "exit_code": 0,
+  "expected_result": "Person-media app adapter, route, cache, and SQL-removal tests pass.",
+  "result": "pass",
+  "output": {
+    "sha256": "389d11e391b536eb9ed0ef3f75fc5387d8970309ea7939313fb61194eadc2c71",
+    "size_bytes": 289,
+    "stored_path": null
+  },
+  "artifacts": [],
+  "target_observations": [
+    {
+      "target_type": "repository",
+      "target_id": "app",
+      "observed_at": "2026-07-16T20:46:39.424831Z",
+      "status": "pass",
+      "facts": [
+        {
+          "name": "test.count",
+          "value": 24
+        }
+      ]
+    }
+  ],
+  "approval": {
+    "required": false,
+    "approval_id": null,
+    "status": "not_required",
+    "current_chat": false
+  },
+  "redaction": {
+    "status": "verified_clean",
+    "scanner": "scripts/architecture/check-release-manifests.py",
+    "safe_to_store": true,
+    "credential_values_included": false,
+    "environment_values_included": false
+  }
+}

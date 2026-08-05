@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "evidence_id": "ev.local-foundation-runtime-guards.workspace-focused",
+  "packet_id": "local-foundation-runtime-guards",
+  "gate": "gate-0",
+  "truth_scope": "local",
+  "command": {
+    "argv": [
+      "TRR-Backend/.venv/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "scripts/architecture/tests/test_check_release_manifests.py"
+    ],
+    "cwd": "/Users/thomashulihan/Projects/TRR",
+    "mutating": false,
+    "environment_variable_names": []
+  },
+  "started_at": "2026-07-16T21:30:24.357214Z",
+  "finished_at": "2026-07-16T21:30:26.889248Z",
+  "exit_code": 0,
+  "expected_result": "Focused release-manifest validator tests pass.",
+  "result": "pass",
+  "output": {
+    "sha256": "f5b1e407ed33acfe93f0ca88d2d6c01450a3f3f6eff50a978c2bbe226852e221",
+    "size_bytes": 99,
+    "stored_path": null
+  },
+  "artifacts": [],
+  "target_observations": [
+    {
+      "target_type": "repository",
+      "target_id": "workspace",
+      "observed_at": "2026-07-16T21:30:26.889248Z",
+      "status": "pass",
+      "facts": [
+        {
+          "name": "test.count",
+          "value": 25
+        }
+      ]
+    }
+  ],
+  "approval": {
+    "required": false,
+    "approval_id": null,
+    "status": "not_required",
+    "current_chat": false
+  },
+  "redaction": {
+    "status": "verified_clean",
+    "scanner": "scripts/architecture/check-release-manifests.py",
+    "safe_to_store": true,
+    "credential_values_included": false,
+    "environment_values_included": false
+  }
+}

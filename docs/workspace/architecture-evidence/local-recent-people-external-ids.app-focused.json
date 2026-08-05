@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "evidence_id": "ev.local-recent-people-external-ids.app-focused",
+  "packet_id": "local-recent-people-external-ids",
+  "gate": "gate-0",
+  "truth_scope": "local",
+  "command": {
+    "argv": [
+      "pnpm",
+      "exec",
+      "vitest",
+      "run",
+      "-c",
+      "vitest.config.mts",
+      "tests/recent-people-route.test.ts",
+      "tests/admin-external-id-reads.test.ts",
+      "tests/person-external-ids-route.test.ts",
+      "tests/social-landing-repository.test.ts",
+      "tests/social-landing-route-cache.test.ts",
+      "--reporter=dot"
+    ],
+    "cwd": "/Users/thomashulihan/Projects/TRR/TRR-APP/apps/web",
+    "mutating": false,
+    "environment_variable_names": []
+  },
+  "started_at": "2026-07-16T20:46:35.548699Z",
+  "finished_at": "2026-07-16T20:46:39.503963Z",
+  "exit_code": 0,
+  "expected_result": "Recent-people, external-ID, and landing adapter tests pass.",
+  "result": "pass",
+  "output": {
+    "sha256": "39bf01759ad12c319772aecda509e4e9e8ee4dea9065a05c249360f6005dacdd",
+    "size_bytes": 90925,
+    "stored_path": null
+  },
+  "artifacts": [],
+  "target_observations": [
+    {
+      "target_type": "repository",
+      "target_id": "app",
+      "observed_at": "2026-07-16T20:46:39.503963Z",
+      "status": "pass",
+      "facts": [
+        {
+          "name": "test.count",
+          "value": 55
+        }
+      ]
+    }
+  ],
+  "approval": {
+    "required": false,
+    "approval_id": null,
+    "status": "not_required",
+    "current_chat": false
+  },
+  "redaction": {
+    "status": "verified_clean",
+    "scanner": "scripts/architecture/check-release-manifests.py",
+    "safe_to_store": true,
+    "credential_values_included": false,
+    "environment_values_included": false
+  }
+}

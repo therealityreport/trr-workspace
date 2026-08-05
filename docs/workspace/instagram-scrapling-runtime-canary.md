@@ -80,9 +80,9 @@ PY
 Expected version floor for this canary slice:
 
 ```text
-scrapling_version >= 0.4.9
-patchright_version >= 1.60.1
-playwright_version >= 1.60.0
+scrapling_version >= 0.4.12
+patchright_version >= 1.61.2
+playwright_version >= 1.61.0
 ```
 
 Confirm the safe default is still disabled:

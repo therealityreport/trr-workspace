@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "evidence_id": "ev.local-identity-canonical-routes.backend-focused",
+  "packet_id": "local-identity-canonical-routes",
+  "gate": "gate-0",
+  "truth_scope": "local",
+  "command": {
+    "argv": [
+      ".venv/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "tests/migrations/test_public_identity_slug_aliases.py",
+      "tests/migrations/test_core_show_slug_normalized_unique.py",
+      "tests/repositories/test_public_identities.py",
+      "tests/repositories/test_show_slug_reads.py",
+      "tests/services/test_public_identity.py",
+      "tests/api/routers/test_v2_public_identities.py",
+      "tests/api/routers/test_v2_admin_show_slugs.py",
+      "tests/scripts/test_export_v2_openapi.py",
+      "tests/api/test_internal_admin_openapi.py"
+    ],
+    "cwd": "/Users/thomashulihan/Projects/TRR/TRR-Backend",
+    "mutating": false,
+    "environment_variable_names": []
+  },
+  "started_at": "2026-07-16T20:45:25.858993Z",
+  "finished_at": "2026-07-16T20:45:30.547761Z",
+  "exit_code": 0,
+  "expected_result": "Identity, slug, migration, OpenAPI, and generated-contract tests pass.",
+  "result": "pass",
+  "output": {
+    "sha256": "ca3937200e1114e5c0c6e71569218e3d0da74c81e4437cd9fe671ba9969b7924",
+    "size_bytes": 99,
+    "stored_path": null
+  },
+  "artifacts": [],
+  "target_observations": [
+    {
+      "target_type": "repository",
+      "target_id": "backend",
+      "observed_at": "2026-07-16T20:45:30.547761Z",
+      "status": "pass",
+      "facts": [
+        {
+          "name": "test.count",
+          "value": 58
+        }
+      ]
+    }
+  ],
+  "approval": {
+    "required": false,
+    "approval_id": null,
+    "status": "not_required",
+    "current_chat": false
+  },
+  "redaction": {
+    "status": "verified_clean",
+    "scanner": "scripts/architecture/check-release-manifests.py",
+    "safe_to_store": true,
+    "credential_values_included": false,
+    "environment_values_included": false
+  }
+}

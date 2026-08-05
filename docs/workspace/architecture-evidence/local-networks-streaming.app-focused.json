@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "evidence_id": "ev.local-networks-streaming.app-focused",
+  "packet_id": "local-networks-streaming",
+  "gate": "gate-0",
+  "truth_scope": "local",
+  "command": {
+    "argv": [
+      "pnpm",
+      "exec",
+      "vitest",
+      "run",
+      "-c",
+      "vitest.config.mts",
+      "tests/admin-networks-streaming-reads.test.ts",
+      "tests/networks-streaming-summary-route.test.ts",
+      "tests/networks-streaming-summary-route-cache-dedupe.test.ts",
+      "tests/networks-streaming-detail-route.test.ts",
+      "tests/brand-profile-repository.test.ts",
+      "tests/brand-profile-route.test.ts",
+      "--reporter=dot"
+    ],
+    "cwd": "/Users/thomashulihan/Projects/TRR/TRR-APP/apps/web",
+    "mutating": false,
+    "environment_variable_names": []
+  },
+  "started_at": "2026-07-16T20:46:22.729878Z",
+  "finished_at": "2026-07-16T20:46:26.217251Z",
+  "exit_code": 0,
+  "expected_result": "Networks and streaming app adapters, routes, cache, and brand profile tests pass.",
+  "result": "pass",
+  "output": {
+    "sha256": "ccc63dcfd7408cc6096ae92671291211bf5c126c06877dd652da6b93da2219e7",
+    "size_bytes": 3612,
+    "stored_path": null
+  },
+  "artifacts": [],
+  "target_observations": [
+    {
+      "target_type": "repository",
+      "target_id": "app",
+      "observed_at": "2026-07-16T20:46:26.217251Z",
+      "status": "pass",
+      "facts": [
+        {
+          "name": "test.count",
+          "value": 43
+        }
+      ]
+    }
+  ],
+  "approval": {
+    "required": false,
+    "approval_id": null,
+    "status": "not_required",
+    "current_chat": false
+  },
+  "redaction": {
+    "status": "verified_clean",
+    "scanner": "scripts/architecture/check-release-manifests.py",
+    "safe_to_store": true,
+    "credential_values_included": false,
+    "environment_values_included": false
+  }
+}

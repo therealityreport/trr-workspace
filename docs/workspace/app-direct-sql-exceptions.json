@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "policy": {
+    "max_review_window_days": 30
+  },
+  "exceptions": []
+}

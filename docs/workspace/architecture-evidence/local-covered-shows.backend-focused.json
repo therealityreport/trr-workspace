@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "evidence_id": "ev.local-covered-shows.backend-focused",
+  "packet_id": "local-covered-shows",
+  "gate": "gate-0",
+  "truth_scope": "local",
+  "command": {
+    "argv": [
+      ".venv/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "tests/api/test_admin_covered_shows_reads.py",
+      "tests/api/routers/test_v2_admin_covered_shows.py",
+      "tests/services/test_covered_shows.py"
+    ],
+    "cwd": "/Users/thomashulihan/Projects/TRR/TRR-Backend",
+    "mutating": false,
+    "environment_variable_names": []
+  },
+  "started_at": "2026-07-16T20:45:25.841757Z",
+  "finished_at": "2026-07-16T20:45:30.512855Z",
+  "exit_code": 0,
+  "expected_result": "Covered-shows backend route and service tests pass.",
+  "result": "pass",
+  "output": {
+    "sha256": "81b19df3cd4c8cddce98d6003bf57c6e360d9d953fde075ec4fc8d8bdee48ac1",
+    "size_bytes": 99,
+    "stored_path": null
+  },
+  "artifacts": [],
+  "target_observations": [
+    {
+      "target_type": "repository",
+      "target_id": "backend",
+      "observed_at": "2026-07-16T20:45:30.512855Z",
+      "status": "pass",
+      "facts": [
+        {
+          "name": "test.count",
+          "value": 15
+        }
+      ]
+    }
+  ],
+  "approval": {
+    "required": false,
+    "approval_id": null,
+    "status": "not_required",
+    "current_chat": false
+  },
+  "redaction": {
+    "status": "verified_clean",
+    "scanner": "scripts/architecture/check-release-manifests.py",
+    "safe_to_store": true,
+    "credential_values_included": false,
+    "environment_values_included": false
+  }
+}

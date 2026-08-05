@@ -15,6 +15,16 @@ source "$ROOT/scripts/lib/preflight-browser-attention.sh"
 source "$ROOT/scripts/lib/context7-status.sh"
 source "$ROOT/scripts/lib/portless-startup-check.sh"
 
+WORKSPACE_ASSERT_NO_SIDE_EFFECTS=0
+if [[ "${1:-}" == "--assert-no-side-effects" ]]; then
+  WORKSPACE_ASSERT_NO_SIDE_EFFECTS=1
+  shift
+fi
+if [[ $# -ne 0 ]]; then
+  echo "[workspace] ERROR: unsupported argument: $1" >&2
+  exit 2
+fi
+
 # Optional profile defaults.
 # Usage: PROFILE=local-cloud make dev
 # `make dev` delegates here through the hybrid target; use `make dev-local`
@@ -55,6 +65,28 @@ if [[ -n "$PROFILE" ]]; then
       echo "[workspace] NOTE: PROFILE=local-full is deprecated; use the explicit Docker fallback: make dev-local (or PROFILE=local-docker make dev-local)." >&2
       ;;
   esac
+fi
+
+if [[ "$PROFILE" == "architecture-refactor" ]]; then
+  # This profile is fail-closed and cannot be weakened by inherited shell
+  # values or by PROFILE=architecture-refactor make dev-hybrid.
+  WORKSPACE_DEV_MODE="local"
+  WORKSPACE_ARCHITECTURE_DB_TARGET="loopback-only"
+  TRR_DB_TRANSACTION_FLIGHT_TEST="0"
+  WORKSPACE_OPEN_BROWSER="0"
+  WORKSPACE_TRR_JOB_PLANE_MODE="local"
+  WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE="0"
+  WORKSPACE_TRR_MODAL_ENABLED="0"
+  WORKSPACE_TRR_REMOTE_WORKERS_ENABLED="0"
+  WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS="0"
+  WORKSPACE_SOCIAL_WORKER_ENABLED="0"
+  WORKSPACE_RUNTIME_RECONCILE_ENABLED="0"
+  WORKSPACE_RUNTIME_DB_AUTO_APPLY_ENABLED="0"
+  WORKSPACE_RUNTIME_DB_MAX_AUTO_APPLY="0"
+  WORKSPACE_RUNTIME_MODAL_AUTO_DEPLOY="0"
+  WORKSPACE_RUNTIME_EXTERNAL_VERIFY_ENABLED="0"
+  WORKSPACE_RUNTIME_RENDER_VERIFY_ONLY="1"
+  WORKSPACE_RUNTIME_DECODO_VERIFY_ONLY="1"
 fi
 
 if [[ -n "${PORTLESS_PORT:-}" && "${PORTLESS_PORT}" != "443" ]]; then
@@ -108,6 +140,97 @@ case "$WORKSPACE_DEV_MODE" in
     WORKSPACE_TRR_REMOTE_WORKERS_ENABLED_DEFAULT="0"
     ;;
 esac
+
+if [[ -z "${WORKSPACE_RUNTIME_CAPACITY_PROFILE:-}" ]]; then
+  case "$WORKSPACE_DEV_MODE" in
+    local) WORKSPACE_RUNTIME_CAPACITY_PROFILE="local_workspace" ;;
+    cloud|hybrid) WORKSPACE_RUNTIME_CAPACITY_PROFILE="workspace_hybrid" ;;
+  esac
+fi
+
+capacity_projection="$(
+  python3 "$ROOT/scripts/runtime_capacity.py" shell --context "$WORKSPACE_RUNTIME_CAPACITY_PROFILE"
+)" || {
+  echo "[workspace] ERROR: runtime capacity projection failed." >&2
+  exit 1
+}
+while IFS= read -r capacity_assignment || [[ -n "$capacity_assignment" ]]; do
+  [[ -z "$capacity_assignment" ]] && continue
+  capacity_key="${capacity_assignment%%=*}"
+  capacity_value="${capacity_assignment#*=}"
+  if [[ ! "$capacity_key" =~ ^[A-Z][A-Z0-9_]*$ || ! "$capacity_value" =~ ^[A-Za-z0-9_.:/-]+$ ]]; then
+    echo "[workspace] ERROR: unsafe runtime capacity projection: ${capacity_assignment}" >&2
+    exit 1
+  fi
+  if [[ -z "${!capacity_key+x}" ]]; then
+    export "${capacity_key}=${capacity_value}"
+  fi
+done <<<"$capacity_projection"
+
+assert_architecture_refactor_local_db() {
+  local resolved_url=""
+  local source_name=""
+  local host_class="missing"
+
+  if resolved_url="$(trr_runtime_db_resolve_local_app_url "$ROOT" "local" 2>/dev/null)"; then
+    host_class="$(trr_runtime_db_url_lane "$resolved_url")"
+    source_name="$(trr_runtime_db_resolve_local_app_source "$ROOT" "local" 2>/dev/null || echo unknown)"
+  fi
+  unset resolved_url
+
+  if [[ "$host_class" != "local" ]]; then
+    echo "[workspace] ERROR: architecture-refactor requires a loopback database target; host_class=${host_class} source=${source_name:-none}." >&2
+    echo "[workspace] ERROR: set a local URL through TRR_DB_DIRECT_URL, TRR_DB_SESSION_URL, TRR_DB_URL, or TRR_DB_FALLBACK_URL; remote Supabase and pooler hosts are blocked." >&2
+    return 1
+  fi
+
+  WORKSPACE_ARCHITECTURE_DB_HOST_CLASS="$host_class"
+  WORKSPACE_ARCHITECTURE_DB_SOURCE="$source_name"
+  export WORKSPACE_ARCHITECTURE_DB_HOST_CLASS WORKSPACE_ARCHITECTURE_DB_SOURCE
+}
+
+assert_architecture_refactor_no_side_effects() {
+  local expected_pairs=(
+    "WORKSPACE_DEV_MODE=local"
+    "WORKSPACE_ARCHITECTURE_DB_TARGET=loopback-only"
+    "WORKSPACE_ARCHITECTURE_DB_HOST_CLASS=local"
+    "TRR_DB_TRANSACTION_FLIGHT_TEST=0"
+    "WORKSPACE_TRR_JOB_PLANE_MODE=local"
+    "WORKSPACE_TRR_LONG_JOB_ENFORCE_REMOTE=0"
+    "WORKSPACE_TRR_MODAL_ENABLED=0"
+    "WORKSPACE_TRR_REMOTE_WORKERS_ENABLED=0"
+    "WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS=0"
+    "WORKSPACE_SOCIAL_WORKER_ENABLED=0"
+    "WORKSPACE_RUNTIME_RECONCILE_ENABLED=0"
+    "WORKSPACE_RUNTIME_DB_AUTO_APPLY_ENABLED=0"
+    "WORKSPACE_RUNTIME_DB_MAX_AUTO_APPLY=0"
+    "WORKSPACE_RUNTIME_MODAL_AUTO_DEPLOY=0"
+    "WORKSPACE_RUNTIME_EXTERNAL_VERIFY_ENABLED=0"
+  )
+  local pair key expected actual
+  for pair in "${expected_pairs[@]}"; do
+    key="${pair%%=*}"
+    expected="${pair#*=}"
+    actual="${!key-}"
+    if [[ "$actual" != "$expected" ]]; then
+      echo "[workspace] ERROR: architecture-refactor profile is unsafe: ${key}=${actual:-<unset>} (expected ${expected})." >&2
+      return 1
+    fi
+  done
+  echo "[workspace] architecture-refactor command plan: local_backend=enabled local_app=enabled db_host_class=${WORKSPACE_ARCHITECTURE_DB_HOST_CLASS} db_source=${WORKSPACE_ARCHITECTURE_DB_SOURCE} db_apply=off reconcile=off modal_deploy=off render_mutation=off vercel_mutation=off remote_workers=off"
+}
+
+if [[ "$PROFILE" == "architecture-refactor" ]]; then
+  assert_architecture_refactor_local_db
+  assert_architecture_refactor_no_side_effects
+fi
+if [[ "$WORKSPACE_ASSERT_NO_SIDE_EFFECTS" == "1" ]]; then
+  if [[ "$PROFILE" != "architecture-refactor" ]]; then
+    echo "[workspace] ERROR: --assert-no-side-effects requires PROFILE=architecture-refactor." >&2
+    exit 2
+  fi
+  exit 0
+fi
 
 LOG_DIR="${ROOT}/.logs/workspace"
 PIDFILE="${LOG_DIR}/pids.env"
@@ -367,8 +490,8 @@ WORKSPACE_TRR_REMOTE_ADMIN_WORKERS="${WORKSPACE_TRR_REMOTE_ADMIN_WORKERS:-1}"
 WORKSPACE_TRR_REMOTE_REDDIT_WORKERS="${WORKSPACE_TRR_REMOTE_REDDIT_WORKERS:-1}"
 WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS="${WORKSPACE_TRR_REMOTE_GOOGLE_NEWS_WORKERS:-1}"
 WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS="${WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS:-0}"
-WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT="${WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT:-8}"
-WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT="${WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT:-8}"
+WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT="${WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT:-4}"
+WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT="${WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT:-4}"
 WORKSPACE_TRR_REMOTE_SOCIAL_POSTS="${WORKSPACE_TRR_REMOTE_SOCIAL_POSTS:-1}"
 WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS="${WORKSPACE_TRR_REMOTE_SOCIAL_COMMENTS:-1}"
 WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR="${WORKSPACE_TRR_REMOTE_SOCIAL_MEDIA_MIRROR:-1}"
@@ -492,12 +615,12 @@ if ! [[ "$WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS" =~ ^[01]$ ]]; then
   WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS="0"
 fi
 if ! [[ "$WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT" =~ ^[1-9][0-9]*$ ]]; then
-  echo "[workspace] WARNING: invalid WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT='${WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT}', using 8." >&2
-  WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT="8"
+  echo "[workspace] WARNING: invalid WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT='${WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT}', using ${WORKSPACE_RUNTIME_CAPACITY_DISPATCH_BATCH_SIZE:-4}." >&2
+  WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT="${WORKSPACE_RUNTIME_CAPACITY_DISPATCH_BATCH_SIZE:-4}"
 fi
 if ! [[ "$WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT" =~ ^[1-9][0-9]*$ ]]; then
-  echo "[workspace] WARNING: invalid WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT='${WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT}', using 8." >&2
-  WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT="8"
+  echo "[workspace] WARNING: invalid WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT='${WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT}', using ${WORKSPACE_RUNTIME_CAPACITY_GENERAL_CONCURRENCY:-4}." >&2
+  WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT="${WORKSPACE_RUNTIME_CAPACITY_GENERAL_CONCURRENCY:-4}"
 fi
 if [[ "$WORKSPACE_TRR_JOB_PLANE_MODE" == "remote" && "$WORKSPACE_SOCIAL_WORKER_ENABLED" == "1" && "$WORKSPACE_SOCIAL_WORKER_FORCE_LOCAL" != "1" ]]; then
   echo "[workspace] Remote job plane selected; disabling local social worker pool. Set WORKSPACE_SOCIAL_WORKER_FORCE_LOCAL=1 to override." >&2
@@ -1854,6 +1977,8 @@ write_backend_watchdog_state
   echo "WORKSPACE_PUBLIC_ADMIN_URL=\"${WORKSPACE_PUBLIC_ADMIN_URL}\""
   echo "WORKSPACE_PUBLIC_API_URL=\"${WORKSPACE_PUBLIC_API_URL}\""
   echo "WORKSPACE_DEV_MODE=${WORKSPACE_DEV_MODE}"
+  echo "WORKSPACE_RUNTIME_CAPACITY_PROFILE=${WORKSPACE_RUNTIME_CAPACITY_PROFILE}"
+  echo "WORKSPACE_RUNTIME_CAPACITY_CONTEXT=${WORKSPACE_RUNTIME_CAPACITY_CONTEXT:-$WORKSPACE_RUNTIME_CAPACITY_PROFILE}"
   echo "WORKSPACE_STRICT=${WORKSPACE_STRICT}"
   echo "WORKSPACE_TRR_DB_SOURCE=${WORKSPACE_TRR_LOCAL_DB_SOURCE}"
   echo "WORKSPACE_TRR_DB_LANE=$(workspace_selected_db_lane)"

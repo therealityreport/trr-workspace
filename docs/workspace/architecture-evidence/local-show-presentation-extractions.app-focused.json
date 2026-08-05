@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "evidence_id": "ev.local-show-presentation-extractions.app-focused",
+  "packet_id": "local-show-presentation-extractions",
+  "gate": "gate-0",
+  "truth_scope": "local",
+  "command": {
+    "argv": [
+      "pnpm",
+      "exec",
+      "vitest",
+      "run",
+      "-c",
+      "vitest.config.mts",
+      "tests/show-detail-utilities.test.ts",
+      "tests/show-workspace-model.test.ts",
+      "tests/show-link-display-model.test.ts",
+      "tests/show-link-badges.test.tsx",
+      "tests/show-links-discovery-modal.test.tsx",
+      "tests/show-links-discovery-modal-wiring.test.ts",
+      "tests/show-health-center-modal.test.tsx",
+      "tests/show-batch-role-modals.test.tsx",
+      "tests/show-batch-role-modals-wiring.test.ts",
+      "tests/show-bravo-sync-modal.test.tsx",
+      "tests/show-bravo-sync-modal-wiring.test.ts",
+      "tests/show-cast-tab.test.tsx",
+      "tests/show-overview-tab.test.tsx",
+      "tests/show-settings-tab.test.tsx",
+      "tests/show-settings-tab-wiring.test.ts",
+      "tests/show-assets-tab.test.tsx",
+      "tests/show-assets-tab-wiring.test.ts",
+      "--reporter=dot"
+    ],
+    "cwd": "/Users/thomashulihan/Projects/TRR/TRR-APP/apps/web",
+    "mutating": false,
+    "environment_variable_names": []
+  },
+  "started_at": "2026-07-16T20:46:47.734490Z",
+  "finished_at": "2026-07-16T20:46:51.376688Z",
+  "exit_code": 0,
+  "expected_result": "Show presentation extraction model, component, and wiring tests pass.",
+  "result": "pass",
+  "output": {
+    "sha256": "86967134c7be3df55ed9b48a1400ffd818612f8d57cc5ddc3b53b77422e57af4",
+    "size_bytes": 382,
+    "stored_path": null
+  },
+  "artifacts": [],
+  "target_observations": [
+    {
+      "target_type": "repository",
+      "target_id": "app",
+      "observed_at": "2026-07-16T20:46:51.376688Z",
+      "status": "pass",
+      "facts": [
+        {
+          "name": "test.count",
+          "value": 69
+        }
+      ]
+    }
+  ],
+  "approval": {
+    "required": false,
+    "approval_id": null,
+    "status": "not_required",
+    "current_chat": false
+  },
+  "redaction": {
+    "status": "verified_clean",
+    "scanner": "scripts/architecture/check-release-manifests.py",
+    "safe_to_store": true,
+    "credential_values_included": false,
+    "environment_values_included": false
+  }
+}

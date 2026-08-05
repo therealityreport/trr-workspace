@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "evidence_id": "ev.local-networks-streaming.backend-focused",
+  "packet_id": "local-networks-streaming",
+  "gate": "gate-0",
+  "truth_scope": "local",
+  "command": {
+    "argv": [
+      ".venv/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "tests/services/test_networks_streaming_reads.py",
+      "tests/repositories/test_admin_networks_streaming_reads_repository.py",
+      "tests/api/test_admin_networks_streaming_reads.py",
+      "tests/api/routers/test_v2_admin_networks_streaming.py"
+    ],
+    "cwd": "/Users/thomashulihan/Projects/TRR/TRR-Backend",
+    "mutating": false,
+    "environment_variable_names": []
+  },
+  "started_at": "2026-07-16T20:45:25.846103Z",
+  "finished_at": "2026-07-16T20:45:30.754473Z",
+  "exit_code": 0,
+  "expected_result": "Networks and streaming repository, service, and route tests pass.",
+  "result": "pass",
+  "output": {
+    "sha256": "73ee502d3e82317a7dce40e49dd6c4a2da42b0137713d449ca5311b4836541cf",
+    "size_bytes": 99,
+    "stored_path": null
+  },
+  "artifacts": [],
+  "target_observations": [
+    {
+      "target_type": "repository",
+      "target_id": "backend",
+      "observed_at": "2026-07-16T20:45:30.754473Z",
+      "status": "pass",
+      "facts": [
+        {
+          "name": "test.count",
+          "value": 42
+        }
+      ]
+    }
+  ],
+  "approval": {
+    "required": false,
+    "approval_id": null,
+    "status": "not_required",
+    "current_chat": false
+  },
+  "redaction": {
+    "status": "verified_clean",
+    "scanner": "scripts/architecture/check-release-manifests.py",
+    "safe_to_store": true,
+    "credential_values_included": false,
+    "environment_values_included": false
+  }
+}

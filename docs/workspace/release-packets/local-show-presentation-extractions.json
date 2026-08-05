@@ -1,0 +1,711 @@
+{
+  "schema_version": 2,
+  "packet_id": "local-show-presentation-extractions",
+  "capability": "Show-detail presentation model and component extractions",
+  "created_at": "2026-07-16T20:52:42.770997Z",
+  "updated_at": "2026-07-16T20:52:42.770997Z",
+  "state": "implementation_complete_parked",
+  "truth_scope": "local",
+  "repositories": {
+    "workspace": {
+      "revision_type": "local_dirty_checkpoint",
+      "base_sha": "df55c982ecf6741808536bfb6af308cc737372cf",
+      "candidate_sha": null,
+      "owned_paths": [],
+      "owned_path_manifest_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "binary_tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "dirty_counts": {
+        "tracked_modified": 0,
+        "tracked_added": 0,
+        "tracked_deleted": 0,
+        "tracked_renamed": 0,
+        "tracked_copied": 0,
+        "unmerged": 0,
+        "untracked": 0,
+        "total": 0
+      },
+      "candidate_commit_required_before_gate_4": true
+    },
+    "app": {
+      "revision_type": "local_dirty_checkpoint",
+      "base_sha": "78681eac73c79e6534031fe1f050966edff9b844",
+      "candidate_sha": null,
+      "owned_paths": [
+        "apps/web/src/app/admin/trr-shows/[showId]/page.tsx",
+        "apps/web/src/components/admin/ShowBatchRoleModals.tsx",
+        "apps/web/src/components/admin/ShowBravoSyncModal.tsx",
+        "apps/web/src/components/admin/ShowBravoSyncPreviewStep.tsx",
+        "apps/web/src/components/admin/ShowHealthCenterModal.tsx",
+        "apps/web/src/components/admin/ShowLinkBadges.tsx",
+        "apps/web/src/components/admin/ShowLinksDiscoveryModal.tsx",
+        "apps/web/src/components/admin/show-tabs/FeaturedLogoDrawer.tsx",
+        "apps/web/src/components/admin/show-tabs/ShowAssetsTab.tsx",
+        "apps/web/src/components/admin/show-tabs/ShowBrandLogosSection.tsx",
+        "apps/web/src/components/admin/show-tabs/ShowCastTab.tsx",
+        "apps/web/src/components/admin/show-tabs/ShowOverviewTab.tsx",
+        "apps/web/src/components/admin/show-tabs/ShowSettingsTab.tsx",
+        "apps/web/src/components/admin/show-tabs/show-logo-types.ts",
+        "apps/web/src/lib/admin/show-page/show-detail-utilities.ts",
+        "apps/web/src/lib/admin/show-page/show-link-display-model.ts",
+        "apps/web/src/lib/admin/show-page/workspace-model.ts",
+        "apps/web/tests/brands-logo-sync-wiring.test.ts",
+        "apps/web/tests/bravotv-image-run-panel-wiring.test.ts",
+        "apps/web/tests/cast-incremental-render.test.tsx",
+        "apps/web/tests/gallery-fallback-telemetry.test.ts",
+        "apps/web/tests/show-assets-tab-wiring.test.ts",
+        "apps/web/tests/show-assets-tab.test.tsx",
+        "apps/web/tests/show-autocrop-wiring.test.ts",
+        "apps/web/tests/show-batch-role-modals-wiring.test.ts",
+        "apps/web/tests/show-batch-role-modals.test.tsx",
+        "apps/web/tests/show-bravo-cast-only-preview-details.test.ts",
+        "apps/web/tests/show-bravo-cast-only-wiring.test.ts",
+        "apps/web/tests/show-bravo-fandom-integration-wiring.test.ts",
+        "apps/web/tests/show-bravo-sync-modal-wiring.test.ts",
+        "apps/web/tests/show-bravo-sync-modal.test.tsx",
+        "apps/web/tests/show-cast-lazy-loading-wiring.test.ts",
+        "apps/web/tests/show-cast-tab.test.tsx",
+        "apps/web/tests/show-detail-utilities.test.ts",
+        "apps/web/tests/show-featured-image-validation-route.test.ts",
+        "apps/web/tests/show-gallery-batch-preflight.test.ts",
+        "apps/web/tests/show-gallery-section-visibility.test.ts",
+        "apps/web/tests/show-health-center-modal.test.tsx",
+        "apps/web/tests/show-link-badges.test.tsx",
+        "apps/web/tests/show-link-display-model.test.ts",
+        "apps/web/tests/show-links-discovery-modal-wiring.test.ts",
+        "apps/web/tests/show-links-discovery-modal.test.tsx",
+        "apps/web/tests/show-news-tab-google-wiring.test.ts",
+        "apps/web/tests/show-overview-tab.test.tsx",
+        "apps/web/tests/show-refresh-health-center-wiring.test.ts",
+        "apps/web/tests/show-settings-tab-wiring.test.ts",
+        "apps/web/tests/show-settings-tab.test.tsx",
+        "apps/web/tests/show-workspace-model.test.ts"
+      ],
+      "owned_path_manifest_sha256": "c525e0ef841f711d69ecddb5b5f8a040d39a66b4f50c88843de6abaaa3ee5822",
+      "binary_tracked_diff_sha256": "d41058af5c9ee6e3a141de4568e26888fd29fdda924585c463888589cd09a6ac",
+      "dirty_counts": {
+        "tracked_modified": 21,
+        "tracked_added": 0,
+        "tracked_deleted": 0,
+        "tracked_renamed": 0,
+        "tracked_copied": 0,
+        "unmerged": 0,
+        "untracked": 27,
+        "total": 48
+      },
+      "candidate_commit_required_before_gate_4": true
+    },
+    "backend": {
+      "revision_type": "local_dirty_checkpoint",
+      "base_sha": "0a3d2b59ec29304fb2765fd8cf996032e11c937b",
+      "candidate_sha": null,
+      "owned_paths": [],
+      "owned_path_manifest_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "binary_tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "dirty_counts": {
+        "tracked_modified": 0,
+        "tracked_added": 0,
+        "tracked_deleted": 0,
+        "tracked_renamed": 0,
+        "tracked_copied": 0,
+        "unmerged": 0,
+        "untracked": 0,
+        "total": 0
+      },
+      "candidate_commit_required_before_gate_4": true
+    }
+  },
+  "owned_paths": [
+    {
+      "repository": "app",
+      "path": "apps/web/src/app/admin/trr-shows/[showId]/page.tsx",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/components/admin/ShowBatchRoleModals.tsx",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/components/admin/ShowBravoSyncModal.tsx",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/components/admin/ShowBravoSyncPreviewStep.tsx",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/components/admin/ShowHealthCenterModal.tsx",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/components/admin/ShowLinkBadges.tsx",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/components/admin/ShowLinksDiscoveryModal.tsx",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/components/admin/show-tabs/FeaturedLogoDrawer.tsx",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/components/admin/show-tabs/ShowAssetsTab.tsx",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/components/admin/show-tabs/ShowBrandLogosSection.tsx",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/components/admin/show-tabs/ShowCastTab.tsx",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/components/admin/show-tabs/ShowOverviewTab.tsx",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/components/admin/show-tabs/ShowSettingsTab.tsx",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/components/admin/show-tabs/show-logo-types.ts",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/lib/admin/show-page/show-detail-utilities.ts",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/lib/admin/show-page/show-link-display-model.ts",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/lib/admin/show-page/workspace-model.ts",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/brands-logo-sync-wiring.test.ts",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/bravotv-image-run-panel-wiring.test.ts",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/cast-incremental-render.test.tsx",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/gallery-fallback-telemetry.test.ts",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/show-assets-tab-wiring.test.ts",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/show-assets-tab.test.tsx",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/show-autocrop-wiring.test.ts",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/show-batch-role-modals-wiring.test.ts",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/show-batch-role-modals.test.tsx",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/show-bravo-cast-only-preview-details.test.ts",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/show-bravo-cast-only-wiring.test.ts",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/show-bravo-fandom-integration-wiring.test.ts",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/show-bravo-sync-modal-wiring.test.ts",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/show-bravo-sync-modal.test.tsx",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/show-cast-lazy-loading-wiring.test.ts",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/show-cast-tab.test.tsx",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/show-detail-utilities.test.ts",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/show-featured-image-validation-route.test.ts",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/show-gallery-batch-preflight.test.ts",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/show-gallery-section-visibility.test.ts",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/show-health-center-modal.test.tsx",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/show-link-badges.test.tsx",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/show-link-display-model.test.ts",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/show-links-discovery-modal-wiring.test.ts",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/show-links-discovery-modal.test.tsx",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/show-news-tab-google-wiring.test.ts",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/show-overview-tab.test.tsx",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/show-refresh-health-center-wiring.test.ts",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/show-settings-tab-wiring.test.ts",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/show-settings-tab.test.tsx",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/show-workspace-model.test.ts",
+      "task_id": 4,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    }
+  ],
+  "contracts": {
+    "openapi_sha256": null,
+    "generated_types_sha256": null,
+    "compatibility_matrix": [
+      {
+        "app_revision": "N",
+        "backend_revision": "N",
+        "status": "not_applicable",
+        "evidence_ids": []
+      },
+      {
+        "app_revision": "N",
+        "backend_revision": "N+1",
+        "status": "not_applicable",
+        "evidence_ids": []
+      },
+      {
+        "app_revision": "N+1",
+        "backend_revision": "N",
+        "status": "not_applicable",
+        "evidence_ids": []
+      },
+      {
+        "app_revision": "N+1",
+        "backend_revision": "N+1",
+        "status": "not_applicable",
+        "evidence_ids": []
+      }
+    ]
+  },
+  "migrations": {
+    "expected_pending": [],
+    "backfill": {
+      "required": false,
+      "idempotent": true,
+      "resumable": true,
+      "batch_size": null,
+      "validation": {
+        "row_counts": false,
+        "checksums": false,
+        "evidence_ids": []
+      }
+    },
+    "rls_grants": {
+      "expected_change": false,
+      "evidence_ids": []
+    }
+  },
+  "direct_sql_delta": {
+    "status": "not_applicable",
+    "before": null,
+    "after": null,
+    "delta": 0,
+    "evidence_ids": []
+  },
+  "targets": {
+    "preview": {
+      "status": "pending_gate_4",
+      "database_url_env": "TRR_PREVIEW_DATABASE_URL",
+      "project_ref_env": "TRR_PREVIEW_SUPABASE_PROJECT_REF"
+    },
+    "production": {
+      "status": "pending_gate_4",
+      "database_url_env": "TRR_PRODUCTION_DATABASE_URL",
+      "project_ref": "vwxfvzutyufrkhfgoeaa"
+    }
+  },
+  "affected": {
+    "routes": [
+      "/admin/trr-shows/{show_id}"
+    ],
+    "jobs": [],
+    "schedules": [],
+    "data_sets": [],
+    "aliases": []
+  },
+  "validation": {
+    "quick": {
+      "status": "pass",
+      "evidence_ids": [
+        "ev.local-show-presentation-extractions.app-focused"
+      ]
+    },
+    "full": {
+      "status": "pending",
+      "evidence_ids": []
+    },
+    "app_build": {
+      "status": "pending_gate_4",
+      "current_chat_approval_id": null,
+      "evidence_ids": []
+    },
+    "browser": {
+      "status": "pending_gate_4",
+      "evidence_ids": []
+    },
+    "evidence_ids": [
+      "ev.local-show-presentation-extractions.app-focused"
+    ]
+  },
+  "deployments": {
+    "render": {
+      "status": "pending_gate_4",
+      "service_id": "srv-d6phk5vkijhs73fcsk7g",
+      "candidate_sha": null,
+      "deployment_id": null,
+      "previous_deployment_id": null,
+      "direct_url": "https://trr-backend-api.onrender.com",
+      "evidence_ids": []
+    },
+    "modal": {
+      "status": "pending_gate_4",
+      "profile": "admin-56995",
+      "workspace": "admin-56995",
+      "app_name": "trr-backend-jobs",
+      "app_ref": "trr_backend.modal_jobs",
+      "candidate_sha": null,
+      "affected_functions": [],
+      "evidence_ids": []
+    },
+    "vercel": {
+      "status": "pending_gate_4",
+      "team_id": "team_EUsG2kN9TAvVDGOu4yZVEoCX",
+      "project_id": "prj_MHpStkwr26rV5kjt0f80zqhwZpAs",
+      "candidate_sha": null,
+      "deployment_id": null,
+      "previous_deployment_id": null,
+      "aliases": [
+        "https://trr-app.vercel.app"
+      ],
+      "evidence_ids": []
+    }
+  },
+  "rollback": {
+    "backend_commands": [
+      [
+        "scripts/render-trr.sh",
+        "rollback",
+        "--service-id",
+        "srv-d6phk5vkijhs73fcsk7g",
+        "--deploy-id",
+        "<gate-4-previous-deploy-id>",
+        "--commit",
+        "<gate-4-candidate-backend-sha>"
+      ],
+      [
+        "scripts/modal-trr.sh",
+        "rollback",
+        "--version",
+        "<gate-4-previous-version>",
+        "--dry-run"
+      ]
+    ],
+    "app_commands": [
+      [
+        "TRR-APP/scripts/vercel.sh",
+        "rollback-trr",
+        "--deployment",
+        "<gate-4-previous-deployment>",
+        "--dry-run"
+      ]
+    ],
+    "data_recovery": "No migration or data mutation was performed by this local checkpoint.",
+    "evidence_ids": []
+  },
+  "observation": {
+    "baselines": [
+      {
+        "name": "affected_route_5xx",
+        "value": 0,
+        "unit": "percent",
+        "window": "15m",
+        "evidence_ids": []
+      }
+    ],
+    "abort_thresholds": [
+      {
+        "name": "affected_route_5xx",
+        "value": 1,
+        "unit": "percent",
+        "window": "15m",
+        "evidence_ids": []
+      }
+    ],
+    "active_canary_minutes": 30,
+    "passive_monitoring_hours": 24,
+    "gate5_minimum_days": 7,
+    "status": "not_started"
+  },
+  "review": {
+    "verdict": "accepted_local",
+    "reviewers": [
+      "r0-b-checkpoint-revalidation"
+    ],
+    "basis": "REVISED_PLAN.v5 records independent local acceptance; current focused checks also pass.",
+    "evidence_ids": [
+      "ev.local-show-presentation-extractions.app-focused"
+    ]
+  },
+  "gate_4": {
+    "candidate_commits": "pending_gate_4",
+    "preview": "pending_gate_4",
+    "production": "pending_gate_4",
+    "app_build": "pending_gate_4",
+    "browser": "pending_gate_4",
+    "deployments": "pending_gate_4"
+  },
+  "approvals": []
+}

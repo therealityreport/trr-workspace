@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "evidence_id": "ev.local-season-survey-roles.backend-focused",
+  "packet_id": "local-season-survey-roles",
+  "gate": "gate-0",
+  "truth_scope": "local",
+  "command": {
+    "argv": [
+      ".venv/bin/python",
+      "-m",
+      "pytest",
+      "-q",
+      "tests/migrations/test_admin_season_cast_survey_roles.py",
+      "tests/repositories/test_season_cast_survey_roles.py",
+      "tests/api/routers/test_v2_admin_season_cast_survey_roles.py",
+      "tests/api/test_internal_admin_openapi.py"
+    ],
+    "cwd": "/Users/thomashulihan/Projects/TRR/TRR-Backend",
+    "mutating": false,
+    "environment_variable_names": []
+  },
+  "started_at": "2026-07-16T20:45:53.045645Z",
+  "finished_at": "2026-07-16T20:45:57.574592Z",
+  "exit_code": 0,
+  "expected_result": "Season survey-role migration, repository, route, and OpenAPI tests pass.",
+  "result": "pass",
+  "output": {
+    "sha256": "27168b5d2b8123118f971916c39333aaa3a50766c5f442a11908d6da9eb058f0",
+    "size_bytes": 99,
+    "stored_path": null
+  },
+  "artifacts": [],
+  "target_observations": [
+    {
+      "target_type": "repository",
+      "target_id": "backend",
+      "observed_at": "2026-07-16T20:45:57.574592Z",
+      "status": "pass",
+      "facts": [
+        {
+          "name": "test.count",
+          "value": 21
+        }
+      ]
+    }
+  ],
+  "approval": {
+    "required": false,
+    "approval_id": null,
+    "status": "not_required",
+    "current_chat": false
+  },
+  "redaction": {
+    "status": "verified_clean",
+    "scanner": "scripts/architecture/check-release-manifests.py",
+    "safe_to_store": true,
+    "credential_values_included": false,
+    "environment_values_included": false
+  }
+}

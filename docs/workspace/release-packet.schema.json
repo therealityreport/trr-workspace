@@ -1,0 +1,839 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://thereality.report/schemas/release-packet.schema.json",
+  "title": "TRR architecture release packet",
+  "description": "Secret-free contract for one serialized TRR architecture release packet.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "packet_id",
+    "capability",
+    "created_at",
+    "updated_at",
+    "state",
+    "truth_scope",
+    "repositories",
+    "owned_paths",
+    "contracts",
+    "migrations",
+    "direct_sql_delta",
+    "targets",
+    "affected",
+    "validation",
+    "deployments",
+    "rollback",
+    "observation",
+    "review",
+    "gate_4",
+    "approvals"
+  ],
+  "properties": {
+    "schema_version": {
+      "enum": [2, 3]
+    },
+    "packet_id": {
+      "$ref": "#/$defs/identifier"
+    },
+    "capability": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "created_at": {
+      "$ref": "#/$defs/timestamp"
+    },
+    "updated_at": {
+      "$ref": "#/$defs/timestamp"
+    },
+    "state": {
+      "enum": [
+        "draft",
+        "in_progress",
+        "implementation_complete_parked",
+        "approved_for_cutover",
+        "cutover_in_progress",
+        "cutover_complete_observing",
+        "program_complete",
+        "rolled_back",
+        "blocked"
+      ]
+    },
+    "truth_scope": {
+      "description": "Exactly one truth scope. Local proof never substitutes for preview or production proof.",
+      "enum": ["local", "preview", "production"]
+    },
+    "repositories": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["workspace", "app", "backend"],
+      "properties": {
+        "workspace": {
+          "$ref": "#/$defs/repositoryRevision"
+        },
+        "app": {
+          "$ref": "#/$defs/repositoryRevision"
+        },
+        "backend": {
+          "$ref": "#/$defs/repositoryRevision"
+        }
+      }
+    },
+    "owned_paths": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/ownedPath"
+      }
+    },
+    "supersedes": {
+      "description": "Version 3 packets explicitly transfer current ownership of overlapping paths from earlier packets. Historical packet provenance remains immutable.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/supersession"
+      }
+    },
+    "contracts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["openapi_sha256", "generated_types_sha256", "compatibility_matrix"],
+      "properties": {
+        "openapi_sha256": {
+          "$ref": "#/$defs/nullableSha256"
+        },
+        "generated_types_sha256": {
+          "$ref": "#/$defs/nullableSha256"
+        },
+        "compatibility_matrix": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/compatibilityCase"
+          }
+        }
+      }
+    },
+    "migrations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["expected_pending", "backfill", "rls_grants"],
+      "properties": {
+        "expected_pending": {
+          "description": "One ordered migration set shared by preview and production.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/expectedMigration"
+          }
+        },
+        "backfill": {
+          "$ref": "#/$defs/backfillPlan"
+        },
+        "rls_grants": {
+          "$ref": "#/$defs/rlsGrantPlan"
+        }
+      }
+    },
+    "direct_sql_delta": {
+      "$ref": "#/$defs/directSqlDelta"
+    },
+    "targets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["preview", "production"],
+      "properties": {
+        "preview": {
+          "$ref": "#/$defs/databaseTarget"
+        },
+        "production": {
+          "$ref": "#/$defs/databaseTarget"
+        }
+      }
+    },
+    "affected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["routes", "jobs", "schedules", "data_sets", "aliases"],
+      "properties": {
+        "routes": {
+          "$ref": "#/$defs/uniqueStringArray"
+        },
+        "jobs": {
+          "$ref": "#/$defs/uniqueStringArray"
+        },
+        "schedules": {
+          "$ref": "#/$defs/uniqueStringArray"
+        },
+        "data_sets": {
+          "$ref": "#/$defs/uniqueStringArray"
+        },
+        "aliases": {
+          "$ref": "#/$defs/uniqueStringArray"
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["quick", "full", "app_build", "browser", "evidence_ids"],
+      "properties": {
+        "quick": {
+          "$ref": "#/$defs/validationStage"
+        },
+        "full": {
+          "$ref": "#/$defs/validationStage"
+        },
+        "app_build": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "current_chat_approval_id", "evidence_ids"],
+          "properties": {
+            "status": {
+              "enum": [
+                "pending_gate_4",
+                "not_requested",
+                "approved_pending",
+                "passed",
+                "failed",
+                "skipped_no_current_chat_approval"
+              ]
+            },
+            "current_chat_approval_id": {
+              "anyOf": [
+                {"type": "string", "maxLength": 200},
+                {"type": "null"}
+              ]
+            },
+            "evidence_ids": {
+              "$ref": "#/$defs/uniqueStringArray"
+            }
+          }
+        },
+        "browser": {
+          "$ref": "#/$defs/validationStage"
+        },
+        "evidence_ids": {
+          "$ref": "#/$defs/uniqueStringArray"
+        }
+      }
+    },
+    "deployments": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["render", "modal", "vercel"],
+      "properties": {
+        "render": {
+          "$ref": "#/$defs/renderDeployment"
+        },
+        "modal": {
+          "$ref": "#/$defs/modalDeployment"
+        },
+        "vercel": {
+          "$ref": "#/$defs/vercelDeployment"
+        }
+      }
+    },
+    "rollback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["backend_commands", "app_commands", "data_recovery", "evidence_ids"],
+      "properties": {
+        "backend_commands": {
+          "$ref": "#/$defs/commandList"
+        },
+        "app_commands": {
+          "$ref": "#/$defs/commandList"
+        },
+        "data_recovery": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "evidence_ids": {
+          "$ref": "#/$defs/uniqueStringArray"
+        }
+      }
+    },
+    "observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "baselines",
+        "abort_thresholds",
+        "active_canary_minutes",
+        "passive_monitoring_hours",
+        "gate5_minimum_days",
+        "status"
+      ],
+      "properties": {
+        "baselines": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/metric"
+          }
+        },
+        "abort_thresholds": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/metric"
+          }
+        },
+        "active_canary_minutes": {
+          "type": "integer",
+          "minimum": 30
+        },
+        "passive_monitoring_hours": {
+          "type": "integer",
+          "minimum": 24
+        },
+        "gate5_minimum_days": {
+          "type": "integer",
+          "minimum": 7
+        },
+        "started_at": {
+          "$ref": "#/$defs/nullableTimestamp"
+        },
+        "ends_at": {
+          "$ref": "#/$defs/nullableTimestamp"
+        },
+        "status": {
+          "enum": ["not_started", "active", "passed", "aborted", "rolled_back"]
+        }
+      }
+    },
+    "review": {
+      "$ref": "#/$defs/review"
+    },
+    "gate_4": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_commits",
+        "preview",
+        "production",
+        "app_build",
+        "browser",
+        "deployments"
+      ],
+      "properties": {
+        "candidate_commits": {"$ref": "#/$defs/gate4ProofStatus"},
+        "preview": {"$ref": "#/$defs/gate4ProofStatus"},
+        "production": {"$ref": "#/$defs/gate4ProofStatus"},
+        "app_build": {"$ref": "#/$defs/gate4ProofStatus"},
+        "browser": {"$ref": "#/$defs/gate4ProofStatus"},
+        "deployments": {"$ref": "#/$defs/gate4ProofStatus"}
+      }
+    },
+    "approvals": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/approval"
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"schema_version": {"const": 3}},
+        "required": ["schema_version"]
+      },
+      "then": {
+        "required": ["supersedes"]
+      }
+    },
+    {
+      "if": {
+        "properties": {"schema_version": {"const": 2}},
+        "required": ["schema_version"]
+      },
+      "then": {
+        "properties": {"supersedes": {"maxItems": 0}}
+      }
+    }
+  ],
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]{2,127}$"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "nullableTimestamp": {
+      "anyOf": [
+        {"$ref": "#/$defs/timestamp"},
+        {"type": "null"}
+      ]
+    },
+    "gitSha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "nullableGitSha": {
+      "anyOf": [
+        {"$ref": "#/$defs/gitSha"},
+        {"type": "null"}
+      ]
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "nullableSha256": {
+      "anyOf": [
+        {"$ref": "#/$defs/sha256"},
+        {"type": "null"}
+      ]
+    },
+    "uniqueStringArray": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 500
+      }
+    },
+    "repositoryRevision": {
+      "oneOf": [
+        {"$ref": "#/$defs/localDirtyCheckpoint"},
+        {"$ref": "#/$defs/committedCandidate"}
+      ]
+    },
+    "dirtyCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tracked_modified",
+        "tracked_added",
+        "tracked_deleted",
+        "tracked_renamed",
+        "tracked_copied",
+        "unmerged",
+        "untracked",
+        "total"
+      ],
+      "properties": {
+        "tracked_modified": {"type": "integer", "minimum": 0},
+        "tracked_added": {"type": "integer", "minimum": 0},
+        "tracked_deleted": {"type": "integer", "minimum": 0},
+        "tracked_renamed": {"type": "integer", "minimum": 0},
+        "tracked_copied": {"type": "integer", "minimum": 0},
+        "unmerged": {"type": "integer", "minimum": 0},
+        "untracked": {"type": "integer", "minimum": 0},
+        "total": {"type": "integer", "minimum": 0}
+      }
+    },
+    "repositoryOwnedPaths": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1000,
+        "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+      }
+    },
+    "localDirtyCheckpoint": {
+      "description": "Deterministic dirty-tree provenance. The owned-path digest hashes sorted UTF-8 records path NUL mode NUL content-sha256 newline; missing tracked paths use mode 000000 and SHA-256 of empty bytes. The binary diff digest hashes exact git diff --binary --full-index --no-ext-diff --no-renames <base_sha> output for the owned paths; untracked contents are represented by the owned-path digest.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision_type",
+        "base_sha",
+        "candidate_sha",
+        "owned_paths",
+        "owned_path_manifest_sha256",
+        "binary_tracked_diff_sha256",
+        "dirty_counts",
+        "candidate_commit_required_before_gate_4"
+      ],
+      "properties": {
+        "revision_type": {"const": "local_dirty_checkpoint"},
+        "base_sha": {"$ref": "#/$defs/gitSha"},
+        "candidate_sha": {"type": "null"},
+        "owned_paths": {"$ref": "#/$defs/repositoryOwnedPaths"},
+        "owned_path_manifest_sha256": {"$ref": "#/$defs/sha256"},
+        "binary_tracked_diff_sha256": {"$ref": "#/$defs/sha256"},
+        "dirty_counts": {"$ref": "#/$defs/dirtyCounts"},
+        "candidate_commit_required_before_gate_4": {"const": true}
+      }
+    },
+    "committedCandidate": {
+      "description": "A Gate 4-ready repository revision. candidate_sha is a real commit and the working tree is clean for the owned paths.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision_type",
+        "base_sha",
+        "candidate_sha",
+        "owned_paths",
+        "owned_path_manifest_sha256",
+        "binary_tracked_diff_sha256",
+        "dirty_counts",
+        "candidate_commit_required_before_gate_4"
+      ],
+      "properties": {
+        "revision_type": {"const": "committed_candidate"},
+        "base_sha": {"$ref": "#/$defs/gitSha"},
+        "candidate_sha": {"$ref": "#/$defs/gitSha"},
+        "owned_paths": {"$ref": "#/$defs/repositoryOwnedPaths"},
+        "owned_path_manifest_sha256": {"$ref": "#/$defs/sha256"},
+        "binary_tracked_diff_sha256": {"$ref": "#/$defs/sha256"},
+        "dirty_counts": {"$ref": "#/$defs/dirtyCounts"},
+        "candidate_commit_required_before_gate_4": {"const": false}
+      }
+    },
+    "ownedPath": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "path", "task_id", "reviewers"],
+      "properties": {
+        "repository": {
+          "enum": ["workspace", "app", "backend"]
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "task_id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "reviewers": {
+          "$ref": "#/$defs/uniqueStringArray"
+        }
+      }
+    },
+    "supersession": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["packet_id", "repository", "paths", "retained_path_records"],
+      "properties": {
+        "packet_id": {"$ref": "#/$defs/identifier"},
+        "repository": {
+          "enum": ["workspace", "app", "backend"]
+        },
+        "paths": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+          }
+        },
+        "retained_path_records": {
+          "description": "Per-path record digests for predecessor-owned paths that remain live after this handoff.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/retainedPathRecord"
+          }
+        }
+      }
+    },
+    "retainedPathRecord": {
+      "description": "Authenticates one still-live predecessor path. record_sha256 hashes the canonical path NUL mode NUL content-sha256 newline record used by owned_path_manifest_sha256.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "record_sha256"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+        },
+        "record_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "compatibilityCase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["app_revision", "backend_revision", "status", "evidence_ids"],
+      "properties": {
+        "app_revision": {
+          "enum": ["N", "N+1"]
+        },
+        "backend_revision": {
+          "enum": ["N", "N+1"]
+        },
+        "status": {
+          "enum": ["pending", "pass", "fail", "not_applicable"]
+        },
+        "evidence_ids": {
+          "$ref": "#/$defs/uniqueStringArray"
+        }
+      }
+    },
+    "expectedMigration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "sha256"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          "maxLength": 200
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "databaseTarget": {
+      "description": "Exactly one project identity source is allowed. Runtime validation resolves it and requires the database URL to identify the same project.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "database_url_env"],
+      "oneOf": [
+        {
+          "properties": {"project_ref": {"type": "string", "minLength": 1}},
+          "required": ["project_ref"]
+        },
+        {
+          "properties": {"project_ref_env": {"type": "string", "minLength": 1}},
+          "required": ["project_ref_env"]
+        }
+      ],
+      "properties": {
+        "status": {
+          "enum": ["pending_gate_4", "verified", "blocked", "not_applicable"]
+        },
+        "database_url_env": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$"
+        },
+        "project_ref": {
+          "type": "string",
+          "pattern": "^[a-z0-9]{20}$"
+        },
+        "project_ref_env": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$"
+        }
+      }
+    },
+    "backfillPlan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required", "idempotent", "resumable", "batch_size", "validation"],
+      "properties": {
+        "required": {"type": "boolean"},
+        "idempotent": {"type": "boolean"},
+        "resumable": {"type": "boolean"},
+        "batch_size": {
+          "anyOf": [
+            {"type": "integer", "minimum": 1},
+            {"type": "null"}
+          ]
+        },
+        "validation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["row_counts", "checksums", "evidence_ids"],
+          "properties": {
+            "row_counts": {"type": "boolean"},
+            "checksums": {"type": "boolean"},
+            "evidence_ids": {"$ref": "#/$defs/uniqueStringArray"}
+          }
+        }
+      }
+    },
+    "rlsGrantPlan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["expected_change", "evidence_ids"],
+      "properties": {
+        "expected_change": {"type": "boolean"},
+        "evidence_ids": {"$ref": "#/$defs/uniqueStringArray"}
+      }
+    },
+    "directSqlDelta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "before", "after", "delta", "evidence_ids"],
+      "properties": {
+        "status": {
+          "enum": ["observed", "not_applicable", "pending_local_measurement"]
+        },
+        "before": {
+          "anyOf": [
+            {"type": "integer", "minimum": 0},
+            {"type": "null"}
+          ]
+        },
+        "after": {
+          "anyOf": [
+            {"type": "integer", "minimum": 0},
+            {"type": "null"}
+          ]
+        },
+        "delta": {
+          "anyOf": [
+            {"type": "integer"},
+            {"type": "null"}
+          ]
+        },
+        "evidence_ids": {"$ref": "#/$defs/uniqueStringArray"}
+      }
+    },
+    "validationStage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "evidence_ids"],
+      "properties": {
+        "status": {
+          "enum": ["pending_gate_4", "pending", "pass", "fail", "blocked", "not_applicable"]
+        },
+        "evidence_ids": {
+          "$ref": "#/$defs/uniqueStringArray"
+        }
+      }
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["verdict", "reviewers", "basis", "evidence_ids"],
+      "properties": {
+        "verdict": {
+          "enum": ["accepted_local", "accepted_with_follow_up", "pending", "rejected"]
+        },
+        "reviewers": {"$ref": "#/$defs/uniqueStringArray"},
+        "basis": {"type": "string", "minLength": 1, "maxLength": 2000},
+        "evidence_ids": {"$ref": "#/$defs/uniqueStringArray"}
+      }
+    },
+    "gate4ProofStatus": {
+      "enum": ["pending_gate_4", "approved", "verified", "blocked", "not_applicable"]
+    },
+    "deploymentStatus": {
+      "enum": ["pending_gate_4", "planned", "deployed", "verified", "rolled_back", "blocked", "not_applicable"]
+    },
+    "renderDeployment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "service_id", "candidate_sha", "deployment_id", "previous_deployment_id", "direct_url", "evidence_ids"],
+      "properties": {
+        "status": {"$ref": "#/$defs/deploymentStatus"},
+        "service_id": {"type": "string", "minLength": 1, "maxLength": 200},
+        "candidate_sha": {"$ref": "#/$defs/nullableGitSha"},
+        "deployment_id": {
+          "anyOf": [
+            {"type": "string", "maxLength": 200},
+            {"type": "null"}
+          ]
+        },
+        "previous_deployment_id": {
+          "anyOf": [
+            {"type": "string", "maxLength": 200},
+            {"type": "null"}
+          ]
+        },
+        "direct_url": {"type": "string", "format": "uri", "pattern": "^https://"},
+        "evidence_ids": {"$ref": "#/$defs/uniqueStringArray"}
+      }
+    },
+    "modalDeployment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "profile", "workspace", "app_name", "app_ref", "candidate_sha", "affected_functions", "evidence_ids"],
+      "properties": {
+        "status": {"$ref": "#/$defs/deploymentStatus"},
+        "profile": {"type": "string", "minLength": 1, "maxLength": 200},
+        "workspace": {"type": "string", "minLength": 1, "maxLength": 200},
+        "app_name": {"type": "string", "minLength": 1, "maxLength": 200},
+        "app_ref": {"type": "string", "minLength": 1, "maxLength": 300},
+        "candidate_sha": {"$ref": "#/$defs/nullableGitSha"},
+        "affected_functions": {"$ref": "#/$defs/uniqueStringArray"},
+        "evidence_ids": {"$ref": "#/$defs/uniqueStringArray"}
+      }
+    },
+    "vercelDeployment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "team_id", "project_id", "candidate_sha", "deployment_id", "previous_deployment_id", "aliases", "evidence_ids"],
+      "properties": {
+        "status": {"$ref": "#/$defs/deploymentStatus"},
+        "team_id": {"type": "string", "minLength": 1, "maxLength": 200},
+        "project_id": {"type": "string", "minLength": 1, "maxLength": 200},
+        "candidate_sha": {"$ref": "#/$defs/nullableGitSha"},
+        "deployment_id": {
+          "anyOf": [
+            {"type": "string", "maxLength": 200},
+            {"type": "null"}
+          ]
+        },
+        "previous_deployment_id": {
+          "anyOf": [
+            {"type": "string", "maxLength": 200},
+            {"type": "null"}
+          ]
+        },
+        "aliases": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "format": "uri", "pattern": "^https://"}
+        },
+        "evidence_ids": {"$ref": "#/$defs/uniqueStringArray"}
+      }
+    },
+    "commandList": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "minItems": 1,
+        "items": {"type": "string", "minLength": 1, "maxLength": 500}
+      }
+    },
+    "metric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "value", "unit", "window", "evidence_ids"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1, "maxLength": 200},
+        "value": {
+          "anyOf": [
+            {"type": "number"},
+            {"type": "string"},
+            {"type": "boolean"}
+          ]
+        },
+        "unit": {"type": "string", "minLength": 1, "maxLength": 100},
+        "window": {"type": "string", "minLength": 1, "maxLength": 200},
+        "evidence_ids": {"$ref": "#/$defs/uniqueStringArray"}
+      }
+    },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["approval_id", "kind", "status", "scope", "approved_by", "approved_at"],
+      "properties": {
+        "approval_id": {"$ref": "#/$defs/identifier"},
+        "kind": {
+          "enum": ["full_app_build", "production_mutation", "schema_contraction", "git_metadata_move", "gate5_cleanup"]
+        },
+        "status": {"enum": ["pending", "approved", "denied", "expired"]},
+        "scope": {"type": "string", "minLength": 1, "maxLength": 1000},
+        "approved_by": {
+          "anyOf": [
+            {"type": "string", "maxLength": 200},
+            {"type": "null"}
+          ]
+        },
+        "approved_at": {"$ref": "#/$defs/nullableTimestamp"}
+      }
+    }
+  }
+}
