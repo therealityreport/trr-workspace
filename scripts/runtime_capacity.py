@@ -195,11 +195,101 @@ def _modal_defaults() -> dict[str, str]:
     raise CapacityContractError("unable to locate _CANONICAL_MODAL_RUNTIME_DEFAULTS")
 
 
+def validate_social_dispatch_fallback(
+    payload: dict[str, Any],
+    *,
+    implementation_path: Path | None = None,
+) -> None:
+    path = implementation_path or (
+        ROOT
+        / "TRR-Backend"
+        / "trr_backend"
+        / "socials"
+        / "social_season_analytics_impl.py"
+    )
+    try:
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    except (OSError, SyntaxError) as exc:
+        raise CapacityContractError(
+            f"unable to inspect social dispatch fallback in {path}: {exc}"
+        ) from exc
+
+    fallback_value: Any = None
+    dispatch_function: ast.FunctionDef | ast.AsyncFunctionDef | None = None
+    for node in tree.body:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            if node.name == "_modal_dispatch_limit":
+                dispatch_function = node
+            continue
+        value_node: ast.expr | None = None
+        if isinstance(node, ast.Assign) and any(
+            isinstance(target, ast.Name)
+            and target.id == "SOCIAL_MODAL_DISPATCH_LIMIT_DEFAULT"
+            for target in node.targets
+        ):
+            value_node = node.value
+        elif (
+            isinstance(node, ast.AnnAssign)
+            and isinstance(node.target, ast.Name)
+            and node.target.id == "SOCIAL_MODAL_DISPATCH_LIMIT_DEFAULT"
+        ):
+            value_node = node.value
+        if value_node is not None:
+            try:
+                fallback_value = ast.literal_eval(value_node)
+            except (ValueError, TypeError) as exc:
+                raise CapacityContractError(
+                    "SOCIAL_MODAL_DISPATCH_LIMIT_DEFAULT must be a literal integer"
+                ) from exc
+
+    if not isinstance(fallback_value, int) or isinstance(fallback_value, bool):
+        raise CapacityContractError(
+            "unable to locate literal SOCIAL_MODAL_DISPATCH_LIMIT_DEFAULT"
+        )
+    if dispatch_function is None:
+        raise CapacityContractError("unable to locate _modal_dispatch_limit")
+    returned_resolver_calls = [
+        node.value
+        for node in ast.walk(dispatch_function)
+        if isinstance(node, ast.Return)
+        and isinstance(node.value, ast.Call)
+        and isinstance(node.value.func, ast.Name)
+        and node.value.func.id == "_resolve_int_env_with_bounds"
+    ]
+    if not any(
+        len(call.args) >= 2
+        and isinstance(call.args[1], ast.Name)
+        and isinstance(call.args[1].ctx, ast.Load)
+        and call.args[1].id == "SOCIAL_MODAL_DISPATCH_LIMIT_DEFAULT"
+        for call in returned_resolver_calls
+    ):
+        raise CapacityContractError(
+            "_modal_dispatch_limit must pass SOCIAL_MODAL_DISPATCH_LIMIT_DEFAULT to its returned resolver"
+        )
+
+    expected = payload["contexts"]["local_workspace"]["dispatch_batch_size"]
+    if fallback_value != expected:
+        raise CapacityContractError(
+            f"social dispatch fallback {fallback_value} does not match local workspace capacity {expected}"
+        )
+
+
 def validate_projections(payload: dict[str, Any], root: Path = ROOT) -> None:
     contexts = payload["contexts"]
     profile_contexts = payload.get("profile_contexts")
     if not isinstance(profile_contexts, dict):
         raise CapacityContractError("profile_contexts must be an object")
+
+    validate_social_dispatch_fallback(
+        payload,
+        implementation_path=(
+            root
+            / "TRR-Backend"
+            / "trr_backend"
+            / "socials"
+            / "social_season_analytics_impl.py"
+        ),
+    )
 
     for profile_name, context_name in profile_contexts.items():
         profile_path = root / "profiles" / f"{profile_name}.env"

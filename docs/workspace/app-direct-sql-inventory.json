@@ -1,0 +1,2234 @@
+{
+  "schema_version": 1,
+  "generated_by": "scripts/app-direct-sql-inventory.py",
+  "counts": {
+    "total": 145,
+    "app-local": 133,
+    "admin-read-model": 8,
+    "backend-shared-schema": 4
+  },
+  "rows": [
+    {
+      "id": "app-sql-c7f27e6e6b96bb6a",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/admin/season-cast-survey-roles-repository.ts",
+        "line": 48,
+        "symbol": "query",
+        "ordinal": 1,
+        "context": "listSeasonCastSurveyRoles"
+      },
+      "classification": "admin-read-model",
+      "risk": "medium",
+      "excerpt": "const result = await query<SeasonCastSurveyRoleRow>(",
+      "exception": {
+        "id": "app-sql-c7f27e6e6b96bb6a",
+        "source": {
+          "path": "TRR-APP/apps/web/src/lib/server/admin/season-cast-survey-roles-repository.ts",
+          "symbol": "query",
+          "ordinal": 1,
+          "context": "listSeasonCastSurveyRoles"
+        },
+        "classification": "admin-read-model",
+        "durable_owner": "admin-read-model",
+        "execution_owner": "Phase 6 narrow candidate",
+        "reason": "Temporary admin read-model SQL retained until the named FastAPI target is implemented and the Next.js caller is cut over in packet-2-shows-seasons-people-media.",
+        "packet": "packet-2-shows-seasons-people-media",
+        "migration_target": "GET/POST/PATCH/DELETE /api/v2/admin/shows/{show_id}/seasons/{season_number}/cast-survey-roles",
+        "reauthorized_at": "2026-08-05",
+        "review_by": "2026-09-04"
+      }
+    },
+    {
+      "id": "app-sql-c20ae22c707bd616",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/admin/season-cast-survey-roles-repository.ts",
+        "line": 65,
+        "symbol": "withAuthTransaction",
+        "ordinal": 1,
+        "context": "upsertSeasonCastSurveyRole"
+      },
+      "classification": "admin-read-model",
+      "risk": "medium",
+      "excerpt": "return withAuthTransaction(authContext, async (client) => {",
+      "exception": {
+        "id": "app-sql-c20ae22c707bd616",
+        "source": {
+          "path": "TRR-APP/apps/web/src/lib/server/admin/season-cast-survey-roles-repository.ts",
+          "symbol": "withAuthTransaction",
+          "ordinal": 1,
+          "context": "upsertSeasonCastSurveyRole"
+        },
+        "classification": "admin-read-model",
+        "durable_owner": "admin-read-model",
+        "execution_owner": "Phase 6 narrow candidate",
+        "reason": "Temporary admin read-model SQL retained until the named FastAPI target is implemented and the Next.js caller is cut over in packet-2-shows-seasons-people-media.",
+        "packet": "packet-2-shows-seasons-people-media",
+        "migration_target": "GET/POST/PATCH/DELETE /api/v2/admin/shows/{show_id}/seasons/{season_number}/cast-survey-roles",
+        "reauthorized_at": "2026-08-05",
+        "review_by": "2026-09-04"
+      }
+    },
+    {
+      "id": "app-sql-a57e67306a8d8b57",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/admin/season-cast-survey-roles-repository.ts",
+        "line": 66,
+        "symbol": "query",
+        "ordinal": 2,
+        "context": "upsertSeasonCastSurveyRole"
+      },
+      "classification": "admin-read-model",
+      "risk": "medium",
+      "excerpt": "const result = await client.query<SeasonCastSurveyRoleRow>(",
+      "exception": {
+        "id": "app-sql-a57e67306a8d8b57",
+        "source": {
+          "path": "TRR-APP/apps/web/src/lib/server/admin/season-cast-survey-roles-repository.ts",
+          "symbol": "query",
+          "ordinal": 2,
+          "context": "upsertSeasonCastSurveyRole"
+        },
+        "classification": "admin-read-model",
+        "durable_owner": "admin-read-model",
+        "execution_owner": "Phase 6 narrow candidate",
+        "reason": "Temporary admin read-model SQL retained until the named FastAPI target is implemented and the Next.js caller is cut over in packet-2-shows-seasons-people-media.",
+        "packet": "packet-2-shows-seasons-people-media",
+        "migration_target": "GET/POST/PATCH/DELETE /api/v2/admin/shows/{show_id}/seasons/{season_number}/cast-survey-roles",
+        "reauthorized_at": "2026-08-05",
+        "review_by": "2026-09-04"
+      }
+    },
+    {
+      "id": "app-sql-3aea4565ade67990",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/admin/season-cast-survey-roles-repository.ts",
+        "line": 82,
+        "symbol": "withAuthTransaction",
+        "ordinal": 2,
+        "context": "deleteSeasonCastSurveyRole"
+      },
+      "classification": "admin-read-model",
+      "risk": "medium",
+      "excerpt": "return withAuthTransaction(authContext, async (client) => {",
+      "exception": {
+        "id": "app-sql-3aea4565ade67990",
+        "source": {
+          "path": "TRR-APP/apps/web/src/lib/server/admin/season-cast-survey-roles-repository.ts",
+          "symbol": "withAuthTransaction",
+          "ordinal": 2,
+          "context": "deleteSeasonCastSurveyRole"
+        },
+        "classification": "admin-read-model",
+        "durable_owner": "admin-read-model",
+        "execution_owner": "Phase 6 narrow candidate",
+        "reason": "Temporary admin read-model SQL retained until the named FastAPI target is implemented and the Next.js caller is cut over in packet-2-shows-seasons-people-media.",
+        "packet": "packet-2-shows-seasons-people-media",
+        "migration_target": "GET/POST/PATCH/DELETE /api/v2/admin/shows/{show_id}/seasons/{season_number}/cast-survey-roles",
+        "reauthorized_at": "2026-08-05",
+        "review_by": "2026-09-04"
+      }
+    },
+    {
+      "id": "app-sql-4d7870caf813b03a",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/admin/season-cast-survey-roles-repository.ts",
+        "line": 83,
+        "symbol": "query",
+        "ordinal": 3,
+        "context": "deleteSeasonCastSurveyRole"
+      },
+      "classification": "admin-read-model",
+      "risk": "medium",
+      "excerpt": "const result = await client.query(",
+      "exception": {
+        "id": "app-sql-4d7870caf813b03a",
+        "source": {
+          "path": "TRR-APP/apps/web/src/lib/server/admin/season-cast-survey-roles-repository.ts",
+          "symbol": "query",
+          "ordinal": 3,
+          "context": "deleteSeasonCastSurveyRole"
+        },
+        "classification": "admin-read-model",
+        "durable_owner": "admin-read-model",
+        "execution_owner": "Phase 6 narrow candidate",
+        "reason": "Temporary admin read-model SQL retained until the named FastAPI target is implemented and the Next.js caller is cut over in packet-2-shows-seasons-people-media.",
+        "packet": "packet-2-shows-seasons-people-media",
+        "migration_target": "GET/POST/PATCH/DELETE /api/v2/admin/shows/{show_id}/seasons/{season_number}/cast-survey-roles",
+        "reauthorized_at": "2026-08-05",
+        "review_by": "2026-09-04"
+      }
+    },
+    {
+      "id": "app-sql-e64626ab0cdd2cf5",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/admin/season-cast-survey-roles-repository.ts",
+        "line": 98,
+        "symbol": "withAuthTransaction",
+        "ordinal": 3,
+        "context": "replaceSeasonCastSurveyRoles"
+      },
+      "classification": "admin-read-model",
+      "risk": "medium",
+      "excerpt": "return withAuthTransaction(authContext, async (client) => {",
+      "exception": {
+        "id": "app-sql-e64626ab0cdd2cf5",
+        "source": {
+          "path": "TRR-APP/apps/web/src/lib/server/admin/season-cast-survey-roles-repository.ts",
+          "symbol": "withAuthTransaction",
+          "ordinal": 3,
+          "context": "replaceSeasonCastSurveyRoles"
+        },
+        "classification": "admin-read-model",
+        "durable_owner": "admin-read-model",
+        "execution_owner": "Phase 6 narrow candidate",
+        "reason": "Temporary admin read-model SQL retained until the named FastAPI target is implemented and the Next.js caller is cut over in packet-2-shows-seasons-people-media.",
+        "packet": "packet-2-shows-seasons-people-media",
+        "migration_target": "GET/POST/PATCH/DELETE /api/v2/admin/shows/{show_id}/seasons/{season_number}/cast-survey-roles",
+        "reauthorized_at": "2026-08-05",
+        "review_by": "2026-09-04"
+      }
+    },
+    {
+      "id": "app-sql-f070524273584233",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/admin/season-cast-survey-roles-repository.ts",
+        "line": 99,
+        "symbol": "query",
+        "ordinal": 4,
+        "context": "replaceSeasonCastSurveyRoles"
+      },
+      "classification": "admin-read-model",
+      "risk": "medium",
+      "excerpt": "await client.query(",
+      "exception": {
+        "id": "app-sql-f070524273584233",
+        "source": {
+          "path": "TRR-APP/apps/web/src/lib/server/admin/season-cast-survey-roles-repository.ts",
+          "symbol": "query",
+          "ordinal": 4,
+          "context": "replaceSeasonCastSurveyRoles"
+        },
+        "classification": "admin-read-model",
+        "durable_owner": "admin-read-model",
+        "execution_owner": "Phase 6 narrow candidate",
+        "reason": "Temporary admin read-model SQL retained until the named FastAPI target is implemented and the Next.js caller is cut over in packet-2-shows-seasons-people-media.",
+        "packet": "packet-2-shows-seasons-people-media",
+        "migration_target": "GET/POST/PATCH/DELETE /api/v2/admin/shows/{show_id}/seasons/{season_number}/cast-survey-roles",
+        "reauthorized_at": "2026-08-05",
+        "review_by": "2026-09-04"
+      }
+    },
+    {
+      "id": "app-sql-fd5366618a78f5c4",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/admin/season-cast-survey-roles-repository.ts",
+        "line": 116,
+        "symbol": "query",
+        "ordinal": 5,
+        "context": "replaceSeasonCastSurveyRoles"
+      },
+      "classification": "admin-read-model",
+      "risk": "medium",
+      "excerpt": "const result = await client.query<SeasonCastSurveyRoleRow>(",
+      "exception": {
+        "id": "app-sql-fd5366618a78f5c4",
+        "source": {
+          "path": "TRR-APP/apps/web/src/lib/server/admin/season-cast-survey-roles-repository.ts",
+          "symbol": "query",
+          "ordinal": 5,
+          "context": "replaceSeasonCastSurveyRoles"
+        },
+        "classification": "admin-read-model",
+        "durable_owner": "admin-read-model",
+        "execution_owner": "Phase 6 narrow candidate",
+        "reason": "Temporary admin read-model SQL retained until the named FastAPI target is implemented and the Next.js caller is cut over in packet-2-shows-seasons-people-media.",
+        "packet": "packet-2-shows-seasons-people-media",
+        "migration_target": "GET/POST/PATCH/DELETE /api/v2/admin/shows/{show_id}/seasons/{season_number}/cast-survey-roles",
+        "reauthorized_at": "2026-08-05",
+        "review_by": "2026-09-04"
+      }
+    },
+    {
+      "id": "app-sql-c6c36f8d30334c22",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/shows/shows-repository.ts",
+        "line": 175,
+        "symbol": "query",
+        "ordinal": 1,
+        "context": "getAllShows"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<ShowRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-fa5cf56504f0eca0",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/shows/shows-repository.ts",
+        "line": 187,
+        "symbol": "query",
+        "ordinal": 2,
+        "context": "getActiveShows"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<ShowRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-542159e45c3f64c0",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/shows/shows-repository.ts",
+        "line": 200,
+        "symbol": "query",
+        "ordinal": 3,
+        "context": "getShowByKey"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<ShowRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-0613e52a25fb7c97",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/shows/shows-repository.ts",
+        "line": 214,
+        "symbol": "query",
+        "ordinal": 4,
+        "context": "getShowById"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<ShowRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-5448fe9713c14c5c",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/shows/shows-repository.ts",
+        "line": 228,
+        "symbol": "query",
+        "ordinal": 5,
+        "context": "getShowByTrrShowId"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<ShowRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-be0d5fd6a2bb5b6b",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/shows/shows-repository.ts",
+        "line": 242,
+        "symbol": "query",
+        "ordinal": 6,
+        "context": "createShow"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<ShowRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-bc8a0c77f33abaf0",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/shows/shows-repository.ts",
+        "line": 336,
+        "symbol": "query",
+        "ordinal": 7,
+        "context": "updateShowByKey"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<ShowRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-db37c04a3d92d9d5",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/shows/shows-repository.ts",
+        "line": 351,
+        "symbol": "query",
+        "ordinal": 8,
+        "context": "deleteShow"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query(`DELETE FROM survey_shows WHERE key = $1`, [key]);",
+      "exception": null
+    },
+    {
+      "id": "app-sql-33e97dcb8c09b673",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/shows/shows-repository.ts",
+        "line": 360,
+        "symbol": "query",
+        "ordinal": 9,
+        "context": "getSeasonsByShowKey"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<ShowSeasonRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-f0a0930b2a1b6ead",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/shows/shows-repository.ts",
+        "line": 376,
+        "symbol": "query",
+        "ordinal": 10,
+        "context": "getSeasonsByShowId"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<ShowSeasonRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-c76f82fbbad30872",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/shows/shows-repository.ts",
+        "line": 391,
+        "symbol": "query",
+        "ordinal": 11,
+        "context": "getSeasonById"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<ShowSeasonRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-7c8233cee58ceed0",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/shows/shows-repository.ts",
+        "line": 406,
+        "symbol": "query",
+        "ordinal": 12,
+        "context": "getCurrentSeason"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<ShowSeasonRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-2ad316de2bb198a7",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/shows/shows-repository.ts",
+        "line": 422,
+        "symbol": "query",
+        "ordinal": 13,
+        "context": "createSeason"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<ShowSeasonRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-782bebfff56fcf08",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/shows/shows-repository.ts",
+        "line": 507,
+        "symbol": "query",
+        "ordinal": 14,
+        "context": "updateSeasonById"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<ShowSeasonRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-c3b0776c85e947f0",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/shows/shows-repository.ts",
+        "line": 524,
+        "symbol": "query",
+        "ordinal": 15,
+        "context": "setCurrentSeason"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "await query(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-c40655acb9f7f607",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/shows/shows-repository.ts",
+        "line": 534,
+        "symbol": "query",
+        "ordinal": 16,
+        "context": "deleteSeason"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query(`DELETE FROM survey_show_seasons WHERE id = $1`, [id]);",
+      "exception": null
+    },
+    {
+      "id": "app-sql-3b4b1d71c4249434",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/shows/shows-repository.ts",
+        "line": 550,
+        "symbol": "query",
+        "ordinal": 17,
+        "context": "listPaletteLibraryEntriesByShow"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<PaletteLibraryEntryRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-3ad1aed4a99c7d6b",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/shows/shows-repository.ts",
+        "line": 563,
+        "symbol": "query",
+        "ordinal": 18,
+        "context": "listPaletteLibraryEntriesByShow"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<PaletteLibraryEntryRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-c8be6af395d8dbd8",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/shows/shows-repository.ts",
+        "line": 575,
+        "symbol": "query",
+        "ordinal": 19,
+        "context": "listPaletteLibraryEntriesByShow"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<PaletteLibraryEntryRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-7f97f3b5a303e906",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/shows/shows-repository.ts",
+        "line": 594,
+        "symbol": "query",
+        "ordinal": 20,
+        "context": "createPaletteLibraryEntry"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<PaletteLibraryEntryRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-db470ed9e3834e03",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/shows/shows-repository.ts",
+        "line": 618,
+        "symbol": "query",
+        "ordinal": 21,
+        "context": "deletePaletteLibraryEntryById"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query(`DELETE FROM survey_show_palette_library WHERE id = $1`, [id]);",
+      "exception": null
+    },
+    {
+      "id": "app-sql-c4131c4f7ecd470c",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/fetch.ts",
+        "line": 148,
+        "symbol": "query",
+        "ordinal": 1,
+        "context": "fetchSurveyResponses"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<Record<string, unknown>>(dataQuery, dataValues);",
+      "exception": null
+    },
+    {
+      "id": "app-sql-b04b022bb34f8791",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/fetch.ts",
+        "line": 152,
+        "symbol": "query",
+        "ordinal": 2,
+        "context": "fetchSurveyResponses"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const countResult = await query<{ count: number }>(countQuery, countValues);",
+      "exception": null
+    },
+    {
+      "id": "app-sql-ab580035b98283bc",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/fetch.ts",
+        "line": 173,
+        "symbol": "query",
+        "ordinal": 3,
+        "context": "fetchSurveyResponseById"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<Record<string, unknown>>(sql, [id]);",
+      "exception": null
+    },
+    {
+      "id": "app-sql-c22192a5ebbdc0a9",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/fetch.ts",
+        "line": 203,
+        "symbol": "query",
+        "ordinal": 4,
+        "context": "exportSurveyResponses"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<Record<string, unknown>>(sql, values);",
+      "exception": null
+    },
+    {
+      "id": "app-sql-2269d76833fbcaf2",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 19,
+        "symbol": "query",
+        "ordinal": 1,
+        "context": "listSurveys"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<NormalizedSurvey>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-3aa109cbd4a99217",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 26,
+        "symbol": "query",
+        "ordinal": 2,
+        "context": "getSurveyBySlug"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<NormalizedSurvey>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-f8d0d27393e4e6bc",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 34,
+        "symbol": "query",
+        "ordinal": 3,
+        "context": "getSurveyById"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<NormalizedSurvey>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-90b21058f271caa0",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 53,
+        "symbol": "withAuthTransaction",
+        "ordinal": 1,
+        "context": "createSurvey"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "return withAuthTransaction(authContext, async (client) => {",
+      "exception": null
+    },
+    {
+      "id": "app-sql-27292d9b5b3139c6",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 54,
+        "symbol": "query",
+        "ordinal": 4,
+        "context": "createSurvey"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await client.query<NormalizedSurvey>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-cb6fd20449590b93",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 82,
+        "symbol": "withAuthTransaction",
+        "ordinal": 2,
+        "context": "updateSurvey"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "return withAuthTransaction(authContext, async (client) => {",
+      "exception": null
+    },
+    {
+      "id": "app-sql-25f87907f4b1727e",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 109,
+        "symbol": "query",
+        "ordinal": 5,
+        "context": "updateSurvey"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await client.query<NormalizedSurvey>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-0ecb178552e41d92",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 121,
+        "symbol": "withAuthTransaction",
+        "ordinal": 3,
+        "context": "deleteSurvey"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "return withAuthTransaction(authContext, async (client) => {",
+      "exception": null
+    },
+    {
+      "id": "app-sql-214a28de073a1e11",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 122,
+        "symbol": "query",
+        "ordinal": 6,
+        "context": "deleteSurvey"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await client.query(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-014e743ddfd6a22d",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 135,
+        "symbol": "query",
+        "ordinal": 7,
+        "context": "listQuestions"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<SurveyQuestion>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-36ff778d199a9e52",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 143,
+        "symbol": "query",
+        "ordinal": 8,
+        "context": "getQuestionById"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<SurveyQuestion>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-7f042bfc41840e41",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 164,
+        "symbol": "withAuthTransaction",
+        "ordinal": 4,
+        "context": "createQuestion"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "return withAuthTransaction(authContext, async (client) => {",
+      "exception": null
+    },
+    {
+      "id": "app-sql-1c4ef77443f8138e",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 168,
+        "symbol": "query",
+        "ordinal": 9,
+        "context": "createQuestion"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const maxResult = await client.query<{ max: number | null }>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-b5e0d6c2243abc51",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 175,
+        "symbol": "query",
+        "ordinal": 10,
+        "context": "createQuestion"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await client.query<SurveyQuestion>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-aa103b688dacd9ff",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 207,
+        "symbol": "withAuthTransaction",
+        "ordinal": 5,
+        "context": "updateQuestion"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "return withAuthTransaction(authContext, async (client) => {",
+      "exception": null
+    },
+    {
+      "id": "app-sql-8dea29d5c6761756",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 242,
+        "symbol": "query",
+        "ordinal": 11,
+        "context": "updateQuestion"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await client.query<SurveyQuestion>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-b1b3ee780c70079d",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 254,
+        "symbol": "withAuthTransaction",
+        "ordinal": 6,
+        "context": "deleteQuestion"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "return withAuthTransaction(authContext, async (client) => {",
+      "exception": null
+    },
+    {
+      "id": "app-sql-35eeb26467560435",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 255,
+        "symbol": "query",
+        "ordinal": 12,
+        "context": "deleteQuestion"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await client.query(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-048d87b7199f910f",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 268,
+        "symbol": "query",
+        "ordinal": 13,
+        "context": "listOptions"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<QuestionOption>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-6fe9ed4ed6d4128a",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 276,
+        "symbol": "query",
+        "ordinal": 14,
+        "context": "getOptionById"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<QuestionOption>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-90942cffbd85f984",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 295,
+        "symbol": "withAuthTransaction",
+        "ordinal": 7,
+        "context": "createOption"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "return withAuthTransaction(authContext, async (client) => {",
+      "exception": null
+    },
+    {
+      "id": "app-sql-24f3558135e9b8ae",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 298,
+        "symbol": "query",
+        "ordinal": 15,
+        "context": "createOption"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const maxResult = await client.query<{ max: number | null }>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-5320af4aebfd9281",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 305,
+        "symbol": "query",
+        "ordinal": 16,
+        "context": "createOption"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await client.query<QuestionOption>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-78a79858a5b0598b",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 333,
+        "symbol": "withAuthTransaction",
+        "ordinal": 8,
+        "context": "updateOption"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "return withAuthTransaction(authContext, async (client) => {",
+      "exception": null
+    },
+    {
+      "id": "app-sql-1d6eafc23f729df1",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 360,
+        "symbol": "query",
+        "ordinal": 17,
+        "context": "updateOption"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await client.query<QuestionOption>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-cb32d04454501030",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 372,
+        "symbol": "withAuthTransaction",
+        "ordinal": 9,
+        "context": "deleteOption"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "return withAuthTransaction(authContext, async (client) => {",
+      "exception": null
+    },
+    {
+      "id": "app-sql-f41886656961dc7b",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 373,
+        "symbol": "query",
+        "ordinal": 18,
+        "context": "deleteOption"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await client.query(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-a56c0d85785113c0",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 386,
+        "symbol": "query",
+        "ordinal": 19,
+        "context": "listRuns"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<SurveyRun>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-f56b87bd8f78f4ef",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 394,
+        "symbol": "query",
+        "ordinal": 20,
+        "context": "getRunById"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<SurveyRun>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-e0e7595962a16073",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 402,
+        "symbol": "query",
+        "ordinal": 21,
+        "context": "getRunByKey"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<SurveyRun>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-7431a5a885ed4937",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 424,
+        "symbol": "withAuthTransaction",
+        "ordinal": 10,
+        "context": "createRun"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "return withAuthTransaction(authContext, async (client) => {",
+      "exception": null
+    },
+    {
+      "id": "app-sql-e0f867f23589f5e4",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 425,
+        "symbol": "query",
+        "ordinal": 22,
+        "context": "createRun"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await client.query<SurveyRun>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-15c5d06b561b5a5f",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 459,
+        "symbol": "withAuthTransaction",
+        "ordinal": 11,
+        "context": "updateRun"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "return withAuthTransaction(authContext, async (client) => {",
+      "exception": null
+    },
+    {
+      "id": "app-sql-1d4802852a969a6d",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 498,
+        "symbol": "query",
+        "ordinal": 23,
+        "context": "updateRun"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await client.query<SurveyRun>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-aaf4b50f47c90b22",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 510,
+        "symbol": "withAuthTransaction",
+        "ordinal": 12,
+        "context": "deleteRun"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "return withAuthTransaction(authContext, async (client) => {",
+      "exception": null
+    },
+    {
+      "id": "app-sql-0f4edff1b0287349",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 511,
+        "symbol": "query",
+        "ordinal": 24,
+        "context": "deleteRun"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await client.query(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-1d8c7158945e239a",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 531,
+        "symbol": "withAuthTransaction",
+        "ordinal": 13,
+        "context": "listResponses"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "return withAuthTransaction(authContext, async (client) => {",
+      "exception": null
+    },
+    {
+      "id": "app-sql-5afcfb0cac063ed3",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 532,
+        "symbol": "query",
+        "ordinal": 25,
+        "context": "listResponses"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await client.query<SurveyResponse>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-de1561a3ec1ce23a",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 544,
+        "symbol": "withAuthTransaction",
+        "ordinal": 14,
+        "context": "getResponseWithAnswers"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "return withAuthTransaction(authContext, async (client) => {",
+      "exception": null
+    },
+    {
+      "id": "app-sql-18e6a58021994437",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 545,
+        "symbol": "query",
+        "ordinal": 26,
+        "context": "getResponseWithAnswers"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const responseResult = await client.query<SurveyResponse>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-3e6519e5e78e7968",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 552,
+        "symbol": "query",
+        "ordinal": 27,
+        "context": "getResponseWithAnswers"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const answersResult = await client.query<SurveyAnswer>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-7d3aa4f30c5d75eb",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 568,
+        "symbol": "withAuthTransaction",
+        "ordinal": 15,
+        "context": "listResponsesWithAnswers"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "return withAuthTransaction(authContext, async (client) => {",
+      "exception": null
+    },
+    {
+      "id": "app-sql-f828d30a9dcdc734",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 569,
+        "symbol": "query",
+        "ordinal": 28,
+        "context": "listResponsesWithAnswers"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const responseResult = await client.query<SurveyResponse>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-ecfd2baa9aef855a",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 577,
+        "symbol": "query",
+        "ordinal": 29,
+        "context": "listResponsesWithAnswers"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const answersResult = await client.query<SurveyAnswer>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-ec3de20938aedf65",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/normalized-survey-admin-repository.ts",
+        "line": 597,
+        "symbol": "query",
+        "ordinal": 30,
+        "context": "getResponseCount"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<{ count: string }>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-b75362a7f67a39be",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/repository.ts",
+        "line": 81,
+        "symbol": "query",
+        "ordinal": 1,
+        "context": "upsertSurveyResponse"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "await query(text, values);",
+      "exception": null
+    },
+    {
+      "id": "app-sql-4d8945701bdbf126",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/repository.ts",
+        "line": 103,
+        "symbol": "query",
+        "ordinal": 2,
+        "context": "getAllSurveys"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<SurveyRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-7419373b9e074d98",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/repository.ts",
+        "line": 110,
+        "symbol": "query",
+        "ordinal": 3,
+        "context": "getSurveyByKey"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<SurveyRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-a2ed7ea6e57ff7c9",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-cast-repository.ts",
+        "line": 62,
+        "symbol": "query",
+        "ordinal": 1,
+        "context": "getCastBySurveyId"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<SurveyCastRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-e4dbf3cc8cdaffdd",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-cast-repository.ts",
+        "line": 79,
+        "symbol": "query",
+        "ordinal": 2,
+        "context": "getCastBySurveyKey"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<SurveyCastRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-d95692eaf65ca67a",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-cast-repository.ts",
+        "line": 97,
+        "symbol": "query",
+        "ordinal": 3,
+        "context": "getActiveCastBySurveyKey"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<SurveyCastRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-aaf16651f6bf5d2e",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-cast-repository.ts",
+        "line": 115,
+        "symbol": "query",
+        "ordinal": 4,
+        "context": "getAlumniCastBySurveyKey"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<SurveyCastRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-973bbdad90f1dbdd",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-cast-repository.ts",
+        "line": 133,
+        "symbol": "query",
+        "ordinal": 5,
+        "context": "getCastMemberById"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<SurveyCastRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-da8cb4f96248f639",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-cast-repository.ts",
+        "line": 155,
+        "symbol": "query",
+        "ordinal": 6,
+        "context": "createCastMember"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const maxResult = await query<{ max: number | null }>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-9971044abeeecbd0",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-cast-repository.ts",
+        "line": 162,
+        "symbol": "query",
+        "ordinal": 7,
+        "context": "createCastMember"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<SurveyCastRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-6ff4344e62640962",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-cast-repository.ts",
+        "line": 245,
+        "symbol": "query",
+        "ordinal": 8,
+        "context": "updateCastMember"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<SurveyCastRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-0f4bb1703f370298",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-cast-repository.ts",
+        "line": 263,
+        "symbol": "query",
+        "ordinal": 9,
+        "context": "deleteCastMember"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-647ebfd078a1e641",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-cast-repository.ts",
+        "line": 279,
+        "symbol": "withTransaction",
+        "ordinal": 1,
+        "context": "reorderCastMembers"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "await withTransaction(async (client) => {",
+      "exception": null
+    },
+    {
+      "id": "app-sql-dd0c456602697c5d",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-cast-repository.ts",
+        "line": 281,
+        "symbol": "query",
+        "ordinal": 10,
+        "context": "reorderCastMembers"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "await client.query(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-b32b26729ecd95ec",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-config-repository.ts",
+        "line": 66,
+        "symbol": "query",
+        "ordinal": 1,
+        "context": "getAllSurveyConfigs"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<SurveyConfigRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-32c58378272ae111",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-config-repository.ts",
+        "line": 82,
+        "symbol": "query",
+        "ordinal": 2,
+        "context": "getActiveSurveyConfigs"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<SurveyConfigRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-e2eb33a76c2f750e",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-config-repository.ts",
+        "line": 99,
+        "symbol": "query",
+        "ordinal": 3,
+        "context": "getSurveyConfigByKey"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<SurveyConfigRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-6122f909520ba3ad",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-config-repository.ts",
+        "line": 117,
+        "symbol": "query",
+        "ordinal": 4,
+        "context": "getSurveyConfigById"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<SurveyConfigRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-50adb13c3f3568e8",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-config-repository.ts",
+        "line": 135,
+        "symbol": "query",
+        "ordinal": 5,
+        "context": "createSurvey"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<SurveyConfigRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-b1e8bcb664bea3b1",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-config-repository.ts",
+        "line": 213,
+        "symbol": "query",
+        "ordinal": 6,
+        "context": "updateSurveyByKey"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<SurveyConfigRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-9145e1ee90bb1d2d",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-config-repository.ts",
+        "line": 252,
+        "symbol": "query",
+        "ordinal": 7,
+        "context": "deactivateSurvey"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-fa9e3ae9613132dc",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-config-repository.ts",
+        "line": 263,
+        "symbol": "query",
+        "ordinal": 8,
+        "context": "getSurveysWithAutoProgress"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<SurveyConfigRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-78bc2e4087bd27a6",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-episodes-repository.ts",
+        "line": 56,
+        "symbol": "query",
+        "ordinal": 1,
+        "context": "getEpisodesBySurveyId"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<SurveyEpisodeRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-3014cf137803c27c",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-episodes-repository.ts",
+        "line": 73,
+        "symbol": "query",
+        "ordinal": 2,
+        "context": "getEpisodesBySurveyKey"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<SurveyEpisodeRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-39651c8d94f90c95",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-episodes-repository.ts",
+        "line": 91,
+        "symbol": "query",
+        "ordinal": 3,
+        "context": "getCurrentEpisode"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<SurveyEpisodeRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-1b06f5d9020f8047",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-episodes-repository.ts",
+        "line": 109,
+        "symbol": "query",
+        "ordinal": 4,
+        "context": "getEpisodeById"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<SurveyEpisodeRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-e182eca1b79a7d5e",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-episodes-repository.ts",
+        "line": 128,
+        "symbol": "query",
+        "ordinal": 5,
+        "context": "getEpisodeByEpisodeId"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<SurveyEpisodeRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-c168a44e5faa4880",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-episodes-repository.ts",
+        "line": 145,
+        "symbol": "query",
+        "ordinal": 6,
+        "context": "createEpisode"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<SurveyEpisodeRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-988e9362d0b98034",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-episodes-repository.ts",
+        "line": 222,
+        "symbol": "query",
+        "ordinal": 7,
+        "context": "updateEpisode"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<SurveyEpisodeRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-d072ad06c7765731",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-episodes-repository.ts",
+        "line": 239,
+        "symbol": "query",
+        "ordinal": 8,
+        "context": "deleteEpisode"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-0634a42b01b11b91",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-episodes-repository.ts",
+        "line": 253,
+        "symbol": "withTransaction",
+        "ordinal": 1,
+        "context": "setCurrentEpisode"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "return withTransaction(async (client) => {",
+      "exception": null
+    },
+    {
+      "id": "app-sql-2aa81e32b1b0aebf",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-episodes-repository.ts",
+        "line": 255,
+        "symbol": "query",
+        "ordinal": 9,
+        "context": "setCurrentEpisode"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "await client.query(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-637c21ae85b28ac6",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-episodes-repository.ts",
+        "line": 261,
+        "symbol": "query",
+        "ordinal": 10,
+        "context": "setCurrentEpisode"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await client.query<SurveyEpisodeRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-faf927557b3f6258",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-episodes-repository.ts",
+        "line": 273,
+        "symbol": "query",
+        "ordinal": 11,
+        "context": "setCurrentEpisode"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "await client.query(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-dfc3eda507b8b1f8",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-episodes-repository.ts",
+        "line": 295,
+        "symbol": "query",
+        "ordinal": 12,
+        "context": "progressToNextEpisode"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<SurveyEpisodeRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-f961fdce44bf410c",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-episodes-repository.ts",
+        "line": 319,
+        "symbol": "query",
+        "ordinal": 13,
+        "context": "getEpisodesScheduledToOpen"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<SurveyEpisodeRecord>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-01780879daf04532",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-run-repository.ts",
+        "line": 29,
+        "symbol": "query",
+        "ordinal": 1,
+        "context": "getActiveRunForSurvey"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<SurveyRun>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-6f487127a878a986",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-run-repository.ts",
+        "line": 51,
+        "symbol": "query",
+        "ordinal": 2,
+        "context": "getSurveyWithQuestions"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const surveyResult = await query<NormalizedSurvey>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-6042ba2612767186",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-run-repository.ts",
+        "line": 59,
+        "symbol": "query",
+        "ordinal": 3,
+        "context": "getSurveyWithQuestions"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const questionsResult = await query<SurveyQuestion>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-c19b5e9cab124a73",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-run-repository.ts",
+        "line": 72,
+        "symbol": "query",
+        "ordinal": 4,
+        "context": "getSurveyWithQuestions"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const optionsResult = await query<QuestionOption>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-8335b4e937eadf99",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-run-repository.ts",
+        "line": 115,
+        "symbol": "withAuthTransaction",
+        "ordinal": 1,
+        "context": "getUserSubmissionCount"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "return withAuthTransaction(authContext, async (client) => {",
+      "exception": null
+    },
+    {
+      "id": "app-sql-34b5d9573b95e8ce",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-run-repository.ts",
+        "line": 116,
+        "symbol": "query",
+        "ordinal": 5,
+        "context": "getUserSubmissionCount"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await client.query<{ count: string }>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-8048976fe8effd0f",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-run-repository.ts",
+        "line": 136,
+        "symbol": "withAuthTransaction",
+        "ordinal": 2,
+        "context": "submitSurveyResponse"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "return withAuthTransaction(authContext, async (client) => {",
+      "exception": null
+    },
+    {
+      "id": "app-sql-50acce811b01752c",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-run-repository.ts",
+        "line": 139,
+        "symbol": "query",
+        "ordinal": 6,
+        "context": "submitSurveyResponse"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "await client.query(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-99dde73c0ad7237c",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-run-repository.ts",
+        "line": 145,
+        "symbol": "query",
+        "ordinal": 7,
+        "context": "submitSurveyResponse"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const runResult = await client.query<SurveyRun>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-14e34b1979e8480d",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-run-repository.ts",
+        "line": 170,
+        "symbol": "query",
+        "ordinal": 8,
+        "context": "submitSurveyResponse"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const countResult = await client.query<{ count: string }>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-bd692c4828f95851",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-run-repository.ts",
+        "line": 183,
+        "symbol": "query",
+        "ordinal": 9,
+        "context": "submitSurveyResponse"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const responseResult = await client.query<SurveyResponse>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-5bf937da9a2d84a2",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-run-repository.ts",
+        "line": 193,
+        "symbol": "query",
+        "ordinal": 10,
+        "context": "submitSurveyResponse"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "await client.query(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-a71b25cec3ed5850",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-run-repository.ts",
+        "line": 219,
+        "symbol": "query",
+        "ordinal": 11,
+        "context": "getSurveyRunById"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<SurveyRun>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-4d7c5e3bb61bd0bd",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-run-scheduler.ts",
+        "line": 90,
+        "symbol": "query",
+        "ordinal": 1,
+        "context": "createWeeklySurveyRuns"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const surveysResult = await query<SurveyWithSchedulerConfig>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-d0c17b65c0b22b43",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-run-scheduler.ts",
+        "line": 99,
+        "symbol": "query",
+        "ordinal": 2,
+        "context": "createWeeklySurveyRuns"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const existingResult = await query<SurveyRun>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-2352ac6f698cf146",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-run-scheduler.ts",
+        "line": 115,
+        "symbol": "withTransaction",
+        "ordinal": 1,
+        "context": "createWeeklySurveyRuns"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "await withTransaction(async (client) => {",
+      "exception": null
+    },
+    {
+      "id": "app-sql-b4341088b0da896d",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-run-scheduler.ts",
+        "line": 116,
+        "symbol": "query",
+        "ordinal": 3,
+        "context": "createWeeklySurveyRuns"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "await client.query(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-7bed60cccc9cb149",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-trr-links-repository.ts",
+        "line": 41,
+        "symbol": "query",
+        "ordinal": 1,
+        "context": "getSurveysByTrrShowId"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<LinkedSurvey>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-09eb146149e66296",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-trr-links-repository.ts",
+        "line": 66,
+        "symbol": "query",
+        "ordinal": 2,
+        "context": "getSurveysByTrrSeasonId"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<LinkedSurvey>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-69087a3c05d40742",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-trr-links-repository.ts",
+        "line": 91,
+        "symbol": "query",
+        "ordinal": 3,
+        "context": "getLinkBySurveyId"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<SurveyTrrLink>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-d5b54ce1ec334d1e",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-trr-links-repository.ts",
+        "line": 105,
+        "symbol": "query",
+        "ordinal": 4,
+        "context": "linkExistsForShowSeason"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await query<{ exists: boolean }>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-335a15f2e3243f47",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-trr-links-repository.ts",
+        "line": 126,
+        "symbol": "withAuthTransaction",
+        "ordinal": 1,
+        "context": "createLink"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "return withAuthTransaction(authContext, async (client) => {",
+      "exception": null
+    },
+    {
+      "id": "app-sql-8652a344587c96a9",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-trr-links-repository.ts",
+        "line": 127,
+        "symbol": "query",
+        "ordinal": 5,
+        "context": "createLink"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await client.query<SurveyTrrLink>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-7b784aab636e1680",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-trr-links-repository.ts",
+        "line": 152,
+        "symbol": "withAuthTransaction",
+        "ordinal": 2,
+        "context": "updateLink"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "return withAuthTransaction(authContext, async (client) => {",
+      "exception": null
+    },
+    {
+      "id": "app-sql-b2cbc1c6c1aa86eb",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-trr-links-repository.ts",
+        "line": 179,
+        "symbol": "query",
+        "ordinal": 6,
+        "context": "updateLink"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await client.query<SurveyTrrLink>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-7c40ec6e25dd3c79",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-trr-links-repository.ts",
+        "line": 194,
+        "symbol": "withAuthTransaction",
+        "ordinal": 3,
+        "context": "deleteLink"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "return withAuthTransaction(authContext, async (client) => {",
+      "exception": null
+    },
+    {
+      "id": "app-sql-ebba6dc89f8a38eb",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-trr-links-repository.ts",
+        "line": 195,
+        "symbol": "query",
+        "ordinal": 7,
+        "context": "deleteLink"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const result = await client.query(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-21a55bec69ece1bf",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/trr-api/trr-shows-repository.ts",
+        "line": 702,
+        "symbol": "query",
+        "ordinal": 10,
+        "context": "getShowByExactSlug"
+      },
+      "classification": "backend-shared-schema",
+      "risk": "medium",
+      "excerpt": "const result = await pgQuery<ShowSlugRecord>(",
+      "exception": {
+        "id": "app-sql-21a55bec69ece1bf",
+        "source": {
+          "path": "TRR-APP/apps/web/src/lib/server/trr-api/trr-shows-repository.ts",
+          "symbol": "query",
+          "ordinal": 10,
+          "context": "getShowByExactSlug"
+        },
+        "classification": "backend-shared-schema",
+        "durable_owner": "backend-shared-schema",
+        "execution_owner": "Phase 6 narrow candidate",
+        "reason": "Temporary shared-schema compatibility SQL retained until the named FastAPI target becomes the sole data owner in packet-1-public-identity-slugs.",
+        "packet": "packet-1-public-identity-slugs",
+        "migration_target": "GET /api/v2/shows/resolve/{slug}, /api/v2/shows/identities, and external show identity resolvers",
+        "reauthorized_at": "2026-08-05",
+        "review_by": "2026-09-04"
+      }
+    },
+    {
+      "id": "app-sql-cec04b3b62c24cec",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/trr-api/trr-shows-repository.ts",
+        "line": 807,
+        "symbol": "query",
+        "ordinal": 35,
+        "context": "resolveShowSlug"
+      },
+      "classification": "backend-shared-schema",
+      "risk": "medium",
+      "excerpt": "const rows = await pgQuery<{",
+      "exception": {
+        "id": "app-sql-cec04b3b62c24cec",
+        "source": {
+          "path": "TRR-APP/apps/web/src/lib/server/trr-api/trr-shows-repository.ts",
+          "symbol": "query",
+          "ordinal": 35,
+          "context": "resolveShowSlug"
+        },
+        "classification": "backend-shared-schema",
+        "durable_owner": "backend-shared-schema",
+        "execution_owner": "Phase 6 narrow candidate",
+        "reason": "Temporary shared-schema compatibility SQL retained until the named FastAPI target becomes the sole data owner in packet-1-public-identity-slugs.",
+        "packet": "packet-1-public-identity-slugs",
+        "migration_target": "GET /api/v2/shows/resolve/{slug}, /api/v2/shows/identities, and external show identity resolvers",
+        "reauthorized_at": "2026-08-05",
+        "review_by": "2026-09-04"
+      }
+    },
+    {
+      "id": "app-sql-830865dab0e107f9",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/trr-api/trr-shows-repository.ts",
+        "line": 929,
+        "symbol": "query",
+        "ordinal": 36,
+        "context": "resolvePersonSlug"
+      },
+      "classification": "backend-shared-schema",
+      "risk": "medium",
+      "excerpt": "const exactRows = await pgQuery<{ id: string; full_name: string | null; on_show: boolean }>(",
+      "exception": {
+        "id": "app-sql-830865dab0e107f9",
+        "source": {
+          "path": "TRR-APP/apps/web/src/lib/server/trr-api/trr-shows-repository.ts",
+          "symbol": "query",
+          "ordinal": 36,
+          "context": "resolvePersonSlug"
+        },
+        "classification": "backend-shared-schema",
+        "durable_owner": "backend-shared-schema",
+        "execution_owner": "Phase 6 narrow candidate",
+        "reason": "Temporary shared-schema compatibility SQL retained until the named FastAPI target becomes the sole data owner in packet-1-public-identity-slugs.",
+        "packet": "packet-1-public-identity-slugs",
+        "migration_target": "GET /api/v2/people/resolve/{slug}, /api/v2/people/identities, and canonical person alias resolvers",
+        "reauthorized_at": "2026-08-05",
+        "review_by": "2026-09-04"
+      }
+    },
+    {
+      "id": "app-sql-473cd31eb07cc4e4",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/trr-api/trr-shows-repository.ts",
+        "line": 980,
+        "symbol": "query",
+        "ordinal": 79,
+        "context": "resolvePersonSlug"
+      },
+      "classification": "backend-shared-schema",
+      "risk": "medium",
+      "excerpt": "const rows = await pgQuery<{ id: string; full_name: string | null; on_show: boolean }>(",
+      "exception": {
+        "id": "app-sql-473cd31eb07cc4e4",
+        "source": {
+          "path": "TRR-APP/apps/web/src/lib/server/trr-api/trr-shows-repository.ts",
+          "symbol": "query",
+          "ordinal": 79,
+          "context": "resolvePersonSlug"
+        },
+        "classification": "backend-shared-schema",
+        "durable_owner": "backend-shared-schema",
+        "execution_owner": "Phase 6 narrow candidate",
+        "reason": "Temporary shared-schema compatibility SQL retained until the named FastAPI target becomes the sole data owner in packet-1-public-identity-slugs.",
+        "packet": "packet-1-public-identity-slugs",
+        "migration_target": "GET /api/v2/people/resolve/{slug}, /api/v2/people/identities, and canonical person alias resolvers",
+        "reauthorized_at": "2026-08-05",
+        "review_by": "2026-09-04"
+      }
+    }
+  ]
+}
