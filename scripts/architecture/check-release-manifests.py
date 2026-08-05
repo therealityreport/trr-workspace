@@ -403,6 +403,8 @@ def validate_committed_candidate(
     repository: Path,
     revision: Mapping[str, Any],
     packet_path: Path,
+    *,
+    require_current_clean: bool = False,
 ) -> None:
     expected = capture_committed_candidate(
         repository,
@@ -421,7 +423,10 @@ def validate_committed_candidate(
         raise ManifestValidationError(
             f"{packet_path}: candidate_sha is not an ancestor of current HEAD"
         )
-    if _dirty_counts(repository, revision["owned_paths"])["total"] != 0:
+    if (
+        require_current_clean
+        and _dirty_counts(repository, revision["owned_paths"])["total"] != 0
+    ):
         raise ManifestValidationError(
             f"{packet_path}: candidate owned paths are dirty in the current working tree"
         )
@@ -680,6 +685,22 @@ def validate_packet_semantics(packet: Mapping[str, Any], path: Path) -> None:
         if revision["revision_type"] == "committed_candidate" and dirty_counts["total"] != 0:
             raise ManifestValidationError(
                 f"{path}: {repository} committed candidate dirty counts must all be zero"
+            )
+
+    for supersession in packet.get("supersedes", []):
+        superseded_paths = supersession["paths"]
+        if superseded_paths != sorted(superseded_paths):
+            raise ManifestValidationError(
+                f"{path}: supersession paths must be sorted for "
+                f"{supersession['repository']}:{supersession['packet_id']}"
+            )
+        retained_paths = [
+            record["path"] for record in supersession.get("retained_path_records", [])
+        ]
+        if retained_paths != sorted(retained_paths):
+            raise ManifestValidationError(
+                f"{path}: retained predecessor path records must be sorted for "
+                f"{supersession['repository']}:{supersession['packet_id']}"
             )
 
     if packet["state"] in GATE_4_STATES:
@@ -1127,31 +1148,304 @@ def repository_dirty_paths(repository: Path) -> dict[str, str]:
     return dirty
 
 
+def validate_packet_supersessions(
+    packets: Mapping[str, tuple[Mapping[str, Any], Path]],
+) -> tuple[
+    dict[tuple[str, str, str], str],
+    dict[tuple[str, str, str], str],
+]:
+    """Validate explicit path ownership handoffs and return superseded owners.
+
+    The first returned mapping identifies transferred paths. The second holds
+    per-path record hashes for local predecessor paths that remain live.
+    Committed predecessors remain reproducible from their candidate trees.
+    """
+    ownership: dict[tuple[str, str], set[str]] = {}
+    for packet_id, (packet, _) in packets.items():
+        for repository, revision in packet["repositories"].items():
+            for relative_path in revision["owned_paths"]:
+                ownership.setdefault((repository, relative_path), set()).add(packet_id)
+
+    claims: set[tuple[str, str, str, str]] = set()
+    claim_paths: dict[tuple[str, str, str, str], Path] = {}
+    handoff_claims: dict[tuple[str, str, str], set[str]] = {}
+    handoff_records: dict[tuple[str, str, str], dict[str, str]] = {}
+    handoff_paths: dict[tuple[str, str, str], Path] = {}
+    for successor_id, (successor, successor_path) in packets.items():
+        for supersession in successor.get("supersedes", []):
+            predecessor_id = supersession["packet_id"]
+            repository = supersession["repository"]
+            if predecessor_id == successor_id:
+                raise ManifestValidationError(
+                    f"{successor_path}: packet cannot supersede itself"
+                )
+            predecessor_entry = packets.get(predecessor_id)
+            if predecessor_entry is None:
+                raise ManifestValidationError(
+                    f"{successor_path}: supersession references unknown packet_id: "
+                    f"{predecessor_id}"
+                )
+            predecessor = predecessor_entry[0]
+            handoff_key = (predecessor_id, repository, successor_id)
+            handoff_claims.setdefault(handoff_key, set())
+            handoff_records.setdefault(handoff_key, {})
+            handoff_paths[handoff_key] = successor_path
+            successor_owned = set(successor["repositories"][repository]["owned_paths"])
+            predecessor_owned = set(
+                predecessor["repositories"][repository]["owned_paths"]
+            )
+            for relative_path in supersession["paths"]:
+                if relative_path not in successor_owned or relative_path not in predecessor_owned:
+                    raise ManifestValidationError(
+                        f"{successor_path}: supersession path is not owned by both packets: "
+                        f"{repository}:{relative_path}"
+                    )
+                claim = (successor_id, predecessor_id, repository, relative_path)
+                if claim in claims:
+                    raise ManifestValidationError(
+                        f"{successor_path}: duplicate supersession claim for "
+                        f"{predecessor_id}:{repository}:{relative_path}"
+                    )
+                claims.add(claim)
+                claim_paths[claim] = successor_path
+                handoff_claims[handoff_key].add(relative_path)
+            for record in supersession.get("retained_path_records", []):
+                record_path = record["path"]
+                if record_path in handoff_records[handoff_key]:
+                    raise ManifestValidationError(
+                        f"{successor_path}: duplicate retained predecessor path record "
+                        f"for {predecessor_id}:{repository}:{record_path}"
+                    )
+                handoff_records[handoff_key][record_path] = record["record_sha256"]
+
+    for successor_id, predecessor_id, repository, relative_path in sorted(claims):
+        reverse = (predecessor_id, successor_id, repository, relative_path)
+        if reverse in claims:
+            raise ManifestValidationError(
+                f"{claim_paths[(successor_id, predecessor_id, repository, relative_path)]}: "
+                "ambiguous mutual supersession for "
+                f"{repository}:{relative_path} between {predecessor_id} and {successor_id}"
+            )
+
+    superseded: dict[tuple[str, str, str], str] = {}
+    predecessor_by_successor: dict[tuple[str, str, str], str] = {}
+    for successor_id, predecessor_id, repository, relative_path in sorted(claims):
+        key = (predecessor_id, repository, relative_path)
+        existing = superseded.get(key)
+        if existing is not None and existing != successor_id:
+            raise ManifestValidationError(
+                "ambiguous supersession fork has multiple immediate successors for "
+                f"{predecessor_id}:{repository}:{relative_path}: "
+                f"{existing}, {successor_id}"
+            )
+        superseded[key] = successor_id
+        successor_key = (successor_id, repository, relative_path)
+        existing_predecessor = predecessor_by_successor.get(successor_key)
+        if existing_predecessor is not None and existing_predecessor != predecessor_id:
+            raise ManifestValidationError(
+                "ambiguous supersession merge has multiple immediate predecessors for "
+                f"{successor_id}:{repository}:{relative_path}: "
+                f"{existing_predecessor}, {predecessor_id}"
+            )
+        predecessor_by_successor[successor_key] = predecessor_id
+
+    for predecessor_id, repository, relative_path in sorted(superseded):
+        current = predecessor_id
+        visited: list[str] = []
+        while current not in visited:
+            visited.append(current)
+            next_owner = superseded.get((current, repository, relative_path))
+            if next_owner is None:
+                break
+            current = next_owner
+        else:
+            cycle_start = visited.index(current)
+            cycle = [*visited[cycle_start:], current]
+            raise ManifestValidationError(
+                "supersession cycle detected for "
+                f"{repository}:{relative_path}: {' -> '.join(cycle)}"
+            )
+
+    for successor_id, predecessor_id, repository, relative_path in sorted(claims):
+        successor = packets[successor_id][0]
+        predecessor = packets[predecessor_id][0]
+        if _timestamp(successor["created_at"]) <= _timestamp(predecessor["created_at"]):
+            raise ManifestValidationError(
+                f"{claim_paths[(successor_id, predecessor_id, repository, relative_path)]}: "
+                f"superseding packet must be newer than {predecessor_id}: "
+                f"{repository}:{relative_path}"
+            )
+
+    def reaches(
+        predecessor_id: str,
+        successor_id: str,
+        repository: str,
+        relative_path: str,
+    ) -> bool:
+        current = predecessor_id
+        visited: set[str] = set()
+        while current not in visited:
+            if current == successor_id:
+                return True
+            visited.add(current)
+            next_owner = superseded.get((current, repository, relative_path))
+            if next_owner is None:
+                return False
+            current = next_owner
+        raise ManifestValidationError(
+            "supersession cycle detected for "
+            f"{repository}:{relative_path}: {', '.join(sorted(visited))}"
+        )
+
+    for (repository, relative_path), owners in sorted(ownership.items()):
+        ordered_owners = sorted(owners)
+        for index, first in enumerate(ordered_owners):
+            for second in ordered_owners[index + 1 :]:
+                if not reaches(first, second, repository, relative_path) and not reaches(
+                    second,
+                    first,
+                    repository,
+                    relative_path,
+                ):
+                    raise ManifestValidationError(
+                        "silent owned-path overlap requires a connected supersession chain: "
+                        f"{repository}:{relative_path} is owned by {first} and {second}"
+                    )
+
+    retained_records: dict[tuple[str, str, str], str] = {}
+    handoffs_by_predecessor: dict[tuple[str, str], list[str]] = {}
+    for predecessor_id, repository, successor_id in handoff_claims:
+        handoffs_by_predecessor.setdefault((predecessor_id, repository), []).append(
+            successor_id
+        )
+
+    for predecessor_id, repository in sorted(handoffs_by_predecessor):
+        predecessor, predecessor_path = packets[predecessor_id]
+        revision = predecessor["repositories"][repository]
+        predecessor_owned_paths = set(revision["owned_paths"])
+        retained_paths = set(revision["owned_paths"])
+        ordered_successors = sorted(
+            handoffs_by_predecessor[(predecessor_id, repository)],
+            key=lambda successor_id: (
+                _timestamp(packets[successor_id][0]["created_at"]),
+                successor_id,
+            ),
+        )
+        for successor_id in ordered_successors:
+            handoff_key = (predecessor_id, repository, successor_id)
+            claimed_paths = handoff_claims[handoff_key]
+            actual_records = handoff_records[handoff_key]
+            if revision["revision_type"] == "committed_candidate":
+                if actual_records:
+                    raise ManifestValidationError(
+                        f"{predecessor_path}: committed predecessor must not use retained "
+                        f"path records for {repository}"
+                    )
+                retained_paths -= claimed_paths
+                continue
+
+            for relative_path, record_sha256 in actual_records.items():
+                if relative_path not in predecessor_owned_paths:
+                    raise ManifestValidationError(
+                        f"{handoff_paths[handoff_key]}: retained predecessor path record "
+                        f"is not owned by {predecessor_id}: "
+                        f"{repository}:{relative_path}"
+                    )
+                if relative_path in claimed_paths:
+                    raise ManifestValidationError(
+                        f"{handoff_paths[handoff_key]}: retained predecessor path record "
+                        f"is claimed in the same handoff: "
+                        f"{repository}:{relative_path}"
+                    )
+                if relative_path not in retained_paths:
+                    raise ManifestValidationError(
+                        f"{handoff_paths[handoff_key]}: retained predecessor path record "
+                        f"was already transferred: {repository}:{relative_path}"
+                    )
+                record_key = (predecessor_id, repository, relative_path)
+                previous_sha256 = retained_records.get(record_key)
+                if previous_sha256 is not None and previous_sha256 != record_sha256:
+                    raise ManifestValidationError(
+                        f"{handoff_paths[handoff_key]}: retained predecessor path record "
+                        f"conflicts with earlier handoff for "
+                        f"{predecessor_id}:{repository}:{relative_path}"
+                    )
+                retained_records[record_key] = record_sha256
+            for relative_path in claimed_paths:
+                retained_records.pop((predecessor_id, repository, relative_path), None)
+            retained_paths -= claimed_paths
+        if revision["revision_type"] == "local_dirty_checkpoint":
+            actual_retained_paths = {
+                relative_path
+                for packet_id, repository_name, relative_path in retained_records
+                if packet_id == predecessor_id and repository_name == repository
+            }
+            if actual_retained_paths != retained_paths:
+                missing = sorted(retained_paths - actual_retained_paths)
+                unexpected = sorted(actual_retained_paths - retained_paths)
+                details: list[str] = []
+                if missing:
+                    details.append("missing " + ", ".join(missing))
+                if unexpected:
+                    details.append("unexpected " + ", ".join(unexpected))
+                raise ManifestValidationError(
+                    f"{predecessor_path}: final retained predecessor path records "
+                    f"must match the live retained set for {repository}: "
+                    f"{'; '.join(details)}"
+                )
+    return superseded, retained_records
+
+
 def validate_current_checkpoint(
     root: Path,
     packets: Mapping[str, tuple[Mapping[str, Any], Path]],
     parked: Mapping[str, Any],
+    superseded: Mapping[tuple[str, str, str], str],
+    retained_records: Mapping[tuple[str, str, str], str],
 ) -> None:
-    packet_paths: dict[str, set[str]] = {name: set() for name in REPOSITORY_PATHS}
     local_dirty_paths: dict[str, set[str]] = {
         name: set() for name in REPOSITORY_PATHS
     }
-    for packet_id in sorted(REQUIRED_LOCAL_PACKET_IDS):
+    ordered_packet_ids = sorted(
+        packets,
+        key=lambda packet_id: (
+            _timestamp(packets[packet_id][0]["created_at"]),
+            packet_id,
+        ),
+    )
+    for packet_id in ordered_packet_ids:
         packet, packet_path = packets[packet_id]
         for repository, revision in packet["repositories"].items():
             repository_root = (root / REPOSITORY_PATHS[repository]).resolve()
+            superseded_paths = {
+                relative_path
+                for relative_path in revision["owned_paths"]
+                if (packet_id, repository, relative_path) in superseded
+            }
             if revision["revision_type"] == "local_dirty_checkpoint":
-                validate_local_dirty_checkpoint(repository_root, revision, packet_path)
-                local_dirty_paths[repository].update(revision["owned_paths"])
+                retained_paths = set(revision["owned_paths"]) - superseded_paths
+                if superseded_paths:
+                    for relative_path in sorted(retained_paths):
+                        actual_record_sha256 = hashlib.sha256(
+                            _owned_path_record(repository_root, relative_path)
+                        ).hexdigest()
+                        expected_record_sha256 = retained_records[
+                            (packet_id, repository, relative_path)
+                        ]
+                        if actual_record_sha256 != expected_record_sha256:
+                            raise ManifestValidationError(
+                                f"{packet_path}: retained predecessor path record does "
+                                f"not match current repository state: "
+                                f"{repository}:{relative_path}"
+                            )
+                try:
+                    validate_local_dirty_checkpoint(repository_root, revision, packet_path)
+                except ManifestValidationError:
+                    if not superseded_paths:
+                        raise
+                local_dirty_paths[repository].update(retained_paths)
             else:
                 validate_committed_candidate(repository_root, revision, packet_path)
-            overlap = packet_paths[repository] & set(revision["owned_paths"])
-            if overlap:
-                raise ManifestValidationError(
-                    f"{packet_path}: owned paths overlap another local packet: "
-                    f"{', '.join(sorted(overlap))}"
-                )
-            packet_paths[repository].update(revision["owned_paths"])
 
     parked_paths = {
         repository: {
@@ -1261,7 +1555,12 @@ def prepare_candidate_promotion(
         **captured,
         "owned_path_manifest_sha256": revision["owned_path_manifest_sha256"],
     }
-    validate_committed_candidate(repository_root, promoted_revision, packet_path)
+    validate_committed_candidate(
+        repository_root,
+        promoted_revision,
+        packet_path,
+        require_current_clean=True,
+    )
 
     now = datetime.now(timezone.utc)
     previous_updated_at = _timestamp(packet["updated_at"])
@@ -1311,6 +1610,8 @@ def validate_manifests(
         if packet_id in packets:
             raise ManifestValidationError(f"duplicate packet_id: {packet_id}")
         packets[packet_id] = (document, path)
+
+    superseded, retained_records = validate_packet_supersessions(packets)
 
     for raw_path in evidence_paths:
         path = _workspace_manifest_path(root, raw_path)
@@ -1396,7 +1697,13 @@ def validate_manifests(
                     f"{', '.join(mismatched_bases)}"
                 )
         if verify_current:
-            validate_current_checkpoint(root, packets, parked)
+            validate_current_checkpoint(
+                root,
+                packets,
+                parked,
+                superseded,
+                retained_records,
+            )
     return len(packets), len(evidence)
 
 
@@ -1410,11 +1717,6 @@ def main() -> int:
         "--allow-partial",
         action="store_true",
         help="Validate an explicitly incomplete packet set instead of the required R0 set.",
-    )
-    parser.add_argument(
-        "--no-verify-current",
-        action="store_true",
-        help="Validate manifest structure without comparing dirty checkpoints to the live trees.",
     )
     parser.add_argument(
         "--promote-packet",
@@ -1477,7 +1779,7 @@ def main() -> int:
             require_packets=args.require_packets,
             require_r0_local_set=not args.allow_partial,
             parked_path=DEFAULT_PARKED_WORK_MANIFEST,
-            verify_current=not args.no_verify_current,
+            verify_current=True,
         )
     except ManifestValidationError as exc:
         print(f"architecture-release-manifests: ERROR {exc}")

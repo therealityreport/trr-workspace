@@ -30,7 +30,7 @@
   ],
   "properties": {
     "schema_version": {
-      "const": 2
+      "enum": [2, 3]
     },
     "packet_id": {
       "$ref": "#/$defs/identifier"
@@ -85,6 +85,14 @@
       "uniqueItems": true,
       "items": {
         "$ref": "#/$defs/ownedPath"
+      }
+    },
+    "supersedes": {
+      "description": "Version 3 packets explicitly transfer current ownership of overlapping paths from earlier packets. Historical packet provenance remains immutable.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/supersession"
       }
     },
     "contracts": {
@@ -326,6 +334,26 @@
       }
     }
   },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"schema_version": {"const": 3}},
+        "required": ["schema_version"]
+      },
+      "then": {
+        "required": ["supersedes"]
+      }
+    },
+    {
+      "if": {
+        "properties": {"schema_version": {"const": 2}},
+        "required": ["schema_version"]
+      },
+      "then": {
+        "properties": {"supersedes": {"maxItems": 0}}
+      }
+    }
+  ],
   "$defs": {
     "identifier": {
       "type": "string",
@@ -480,6 +508,53 @@
         },
         "reviewers": {
           "$ref": "#/$defs/uniqueStringArray"
+        }
+      }
+    },
+    "supersession": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["packet_id", "repository", "paths", "retained_path_records"],
+      "properties": {
+        "packet_id": {"$ref": "#/$defs/identifier"},
+        "repository": {
+          "enum": ["workspace", "app", "backend"]
+        },
+        "paths": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+          }
+        },
+        "retained_path_records": {
+          "description": "Per-path record digests for predecessor-owned paths that remain live after this handoff.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/retainedPathRecord"
+          }
+        }
+      }
+    },
+    "retainedPathRecord": {
+      "description": "Authenticates one still-live predecessor path. record_sha256 hashes the canonical path NUL mode NUL content-sha256 newline record used by owned_path_manifest_sha256.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "record_sha256"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+        },
+        "record_sha256": {
+          "$ref": "#/$defs/sha256"
         }
       }
     },

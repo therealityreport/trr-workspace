@@ -579,6 +579,470 @@ def commit_unrelated_change(repo: Path) -> None:
     git(repo, "commit", "-qm", "unrelated")
 
 
+def write_sequential_overlap_workspace(
+    tmp_path: Path,
+    *,
+    relation: str,
+) -> tuple[str, str]:
+    """Create a committed packet followed by a dirty packet for one shared path."""
+    module = load_module()
+    packet_paths, owned_paths = write_live_r0_workspace(tmp_path)
+    predecessor_id = REQUIRED_LOCAL_PACKET_IDS[0]
+    successor_id = "local-sequential-successor"
+    shared_path = owned_paths[predecessor_id]
+    predecessor_path = packet_paths[predecessor_id]
+
+    git(tmp_path, "add", shared_path)
+    git(tmp_path, "commit", "-qm", "committed predecessor candidate")
+    candidate_sha = git(tmp_path, "rev-parse", "HEAD")
+    predecessor = json.loads(predecessor_path.read_text(encoding="utf-8"))
+    predecessor["repositories"]["workspace"] = module.capture_committed_candidate(
+        tmp_path,
+        predecessor["repositories"]["workspace"]["base_sha"],
+        candidate_sha,
+        [shared_path],
+    )
+    predecessor["updated_at"] = "2026-07-16T00:00:02Z"
+    if relation == "mutual":
+        predecessor["schema_version"] = 3
+        predecessor["supersedes"] = [
+            {
+                "packet_id": successor_id,
+                "repository": "workspace",
+                "paths": [shared_path],
+                "retained_path_records": [],
+            }
+        ]
+    predecessor_path.write_text(json.dumps(predecessor), encoding="utf-8")
+
+    (tmp_path / shared_path).write_text("successor checkpoint\n", encoding="utf-8")
+    successor = packet()
+    successor_evidence = evidence()
+    evidence_id = f"ev.{successor_id}.quick"
+    successor.update(
+        {
+            "schema_version": 3,
+            "packet_id": successor_id,
+            "created_at": "2026-07-16T00:00:03Z",
+            "updated_at": "2026-07-16T00:00:04Z",
+            "repositories": {
+                "workspace": module.capture_local_dirty_checkpoint(
+                    tmp_path,
+                    candidate_sha,
+                    [shared_path],
+                ),
+                "app": module.capture_local_dirty_checkpoint(
+                    tmp_path / "TRR-APP",
+                    git(tmp_path / "TRR-APP", "rev-parse", "HEAD"),
+                    [],
+                ),
+                "backend": module.capture_local_dirty_checkpoint(
+                    tmp_path / "TRR-Backend",
+                    git(tmp_path / "TRR-Backend", "rev-parse", "HEAD"),
+                    [],
+                ),
+            },
+            "owned_paths": [
+                {
+                    "repository": "workspace",
+                    "path": shared_path,
+                    "task_id": 3,
+                    "reviewers": ["reviewer"],
+                }
+            ],
+            "supersedes": (
+                []
+                if relation == "silent"
+                else [
+                    {
+                        "packet_id": predecessor_id,
+                        "repository": "workspace",
+                        "paths": [shared_path],
+                        "retained_path_records": [],
+                    }
+                ]
+            ),
+        }
+    )
+    successor["validation"]["quick"]["evidence_ids"] = [evidence_id]
+    successor["validation"]["evidence_ids"] = [evidence_id]
+    successor["review"]["evidence_ids"] = [evidence_id]
+    for case in successor["contracts"]["compatibility_matrix"]:
+        case["evidence_ids"] = [evidence_id]
+    successor_evidence["packet_id"] = successor_id
+    successor_evidence["evidence_id"] = evidence_id
+
+    packet_dir = tmp_path / "docs/workspace/release-packets"
+    evidence_dir = tmp_path / "docs/workspace/architecture-evidence"
+    (packet_dir / f"{successor_id}.json").write_text(
+        json.dumps(successor),
+        encoding="utf-8",
+    )
+    (evidence_dir / f"{successor_id}.quick.json").write_text(
+        json.dumps(successor_evidence),
+        encoding="utf-8",
+    )
+    return predecessor_id, successor_id
+
+
+def write_partial_local_supersession_workspace(tmp_path: Path) -> str:
+    """Create a two-path local predecessor with one path superseded."""
+    module = load_module()
+    packet_paths, owned_paths = write_live_r0_workspace(tmp_path)
+    predecessor_id = REQUIRED_LOCAL_PACKET_IDS[0]
+    successor_id = "local-partial-successor"
+    shared_path = owned_paths[predecessor_id]
+    sibling_path = f"owned/{predecessor_id}-sibling.txt"
+    (tmp_path / sibling_path).write_text("retained sibling\n", encoding="utf-8")
+
+    predecessor_path = packet_paths[predecessor_id]
+    predecessor = json.loads(predecessor_path.read_text(encoding="utf-8"))
+    base_sha = predecessor["repositories"]["workspace"]["base_sha"]
+    predecessor["repositories"]["workspace"] = module.capture_local_dirty_checkpoint(
+        tmp_path,
+        base_sha,
+        [shared_path, sibling_path],
+    )
+    predecessor["owned_paths"].append(
+        {
+            "repository": "workspace",
+            "path": sibling_path,
+            "task_id": 3,
+            "reviewers": ["reviewer"],
+        }
+    )
+    predecessor_path.write_text(json.dumps(predecessor), encoding="utf-8")
+
+    retained_record_sha256 = hashlib.sha256(
+        module._owned_path_record(tmp_path, sibling_path)
+    ).hexdigest()
+    (tmp_path / shared_path).write_text("successor checkpoint\n", encoding="utf-8")
+    successor = packet()
+    successor_evidence = evidence()
+    evidence_id = f"ev.{successor_id}.quick"
+    successor.update(
+        {
+            "schema_version": 3,
+            "packet_id": successor_id,
+            "created_at": "2026-07-16T00:00:03Z",
+            "updated_at": "2026-07-16T00:00:04Z",
+            "repositories": {
+                "workspace": module.capture_local_dirty_checkpoint(
+                    tmp_path,
+                    base_sha,
+                    [shared_path],
+                ),
+                "app": module.capture_local_dirty_checkpoint(
+                    tmp_path / "TRR-APP",
+                    git(tmp_path / "TRR-APP", "rev-parse", "HEAD"),
+                    [],
+                ),
+                "backend": module.capture_local_dirty_checkpoint(
+                    tmp_path / "TRR-Backend",
+                    git(tmp_path / "TRR-Backend", "rev-parse", "HEAD"),
+                    [],
+                ),
+            },
+            "owned_paths": [
+                {
+                    "repository": "workspace",
+                    "path": shared_path,
+                    "task_id": 3,
+                    "reviewers": ["reviewer"],
+                }
+            ],
+            "supersedes": [
+                {
+                    "packet_id": predecessor_id,
+                    "repository": "workspace",
+                    "paths": [shared_path],
+                    "retained_path_records": [
+                        {
+                            "path": sibling_path,
+                            "record_sha256": retained_record_sha256,
+                        }
+                    ],
+                }
+            ],
+        }
+    )
+    successor["validation"]["quick"]["evidence_ids"] = [evidence_id]
+    successor["validation"]["evidence_ids"] = [evidence_id]
+    successor["review"]["evidence_ids"] = [evidence_id]
+    for case in successor["contracts"]["compatibility_matrix"]:
+        case["evidence_ids"] = [evidence_id]
+    successor_evidence["packet_id"] = successor_id
+    successor_evidence["evidence_id"] = evidence_id
+
+    packet_dir = tmp_path / "docs/workspace/release-packets"
+    evidence_dir = tmp_path / "docs/workspace/architecture-evidence"
+    (packet_dir / f"{successor_id}.json").write_text(
+        json.dumps(successor),
+        encoding="utf-8",
+    )
+    (evidence_dir / f"{successor_id}.quick.json").write_text(
+        json.dumps(successor_evidence),
+        encoding="utf-8",
+    )
+    return sibling_path
+
+
+def write_sequential_disjoint_partial_supersession_workspace(
+    tmp_path: Path,
+    *,
+    equal_successor_timestamps: bool = False,
+    omit_records_that_transfer_later: bool = False,
+) -> tuple[Path, Path, list[str]]:
+    """Create two disjoint partial handoffs from one five-path local packet."""
+    module = load_module()
+    packet_paths, original_owned_paths = write_live_r0_workspace(tmp_path)
+    predecessor_id = REQUIRED_LOCAL_PACKET_IDS[0]
+    (tmp_path / original_owned_paths[predecessor_id]).write_text(
+        "base\n",
+        encoding="utf-8",
+    )
+    predecessor_path = packet_paths[predecessor_id]
+    predecessor = json.loads(predecessor_path.read_text(encoding="utf-8"))
+    base_sha = predecessor["repositories"]["workspace"]["base_sha"]
+    paths = [f"owned/{predecessor_id}-{name}.txt" for name in "abcde"]
+    for relative_path in paths:
+        (tmp_path / relative_path).write_text(
+            f"predecessor {relative_path}\n",
+            encoding="utf-8",
+        )
+    predecessor["repositories"]["workspace"] = module.capture_local_dirty_checkpoint(
+        tmp_path,
+        base_sha,
+        paths,
+    )
+    predecessor["owned_paths"] = [
+        {
+            "repository": "workspace",
+            "path": relative_path,
+            "task_id": 3,
+            "reviewers": ["reviewer"],
+        }
+        for relative_path in paths
+    ]
+    predecessor_path.write_text(json.dumps(predecessor), encoding="utf-8")
+    record_sha256 = {
+        relative_path: hashlib.sha256(
+            module._owned_path_record(tmp_path, relative_path)
+        ).hexdigest()
+        for relative_path in paths
+    }
+
+    def write_successor(
+        packet_id: str,
+        created_at: str,
+        claimed_paths: list[str],
+        retained_paths: list[str],
+    ) -> Path:
+        successor = packet()
+        successor_evidence = evidence()
+        evidence_id = f"ev.{packet_id}.quick"
+        successor.update(
+            {
+                "schema_version": 3,
+                "packet_id": packet_id,
+                "created_at": created_at,
+                "updated_at": "2026-07-16T00:00:06Z",
+                "repositories": {
+                    "workspace": module.capture_local_dirty_checkpoint(
+                        tmp_path,
+                        base_sha,
+                        claimed_paths,
+                    ),
+                    "app": module.capture_local_dirty_checkpoint(
+                        tmp_path / "TRR-APP",
+                        git(tmp_path / "TRR-APP", "rev-parse", "HEAD"),
+                        [],
+                    ),
+                    "backend": module.capture_local_dirty_checkpoint(
+                        tmp_path / "TRR-Backend",
+                        git(tmp_path / "TRR-Backend", "rev-parse", "HEAD"),
+                        [],
+                    ),
+                },
+                "owned_paths": [
+                    {
+                        "repository": "workspace",
+                        "path": relative_path,
+                        "task_id": 3,
+                        "reviewers": ["reviewer"],
+                    }
+                    for relative_path in claimed_paths
+                ],
+                "supersedes": [
+                    {
+                        "packet_id": predecessor_id,
+                        "repository": "workspace",
+                        "paths": claimed_paths,
+                        "retained_path_records": [
+                            {
+                                "path": relative_path,
+                                "record_sha256": record_sha256[relative_path],
+                            }
+                            for relative_path in retained_paths
+                        ],
+                    }
+                ],
+            }
+        )
+        successor["validation"]["quick"]["evidence_ids"] = [evidence_id]
+        successor["validation"]["evidence_ids"] = [evidence_id]
+        successor["review"]["evidence_ids"] = [evidence_id]
+        for case in successor["contracts"]["compatibility_matrix"]:
+            case["evidence_ids"] = [evidence_id]
+        successor_evidence["packet_id"] = packet_id
+        successor_evidence["evidence_id"] = evidence_id
+        packet_path = tmp_path / "docs/workspace/release-packets" / f"{packet_id}.json"
+        evidence_path = (
+            tmp_path / "docs/workspace/architecture-evidence" / f"{packet_id}.quick.json"
+        )
+        packet_path.write_text(json.dumps(successor), encoding="utf-8")
+        evidence_path.write_text(json.dumps(successor_evidence), encoding="utf-8")
+        return packet_path
+
+    first_id = "local-partial-successor-one"
+    second_id = "local-partial-successor-two"
+    (tmp_path / paths[4]).write_text("first successor\n", encoding="utf-8")
+    first_path = write_successor(
+        first_id,
+        "2026-07-16T00:00:03Z",
+        [paths[4]],
+        paths[2:4] if omit_records_that_transfer_later else paths[:4],
+    )
+    (tmp_path / paths[0]).write_text("second successor a\n", encoding="utf-8")
+    (tmp_path / paths[1]).write_text("second successor b\n", encoding="utf-8")
+    second_path = write_successor(
+        second_id,
+        "2026-07-16T00:00:03Z"
+        if equal_successor_timestamps
+        else "2026-07-16T00:00:05Z",
+        paths[:2],
+        paths[2:4],
+    )
+    return first_path, second_path, paths
+
+
+def write_three_generation_supersession_workspace(
+    tmp_path: Path,
+    *,
+    relation: str = "chain",
+) -> None:
+    """Create one shared path owned through predecessor -> successor -> latest."""
+    write_partial_local_supersession_workspace(tmp_path)
+    middle_id = "local-partial-successor"
+    latest_id = "local-third-generation-successor"
+    middle_path = (
+        tmp_path / "docs/workspace/release-packets" / f"{middle_id}.json"
+    )
+    middle = json.loads(middle_path.read_text(encoding="utf-8"))
+    shared_path = middle["repositories"]["workspace"]["owned_paths"][0]
+    base_sha = middle["repositories"]["workspace"]["base_sha"]
+    oldest_id = REQUIRED_LOCAL_PACKET_IDS[0]
+    oldest_retained_records = middle["supersedes"][0]["retained_path_records"]
+    if relation == "merge":
+        middle["supersedes"] = []
+        middle_path.write_text(json.dumps(middle), encoding="utf-8")
+    (tmp_path / shared_path).write_text("third generation\n", encoding="utf-8")
+
+    module = load_module()
+    latest = packet()
+    latest_evidence = evidence()
+    evidence_id = f"ev.{latest_id}.quick"
+    latest.update(
+        {
+            "schema_version": 3,
+            "packet_id": latest_id,
+            "created_at": "2026-07-16T00:00:05Z",
+            "updated_at": "2026-07-16T00:00:06Z",
+            "repositories": {
+                "workspace": module.capture_local_dirty_checkpoint(
+                    tmp_path,
+                    base_sha,
+                    [shared_path],
+                ),
+                "app": module.capture_local_dirty_checkpoint(
+                    tmp_path / "TRR-APP",
+                    git(tmp_path / "TRR-APP", "rev-parse", "HEAD"),
+                    [],
+                ),
+                "backend": module.capture_local_dirty_checkpoint(
+                    tmp_path / "TRR-Backend",
+                    git(tmp_path / "TRR-Backend", "rev-parse", "HEAD"),
+                    [],
+                ),
+            },
+            "owned_paths": [
+                {
+                    "repository": "workspace",
+                    "path": shared_path,
+                    "task_id": 3,
+                    "reviewers": ["reviewer"],
+                }
+            ],
+            "supersedes": (
+                [
+                    {
+                        "packet_id": oldest_id,
+                        "repository": "workspace",
+                        "paths": [shared_path],
+                        "retained_path_records": oldest_retained_records,
+                    },
+                    {
+                        "packet_id": middle_id,
+                        "repository": "workspace",
+                        "paths": [shared_path],
+                        "retained_path_records": [],
+                    },
+                ]
+                if relation == "merge"
+                else [
+                    {
+                        "packet_id": oldest_id if relation == "fork" else middle_id,
+                        "repository": "workspace",
+                        "paths": [shared_path],
+                        "retained_path_records": [],
+                    }
+                ]
+            ),
+        }
+    )
+    latest["validation"]["quick"]["evidence_ids"] = [evidence_id]
+    latest["validation"]["evidence_ids"] = [evidence_id]
+    latest["review"]["evidence_ids"] = [evidence_id]
+    for case in latest["contracts"]["compatibility_matrix"]:
+        case["evidence_ids"] = [evidence_id]
+    latest_evidence["packet_id"] = latest_id
+    latest_evidence["evidence_id"] = evidence_id
+
+    packet_dir = tmp_path / "docs/workspace/release-packets"
+    evidence_dir = tmp_path / "docs/workspace/architecture-evidence"
+    (packet_dir / f"{latest_id}.json").write_text(
+        json.dumps(latest),
+        encoding="utf-8",
+    )
+    (evidence_dir / f"{latest_id}.quick.json").write_text(
+        json.dumps(latest_evidence),
+        encoding="utf-8",
+    )
+    if relation == "cycle":
+        oldest_path = packet_dir / f"{oldest_id}.json"
+        oldest = json.loads(oldest_path.read_text(encoding="utf-8"))
+        oldest["schema_version"] = 3
+        oldest["supersedes"] = [
+            {
+                "packet_id": latest_id,
+                "repository": "workspace",
+                "paths": [shared_path],
+                "retained_path_records": [],
+            }
+        ]
+        oldest_path.write_text(json.dumps(oldest), encoding="utf-8")
+
+
 def test_valid_packet_and_evidence_pass(tmp_path: Path) -> None:
     module = load_module()
     packet_path, evidence_path = write_workspace(tmp_path, packet(), evidence())
@@ -857,6 +1321,219 @@ def test_default_cli_accepts_candidate_commit_then_metadata_receipt_commit(
     assert "architecture-release-manifests: OK packets=9 evidence=9" in validation.stdout
 
 
+def test_default_cli_accepts_explicit_sequential_supersession(tmp_path: Path) -> None:
+    predecessor_id, successor_id = write_sequential_overlap_workspace(
+        tmp_path,
+        relation="explicit",
+    )
+
+    validation = run_checker(tmp_path)
+
+    assert validation.returncode == 0, validation.stdout + validation.stderr
+    assert "architecture-release-manifests: OK packets=10 evidence=10" in validation.stdout
+    assert predecessor_id != successor_id
+
+
+def test_default_cli_accepts_partial_local_supersession_with_retained_records(
+    tmp_path: Path,
+) -> None:
+    write_partial_local_supersession_workspace(tmp_path)
+
+    validation = run_checker(tmp_path)
+
+    assert validation.returncode == 0, validation.stdout + validation.stderr
+    assert "architecture-release-manifests: OK packets=10 evidence=10" in validation.stdout
+
+
+def test_default_cli_rejects_drift_in_retained_predecessor_sibling(
+    tmp_path: Path,
+) -> None:
+    sibling_path = write_partial_local_supersession_workspace(tmp_path)
+    (tmp_path / sibling_path).write_text("unrecorded sibling drift\n", encoding="utf-8")
+
+    validation = run_checker(tmp_path)
+
+    assert validation.returncode == 1
+    assert "retained predecessor path record does not match" in validation.stdout
+
+
+def test_default_cli_accepts_sequential_disjoint_partial_local_supersessions(
+    tmp_path: Path,
+) -> None:
+    write_sequential_disjoint_partial_supersession_workspace(tmp_path)
+
+    validation = run_checker(tmp_path)
+
+    assert validation.returncode == 0, validation.stdout + validation.stderr
+    assert "architecture-release-manifests: OK packets=11 evidence=11" in validation.stdout
+
+
+def test_default_cli_accepts_legacy_omitted_records_later_transferred(
+    tmp_path: Path,
+) -> None:
+    write_sequential_disjoint_partial_supersession_workspace(
+        tmp_path,
+        omit_records_that_transfer_later=True,
+    )
+
+    validation = run_checker(tmp_path)
+
+    assert validation.returncode == 0, validation.stdout + validation.stderr
+    assert "architecture-release-manifests: OK packets=11 evidence=11" in validation.stdout
+
+
+def test_default_cli_uses_packet_id_to_order_equal_timestamp_partial_handoffs(
+    tmp_path: Path,
+) -> None:
+    write_sequential_disjoint_partial_supersession_workspace(
+        tmp_path,
+        equal_successor_timestamps=True,
+    )
+
+    validation = run_checker(tmp_path)
+
+    assert validation.returncode == 0, validation.stdout + validation.stderr
+    assert "architecture-release-manifests: OK packets=11 evidence=11" in validation.stdout
+
+
+def test_default_cli_rejects_final_live_path_missing_from_every_handoff(
+    tmp_path: Path,
+) -> None:
+    first_path, second_path, _ = write_sequential_disjoint_partial_supersession_workspace(
+        tmp_path
+    )
+    for packet_path in (first_path, second_path):
+        successor = json.loads(packet_path.read_text(encoding="utf-8"))
+        successor["supersedes"][0]["retained_path_records"] = []
+        packet_path.write_text(json.dumps(successor), encoding="utf-8")
+
+    validation = run_checker(tmp_path)
+
+    assert validation.returncode == 1
+    assert "final retained predecessor path records must match" in validation.stdout
+    assert "missing" in validation.stdout
+
+
+def test_default_cli_rejects_conflicting_repeated_retained_record_hashes(
+    tmp_path: Path,
+) -> None:
+    _, second_path, _ = write_sequential_disjoint_partial_supersession_workspace(tmp_path)
+    successor = json.loads(second_path.read_text(encoding="utf-8"))
+    successor["supersedes"][0]["retained_path_records"][0]["record_sha256"] = "0" * 64
+    second_path.write_text(json.dumps(successor), encoding="utf-8")
+
+    validation = run_checker(tmp_path)
+
+    assert validation.returncode == 1
+    assert "conflicts with earlier handoff" in validation.stdout
+
+
+def test_default_cli_rejects_retained_record_claimed_in_same_handoff(
+    tmp_path: Path,
+) -> None:
+    first_path, second_path, _ = write_sequential_disjoint_partial_supersession_workspace(
+        tmp_path
+    )
+    first = json.loads(first_path.read_text(encoding="utf-8"))
+    successor = json.loads(second_path.read_text(encoding="utf-8"))
+    successor["supersedes"][0]["retained_path_records"].insert(
+        0,
+        first["supersedes"][0]["retained_path_records"][0]
+    )
+    second_path.write_text(json.dumps(successor), encoding="utf-8")
+
+    validation = run_checker(tmp_path)
+
+    assert validation.returncode == 1
+    assert "claimed in the same handoff" in validation.stdout
+
+
+def test_default_cli_rejects_retained_record_already_transferred(
+    tmp_path: Path,
+) -> None:
+    _, second_path, paths = write_sequential_disjoint_partial_supersession_workspace(
+        tmp_path
+    )
+    successor = json.loads(second_path.read_text(encoding="utf-8"))
+    successor["supersedes"][0]["retained_path_records"].append(
+        {
+            "path": paths[4],
+            "record_sha256": "0" * 64,
+        }
+    )
+    second_path.write_text(json.dumps(successor), encoding="utf-8")
+
+    validation = run_checker(tmp_path)
+
+    assert validation.returncode == 1
+    assert "was already transferred" in validation.stdout
+
+
+def test_default_cli_accepts_three_generation_supersession_chain(
+    tmp_path: Path,
+) -> None:
+    write_three_generation_supersession_workspace(tmp_path)
+
+    validation = run_checker(tmp_path)
+
+    assert validation.returncode == 0, validation.stdout + validation.stderr
+    assert "architecture-release-manifests: OK packets=11 evidence=11" in validation.stdout
+
+
+def test_default_cli_rejects_supersession_fork(tmp_path: Path) -> None:
+    write_three_generation_supersession_workspace(tmp_path, relation="fork")
+
+    validation = run_checker(tmp_path)
+
+    assert validation.returncode == 1
+    assert "ambiguous supersession fork" in validation.stdout
+
+
+def test_default_cli_rejects_supersession_cycle(tmp_path: Path) -> None:
+    write_three_generation_supersession_workspace(tmp_path, relation="cycle")
+
+    validation = run_checker(tmp_path)
+
+    assert validation.returncode == 1
+    assert "supersession cycle" in validation.stdout
+
+
+def test_default_cli_rejects_supersession_merge(tmp_path: Path) -> None:
+    write_three_generation_supersession_workspace(tmp_path, relation="merge")
+
+    validation = run_checker(tmp_path)
+
+    assert validation.returncode == 1
+    assert "ambiguous supersession merge" in validation.stdout
+
+
+def test_default_cli_rejects_silent_sequential_overlap(tmp_path: Path) -> None:
+    write_sequential_overlap_workspace(tmp_path, relation="silent")
+
+    validation = run_checker(tmp_path)
+
+    assert validation.returncode == 1
+    assert "silent owned-path overlap" in validation.stdout
+
+
+def test_default_cli_rejects_ambiguous_mutual_supersession(tmp_path: Path) -> None:
+    write_sequential_overlap_workspace(tmp_path, relation="mutual")
+
+    validation = run_checker(tmp_path)
+
+    assert validation.returncode == 1
+    assert "ambiguous mutual supersession" in validation.stdout
+
+
+def test_cli_has_no_current_verification_bypass(tmp_path: Path) -> None:
+    write_live_r0_workspace(tmp_path)
+
+    validation = run_checker(tmp_path, "--no-verify-current")
+
+    assert validation.returncode == 2
+    assert "unrecognized arguments: --no-verify-current" in validation.stderr
+
+
 def test_cli_can_promote_app_and_backend_before_gate_4_deployment_receipts(
     tmp_path: Path,
 ) -> None:
@@ -1030,7 +1707,6 @@ def test_cli_rejects_nonpassing_or_nonlocal_evidence_for_pass_claims(
         "--evidence",
         claimed_evidence_path.relative_to(tmp_path).as_posix(),
         "--allow-partial",
-        "--no-verify-current",
     )
 
     assert validation.returncode == 1
@@ -1215,6 +1891,8 @@ def test_packet_cannot_borrow_evidence_from_another_packet(tmp_path: Path) -> No
     packet_one_path, evidence_one_path = write_workspace(tmp_path, packet_one, evidence())
 
     packet_two = json.loads(json.dumps(packet()).replace("packet-1", "packet-2"))
+    packet_two["repositories"]["workspace"]["owned_paths"] = ["example-2"]
+    packet_two["owned_paths"][0]["path"] = "example-2"
     evidence_two = json.loads(json.dumps(evidence()).replace("packet-1", "packet-2"))
     packet_two_path = tmp_path / "packet-2.json"
     evidence_two_path = tmp_path / "evidence-2.json"

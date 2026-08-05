@@ -13,11 +13,7 @@ from scripts import runtime_capacity
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "docs" / "workspace" / "runtime-capacity.json"
 SOCIAL_IMPLEMENTATION = (
-    ROOT
-    / "TRR-Backend"
-    / "trr_backend"
-    / "socials"
-    / "social_season_analytics_impl.py"
+    ROOT / "TRR-Backend" / "trr_backend" / "socials" / "social_season_analytics_impl.py"
 )
 
 
@@ -127,6 +123,41 @@ def test_social_dispatch_fallback_must_feed_the_returned_resolver(
         )
 
 
+def test_social_dispatch_fallback_ignores_nested_resolver_returns(
+    tmp_path: Path,
+) -> None:
+    payload = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    implementation = tmp_path / "social_impl.py"
+    implementation.write_text(
+        "\n".join(
+            (
+                "SOCIAL_MODAL_DISPATCH_LIMIT_DEFAULT = 4",
+                "",
+                "def _modal_dispatch_limit():",
+                "    def nested():",
+                "        return _resolve_int_env_with_bounds(",
+                "            'SOCIAL_MODAL_DISPATCH_LIMIT',",
+                "            SOCIAL_MODAL_DISPATCH_LIMIT_DEFAULT,",
+                "            minimum=1,",
+                "            maximum=25,",
+                "        )",
+                "    return 12",
+                "",
+            )
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(
+        runtime_capacity.CapacityContractError,
+        match="_modal_dispatch_limit must pass SOCIAL_MODAL_DISPATCH_LIMIT_DEFAULT to its returned resolver",
+    ):
+        runtime_capacity.validate_social_dispatch_fallback(
+            payload,
+            implementation_path=implementation,
+        )
+
+
 def test_enabled_profile_effective_values_are_preserved_from_pre_gate_baseline() -> (
     None
 ):
@@ -195,3 +226,25 @@ def test_runtime_capacity_projection_check_passes() -> None:
 
     assert completed.returncode == 0, completed.stderr or completed.stdout
     assert "runtime-capacity: OK" in completed.stdout
+
+
+def test_missing_profile_override_uses_capacity_contract_error(tmp_path: Path) -> None:
+    payload = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    payload["profile_contexts"] = {}
+    payload["profile_overrides"] = {
+        "missing": {
+            "remote_social_enabled": False,
+            "stage_caps": {
+                "posts": 0,
+                "comments": 0,
+                "media_mirror": 0,
+                "comment_media_mirror": 0,
+            },
+        }
+    }
+
+    with pytest.raises(
+        runtime_capacity.CapacityContractError,
+        match=r"unable to read profile .*missing\.env",
+    ):
+        runtime_capacity.validate_projections(payload, root=tmp_path)

@@ -8,7 +8,7 @@ trust_level = "trusted"
 
 [mcp_servers.chrome-devtools]
 command = "__HOME__/.codex/bin/codex-chrome-devtools-mcp-global.sh"
-env = { CODEX_CHROME_MODE = "shared", CODEX_CHROME_HEADLESS = "1", CODEX_CHROME_AUTO_LAUNCH = "1", CODEX_CHROME_SEED_PROFILE_DIR = "__HOME__/.chrome-profiles/codex-agent" }
+env = { CODEX_CHROME_MODE = "shared", CODEX_CHROME_HEADLESS = "1", CODEX_CHROME_AUTO_LAUNCH = "1", CODEX_CHROME_SEED_PROFILE_DIR = "__HOME__/.chrome-profiles/openai-agent", CODEX_CHROME_PROFILE_DIR = "__HOME__/.chrome-profiles/openai-agent-devtools" }
 enabled = true
 startup_timeout_sec = 45
 tool_timeout_sec = 120

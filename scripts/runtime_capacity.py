@@ -6,6 +6,7 @@ import ast
 import json
 import re
 import sys
+from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
@@ -21,7 +22,7 @@ class CapacityContractError(RuntimeError):
 def load_manifest(path: Path = DEFAULT_MANIFEST) -> dict[str, Any]:
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
         raise CapacityContractError(f"unable to load {path}: {exc}") from exc
     if not isinstance(payload, dict):
         raise CapacityContractError("runtime-capacity manifest must be a JSON object")
@@ -159,7 +160,11 @@ def shell_projection(payload: dict[str, Any], context_name: str) -> dict[str, st
 
 def _parse_profile(path: Path) -> dict[str, str]:
     values: dict[str, str] = {}
-    for raw_line in path.read_text(encoding="utf-8").splitlines():
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except (OSError, UnicodeError) as exc:
+        raise CapacityContractError(f"unable to read profile {path}: {exc}") from exc
+    for raw_line in lines:
         line = raw_line.split("#", 1)[0].strip()
         if not line:
             continue
@@ -172,7 +177,18 @@ def _parse_profile(path: Path) -> dict[str, str]:
 
 def _modal_defaults() -> dict[str, str]:
     path = ROOT / "TRR-Backend" / "trr_backend" / "modal_jobs.py"
-    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    try:
+        source = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        raise CapacityContractError(
+            f"unable to read Modal runtime defaults from {path}: {exc}"
+        ) from exc
+    try:
+        tree = ast.parse(source, filename=str(path))
+    except (SyntaxError, ValueError) as exc:
+        raise CapacityContractError(
+            f"unable to parse Modal runtime defaults from {path}: {exc}"
+        ) from exc
     for node in tree.body:
         if not isinstance(node, ast.AnnAssign) or not isinstance(node.target, ast.Name):
             continue
@@ -193,6 +209,19 @@ def _modal_defaults() -> dict[str, str]:
                 values[key] = str(value)
         return values
     raise CapacityContractError("unable to locate _CANONICAL_MODAL_RUNTIME_DEFAULTS")
+
+
+def _owned_return_nodes(node: ast.AST) -> Iterator[ast.Return]:
+    """Yield returns owned by a function body, excluding nested scopes."""
+    if isinstance(node, ast.Return):
+        yield node
+        return
+    if isinstance(
+        node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Lambda)
+    ):
+        return
+    for child in ast.iter_child_nodes(node):
+        yield from _owned_return_nodes(child)
 
 
 def validate_social_dispatch_fallback(
@@ -250,9 +279,9 @@ def validate_social_dispatch_fallback(
         raise CapacityContractError("unable to locate _modal_dispatch_limit")
     returned_resolver_calls = [
         node.value
-        for node in ast.walk(dispatch_function)
-        if isinstance(node, ast.Return)
-        and isinstance(node.value, ast.Call)
+        for statement in dispatch_function.body
+        for node in _owned_return_nodes(statement)
+        if isinstance(node.value, ast.Call)
         and isinstance(node.value.func, ast.Name)
         and node.value.func.id == "_resolve_int_env_with_bounds"
     ]
@@ -279,17 +308,6 @@ def validate_projections(payload: dict[str, Any], root: Path = ROOT) -> None:
     profile_contexts = payload.get("profile_contexts")
     if not isinstance(profile_contexts, dict):
         raise CapacityContractError("profile_contexts must be an object")
-
-    validate_social_dispatch_fallback(
-        payload,
-        implementation_path=(
-            root
-            / "TRR-Backend"
-            / "trr_backend"
-            / "socials"
-            / "social_season_analytics_impl.py"
-        ),
-    )
 
     for profile_name, context_name in profile_contexts.items():
         profile_path = root / "profiles" / f"{profile_name}.env"
@@ -360,6 +378,17 @@ def validate_projections(payload: dict[str, Any], root: Path = ROOT) -> None:
                     f"profile override {profile_name} {env_key} differs from matrix"
                 )
 
+    validate_social_dispatch_fallback(
+        payload,
+        implementation_path=(
+            root
+            / "TRR-Backend"
+            / "trr_backend"
+            / "socials"
+            / "social_season_analytics_impl.py"
+        ),
+    )
+
     modal_defaults = _modal_defaults()
     hosted = contexts["hosted_modal"]
     expected_modal = {
@@ -395,7 +424,10 @@ def validate_projections(payload: dict[str, Any], root: Path = ROOT) -> None:
                 f"Modal projection {key}={modal_defaults.get(key)!r} does not match hosted matrix {expected_value}"
             )
 
-    makefile = (root / "Makefile").read_text(encoding="utf-8")
+    try:
+        makefile = (root / "Makefile").read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        raise CapacityContractError(f"unable to read Makefile: {exc}") from exc
     hybrid = contexts["workspace_hybrid"]
     for assignment in (
         f"WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT={hybrid['dispatch_batch_size']}",
@@ -407,9 +439,14 @@ def validate_projections(payload: dict[str, Any], root: Path = ROOT) -> None:
                 f"Makefile is missing hybrid projection: {assignment}"
             )
 
-    status_script = (root / "scripts" / "status-workspace.sh").read_text(
-        encoding="utf-8"
-    )
+    try:
+        status_script = (root / "scripts" / "status-workspace.sh").read_text(
+            encoding="utf-8"
+        )
+    except (OSError, UnicodeError) as exc:
+        raise CapacityContractError(
+            f"unable to read status-workspace.sh: {exc}"
+        ) from exc
     local = contexts["local_workspace"]
     for assignment in (
         'WORKSPACE_RUNTIME_CAPACITY_PROFILE="${WORKSPACE_RUNTIME_CAPACITY_PROFILE:-local_workspace}"',
@@ -472,9 +509,14 @@ def validate_projections(payload: dict[str, Any], root: Path = ROOT) -> None:
                     f"Makefile preset {target_name} is missing {key}={expected_value}"
                 )
 
-    runtime_adapter = (
-        root / "TRR-Backend" / "scripts" / "_workspace_runtime_env.py"
-    ).read_text(encoding="utf-8")
+    try:
+        runtime_adapter = (
+            root / "TRR-Backend" / "scripts" / "_workspace_runtime_env.py"
+        ).read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        raise CapacityContractError(
+            f"unable to read backend runtime adapter: {exc}"
+        ) from exc
     for workspace_key, runtime_key in (
         ("WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT", "SOCIAL_MODAL_DISPATCH_LIMIT"),
         (

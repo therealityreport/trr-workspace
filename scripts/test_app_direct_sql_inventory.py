@@ -446,30 +446,31 @@ def test_checked_in_exception_and_machine_readable_ledgers_cover_live_non_app_ro
     uses = module.collect_uses()
     records = module.load_exception_records(module.DEFAULT_EXCEPTIONS)
 
-    assert len(uses) == 145
+    assert len(uses) == 133
     assert sum(use.owner_alias == "app-local" for use in uses) == 133
-    assert sum(use.owner_alias == "admin-read-model" for use in uses) == 8
-    assert sum(use.owner_alias == "backend-shared-schema" for use in uses) == 4
-    assert len(records) == 12
+    assert sum(use.owner_alias == "admin-read-model" for use in uses) == 0
+    assert sum(use.owner_alias == "backend-shared-schema" for use in uses) == 0
+    assert records == []
     assert module.validate_exception_records(
         uses,
         records,
         fail_expired=True,
-        as_of=date(2026, 8, 5),
+        as_of=date(2026, 7, 15),
     ) == []
 
     inventory = json.loads(module.DEFAULT_JSON_OUTPUT.read_text(encoding="utf-8"))
     ledger = json.loads(module.DEFAULT_API_LEDGER.read_text(encoding="utf-8"))
     assert inventory["counts"] == {
-        "total": 145,
+        "total": 133,
         "app-local": 133,
-        "admin-read-model": 8,
-        "backend-shared-schema": 4,
+        "admin-read-model": 0,
+        "backend-shared-schema": 0,
     }
-    assert len(inventory["rows"]) == 145
+    assert len(inventory["rows"]) == 133
+    assert all(row["classification"] == "app-local" for row in inventory["rows"])
     assert ledger["counts"] == {
-        "total_non_app_local": 12,
-        "admin-read-model": 8,
-        "backend-shared-schema": 4,
+        "total_non_app_local": 0,
+        "admin-read-model": 0,
+        "backend-shared-schema": 0,
     }
-    assert len(ledger["rows"]) == 12
+    assert ledger["rows"] == []

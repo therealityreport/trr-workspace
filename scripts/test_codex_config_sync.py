@@ -12,11 +12,30 @@ ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "codex-config-sync.sh"
 
 
+def _install_universal_role_doctor(home: Path) -> Path:
+    doctor = (
+        home
+        / ".codex"
+        / "skills"
+        / "subagent-routing"
+        / "scripts"
+        / "sync-universal-roles.py"
+    )
+    doctor.parent.mkdir(parents=True, exist_ok=True)
+    doctor.write_text(
+        "import json\n"
+        "print(json.dumps({'status': 'ok', 'mode': 'check'}))\n",
+        encoding="utf-8",
+    )
+    return doctor
+
+
 def _run_sync(action: str, home: Path) -> subprocess.CompletedProcess[str]:
     env = os.environ.copy()
     env["HOME"] = str(home)
     env["CODEX_HOME"] = str(home / ".codex")
     env["CODEX_CONFIG_FILE"] = str(home / ".codex" / "config.toml")
+    env["CODEX_UNIVERSAL_ROLE_DOCTOR"] = str(_install_universal_role_doctor(home))
     return subprocess.run(
         ["/bin/bash", str(SCRIPT), action],
         cwd=ROOT,
@@ -56,6 +75,7 @@ def test_bootstrap_accepts_tracked_project_mcp_servers() -> None:
         env["HOME"] = str(home)
         env["CODEX_HOME"] = str(home / ".codex")
         env["CODEX_CONFIG_FILE"] = str(home / ".codex" / "config.toml")
+        env["CODEX_UNIVERSAL_ROLE_DOCTOR"] = str(_install_universal_role_doctor(home))
         result = subprocess.run(
             ["/bin/bash", str(temp_script), "bootstrap"],
             cwd=temp_root,
@@ -145,6 +165,30 @@ def test_validate_allows_disabled_named_skill_config() -> None:
     assert "Validation OK" in result.stdout
 
 
+def test_validate_allows_implicit_enabled_and_integral_float_timeouts() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        home = Path(tmp)
+        codex_home = home / ".codex"
+        codex_home.mkdir()
+
+        bootstrap = _run_sync("bootstrap", home)
+        assert bootstrap.returncode == 0, bootstrap.stderr
+
+        config = codex_home / "config.toml"
+        config_text = config.read_text(encoding="utf-8")
+        config.write_text(
+            config_text.replace("enabled = true\n", "")
+            .replace("startup_timeout_sec = 45", "startup_timeout_sec = 45.0")
+            .replace("tool_timeout_sec = 120", "tool_timeout_sec = 120.0"),
+            encoding="utf-8",
+        )
+
+        result = _run_sync("validate", home)
+
+    assert result.returncode == 0, result.stderr
+    assert "Validation OK" in result.stdout
+
+
 def test_validate_rejects_raw_context7_mcp_config() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         home = Path(tmp)
@@ -203,7 +247,7 @@ def test_bootstrap_repairs_invalid_service_tier() -> None:
         config_text = config.read_text(encoding="utf-8")
         first_table = config_text.index("\n[")
         config.write_text(
-            config_text[:first_table] + '\nservice_tier = "default"\n' + config_text[first_table:],
+                config_text[:first_table] + '\nservice_tier = "unsupported"\n' + config_text[first_table:],
             encoding="utf-8",
         )
 
@@ -212,4 +256,4 @@ def test_bootstrap_repairs_invalid_service_tier() -> None:
 
     assert repair.returncode == 0, repair.stderr
     assert 'service_tier = "fast"' in repaired_text
-    assert 'service_tier = "default"' not in repaired_text
+    assert 'service_tier = "unsupported"' not in repaired_text
