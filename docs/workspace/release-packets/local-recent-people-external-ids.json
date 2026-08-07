@@ -3,14 +3,14 @@
   "packet_id": "local-recent-people-external-ids",
   "capability": "Recent people and external-ID backend read models and app adapters",
   "created_at": "2026-07-16T20:52:42.770997Z",
-  "updated_at": "2026-07-16T20:52:42.770997Z",
+  "updated_at": "2026-08-07T22:19:42Z",
   "state": "implementation_complete_parked",
   "truth_scope": "local",
   "repositories": {
     "workspace": {
-      "revision_type": "local_dirty_checkpoint",
+      "revision_type": "committed_candidate",
       "base_sha": "df55c982ecf6741808536bfb6af308cc737372cf",
-      "candidate_sha": null,
+      "candidate_sha": "045e55ee86926b602dab32f5d4b64e36abab18da",
       "owned_paths": [],
       "owned_path_manifest_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "binary_tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -24,12 +24,12 @@
         "untracked": 0,
         "total": 0
       },
-      "candidate_commit_required_before_gate_4": true
+      "candidate_commit_required_before_gate_4": false
     },
     "app": {
-      "revision_type": "local_dirty_checkpoint",
+      "revision_type": "committed_candidate",
       "base_sha": "78681eac73c79e6534031fe1f050966edff9b844",
-      "candidate_sha": null,
+      "candidate_sha": "c8f81dc5fe53e3ca2b4f0abfe67ccf9611c75794",
       "owned_paths": [
         "apps/web/src/app/api/admin/recent-people/route.ts",
         "apps/web/src/app/api/admin/social/landing/route.ts",
@@ -43,24 +43,24 @@
         "apps/web/tests/social-landing-repository.test.ts",
         "apps/web/tests/social-landing-route-cache.test.ts"
       ],
-      "owned_path_manifest_sha256": "e6f237769eae001c03213808eb176bf9ce1636984f17a856b214281ec6abf9a0",
-      "binary_tracked_diff_sha256": "78953b416110ef74584c31554e04ed3369adddc0aeaedc0913eba57c6600fc90",
+      "owned_path_manifest_sha256": "5ee7e4d3c81511c342fe7a6e3b6dbba82caa319fc77df163e8a44b5cdb154c41",
+      "binary_tracked_diff_sha256": "48e99b6e017e8a61309daac137e80da8ba0a3217245abdca340024d7bfa9a9fb",
       "dirty_counts": {
-        "tracked_modified": 8,
+        "tracked_modified": 0,
         "tracked_added": 0,
-        "tracked_deleted": 1,
+        "tracked_deleted": 0,
         "tracked_renamed": 0,
         "tracked_copied": 0,
         "unmerged": 0,
-        "untracked": 2,
-        "total": 11
+        "untracked": 0,
+        "total": 0
       },
-      "candidate_commit_required_before_gate_4": true
+      "candidate_commit_required_before_gate_4": false
     },
     "backend": {
-      "revision_type": "local_dirty_checkpoint",
+      "revision_type": "committed_candidate",
       "base_sha": "0a3d2b59ec29304fb2765fd8cf996032e11c937b",
-      "candidate_sha": null,
+      "candidate_sha": "c49f023690b0051ec67510d994b115db4e0d0544",
       "owned_paths": [
         "api/routers/admin_people_reads.py",
         "api/routers/v2/external_ids.py",
@@ -75,19 +75,19 @@
         "trr_backend/repositories/person_external_ids.py",
         "trr_backend/services/person_read_cache.py"
       ],
-      "owned_path_manifest_sha256": "52cebfba995b4a749ff28e829ce7517ad2d9b547052b94c4e61ef2df5854bd51",
-      "binary_tracked_diff_sha256": "d822becb8b2989db34620ad95360f40f9d39d49c2ea0c987d0e80571cc9fdd26",
+      "owned_path_manifest_sha256": "7ad5001d19d72728af9964ecd2f27dabef36ad57c2865d66d9728a404025afe3",
+      "binary_tracked_diff_sha256": "2eaa7581d6f74a1b12886850300a2e75dbee31032e80f978ce50fa42c8bc870b",
       "dirty_counts": {
-        "tracked_modified": 2,
+        "tracked_modified": 0,
         "tracked_added": 0,
         "tracked_deleted": 0,
         "tracked_renamed": 0,
         "tracked_copied": 0,
         "unmerged": 0,
-        "untracked": 10,
-        "total": 12
+        "untracked": 0,
+        "total": 0
       },
-      "candidate_commit_required_before_gate_4": true
+      "candidate_commit_required_before_gate_4": false
     }
   },
   "owned_paths": [

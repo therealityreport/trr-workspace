@@ -3,14 +3,14 @@
   "packet_id": "local-foundation-runtime-guards",
   "capability": "Workspace durability, safe runtime, and provider guard foundations",
   "created_at": "2026-07-16T20:52:42.770997Z",
-  "updated_at": "2026-07-16T23:08:17Z",
+  "updated_at": "2026-08-07T22:19:42Z",
   "state": "implementation_complete_parked",
   "truth_scope": "local",
   "repositories": {
     "workspace": {
       "revision_type": "committed_candidate",
       "base_sha": "df55c982ecf6741808536bfb6af308cc737372cf",
-      "candidate_sha": "136bbf02c4d2c3290f61292b0e477403035c23b1",
+      "candidate_sha": "045e55ee86926b602dab32f5d4b64e36abab18da",
       "owned_paths": [
         "CONTEXT-MAP.md",
         "Makefile",
@@ -60,8 +60,8 @@
         "scripts/test_workspace_app_env_projection.py",
         "scripts/vercel-project-guard.py"
       ],
-      "owned_path_manifest_sha256": "20232641a72e08ab7872ace6e282ec2ebc98570abbbce154ab00e69c5ff4b39b",
-      "binary_tracked_diff_sha256": "020f35baa9d2eb0d2ce383909288e2e3a0c24074f1005cf81444c669351b8661",
+      "owned_path_manifest_sha256": "dea7d05403901310233b20cb4887ec55e67898b4d00711e2a52396737b9514f3",
+      "binary_tracked_diff_sha256": "d8f4de05b92e3748f89ea92362c1f3744a47e6ab2a29838c96299b361933196d",
       "dirty_counts": {
         "tracked_modified": 0,
         "tracked_added": 0,
@@ -75,31 +75,31 @@
       "candidate_commit_required_before_gate_4": false
     },
     "app": {
-      "revision_type": "local_dirty_checkpoint",
+      "revision_type": "committed_candidate",
       "base_sha": "78681eac73c79e6534031fe1f050966edff9b844",
-      "candidate_sha": null,
+      "candidate_sha": "c8f81dc5fe53e3ca2b4f0abfe67ccf9611c75794",
       "owned_paths": [
         "apps/web/tests/vercel-rollback-guard.test.ts",
         "scripts/vercel.sh"
       ],
-      "owned_path_manifest_sha256": "5dc06b12942d9a164c57e0628e172c713711a21908f4e7a6fa7fdf4114bada32",
-      "binary_tracked_diff_sha256": "d30e9eabdc80e04b91bb0df6c7940a6633b4f8a2cd8a41d4b19f6d909f08eca6",
+      "owned_path_manifest_sha256": "856082d7b09092f639cd286619390d999f66baefe99ab3d29edfed0ddd38bee8",
+      "binary_tracked_diff_sha256": "5f74af55a4b0d49f226a2d23db242982d503af3d4fceaf5e35b8623199c2d355",
       "dirty_counts": {
-        "tracked_modified": 1,
+        "tracked_modified": 0,
         "tracked_added": 0,
         "tracked_deleted": 0,
         "tracked_renamed": 0,
         "tracked_copied": 0,
         "unmerged": 0,
-        "untracked": 1,
-        "total": 2
+        "untracked": 0,
+        "total": 0
       },
-      "candidate_commit_required_before_gate_4": true
+      "candidate_commit_required_before_gate_4": false
     },
     "backend": {
-      "revision_type": "local_dirty_checkpoint",
+      "revision_type": "committed_candidate",
       "base_sha": "0a3d2b59ec29304fb2765fd8cf996032e11c937b",
-      "candidate_sha": null,
+      "candidate_sha": "c49f023690b0051ec67510d994b115db4e0d0544",
       "owned_paths": [
         "scripts/_workspace_runtime_env.py",
         "scripts/modal/allowed_invocations.json",
@@ -130,19 +130,19 @@
         "trr_backend/modal_jobs.py",
         "trr_backend/vision/people_count_service.py"
       ],
-      "owned_path_manifest_sha256": "9573d3f297c7693e40893aa91cd2564d5f0ada8c2069cb02ebdc4a70c5d655de",
-      "binary_tracked_diff_sha256": "03817a44b9ee8d6e05b5389336717fb87198400a3cc8202ff80efc93aac920aa",
+      "owned_path_manifest_sha256": "c2c39e1c73ca3c1fdbb4923fb585a1a6f14032b73608e08875bffea555173063",
+      "binary_tracked_diff_sha256": "44b0b1636eb45beddfd4511f68d4472045a2a9cbe1c76d87c3063bcd9e10e4bd",
       "dirty_counts": {
-        "tracked_modified": 24,
+        "tracked_modified": 0,
         "tracked_added": 0,
         "tracked_deleted": 0,
         "tracked_renamed": 0,
         "tracked_copied": 0,
         "unmerged": 0,
-        "untracked": 4,
-        "total": 28
+        "untracked": 0,
+        "total": 0
       },
-      "candidate_commit_required_before_gate_4": true
+      "candidate_commit_required_before_gate_4": false
     }
   },
   "owned_paths": [
@@ -878,7 +878,18 @@
       "app_name": "trr-backend-jobs",
       "app_ref": "trr_backend.modal_jobs",
       "candidate_sha": null,
-      "affected_functions": [],
+      "affected_functions": [
+        "probe_browser_image_runtime",
+        "run_show_season_media_watch_worker",
+        "poll_due_show_season_media_watches",
+        "run_admin_operation_v2",
+        "sweep_social_dispatch_queue",
+        "poll_decodo_proxy_usage",
+        "sync_nbcumv_official_images",
+        "heartbeat_remote_executors",
+        "purge_stale_social_worker_heartbeats",
+        "dispatch_show_season_media_watch_worker"
+      ],
       "evidence_ids": []
     },
     "vercel": {

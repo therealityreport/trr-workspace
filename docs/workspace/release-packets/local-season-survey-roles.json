@@ -3,14 +3,14 @@
   "packet_id": "local-season-survey-roles",
   "capability": "Season cast survey-role persistence and app adapter",
   "created_at": "2026-07-16T20:52:42.770997Z",
-  "updated_at": "2026-07-16T20:52:42.770997Z",
+  "updated_at": "2026-08-07T22:19:42Z",
   "state": "implementation_complete_parked",
   "truth_scope": "local",
   "repositories": {
     "workspace": {
-      "revision_type": "local_dirty_checkpoint",
+      "revision_type": "committed_candidate",
       "base_sha": "df55c982ecf6741808536bfb6af308cc737372cf",
-      "candidate_sha": null,
+      "candidate_sha": "045e55ee86926b602dab32f5d4b64e36abab18da",
       "owned_paths": [],
       "owned_path_manifest_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "binary_tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -24,12 +24,12 @@
         "untracked": 0,
         "total": 0
       },
-      "candidate_commit_required_before_gate_4": true
+      "candidate_commit_required_before_gate_4": false
     },
     "app": {
-      "revision_type": "local_dirty_checkpoint",
+      "revision_type": "committed_candidate",
       "base_sha": "78681eac73c79e6534031fe1f050966edff9b844",
-      "candidate_sha": null,
+      "candidate_sha": "c8f81dc5fe53e3ca2b4f0abfe67ccf9611c75794",
       "owned_paths": [
         "apps/web/src/app/api/admin/surveys/[surveyKey]/route.ts",
         "apps/web/src/app/api/admin/trr-api/shows/[showId]/seasons/[seasonNumber]/survey-cast/route.ts",
@@ -41,24 +41,24 @@
         "apps/web/tests/survey-detail-route.test.ts",
         "apps/web/tests/survey-from-show-route.test.ts"
       ],
-      "owned_path_manifest_sha256": "eaee21f9459359da3cfc19627a1bd962cc572148e53127dc9b5c06cc89bf13c0",
-      "binary_tracked_diff_sha256": "b7f9f50be9e44242aff100b71dbf81fe364c3a659b454f252b8950230b440642",
+      "owned_path_manifest_sha256": "896c80ae993cb056104043e55bbb216fc67ead9f86eba4fbb6febb089996277f",
+      "binary_tracked_diff_sha256": "42d893569180a97dea346c2f129873bce5ed3f9614996c742b80eb4a909d1947",
       "dirty_counts": {
-        "tracked_modified": 6,
+        "tracked_modified": 0,
         "tracked_added": 0,
         "tracked_deleted": 0,
         "tracked_renamed": 0,
         "tracked_copied": 0,
         "unmerged": 0,
-        "untracked": 3,
-        "total": 9
+        "untracked": 0,
+        "total": 0
       },
-      "candidate_commit_required_before_gate_4": true
+      "candidate_commit_required_before_gate_4": false
     },
     "backend": {
-      "revision_type": "local_dirty_checkpoint",
+      "revision_type": "committed_candidate",
       "base_sha": "0a3d2b59ec29304fb2765fd8cf996032e11c937b",
-      "candidate_sha": null,
+      "candidate_sha": "c49f023690b0051ec67510d994b115db4e0d0544",
       "owned_paths": [
         "api/routers/v2/season_cast_survey_roles.py",
         "api/schemas/v2/season_cast_survey_roles.py",
@@ -72,8 +72,8 @@
         "trr_backend/repositories/season_cast_survey_roles.py",
         "trr_backend/services/season_cast_survey_roles.py"
       ],
-      "owned_path_manifest_sha256": "d9ec443afd4450e4148a626d7e766aef6ee28f5e4ac82db0a90b8a0eb7027468",
-      "binary_tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "owned_path_manifest_sha256": "3df7eb86932cddf9ac3f44de51262ea538674453dd0611a4234e0ababeda4ebc",
+      "binary_tracked_diff_sha256": "205eae618c303d2cf37419f8b76070920a13a2d321833a6dfa53ee48d366b18c",
       "dirty_counts": {
         "tracked_modified": 0,
         "tracked_added": 0,
@@ -81,10 +81,10 @@
         "tracked_renamed": 0,
         "tracked_copied": 0,
         "unmerged": 0,
-        "untracked": 11,
-        "total": 11
+        "untracked": 0,
+        "total": 0
       },
-      "candidate_commit_required_before_gate_4": true
+      "candidate_commit_required_before_gate_4": false
     }
   },
   "owned_paths": [
@@ -294,7 +294,7 @@
   "migrations": {
     "expected_pending": [
       {
-        "id": "20260716133000_admin_season_cast_survey_roles.sql",
+        "id": "20260805140519",
         "sha256": "bc9ff362d6843b8a212084375017b1a199555f504bba07e46d9fc772d1c061c1"
       }
     ],

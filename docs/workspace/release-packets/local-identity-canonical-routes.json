@@ -3,38 +3,38 @@
   "packet_id": "local-identity-canonical-routes",
   "capability": "Canonical public identity, slug aliases, and route resolution",
   "created_at": "2026-07-16T20:52:42.770997Z",
-  "updated_at": "2026-07-16T20:52:42.770997Z",
+  "updated_at": "2026-08-07T22:19:42Z",
   "state": "implementation_complete_parked",
   "truth_scope": "local",
   "repositories": {
     "workspace": {
-      "revision_type": "local_dirty_checkpoint",
+      "revision_type": "committed_candidate",
       "base_sha": "df55c982ecf6741808536bfb6af308cc737372cf",
-      "candidate_sha": null,
+      "candidate_sha": "045e55ee86926b602dab32f5d4b64e36abab18da",
       "owned_paths": [
         "docs/workspace/api-migration-ledger.md",
         "docs/workspace/app-direct-sql-inventory.md",
         "scripts/app-direct-sql-inventory.py",
         "scripts/test_app_direct_sql_inventory.py"
       ],
-      "owned_path_manifest_sha256": "b8c104fb765dc47aaf3f172c4a6a7a0fb4474d9c7025d8f9416a350e1125b981",
-      "binary_tracked_diff_sha256": "b01ec5c2461138fb55f6eedd09ddc5d47911e5302ec58b33f17b769b0cb67af7",
+      "owned_path_manifest_sha256": "52539cded09a63eccda728382f3c5703971aa52b0d19c6f70fc07dca56b5c6d7",
+      "binary_tracked_diff_sha256": "96259908de8903ecf813654dc765321ef0c50eb9e468f39f4f49cebb798780b8",
       "dirty_counts": {
-        "tracked_modified": 4,
+        "tracked_modified": 0,
         "tracked_added": 0,
         "tracked_deleted": 0,
         "tracked_renamed": 0,
         "tracked_copied": 0,
         "unmerged": 0,
         "untracked": 0,
-        "total": 4
+        "total": 0
       },
-      "candidate_commit_required_before_gate_4": true
+      "candidate_commit_required_before_gate_4": false
     },
     "app": {
-      "revision_type": "local_dirty_checkpoint",
+      "revision_type": "committed_candidate",
       "base_sha": "78681eac73c79e6534031fe1f050966edff9b844",
-      "candidate_sha": null,
+      "candidate_sha": "c8f81dc5fe53e3ca2b4f0abfe67ccf9611c75794",
       "owned_paths": [
         "apps/web/package.json",
         "apps/web/scripts/generate-trr-v2-api-types.mjs",
@@ -69,24 +69,24 @@
         "apps/web/tests/trr-shows-repository-slug-query-safety.test.ts",
         "pnpm-lock.yaml"
       ],
-      "owned_path_manifest_sha256": "3c50c2a441ed3a860a3f552b50813a95e07e68a4198f1e744cc2b2ca2ad55946",
-      "binary_tracked_diff_sha256": "bdc0b9e230da647d07453e9ae8ae030672561568194cc97ccb0fd27586b4f6c6",
+      "owned_path_manifest_sha256": "a1d63efc1cdd2bb14c5126682680ac0d5000b73d459990fc814f597de2482d70",
+      "binary_tracked_diff_sha256": "df619b55a29646ad0298a22d48a779a9b5711b1487ad797b2b83808a3db5ca4b",
       "dirty_counts": {
-        "tracked_modified": 23,
+        "tracked_modified": 0,
         "tracked_added": 0,
         "tracked_deleted": 0,
         "tracked_renamed": 0,
         "tracked_copied": 0,
         "unmerged": 0,
-        "untracked": 9,
-        "total": 32
+        "untracked": 0,
+        "total": 0
       },
-      "candidate_commit_required_before_gate_4": true
+      "candidate_commit_required_before_gate_4": false
     },
     "backend": {
-      "revision_type": "local_dirty_checkpoint",
+      "revision_type": "committed_candidate",
       "base_sha": "0a3d2b59ec29304fb2765fd8cf996032e11c937b",
-      "candidate_sha": null,
+      "candidate_sha": "c49f023690b0051ec67510d994b115db4e0d0544",
       "owned_paths": [
         "api/auth.py",
         "api/main.py",
@@ -113,19 +113,19 @@
         "trr_backend/repositories/show_slug_reads.py",
         "trr_backend/services/public_identity.py"
       ],
-      "owned_path_manifest_sha256": "bf146950eaa08fb30fcd51c3a0ed833f54c524fcf4b79d64b9b62397946e3942",
-      "binary_tracked_diff_sha256": "1a07d428e74c7b948f4d75d56e23693424b796109b7fc97a6ea8504f37d65e80",
+      "owned_path_manifest_sha256": "e1e35aa90865389a7794319cd20dcba2a47fb0446eb5ce0bb960ff4695877fa9",
+      "binary_tracked_diff_sha256": "1af84416fba2c56ae1ab1c68ab88b01fad9fd36a662f94d65e4fcccbff073779",
       "dirty_counts": {
-        "tracked_modified": 2,
+        "tracked_modified": 0,
         "tracked_added": 0,
         "tracked_deleted": 0,
         "tracked_renamed": 0,
         "tracked_copied": 0,
         "unmerged": 0,
-        "untracked": 22,
-        "total": 24
+        "untracked": 0,
+        "total": 0
       },
-      "candidate_commit_required_before_gate_4": true
+      "candidate_commit_required_before_gate_4": false
     }
   },
   "owned_paths": [
@@ -655,22 +655,22 @@
   "migrations": {
     "expected_pending": [
       {
-        "id": "20260716040000_public_identity_slug_aliases.sql",
+        "id": "20260805140501",
         "sha256": "5f158fe94c6210c2f2d85c267858330b6aca76a0f158cfdfa4548dff009d6590"
       },
       {
-        "id": "20260716050000_core_show_slug_normalized_unique.sql",
+        "id": "20260805140512",
         "sha256": "3d722ec970d2d93beee3ea71d27190090a2e0a70405473472b6f097e2074e044"
       }
     ],
     "backfill": {
-      "required": false,
+      "required": true,
       "idempotent": true,
       "resumable": true,
       "batch_size": null,
       "validation": {
-        "row_counts": false,
-        "checksums": false,
+        "row_counts": true,
+        "checksums": true,
         "evidence_ids": []
       }
     },

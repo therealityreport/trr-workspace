@@ -3,14 +3,14 @@
   "packet_id": "local-person-media",
   "capability": "Person cover-photo and thumbnail-crop backend ownership",
   "created_at": "2026-07-16T20:52:42.770997Z",
-  "updated_at": "2026-07-16T20:52:42.770997Z",
+  "updated_at": "2026-08-07T22:19:42Z",
   "state": "implementation_complete_parked",
   "truth_scope": "local",
   "repositories": {
     "workspace": {
-      "revision_type": "local_dirty_checkpoint",
+      "revision_type": "committed_candidate",
       "base_sha": "df55c982ecf6741808536bfb6af308cc737372cf",
-      "candidate_sha": null,
+      "candidate_sha": "045e55ee86926b602dab32f5d4b64e36abab18da",
       "owned_paths": [],
       "owned_path_manifest_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "binary_tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -24,12 +24,12 @@
         "untracked": 0,
         "total": 0
       },
-      "candidate_commit_required_before_gate_4": true
+      "candidate_commit_required_before_gate_4": false
     },
     "app": {
-      "revision_type": "local_dirty_checkpoint",
+      "revision_type": "committed_candidate",
       "base_sha": "78681eac73c79e6534031fe1f050966edff9b844",
-      "candidate_sha": null,
+      "candidate_sha": "c8f81dc5fe53e3ca2b4f0abfe67ccf9611c75794",
       "owned_paths": [
         "apps/web/src/app/api/admin/trr-api/people/[personId]/cover-photo/route.ts",
         "apps/web/src/app/api/admin/trr-api/people/[personId]/import-fandom/commit/route.ts",
@@ -44,24 +44,24 @@
         "apps/web/tests/person-thumbnail-crop-route.test.ts",
         "apps/web/tests/person-thumbnail-crops-repository.test.ts"
       ],
-      "owned_path_manifest_sha256": "40f1fc176137c22799cda162311fbe710b88d9678614b985f24d374c8da3f1f1",
-      "binary_tracked_diff_sha256": "79f6ea9a32a87eb28c669df6c62f83a995466a6731cf721f1d7a4bac5e5d5898",
+      "owned_path_manifest_sha256": "2bd95fc5080e7f2eacae29314d82216a653554aa1a4bf83c286c3d51f1639f98",
+      "binary_tracked_diff_sha256": "24dbb508378bdf6c95f1615cc9837dc2020e431371992117b868c33246361d7f",
       "dirty_counts": {
-        "tracked_modified": 10,
+        "tracked_modified": 0,
         "tracked_added": 0,
         "tracked_deleted": 0,
         "tracked_renamed": 0,
         "tracked_copied": 0,
         "unmerged": 0,
-        "untracked": 2,
-        "total": 12
+        "untracked": 0,
+        "total": 0
       },
-      "candidate_commit_required_before_gate_4": true
+      "candidate_commit_required_before_gate_4": false
     },
     "backend": {
-      "revision_type": "local_dirty_checkpoint",
+      "revision_type": "committed_candidate",
       "base_sha": "0a3d2b59ec29304fb2765fd8cf996032e11c937b",
-      "candidate_sha": null,
+      "candidate_sha": "c49f023690b0051ec67510d994b115db4e0d0544",
       "owned_paths": [
         "api/routers/v2/person_media.py",
         "api/schemas/v2/person_media.py",
@@ -71,8 +71,8 @@
         "trr_backend/repositories/person_media_admin.py",
         "trr_backend/services/person_media_admin.py"
       ],
-      "owned_path_manifest_sha256": "41968d96407b298931b613526ef5c1f3ddde034aef63fed59cc6f4c17836ee23",
-      "binary_tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "owned_path_manifest_sha256": "683f415f95ce9a574551e5a76e9375b2054dbfa39c0571c086b3c0ce0559f192",
+      "binary_tracked_diff_sha256": "8043efe2c460366244ff2dd17fad2b2412f2b10161cede5b48095c3e625b0b0d",
       "dirty_counts": {
         "tracked_modified": 0,
         "tracked_added": 0,
@@ -80,10 +80,10 @@
         "tracked_renamed": 0,
         "tracked_copied": 0,
         "unmerged": 0,
-        "untracked": 7,
-        "total": 7
+        "untracked": 0,
+        "total": 0
       },
-      "candidate_commit_required_before_gate_4": true
+      "candidate_commit_required_before_gate_4": false
     }
   },
   "owned_paths": [

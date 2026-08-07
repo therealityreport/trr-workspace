@@ -3,14 +3,14 @@
   "packet_id": "local-networks-streaming",
   "capability": "Networks and streaming backend read models and app adapters",
   "created_at": "2026-07-16T20:52:42.770997Z",
-  "updated_at": "2026-07-16T20:52:42.770997Z",
+  "updated_at": "2026-08-07T22:19:42Z",
   "state": "implementation_complete_parked",
   "truth_scope": "local",
   "repositories": {
     "workspace": {
-      "revision_type": "local_dirty_checkpoint",
+      "revision_type": "committed_candidate",
       "base_sha": "df55c982ecf6741808536bfb6af308cc737372cf",
-      "candidate_sha": null,
+      "candidate_sha": "045e55ee86926b602dab32f5d4b64e36abab18da",
       "owned_paths": [],
       "owned_path_manifest_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "binary_tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -24,12 +24,12 @@
         "untracked": 0,
         "total": 0
       },
-      "candidate_commit_required_before_gate_4": true
+      "candidate_commit_required_before_gate_4": false
     },
     "app": {
-      "revision_type": "local_dirty_checkpoint",
+      "revision_type": "committed_candidate",
       "base_sha": "78681eac73c79e6534031fe1f050966edff9b844",
-      "candidate_sha": null,
+      "candidate_sha": "c8f81dc5fe53e3ca2b4f0abfe67ccf9611c75794",
       "owned_paths": [
         "apps/web/src/app/api/admin/brands/profile/route.ts",
         "apps/web/src/app/api/admin/networks-streaming/detail/route.ts",
@@ -47,23 +47,23 @@
         "apps/web/tests/networks-streaming-summary-route.test.ts"
       ],
       "owned_path_manifest_sha256": "8bc01b8b3738660f6fa6ea0223ebfea5f4c45a89df8891ad94b13ebbd548a0ab",
-      "binary_tracked_diff_sha256": "75e53ddcfaf9f61f94a8f372be615c026cf7eaa311e90da4a87a63155f2fea26",
+      "binary_tracked_diff_sha256": "0a72d14374efca2d57f885411067a2609a712ad10285943a31bb447afbd07e9f",
       "dirty_counts": {
-        "tracked_modified": 9,
+        "tracked_modified": 0,
         "tracked_added": 0,
-        "tracked_deleted": 2,
+        "tracked_deleted": 0,
         "tracked_renamed": 0,
         "tracked_copied": 0,
         "unmerged": 0,
-        "untracked": 3,
-        "total": 14
+        "untracked": 0,
+        "total": 0
       },
-      "candidate_commit_required_before_gate_4": true
+      "candidate_commit_required_before_gate_4": false
     },
     "backend": {
-      "revision_type": "local_dirty_checkpoint",
+      "revision_type": "committed_candidate",
       "base_sha": "0a3d2b59ec29304fb2765fd8cf996032e11c937b",
-      "candidate_sha": null,
+      "candidate_sha": "c49f023690b0051ec67510d994b115db4e0d0544",
       "owned_paths": [
         "api/routers/admin_networks_streaming_reads.py",
         "api/routers/v2/networks_streaming.py",
@@ -75,19 +75,19 @@
         "trr_backend/repositories/admin_networks_streaming_reads.py",
         "trr_backend/services/networks_streaming_reads.py"
       ],
-      "owned_path_manifest_sha256": "2b7304beaeee6db4a57415c6dc56785293ea00ec1f6dc9b4df22eef668d5a4fd",
-      "binary_tracked_diff_sha256": "7151fd99f8e3788db12cdc07782632bede046eb18b862b5c1402e3bae0c3b0fa",
+      "owned_path_manifest_sha256": "f67b9fb020ccb387453099986cd03e9259531f73a696efb19fd93c58a213dbee",
+      "binary_tracked_diff_sha256": "2f56cdc20e44dd76cf5e0f951b735fcfab59d09d34dea39d2b75cc3deadbaa27",
       "dirty_counts": {
-        "tracked_modified": 4,
+        "tracked_modified": 0,
         "tracked_added": 0,
         "tracked_deleted": 0,
         "tracked_renamed": 0,
         "tracked_copied": 0,
         "unmerged": 0,
-        "untracked": 5,
-        "total": 9
+        "untracked": 0,
+        "total": 0
       },
-      "candidate_commit_required_before_gate_4": true
+      "candidate_commit_required_before_gate_4": false
     }
   },
   "owned_paths": [

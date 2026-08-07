@@ -3,14 +3,14 @@
   "packet_id": "local-social-freshness",
   "capability": "Account-catalog freshness composition and live-profile totals",
   "created_at": "2026-07-16T20:52:42.770997Z",
-  "updated_at": "2026-07-16T20:52:42.770997Z",
+  "updated_at": "2026-08-07T22:19:42Z",
   "state": "implementation_complete_parked",
   "truth_scope": "local",
   "repositories": {
     "workspace": {
-      "revision_type": "local_dirty_checkpoint",
+      "revision_type": "committed_candidate",
       "base_sha": "df55c982ecf6741808536bfb6af308cc737372cf",
-      "candidate_sha": null,
+      "candidate_sha": "045e55ee86926b602dab32f5d4b64e36abab18da",
       "owned_paths": [],
       "owned_path_manifest_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "binary_tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -24,12 +24,12 @@
         "untracked": 0,
         "total": 0
       },
-      "candidate_commit_required_before_gate_4": true
+      "candidate_commit_required_before_gate_4": false
     },
     "app": {
-      "revision_type": "local_dirty_checkpoint",
+      "revision_type": "committed_candidate",
       "base_sha": "78681eac73c79e6534031fe1f050966edff9b844",
-      "candidate_sha": null,
+      "candidate_sha": "c8f81dc5fe53e3ca2b4f0abfe67ccf9611c75794",
       "owned_paths": [],
       "owned_path_manifest_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "binary_tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -43,12 +43,12 @@
         "untracked": 0,
         "total": 0
       },
-      "candidate_commit_required_before_gate_4": true
+      "candidate_commit_required_before_gate_4": false
     },
     "backend": {
-      "revision_type": "local_dirty_checkpoint",
+      "revision_type": "committed_candidate",
       "base_sha": "0a3d2b59ec29304fb2765fd8cf996032e11c937b",
-      "candidate_sha": null,
+      "candidate_sha": "c49f023690b0051ec67510d994b115db4e0d0544",
       "owned_paths": [
         "tests/repositories/test_social_control_plane_imports.py",
         "trr_backend/socials/pipelines/account_catalog/__init__.py",
@@ -56,19 +56,19 @@
         "trr_backend/socials/pipelines/account_catalog/live_profile_total.py",
         "trr_backend/socials/social_season_analytics_impl.py"
       ],
-      "owned_path_manifest_sha256": "d7da7d0a8cb715224fc395f9e66c0dc3d6b96bda0a7628780123da9ccb1325c4",
-      "binary_tracked_diff_sha256": "1367fced9c412f1aa96c1da61cd6c12e6b62f687fad52020433fb48feaecbef2",
+      "owned_path_manifest_sha256": "38114f3570d44cc47a69367e5b5dac8b494f3eacd18f97f87c4a444cd2e3ab99",
+      "binary_tracked_diff_sha256": "0c0a6089c76ebdab6ffab463a23040f50a82d3095edd34899acdd214cdd3ea3a",
       "dirty_counts": {
-        "tracked_modified": 4,
+        "tracked_modified": 0,
         "tracked_added": 0,
         "tracked_deleted": 0,
         "tracked_renamed": 0,
         "tracked_copied": 0,
         "unmerged": 0,
-        "untracked": 1,
-        "total": 5
+        "untracked": 0,
+        "total": 0
       },
-      "candidate_commit_required_before_gate_4": true
+      "candidate_commit_required_before_gate_4": false
     }
   },
   "owned_paths": [
