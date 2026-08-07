@@ -2,7 +2,7 @@
   "schema_version": 1,
   "manifest_id": "parked-unaccepted-local-work",
   "truth_scope": "local",
-  "captured_at": "2026-07-16T21:30:26.889248Z",
+  "captured_at": "2026-08-07T22:35:07Z",
   "repositories": {
     "workspace": {
       "base_sha": "df55c982ecf6741808536bfb6af308cc737372cf"
@@ -17,6 +17,42 @@
   "entries": [
     {
       "repository": "backend",
+      "path": ".tmp-backfill-monitor.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "api/routers/admin_asset_batch_jobs.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "api/routers/admin_asset_flags.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
       "path": "api/routers/admin_brands.py",
       "status": "modified",
       "owner": "Task 2, Task 3, or Task 5 packet owner",
@@ -29,411 +65,759 @@
     },
     {
       "repository": "backend",
-      "path": "api/routers/admin_show_sync.py",
+      "path": "api/routers/admin_fandom_sync.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
-      "path": "api/routers/socials/__init__.py",
+      "path": "api/routers/admin_reddit_reads.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
-      "path": "docs/media-scraping/bravotv-workspace-migration.md",
+      "path": "docs/media/com.trr.media-watcher-sync.plist.example",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
-      "path": "docs/media-scraping/source-coverage-matrix.md",
-      "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "scripts/db/apply_release_manifest.py",
+      "path": "docs/media/show-season-watcher.md",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
-      "path": "scripts/media/README.md",
+      "path": "scripts/bravotv_get_images.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
-      "path": "scripts/media/nbcumv_bulk_download.py",
+      "path": "scripts/dev/smoke_decodo_residential_proxy.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/media/sync_bravotv_galleries.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/media/sync_watched_media_to_desktop.py",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
-      "path": "scripts/socials/instagram/one_post_media_mirror.py",
+      "path": "scripts/modal/deploy_sync_fixes_clean.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
-      "path": "tests/api/routers/test_admin_brands.py",
+      "path": "scripts/socials/instagram/benchmark_posts_backfill.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
-      "path": "tests/api/routers/test_admin_show_sync.py",
+      "path": "scripts/socials/instagram/probe_instagram_public_mode.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
-      "path": "tests/api/routers/test_socials_analytics_import_boundary.py",
+      "path": "scripts/socials/reddit/smoke_bravo_refresh.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/socials/refresh_cookies.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/socials/smoke_tiktok_youtube_posts.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/socials/sync_bravo_show_hashtag_aliases.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/sync/sync_bravotv_galleries.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/sync/sync_seasons_episodes.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/workers/admin_operations_worker.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "supabase/migrations/20260806120000_show_season_media_watchers.sql",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
-      "path": "tests/api/routers/test_socials_season_analytics.py",
-      "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "tests/api/routers/test_socials_tiktok_preview.py",
-      "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "tests/api/routers/test_socials_tiktok_scrape.py",
-      "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "tests/api/routers/test_socials_twitter_admin_routes.py",
-      "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "tests/api/test_admin_socials_landing_summary.py",
-      "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "tests/clients/test_screenalytics_adapter.py",
-      "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "tests/integrations/test_nbcumv.py",
-      "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "tests/media/bravotv/test_nbcumv_bulk_download.py",
+      "path": "supabase/migrations/20260806123000_show_season_media_watcher_fk_indexes.sql",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
-      "path": "tests/repositories/test_facebook_cookie_loader.py",
+      "path": "supabase/migrations/20260806130000_fix_show_season_media_watcher_r2_prefix_check.sql",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
-      "path": "tests/repositories/test_shared_job_executor.py",
+      "path": "tests/api/test_admin_media_watchers.py",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
-      "path": "tests/repositories/test_social_cookie_sources.py",
-      "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "tests/repositories/test_social_dispatch_stage_claims.py",
+      "path": "tests/clients/test_computer_use.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
-      "path": "tests/repositories/test_social_model_types.py",
-      "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "tests/repositories/test_social_windowing_port.py",
-      "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "tests/repositories/test_threads_cookie_loader.py",
-      "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "tests/repositories/test_tiktok_cookie_loader.py",
-      "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "tests/scripts/test_apply_release_manifest.py",
-      "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "tests/socials/test_instagram_scraper_public_graphql.py",
+      "path": "tests/conftest.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
-      "path": "tests/socials/test_socialblade_auth.py",
+      "path": "tests/db/test_pg_timeout_settings.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
-      "path": "tests/socials/threads/posts_scrapling/test_session.py",
+      "path": "tests/integrations/imdb/test_fullcredits_cast_parser.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/integrations/test_bravo_jsonapi.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/integrations/test_media_watcher_sources.py",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
-      "path": "tests/socials/tiktok/test_tiktok_direct_scrape.py",
+      "path": "tests/media/bravotv/test_run_review.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
-      "path": "tests/socials/twitter/test_twitter_direct_scrape.py",
+      "path": "tests/media/bravotv/test_run_service.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
-      "path": "tests/socials/youtube/test_youtube_direct_scrape.py",
-      "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "path": "tests/media/watchers/test_service.py",
+      "status": "untracked",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/pipeline/test_admin_operation_registry.py",
+      "status": "untracked",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/repositories/test_build_upsert_update_clause.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/repositories/test_media_watchers.py",
+      "status": "untracked",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/repositories/test_reddit_flair_categorizer.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/repositories/test_social_control_plane_backfill_health.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/repositories/test_social_control_plane_run_reads.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/repositories/test_social_control_plane_runtime.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/repositories/test_social_control_plane_shared_status_reads.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/repositories/test_social_control_plane_worker_health.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/scripts/test_cookie_refresh_import_boundary.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/scripts/test_start_remote_job_workers.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/scripts/test_sync_networks_streaming_links.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/scripts/test_sync_watched_media_to_desktop.py",
+      "status": "untracked",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/socials/instagram/comments_scrapling/test_worker_cap_ramp.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/socials/instagram/runtimes/test_dispatcher.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/socials/instagram/test_instagram_public_mode.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/socials/instagram/test_instagram_public_post_extractor.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/socials/instagram/test_network_policy.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/socials/test_decodo_observability.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/test_api_smoke.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/test_discussions_smoke.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/test_dms_smoke.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/test_modal_dispatch.py",
+      "status": "modified",
+      "owner": "Post-candidate local work outside packet local-foundation-runtime-guards; excluded from T6 candidate",
+      "reason": "Current local bytes differ from the recorded committed candidate and remain unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign this post-candidate local work to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/test_non_live_isolation.py",
+      "status": "untracked",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/test_start_api_guard.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/utils/test_env.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/vision/test_cast_reference_face_matching.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/vision/test_people_count_auto_crop.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/vision/test_people_count_fast_pass.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/vision/test_screen_time_face_matching.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/vision/test_text_overlay_fallback.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "trr_backend/ingestion/fandom_person_scraper.py",
+      "status": "modified",
+      "owner": "Existing dirty-owner WIP protected by T5; excluded from T6 candidate",
+      "reason": "Protected concurrent backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Keep this protected path out of T6; assign a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
@@ -449,411 +833,327 @@
     },
     {
       "repository": "backend",
-      "path": "trr_backend/media/bravotv/nbcumv_bulk_download.py",
+      "path": "trr_backend/integrations/tmdb/client.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "trr_backend/media/bravotv/run_review.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "trr_backend/media/s3_mirror.py",
+      "status": "modified",
+      "owner": "Existing dirty-owner WIP protected by T5; excluded from T6 candidate",
+      "reason": "Protected concurrent backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Keep this protected path out of T6; assign a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "trr_backend/media/watchers/__init__.py",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
-      "path": "trr_backend/socials/api/handlers/live_status.py",
+      "path": "trr_backend/modal_dispatch.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Post-candidate local work outside packet local-foundation-runtime-guards; excluded from T6 candidate",
+      "reason": "Current local bytes differ from the recorded committed candidate and remain unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Assign this post-candidate local work to a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
-      "path": "trr_backend/socials/control_plane/models.py",
-      "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "trr_backend/socials/control_plane/windowing.py",
-      "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "trr_backend/socials/cookie_sources.py",
+      "path": "trr_backend/pipeline/admin_operation_bootstrap.py",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
-      "path": "trr_backend/socials/facebook/document_fetch.py",
-      "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "trr_backend/socials/instagram/auth_resolver.py",
-      "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "trr_backend/socials/instagram/auth_session_context.py",
+      "path": "trr_backend/pipeline/admin_operation_registry.py",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
-      "path": "trr_backend/socials/instagram/cookie_refresh.py",
+      "path": "trr_backend/repositories/admin_show_reads.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
-      "path": "trr_backend/socials/instagram/cookie_refresh_runtime.py",
+      "path": "trr_backend/repositories/media_watchers.py",
       "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
-      "path": "trr_backend/socials/instagram/jobs.py",
+      "path": "trr_backend/repositories/reddit_refresh.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
-      "path": "trr_backend/socials/instagram/scraper.py",
+      "path": "trr_backend/repositories/tagging_references.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Existing dirty-owner WIP protected by T5; excluded from T6 candidate",
+      "reason": "Protected concurrent backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Keep this protected path out of T6; assign a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
-      "path": "trr_backend/socials/model_types.py",
-      "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "trr_backend/socials/pipelines/facebook_cookie_loader.py",
-      "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "trr_backend/socials/pipelines/job_handler_types.py",
-      "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "trr_backend/socials/pipelines/job_handlers.py",
+      "path": "trr_backend/scraping/bravo_parser.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Existing dirty-owner WIP protected by T5; excluded from T6 candidate",
+      "reason": "Protected concurrent backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Keep this protected path out of T6; assign a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
-      "path": "trr_backend/socials/pipelines/shared_job_executor.py",
-      "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "trr_backend/socials/pipelines/threads_cookie_loader.py",
-      "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "trr_backend/socials/pipelines/tiktok_cookie_loader.py",
-      "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "trr_backend/socials/socialblade/auth.py",
+      "path": "trr_backend/scraping/url_image_scraper.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Existing dirty-owner WIP protected by T5; excluded from T6 candidate",
+      "reason": "Protected concurrent backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Keep this protected path out of T6; assign a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
-      "path": "trr_backend/socials/socialblade/cookies.py",
-      "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "trr_backend/socials/socialblade/fetcher.py",
+      "path": "trr_backend/socials/analytics/read_models.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Existing dirty-owner WIP protected by T5; excluded from T6 candidate",
+      "reason": "Protected concurrent backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Keep this protected path out of T6; assign a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
-      "path": "trr_backend/socials/socialblade/parser.py",
-      "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "trr_backend/socials/socialblade/runtime_fetch.py",
-      "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "trr_backend/socials/socialblade/scraper.py",
+      "path": "trr_backend/socials/instagram/catalog_ingest.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Existing dirty-owner WIP protected by T5; excluded from T6 candidate",
+      "reason": "Protected concurrent backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Keep this protected path out of T6; assign a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
-      "path": "trr_backend/socials/socialblade/session.py",
+      "path": "trr_backend/socials/instagram/network_policy.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
-      "path": "trr_backend/socials/threads/jobs.py",
+      "path": "trr_backend/socials/instagram/permalink_metadata.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Existing dirty-owner WIP protected by T5; excluded from T6 candidate",
+      "reason": "Protected concurrent backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Keep this protected path out of T6; assign a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
-      "path": "trr_backend/socials/threads/posts_scrapling/session.py",
+      "path": "trr_backend/socials/instagram/post_normalizer.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Existing dirty-owner WIP protected by T5; excluded from T6 candidate",
+      "reason": "Protected concurrent backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Keep this protected path out of T6; assign a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
-      "path": "trr_backend/socials/tiktok/direct_scrape.py",
+      "path": "trr_backend/socials/instagram/profile_stages.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Existing dirty-owner WIP protected by T5; excluded from T6 candidate",
+      "reason": "Protected concurrent backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Keep this protected path out of T6; assign a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
-      "path": "trr_backend/socials/tiktok/jobs.py",
+      "path": "trr_backend/socials/instagram/snapshot_completion.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
-      "path": "trr_backend/socials/tiktok/posts_scrapling/session.py",
+      "path": "trr_backend/socials/ops/cookie_refresh.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
-      "path": "trr_backend/socials/twitter/direct_scrape.py",
+      "path": "trr_backend/socials/pipelines/account_catalog/progress.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Existing dirty-owner WIP protected by T5; excluded from T6 candidate",
+      "reason": "Protected concurrent backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Keep this protected path out of T6; assign a bounded follow-up packet before any candidate integration."
     },
     {
       "repository": "backend",
-      "path": "trr_backend/socials/windowing.py",
-      "status": "untracked",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "trr_backend/socials/youtube/direct_scrape.py",
+      "path": "trr_backend/socials/post_persist_truthfulness.py",
       "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
       "missing_proof": [
         "bounded packet acceptance",
         "focused local validation and independent review"
       ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "trr_backend/socials/read_models/account_profile/common.py",
+      "status": "modified",
+      "owner": "Existing dirty-owner WIP protected by T5; excluded from T6 candidate",
+      "reason": "Protected concurrent backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Keep this protected path out of T6; assign a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "trr_backend/socials/social_season_analytics_impl.py",
+      "status": "modified",
+      "owner": "Existing dirty-owner WIP protected by T5; excluded from T6 candidate",
+      "reason": "Protected concurrent backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Keep this protected path out of T6; assign a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "trr_backend/socials/threads/media_resolver.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+    },
+    {
+      "repository": "backend",
+      "path": "trr_backend/utils/env.py",
+      "status": "modified",
+      "owner": "Concurrent backend work owner",
+      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "missing_proof": [
+        "bounded packet acceptance",
+        "focused local validation and independent review"
+      ],
+      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
     }
   ],
   "excluded_non_architecture_paths": [
