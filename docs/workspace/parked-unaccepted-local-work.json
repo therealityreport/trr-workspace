@@ -856,19 +856,5 @@
       "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
     }
   ],
-  "excluded_non_architecture_paths": [
-    {
-      "repository": "workspace",
-      "path": "AGENTS.md",
-      "status": "modified",
-      "reason": "Explicit concurrent user-level instruction change excluded by architecture-task-locks dirty_tree_policy."
-    },
-    {
-      "repository": "workspace",
-      "path": "plans/048-workspace-architecture-restructure.md",
-      "status": "untracked",
-      "reason": "Explicit concurrent historical plan excluded by architecture-task-locks dirty_tree_policy."
-    }
-  ],
   "promotion_policy": "Parked entries cannot promote or be silently absorbed into a candidate; each requires explicit packet ownership and missing proof closure."
 }
