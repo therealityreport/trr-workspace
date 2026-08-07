@@ -398,7 +398,7 @@ architecture-contracts-check:
 	@$(MAKE) --no-print-directory architecture-hotspots-check
 	@$(MAKE) --no-print-directory architecture-release-manifests-check
 	@$(MAKE) --no-print-directory openapi-v2-contract-check
-	@python3 scripts/architecture/check-import-graph.py --check-baseline
+	@python3 scripts/architecture/check-import-graph.py --check-zero
 	@python3 scripts/app-direct-sql-inventory.py --check --fail-expired
 	@$(MAKE) --no-print-directory runtime-capacity-check
 	@$(MAKE) --no-print-directory deployment-targets-check

@@ -48,8 +48,8 @@ Import-graph gates use `scripts/architecture/check-import-graph.py`:
 - Gate 0E: `--check-frozen` requires exact source, edge, and metric hashes.
 - Gate 1 and later refactor packets: `--check-baseline` allows debt to shrink
   but rejects increases above the recorded ceilings.
-- Final architecture acceptance: `--check-zero` requires the named cycle and
-  legacy-import metrics to be zero.
+- Final architecture acceptance: `--check-zero` requires every backend SCC,
+  social legacy-import metric, and app cycle to be zero.
 
 ## Domain and decision records
 

@@ -4,8 +4,8 @@
 Gate 0E uses ``--check-frozen``: source bytes, graph edges, and metrics must
 exactly match the recorded snapshot. Gate 1 and later refactor packets use
 ``--check-baseline``: debt counts may decrease but may not exceed the recorded
-ceilings. Final architecture acceptance uses ``--check-zero`` for social
-backend cycles/legacy imports and all app import cycles.
+ceilings. Final architecture acceptance uses ``--check-zero`` for every
+backend cycle, social legacy import, and app import cycle.
 """
 
 from __future__ import annotations
@@ -40,6 +40,65 @@ LEGACY_SOCIAL_MODULES = {
     "trr_backend.repositories.social_season_analytics",
     "trr_backend.socials.social_season_analytics_impl",
 }
+
+# Dynamic import calls whose target is not a source literal cannot contribute a
+# trustworthy graph edge.  Exceptions must name one exact call site and explain
+# why it is a runtime compatibility mechanism rather than an architectural
+# dependency.  There are deliberately no path, line, or callee wildcards.
+#
+# A new nonliteral target therefore fails the graph gate until its owner either
+# makes the target literal or adds a narrowly-scoped, reviewed entry here.
+DYNAMIC_IMPORT_ALLOWLIST: dict[tuple[str, int, str], str] = {
+    (
+        "TRR-Backend/trr_backend/utils/lazy_imports.py",
+        18,
+        "import_module",
+    ): "Generic LazyModule proxy defers optional third-party imports; it does not name a TRR architecture dependency.",
+    (
+        "TRR-Backend/trr_backend/socials/control_plane/shared_accounts.py",
+        334,
+        "import_module",
+    ): "Legacy patchable-export refresh preserves monkeypatch compatibility; the canonical target map is not a new dependency declaration.",
+    (
+        "TRR-Backend/trr_backend/socials/control_plane/dispatch.py",
+        120,
+        "import_module",
+    ): "Legacy patchable-export refresh preserves monkeypatch compatibility; the canonical target map is not a new dependency declaration.",
+    (
+        "TRR-Backend/trr_backend/socials/control_plane/__init__.py",
+        183,
+        "import_module",
+    ): "Package __getattr__ lazily restores legacy exports after package initialization; it is a compatibility facade.",
+    (
+        "TRR-Backend/trr_backend/socials/control_plane/__init__.py",
+        195,
+        "import_module",
+    ): "Legacy patchable-export refresh mirrors the package compatibility facade rather than declaring an application edge.",
+    (
+        "TRR-Backend/trr_backend/socials/pipelines/account_catalog/__init__.py",
+        44,
+        "import_module",
+    ): "Package __getattr__ lazily exposes catalog compatibility exports; it is not a producer-to-consumer architecture edge.",
+}
+
+REVIEWED_PROVIDER_PATCH_SOURCE = (
+    "TRR-Backend/trr_backend/socials/social_season_analytics_impl.py"
+)
+REVIEWED_PROVIDER_PATCH_MODULES = (
+    "trr_backend.socials.control_plane.queue_status",
+    "trr_backend.socials.read_models.account_profile.common",
+    "trr_backend.socials.analytics.read_models",
+    "trr_backend.socials.pipelines.account_catalog.progress",
+    "trr_backend.socials.control_plane.run_lifecycle",
+    "trr_backend.socials.control_plane.dispatch_runtime",
+    "trr_backend.socials.control_plane.dispatch",
+    "trr_backend.socials.control_plane.recovery",
+    "trr_backend.socials.control_plane.runtime",
+    "trr_backend.socials.control_plane.shared_accounts",
+    "trr_backend.socials.instagram.catalog_ingest",
+    "trr_backend.socials.pipelines.account_catalog.launch",
+    "trr_backend.socials.pipelines.comments.instagram",
+)
 
 # Filled from this command's canonical scope. Frozen mode detects any exact
 # source/graph drift; baseline mode enforces debt ceilings; zero mode enforces
@@ -78,6 +137,15 @@ class ImportRecord:
     kind: str
 
 
+@dataclass(frozen=True)
+class NonliteralDynamicImport:
+    source: str
+    source_path: str
+    line: int
+    callee: str
+    target_expression: str
+
+
 @dataclass
 class GraphResult:
     component: str
@@ -85,6 +153,9 @@ class GraphResult:
     source_files: dict[str, Path]
     parse_errors: list[str] = field(default_factory=list)
     import_records: list[ImportRecord] = field(default_factory=list)
+    nonliteral_dynamic_imports: list[NonliteralDynamicImport] = field(
+        default_factory=list
+    )
 
     @property
     def cycles(self) -> list[list[str]]:
@@ -173,13 +244,56 @@ def resolve_relative_python_module(
     return ".".join(package_parts)
 
 
+def is_reviewed_provider_patch_import(
+    source_path_label: str,
+    node: ast.Call,
+    parents: dict[ast.AST, ast.AST],
+) -> bool:
+    """Return whether ``node`` is the reviewed legacy-provider patch loop import."""
+    if source_path_label != REVIEWED_PROVIDER_PATCH_SOURCE:
+        return False
+    if not isinstance(node.func, ast.Name) or node.func.id != "__import__":
+        return False
+    if not node.args or not isinstance(node.args[0], ast.Name):
+        return False
+    if node.args[0].id != "_provider_path":
+        return False
+
+    ancestor = parents.get(node)
+    while ancestor is not None:
+        if isinstance(ancestor, ast.For):
+            if not isinstance(ancestor.target, ast.Name):
+                return False
+            if ancestor.target.id != "_provider_path":
+                return False
+            if not isinstance(ancestor.iter, ast.Tuple):
+                return False
+            provider_modules = tuple(
+                item.value
+                for item in ancestor.iter.elts
+                if isinstance(item, ast.Constant) and isinstance(item.value, str)
+            )
+            return (
+                len(provider_modules) == len(ancestor.iter.elts)
+                and provider_modules == REVIEWED_PROVIDER_PATCH_MODULES
+            )
+        ancestor = parents.get(ancestor)
+    return False
+
+
 def python_import_records(
     source_module: str,
     source_path: Path,
     tree: ast.AST,
     modules: set[str],
+    *,
+    source_path_label: str,
+    nonliteral_dynamic_imports: list[NonliteralDynamicImport],
 ) -> list[ImportRecord]:
     records: list[ImportRecord] = []
+    parents = {
+        child: parent for parent in ast.walk(tree) for child in ast.iter_child_nodes(parent)
+    }
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
             for alias in node.names:
@@ -221,6 +335,26 @@ def python_import_records(
                 continue
             first = node.args[0]
             if not isinstance(first, ast.Constant) or not isinstance(first.value, str):
+                allowlist_key = (source_path_label, node.lineno, function_name)
+                if (
+                    allowlist_key not in DYNAMIC_IMPORT_ALLOWLIST
+                    and not is_reviewed_provider_patch_import(
+                        source_path_label, node, parents
+                    )
+                ):
+                    try:
+                        target_expression = ast.unparse(first)
+                    except (AttributeError, TypeError, ValueError):
+                        target_expression = type(first).__name__
+                    nonliteral_dynamic_imports.append(
+                        NonliteralDynamicImport(
+                            source=source_module,
+                            source_path=source_path_label,
+                            line=node.lineno,
+                            callee=function_name,
+                            target_expression=target_expression,
+                        )
+                    )
                 continue
             candidate = first.value
             if candidate.startswith("."):
@@ -250,7 +384,14 @@ def build_backend_graph(repo_root: Path) -> GraphResult:
         except (OSError, SyntaxError, UnicodeDecodeError) as error:
             result.parse_errors.append(f"{path.relative_to(repo_root)}: {error}")
             continue
-        records = python_import_records(module, path, tree, module_names)
+        records = python_import_records(
+            module,
+            path,
+            tree,
+            module_names,
+            source_path_label=path.relative_to(repo_root).as_posix(),
+            nonliteral_dynamic_imports=result.nonliteral_dynamic_imports,
+        )
         result.import_records.extend(records)
         graph[module].update(
             record.target for record in records if record.target != module
@@ -264,6 +405,110 @@ STATIC_FROM_RE = re.compile(
 )
 SIDE_EFFECT_RE = re.compile(r"(?:^|\n)\s*import\s*[\"']([^\"']+)[\"']", re.MULTILINE)
 DYNAMIC_RE = re.compile(r"\b(?:import|require)\s*\(\s*[\"']([^\"']+)[\"']\s*\)")
+
+
+def app_dynamic_call_starts(text: str) -> list[tuple[str, int, str]]:
+    """Return dynamic ``import``/``require`` calls without mistaking comments for code."""
+    calls: list[tuple[str, int, str]] = []
+    index = 0
+    length = len(text)
+    state = "code"
+    while index < length:
+        character = text[index]
+        if state == "line-comment":
+            if character == "\n":
+                state = "code"
+            index += 1
+            continue
+        if state == "block-comment":
+            if text.startswith("*/", index):
+                state = "code"
+                index += 2
+            else:
+                index += 1
+            continue
+        if state in {"single-quote", "double-quote", "template"}:
+            quote = {"single-quote": "'", "double-quote": '"', "template": "`"}[state]
+            if character == "\\":
+                index += 2
+                continue
+            if character == quote:
+                state = "code"
+            index += 1
+            continue
+        if text.startswith("//", index):
+            state = "line-comment"
+            index += 2
+            continue
+        if text.startswith("/*", index):
+            state = "block-comment"
+            index += 2
+            continue
+        if character == "'":
+            state = "single-quote"
+            index += 1
+            continue
+        if character == '"':
+            state = "double-quote"
+            index += 1
+            continue
+        if character == "`":
+            state = "template"
+            index += 1
+            continue
+        for callee in ("import", "require"):
+            if not text.startswith(callee, index):
+                continue
+            before = text[index - 1] if index else ""
+            after_index = index + len(callee)
+            after = text[after_index] if after_index < length else ""
+            if (before and (before.isalnum() or before in "_$")) or (
+                after and (after.isalnum() or after in "_$")
+            ):
+                continue
+            cursor = after_index
+            while cursor < length and text[cursor].isspace():
+                cursor += 1
+            if cursor < length and text[cursor] == "(":
+                calls.append(
+                    (
+                        callee,
+                        text.count("\n", 0, index) + 1,
+                        text[cursor + 1 :]
+                        .lstrip()
+                        .split(")", 1)[0]
+                        .split("\n", 1)[0][:160],
+                    )
+                )
+                index = cursor + 1
+                break
+        else:
+            index += 1
+            continue
+    return calls
+
+
+def app_nonliteral_dynamic_imports(
+    source_module: str, source_path_label: str, text: str
+) -> list[NonliteralDynamicImport]:
+    violations: list[NonliteralDynamicImport] = []
+    for callee, line, target_expression in app_dynamic_call_starts(text):
+        argument = target_expression.lstrip()
+        if argument.startswith(("'", '"')):
+            continue
+        allowlist_key = (source_path_label, line, callee)
+        if allowlist_key in DYNAMIC_IMPORT_ALLOWLIST:
+            continue
+        violations.append(
+            NonliteralDynamicImport(
+                source=source_module,
+                source_path=source_path_label,
+                line=line,
+                callee=callee,
+                target_expression=argument,
+            )
+        )
+    return violations
 
 
 def discover_app_modules(repo_root: Path) -> dict[str, Path]:
@@ -359,6 +604,13 @@ def build_app_graph(repo_root: Path) -> GraphResult:
         except (OSError, UnicodeDecodeError) as error:
             result.parse_errors.append(f"{path.relative_to(repo_root)}: {error}")
             continue
+        result.nonliteral_dynamic_imports.extend(
+            app_nonliteral_dynamic_imports(
+                module,
+                path.relative_to(repo_root).as_posix(),
+                text,
+            )
+        )
         for specifier, line, kind in typescript_specifiers(text):
             target = resolve_app_specifier(module, specifier, aliases)
             if target and target != module:
@@ -460,6 +712,17 @@ def summarize_backend(result: GraphResult) -> dict[str, object]:
         "source_sha256": source_digest(result.source_files),
         "graph_sha256": graph_digest(result.graph),
         "parse_errors": result.parse_errors,
+        "nonliteral_dynamic_import_count": len(result.nonliteral_dynamic_imports),
+        "nonliteral_dynamic_imports": [
+            {
+                "source": item.source,
+                "source_path": item.source_path,
+                "line": item.line,
+                "callee": item.callee,
+                "target_expression": item.target_expression,
+            }
+            for item in result.nonliteral_dynamic_imports
+        ],
     }
 
 
@@ -477,6 +740,17 @@ def summarize_app(result: GraphResult) -> dict[str, object]:
         "source_sha256": source_digest(result.source_files),
         "graph_sha256": graph_digest(result.graph),
         "parse_errors": result.parse_errors,
+        "nonliteral_dynamic_import_count": len(result.nonliteral_dynamic_imports),
+        "nonliteral_dynamic_imports": [
+            {
+                "source": item.source,
+                "source_path": item.source_path,
+                "line": item.line,
+                "callee": item.callee,
+                "target_expression": item.target_expression,
+            }
+            for item in result.nonliteral_dynamic_imports
+        ],
     }
 
 
@@ -548,6 +822,7 @@ def baseline_failures(report: dict[str, object]) -> list[str]:
 def zero_failures(report: dict[str, object]) -> list[str]:
     failures = []
     checks = (
+        ("backend", "cycle_count"),
         ("backend", "social_cycle_count"),
         ("backend", "legacy_social_import_count"),
         ("app", "cycle_count"),
@@ -564,6 +839,12 @@ def parse_error_failures(report: dict[str, object]) -> list[str]:
     for component in ("backend", "app"):
         for error in report[component]["parse_errors"]:
             failures.append(f"{component} parse error: {error}")
+        for item in report[component]["nonliteral_dynamic_imports"]:
+            failures.append(
+                f"{component} nonliteral dynamic import: "
+                f"{item['source_path']}:{item['line']} "
+                f"{item['callee']}({item['target_expression']})"
+            )
     return failures
 
 
@@ -587,13 +868,15 @@ def render_text(
             f"edges={report['backend']['edge_count']} "
             f"cycles={report['backend']['cycle_count']} "
             f"social_cycles={report['backend']['social_cycle_count']} "
-            f"legacy_social_imports={report['backend']['legacy_social_import_count']}"
+            f"legacy_social_imports={report['backend']['legacy_social_import_count']} "
+            f"nonliteral_dynamic_imports={report['backend']['nonliteral_dynamic_import_count']}"
         ),
         (
             "app "
             f"modules={report['app']['module_count']} "
             f"edges={report['app']['edge_count']} "
-            f"cycles={report['app']['cycle_count']}"
+            f"cycles={report['app']['cycle_count']} "
+            f"nonliteral_dynamic_imports={report['app']['nonliteral_dynamic_import_count']}"
         ),
         f"result={'fail' if failures else 'pass'}",
     ]
@@ -643,7 +926,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     mode.add_argument(
         "--check-zero",
         action="store_true",
-        help="enforce final zero-cycle/legacy acceptance",
+        help="enforce final all-backend, social legacy, and app zero-cycle acceptance",
     )
     mode.add_argument(
         "--print-baseline",

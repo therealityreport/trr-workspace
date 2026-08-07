@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import contextlib
+import io
 import importlib.util
 import sys
 import tempfile
@@ -74,6 +76,134 @@ class ImportGraphTests(unittest.TestCase):
             self.assertEqual(summary["cycle_count"], 1)
             self.assertIn(["feature/b.ts", "lib/a.ts"], summary["cycles"])
 
+    def test_nonliteral_dynamic_targets_fail_closed_without_synthetic_edges(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            routers = root / "TRR-Backend/api/routers"
+            app_source = root / "TRR-APP/apps/web/src/feature"
+            routers.mkdir(parents=True)
+            app_source.mkdir(parents=True)
+            (root / "TRR-Backend/api/__init__.py").write_text("")
+            (routers / "__init__.py").write_text("")
+            (routers / "admin_target.py").write_text("VALUE = 1\n")
+            (routers / "admin.py").write_text(
+                "from importlib import import_module\n"
+                "\n"
+                "class AdminRouterInterface:\n"
+                "    router_module = '.'.join(('api', 'routers', 'admin_target'))\n"
+                "\n"
+                "router_target = AdminRouterInterface.router_module\n"
+                "router = import_module(router_target)\n"
+                "provider_target = router_target\n"
+                "provider = __import__(provider_target)\n"
+            )
+            (app_source / "loader.ts").write_text(
+                "const target = '@/feature/target'\n"
+                "export const load = () => import(target)\n"
+            )
+
+            backend = MODULE.build_backend_graph(root)
+            app = MODULE.build_app_graph(root)
+            report = {
+                "backend": MODULE.summarize_backend(backend),
+                "app": MODULE.summarize_app(app),
+            }
+            failures = MODULE.parse_error_failures(report)
+
+            self.assertEqual(backend.graph["api.routers.admin"], set())
+            self.assertEqual(len(backend.nonliteral_dynamic_imports), 2)
+            self.assertEqual(len(app.nonliteral_dynamic_imports), 1)
+            self.assertTrue(
+                any(
+                    "api/routers/admin.py:7 import_module(router_target)" in failure
+                    for failure in failures
+                )
+            )
+            self.assertTrue(
+                any("__import__(provider_target)" in failure for failure in failures)
+            )
+            self.assertTrue(any("import(target)" in failure for failure in failures))
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(
+                    MODULE.main(["--repo-root", str(root), "--check-zero"]),
+                    1,
+                )
+
+    def test_nonliteral_dynamic_target_requires_exact_documented_allowlist_entry(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "TRR-Backend/trr_backend"
+            source.mkdir(parents=True)
+            (source / "__init__.py").write_text("")
+            path = source / "runtime_loader.py"
+            path.write_text(
+                "from importlib import import_module\n"
+                "target = 'trr_backend.optional'\n"
+                "loaded = import_module(target)\n"
+            )
+            key = (
+                "TRR-Backend/trr_backend/runtime_loader.py",
+                3,
+                "import_module",
+            )
+            original = MODULE.DYNAMIC_IMPORT_ALLOWLIST
+            MODULE.DYNAMIC_IMPORT_ALLOWLIST = {
+                key: "Test-only optional runtime plugin load; not an architecture edge."
+            }
+            try:
+                result = MODULE.build_backend_graph(root)
+            finally:
+                MODULE.DYNAMIC_IMPORT_ALLOWLIST = original
+
+            self.assertEqual(result.nonliteral_dynamic_imports, [])
+
+    def test_reviewed_provider_patch_import_is_structural_and_fails_closed_elsewhere(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "TRR-Backend/trr_backend/socials"
+            source.mkdir(parents=True)
+            (root / "TRR-Backend/trr_backend/__init__.py").write_text("")
+            (source / "__init__.py").write_text("")
+            path = source / "social_season_analytics_impl.py"
+            path.write_text(
+                "\n" * 137
+                + "for _provider_path in (\n"
+                + "    'trr_backend.socials.control_plane.queue_status',\n"
+                + "    'trr_backend.socials.read_models.account_profile.common',\n"
+                + "    'trr_backend.socials.analytics.read_models',\n"
+                + "    'trr_backend.socials.pipelines.account_catalog.progress',\n"
+                + "    'trr_backend.socials.control_plane.run_lifecycle',\n"
+                + "    'trr_backend.socials.control_plane.dispatch_runtime',\n"
+                + "    'trr_backend.socials.control_plane.dispatch',\n"
+                + "    'trr_backend.socials.control_plane.recovery',\n"
+                + "    'trr_backend.socials.control_plane.runtime',\n"
+                + "    'trr_backend.socials.control_plane.shared_accounts',\n"
+                + "    'trr_backend.socials.instagram.catalog_ingest',\n"
+                + "    'trr_backend.socials.pipelines.account_catalog.launch',\n"
+                + "    'trr_backend.socials.pipelines.comments.instagram',\n"
+                + "):\n"
+                + "    __import__(_provider_path, fromlist=['_configure_legacy_provider'])\n"
+                + "__import__(_provider_path, fromlist=['_configure_legacy_provider'])\n"
+            )
+
+            result = MODULE.build_backend_graph(root)
+
+            self.assertEqual(len(result.nonliteral_dynamic_imports), 1)
+            violation = result.nonliteral_dynamic_imports[0]
+            self.assertEqual(
+                violation.source_path,
+                "TRR-Backend/trr_backend/socials/social_season_analytics_impl.py",
+            )
+            self.assertEqual(violation.callee, "__import__")
+            self.assertEqual(violation.target_expression, "_provider_path")
+            self.assertGreater(violation.line, 137)
+
     def test_baseline_policy_allows_decreases_and_rejects_increases(self) -> None:
         original = MODULE.BASELINE
         MODULE.BASELINE = {
@@ -104,6 +234,32 @@ class ImportGraphTests(unittest.TestCase):
             )
         finally:
             MODULE.BASELINE = original
+
+    def test_zero_policy_requires_all_backend_sccs_without_weakening_legacy_checks(
+        self,
+    ) -> None:
+        report = {
+            "backend": {
+                "cycle_count": 1,
+                "social_cycle_count": 0,
+                "legacy_social_import_count": 1,
+            },
+            "app": {"cycle_count": 1},
+        }
+
+        self.assertEqual(
+            MODULE.zero_failures(report),
+            [
+                "backend.cycle_count must be zero; current=1",
+                "backend.legacy_social_import_count must be zero; current=1",
+                "app.cycle_count must be zero; current=1",
+            ],
+        )
+
+        report["backend"]["cycle_count"] = 0
+        report["backend"]["legacy_social_import_count"] = 0
+        report["app"]["cycle_count"] = 0
+        self.assertEqual(MODULE.zero_failures(report), [])
 
     def test_frozen_policy_rejects_exact_source_and_graph_drift(self) -> None:
         original = MODULE.BASELINE
