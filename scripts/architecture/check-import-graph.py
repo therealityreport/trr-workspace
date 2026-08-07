@@ -105,26 +105,26 @@ REVIEWED_PROVIDER_PATCH_MODULES = (
 # the program's final acceptance target.
 BASELINE = {
     "scope_version": SCOPE_VERSION,
-    "captured_at": "2026-07-16T20:59:30Z",
+    "captured_at": "2026-08-07T22:08:07Z",
     "backend": {
-        "module_count": 483,
-        "edge_count": 1264,
-        "cycle_count": 5,
-        "cyclic_module_count": 66,
-        "social_cycle_count": 2,
-        "social_cyclic_module_count": 49,
-        "legacy_social_import_count": 141,
-        "legacy_social_importer_count": 34,
-        "source_sha256": "b6633756538ae1a9631279e04b32e76dc735b13fcb7fccb8c7ec7550ba883f8f",
-        "graph_sha256": "00687189cb30c0fe25ee837d057b1f4abe386458212d90da7cce438722eddba0",
-    },
-    "app": {
-        "module_count": 1122,
-        "edge_count": 2941,
+        "module_count": 534,
+        "edge_count": 1442,
         "cycle_count": 0,
         "cyclic_module_count": 0,
-        "source_sha256": "8c3fee0db688b562b3d48383a1aa099a75c3dfd6b7776642a5b411a815c9e714",
-        "graph_sha256": "64e040bb7f35784441812d9af7e74dd5e87d1ecc6182d97ed00013ed19beaa4b",
+        "social_cycle_count": 0,
+        "social_cyclic_module_count": 0,
+        "legacy_social_import_count": 0,
+        "legacy_social_importer_count": 0,
+        "source_sha256": "0a1a5a18e9151e837e8081f6dc35460a420da7fd2bcb36baf3cd7a5a43f2ee29",
+        "graph_sha256": "c1718bf1e13ee05e7763d51ae35ff2975cf80c26c2782bcf967d4eeb4655b343",
+    },
+    "app": {
+        "module_count": 1128,
+        "edge_count": 2963,
+        "cycle_count": 0,
+        "cyclic_module_count": 0,
+        "source_sha256": "52cda819b06f7a7a14eebe9c2ea35d47c87b6075f75cdb5cf25e528b69cb2858",
+        "graph_sha256": "ba5d220b68c65f1b173d716a5451f064e79120984c396e532643306780fcba7e",
     },
 }
 
