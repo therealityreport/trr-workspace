@@ -856,6 +856,19 @@
       "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
     }
   ],
-  "excluded_non_architecture_paths": [],
+  "excluded_non_architecture_paths": [
+    {
+      "repository": "app",
+      "path": "apps/web/src/lib/admin/design-docs-pipeline-types.ts",
+      "status": "modified",
+      "reason": "Explicit concurrent app work excluded from T6 candidate ownership."
+    },
+    {
+      "repository": "app",
+      "path": "docs/ai/HANDOFF.md",
+      "status": "modified",
+      "reason": "Explicit concurrent app work excluded from T6 candidate ownership."
+    }
+  ],
   "promotion_policy": "Parked entries cannot promote or be silently absorbed into a candidate; each requires explicit packet ownership and missing proof closure."
 }
