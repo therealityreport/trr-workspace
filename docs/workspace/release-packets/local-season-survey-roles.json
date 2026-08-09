@@ -3,7 +3,7 @@
   "packet_id": "local-season-survey-roles",
   "capability": "Season cast survey-role persistence and app adapter",
   "created_at": "2026-07-16T20:52:42.770997Z",
-  "updated_at": "2026-08-09T22:16:11Z",
+  "updated_at": "2026-08-09T23:06:32Z",
   "state": "implementation_complete_parked",
   "truth_scope": "local",
   "repositories": {
@@ -58,7 +58,7 @@
     "backend": {
       "revision_type": "committed_candidate",
       "base_sha": "0a3d2b59ec29304fb2765fd8cf996032e11c937b",
-      "candidate_sha": "b677d502ada0f296712b5ade8142b7c4e6f8c8ac",
+      "candidate_sha": "368e2dfb836af777d126a8f7c02f6ddba1a1f541",
       "owned_paths": [
         "api/routers/v2/season_cast_survey_roles.py",
         "api/schemas/v2/season_cast_survey_roles.py",
