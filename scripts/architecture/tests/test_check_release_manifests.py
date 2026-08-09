@@ -530,6 +530,57 @@ def run_checker(root: Path, *args: str) -> subprocess.CompletedProcess[str]:
     )
 
 
+def promote_live_r0_workspace_candidates(
+    tmp_path: Path,
+    packet_paths: dict[str, Path],
+    owned_paths: dict[str, str],
+) -> None:
+    module = load_module()
+    repository_roots = {
+        "workspace": tmp_path,
+        "app": tmp_path / "TRR-APP",
+        "backend": tmp_path / "TRR-Backend",
+    }
+    git(tmp_path, "add", *sorted(owned_paths.values()))
+    git(tmp_path, "commit", "-qm", "candidate")
+    candidate_shas = {
+        repository: git(repository_root, "rev-parse", "HEAD")
+        for repository, repository_root in repository_roots.items()
+    }
+    for packet_path in packet_paths.values():
+        packet_data = json.loads(packet_path.read_text(encoding="utf-8"))
+        packet_data["repositories"] = {
+            repository: module.capture_committed_candidate(
+                repository_roots[repository],
+                revision["base_sha"],
+                candidate_shas[repository],
+                revision["owned_paths"],
+            )
+            for repository, revision in packet_data["repositories"].items()
+        }
+        packet_path.write_text(json.dumps(packet_data), encoding="utf-8")
+
+
+def add_parked_app_path(tmp_path: Path) -> Path:
+    parked_path = tmp_path / "TRR-APP" / "parked.txt"
+    parked_path.write_text("parked\n", encoding="utf-8")
+    manifest_path = tmp_path / "docs" / "workspace" / "parked-unaccepted-local-work.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["entries"] = [
+        {
+            "repository": "app",
+            "path": "parked.txt",
+            "status": "untracked",
+            "owner": "separate workstream",
+            "reason": "not part of this candidate",
+            "missing_proof": ["separate acceptance evidence"],
+            "next_action": "preserve until its owner accepts it",
+        }
+    ]
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    return parked_path
+
+
 def write_promotable_packet(
     tmp_path: Path,
     *,
@@ -1319,6 +1370,52 @@ def test_default_cli_accepts_candidate_commit_then_metadata_receipt_commit(
 
     assert validation.returncode == 0, validation.stdout + validation.stderr
     assert "architecture-release-manifests: OK packets=9 evidence=9" in validation.stdout
+
+
+def test_clean_candidate_mode_is_explicit_and_preserves_strict_parked_dirt(
+    tmp_path: Path,
+) -> None:
+    packet_paths, owned_paths = write_live_r0_workspace(tmp_path)
+    promote_live_r0_workspace_candidates(tmp_path, packet_paths, owned_paths)
+    parked_path = add_parked_app_path(tmp_path)
+
+    strict_live = run_checker(tmp_path)
+
+    assert strict_live.returncode == 0, strict_live.stdout + strict_live.stderr
+    parked_path.unlink()
+
+    strict_without_parked_dirt = run_checker(tmp_path)
+
+    assert strict_without_parked_dirt.returncode == 1
+    assert "classified paths are not currently dirty in app: parked.txt" in strict_without_parked_dirt.stdout
+
+    clean_candidate = run_checker(tmp_path, "--clean-candidate")
+
+    assert clean_candidate.returncode == 0, clean_candidate.stdout + clean_candidate.stderr
+    assert "architecture-release-manifests: OK clean-candidate packets=9 evidence=9" in clean_candidate.stdout
+
+
+def test_clean_candidate_mode_rejects_local_checkpoint(tmp_path: Path) -> None:
+    write_live_r0_workspace(tmp_path)
+
+    validation = run_checker(tmp_path, "--clean-candidate")
+
+    assert validation.returncode == 1
+    assert "clean-candidate mode requires a committed candidate revision" in validation.stdout
+
+
+def test_clean_candidate_mode_rejects_invalid_candidate_contents(tmp_path: Path) -> None:
+    packet_paths, owned_paths = write_live_r0_workspace(tmp_path)
+    promote_live_r0_workspace_candidates(tmp_path, packet_paths, owned_paths)
+    packet_path = packet_paths[REQUIRED_LOCAL_PACKET_IDS[0]]
+    packet_data = json.loads(packet_path.read_text(encoding="utf-8"))
+    packet_data["repositories"]["workspace"]["owned_path_manifest_sha256"] = "0" * 64
+    packet_path.write_text(json.dumps(packet_data), encoding="utf-8")
+
+    validation = run_checker(tmp_path, "--clean-candidate")
+
+    assert validation.returncode == 1
+    assert "candidate owned-path manifest does not reproduce" in validation.stdout
 
 
 def test_default_cli_accepts_explicit_sequential_supersession(tmp_path: Path) -> None:

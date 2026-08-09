@@ -1504,6 +1504,28 @@ def validate_current_checkpoint(
                 )
 
 
+def validate_clean_candidate_checkpoint(
+    root: Path,
+    packets: Mapping[str, tuple[Mapping[str, Any], Path]],
+) -> None:
+    """Validate exact committed candidates without requiring parked live dirt."""
+    for packet_id in sorted(packets):
+        packet, packet_path = packets[packet_id]
+        for repository, revision in packet["repositories"].items():
+            if revision["revision_type"] != "committed_candidate":
+                raise ManifestValidationError(
+                    f"{packet_path}: clean-candidate mode requires a committed "
+                    f"candidate revision for {repository}"
+                )
+            repository_root = (root / REPOSITORY_PATHS[repository]).resolve()
+            validate_committed_candidate(
+                repository_root,
+                revision,
+                packet_path,
+                require_current_clean=True,
+            )
+
+
 def discover_json(directory: Path) -> list[Path]:
     return sorted(directory.rglob("*.json")) if directory.is_dir() else []
 
@@ -1589,7 +1611,16 @@ def validate_manifests(
     require_r0_local_set: bool = False,
     parked_path: Path | None = None,
     verify_current: bool = False,
+    verify_clean_candidate: bool = False,
 ) -> tuple[int, int]:
+    if verify_current and verify_clean_candidate:
+        raise ManifestValidationError(
+            "cannot validate both live workspace and clean-candidate checkpoints"
+        )
+    if verify_clean_candidate and not require_r0_local_set:
+        raise ManifestValidationError(
+            "clean-candidate validation requires the complete required R0 packet set"
+        )
     root = root.resolve()
     packet_schema_path = _workspace_manifest_path(root, PACKET_SCHEMA)
     evidence_schema_path = _workspace_manifest_path(root, EVIDENCE_SCHEMA)
@@ -1704,6 +1735,8 @@ def validate_manifests(
                 superseded,
                 retained_records,
             )
+        elif verify_clean_candidate:
+            validate_clean_candidate_checkpoint(root, packets)
     return len(packets), len(evidence)
 
 
@@ -1717,6 +1750,14 @@ def main() -> int:
         "--allow-partial",
         action="store_true",
         help="Validate an explicitly incomplete packet set instead of the required R0 set.",
+    )
+    parser.add_argument(
+        "--clean-candidate",
+        action="store_true",
+        help=(
+            "Explicitly validate committed candidates without requiring the parked "
+            "live-workspace dirt to be present."
+        ),
     )
     parser.add_argument(
         "--promote-packet",
@@ -1742,7 +1783,15 @@ def main() -> int:
     packet_paths = args.packet or discover_json(root / DEFAULT_PACKET_DIRECTORY)
     evidence_paths = args.evidence or discover_json(root / DEFAULT_EVIDENCE_DIRECTORY)
     try:
+        if args.clean_candidate and args.allow_partial:
+            raise ManifestValidationError(
+                "--clean-candidate cannot be combined with --allow-partial"
+            )
         if args.promote_packet:
+            if args.clean_candidate:
+                raise ManifestValidationError(
+                    "--clean-candidate cannot be combined with --promote-packet"
+                )
             if not args.repository or not args.candidate_sha:
                 raise ManifestValidationError(
                     "--promote-packet requires --repository and --candidate-sha"
@@ -1779,15 +1828,14 @@ def main() -> int:
             require_packets=args.require_packets,
             require_r0_local_set=not args.allow_partial,
             parked_path=DEFAULT_PARKED_WORK_MANIFEST,
-            verify_current=True,
+            verify_current=not args.clean_candidate,
+            verify_clean_candidate=args.clean_candidate,
         )
     except ManifestValidationError as exc:
         print(f"architecture-release-manifests: ERROR {exc}")
         return 1
-    print(
-        "architecture-release-manifests: OK "
-        f"packets={packet_count} evidence={evidence_count}"
-    )
+    mode = "clean-candidate " if args.clean_candidate else ""
+    print(f"architecture-release-manifests: OK {mode}packets={packet_count} evidence={evidence_count}")
     return 0
 
 
