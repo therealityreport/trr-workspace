@@ -3,14 +3,14 @@
   "packet_id": "local-foundation-runtime-guards",
   "capability": "Workspace durability, safe runtime, and provider guard foundations",
   "created_at": "2026-07-16T20:52:42.770997Z",
-  "updated_at": "2026-08-09T22:16:11Z",
+  "updated_at": "2026-08-09T22:47:24Z",
   "state": "implementation_complete_parked",
   "truth_scope": "local",
   "repositories": {
     "workspace": {
       "revision_type": "committed_candidate",
       "base_sha": "df55c982ecf6741808536bfb6af308cc737372cf",
-      "candidate_sha": "045e55ee86926b602dab32f5d4b64e36abab18da",
+      "candidate_sha": "f6de945810234f5c4a5c93f1bec2b3817c44f82b",
       "owned_paths": [
         "CONTEXT-MAP.md",
         "Makefile",
@@ -60,8 +60,8 @@
         "scripts/test_workspace_app_env_projection.py",
         "scripts/vercel-project-guard.py"
       ],
-      "owned_path_manifest_sha256": "dea7d05403901310233b20cb4887ec55e67898b4d00711e2a52396737b9514f3",
-      "binary_tracked_diff_sha256": "d8f4de05b92e3748f89ea92362c1f3744a47e6ab2a29838c96299b361933196d",
+      "owned_path_manifest_sha256": "f88fed524e2840e7cb324c84c5be6773c39f0f973896b8bee8bfc9ea9565402a",
+      "binary_tracked_diff_sha256": "64442e2fead70d987cc53f5b095ebc176b3365d34f7aba9e9c69e3621f8adba3",
       "dirty_counts": {
         "tracked_modified": 0,
         "tracked_added": 0,
