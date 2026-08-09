@@ -105,18 +105,18 @@ REVIEWED_PROVIDER_PATCH_MODULES = (
 # the program's final acceptance target.
 BASELINE = {
     "scope_version": SCOPE_VERSION,
-    "captured_at": "2026-08-07T22:08:07Z",
+    "captured_at": "2026-08-09T22:16:11Z",
     "backend": {
-        "module_count": 534,
-        "edge_count": 1442,
+        "module_count": 536,
+        "edge_count": 1454,
         "cycle_count": 0,
         "cyclic_module_count": 0,
         "social_cycle_count": 0,
         "social_cyclic_module_count": 0,
         "legacy_social_import_count": 0,
         "legacy_social_importer_count": 0,
-        "source_sha256": "0a1a5a18e9151e837e8081f6dc35460a420da7fd2bcb36baf3cd7a5a43f2ee29",
-        "graph_sha256": "c1718bf1e13ee05e7763d51ae35ff2975cf80c26c2782bcf967d4eeb4655b343",
+        "source_sha256": "ec758c83d5ad996f293afea8767052577ef00a228b64ddd66aba06afaecf96fa",
+        "graph_sha256": "b8ac73c1b2311c77e73f41320e79c52712f306b5dd25c05f837965accdb631e8",
     },
     "app": {
         "module_count": 1128,
