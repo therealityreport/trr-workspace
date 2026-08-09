@@ -436,12 +436,12 @@ openapi-v2-contract-generate:
 	@cd TRR-Backend && ./.venv/bin/python -m scripts.dev.export_v2_openapi
 	@mkdir -p TRR-APP/apps/web/src/lib/server/trr-api/generated
 	@cp TRR-Backend/docs/api/openapi.v2.json TRR-APP/apps/web/src/lib/server/trr-api/generated/openapi.v2.json
-	@pnpm -C TRR-APP/apps/web run generate:trr-v2-api-types
+	@cd TRR-APP && pnpm -C apps/web run generate:trr-v2-api-types
 
 openapi-v2-contract-check:
 	@cd TRR-Backend && ./.venv/bin/python -m scripts.dev.export_v2_openapi --check
 	@cmp -s TRR-Backend/docs/api/openapi.v2.json TRR-APP/apps/web/src/lib/server/trr-api/generated/openapi.v2.json || { echo "openapi-v2-contract: ERROR app snapshot differs from backend"; exit 1; }
-	@pnpm -C TRR-APP/apps/web run generated:trr-v2-api-types:check
+	@cd TRR-APP && pnpm -C apps/web run generated:trr-v2-api-types:check
 
 runtime-capacity-check:
 	@python3 scripts/runtime_capacity.py check
