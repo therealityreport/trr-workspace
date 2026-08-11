@@ -3,7 +3,7 @@
   "packet_id": "local-recent-people-external-ids",
   "capability": "Recent people and external-ID backend read models and app adapters",
   "created_at": "2026-07-16T20:52:42.770997Z",
-  "updated_at": "2026-08-10T03:25:33Z",
+  "updated_at": "2026-08-11T17:59:52Z",
   "state": "implementation_complete_parked",
   "truth_scope": "local",
   "repositories": {
@@ -60,7 +60,7 @@
     "backend": {
       "revision_type": "committed_candidate",
       "base_sha": "0a3d2b59ec29304fb2765fd8cf996032e11c937b",
-      "candidate_sha": "368e2dfb836af777d126a8f7c02f6ddba1a1f541",
+      "candidate_sha": "97f0eefc319e11f3df3fc24a3cab1e43497f18ca",
       "owned_paths": [
         "api/routers/admin_people_reads.py",
         "api/routers/v2/external_ids.py",
