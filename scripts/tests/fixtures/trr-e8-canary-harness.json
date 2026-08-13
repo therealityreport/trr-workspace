@@ -1,0 +1,229 @@
+{
+  "schemaVersion": 1,
+  "taskId": "WAVE-A4",
+  "mode": "offline_definition_only",
+  "executionAuthorized": false,
+  "requestsFired": 0,
+  "candidate": {
+    "appCommit": "0ec1fe9ddd7b38195bacc7a4ae703c59889d0ab8",
+    "productionBaselineCommit": "9e4cd63b44bef28314df443dddf2b57fbd55b132",
+    "baseUrlBinding": "Bind at execution time to the exact candidate deployment after Ready, Current, Latest, Production, and production-alias checks pass."
+  },
+  "sensitivity": {
+    "classification": "non-sensitive synthetic",
+    "credentialsEmbedded": false,
+    "personalDataEmbedded": false,
+    "requestBodiesEmbedded": false,
+    "authenticationRequirement": "Use the separately verified exact TRR admin session at execution time; do not copy session material into this artifact."
+  },
+  "promotedFunctionRoutes": [
+    {
+      "route": "/api/admin/design-docs/nyt-homepage-preview",
+      "method": "GET",
+      "source": "TRR-APP/apps/web/src/app/api/admin/design-docs/nyt-homepage-preview/route.ts",
+      "promotionEvidence": "This is the only Vercel function route changed between retained production commit 9e4cd63b44bef28314df443dddf2b57fbd55b132 and candidate 0ec1fe9ddd7b38195bacc7a4ae703c59889d0ab8.",
+      "coveredBy": [
+        "VC-01",
+        "VC-02",
+        "VC-03",
+        "VC-04",
+        "VC-05",
+        "VC-06",
+        "VC-07",
+        "VC-08",
+        "VC-09",
+        "VC-10",
+        "VC-11",
+        "VC-12",
+        "VC-13",
+        "VC-14",
+        "VC-15",
+        "VC-16",
+        "VC-17",
+        "VC-18",
+        "VC-19",
+        "VC-20"
+      ]
+    }
+  ],
+  "abortPolicy": {
+    "authorityCount": 1,
+    "abortOwner": "Production Promotion Owner",
+    "initialWindowSize": 20,
+    "initialSuccessThresholds": {
+      "unhandledFunctionErrors": 0,
+      "http5xxResponses": 0,
+      "promotedRouteCoveragePercent": 100
+    },
+    "initialAbortRule": "The Production Promotion Owner stops the set on the first unhandled function error or first HTTP 5xx response during VC-01 through VC-20.",
+    "rollingWindow": {
+      "startsAfterInitialWindow": true,
+      "windowSize": 20,
+      "errorRateAbortCondition": "greater_than_5_percent",
+      "integerConsequence": "Two or more function errors in any rolling 20-invocation window exceeds 5 percent and aborts."
+    },
+    "rollbackBoundary": "Stopping the canary does not itself authorize rollback. Invoke only the separately authorized, freshly revalidated rollback path."
+  },
+  "requestDefinitions": [
+    {
+      "id": "VC-01",
+      "method": "GET",
+      "route": "/api/admin/design-docs/nyt-homepage-preview",
+      "query": {"view": "fragment", "id": "wirecutter-package"},
+      "headers": {"accept": "text/html"},
+      "expected": {"status": 200, "contentTypePrefix": "text/html", "bodyContains": "Product recommendations"}
+    },
+    {
+      "id": "VC-02",
+      "method": "GET",
+      "route": "/api/admin/design-docs/nyt-homepage-preview",
+      "query": {"view": "fragment", "id": "product-rails"},
+      "headers": {"accept": "text/html"},
+      "expected": {"status": 200, "contentTypePrefix": "text/html", "bodyContains": "preview-stack"}
+    },
+    {
+      "id": "VC-03",
+      "method": "GET",
+      "route": "/api/admin/design-docs/nyt-homepage-preview",
+      "query": {"view": "fragment", "id": "games-package"},
+      "headers": {"accept": "text/html"},
+      "expected": {"status": 200, "contentTypePrefix": "text/html", "bodyContains": "Daily puzzles"}
+    },
+    {
+      "id": "VC-04",
+      "method": "GET",
+      "route": "/api/admin/design-docs/nyt-homepage-preview",
+      "query": {"view": "fragment", "id": "watch-todays-videos"},
+      "headers": {"accept": "text/html"},
+      "expected": {"status": 200, "contentTypePrefix": "text/html", "bodyContains": "Watch Today’s Videos"}
+    },
+    {
+      "id": "VC-05",
+      "method": "GET",
+      "route": "/api/admin/design-docs/nyt-homepage-preview",
+      "query": {"view": "fragment", "id": "more-news"},
+      "headers": {"accept": "text/html"},
+      "expected": {"status": 200, "contentTypePrefix": "text/html", "bodyContains": "More News"}
+    },
+    {
+      "id": "VC-06",
+      "method": "GET",
+      "route": "/api/admin/design-docs/nyt-homepage-preview",
+      "query": {"view": "fragment", "id": "edition-rail"},
+      "headers": {"accept": "text/html"},
+      "expected": {"status": 200, "contentTypePrefix": "text/html"}
+    },
+    {
+      "id": "VC-07",
+      "method": "GET",
+      "route": "/api/admin/design-docs/nyt-homepage-preview",
+      "query": {"view": "fragment", "id": "masthead"},
+      "headers": {"accept": "text/html"},
+      "expected": {"status": 200, "contentTypePrefix": "text/html"}
+    },
+    {
+      "id": "VC-08",
+      "method": "GET",
+      "route": "/api/admin/design-docs/nyt-homepage-preview",
+      "query": {"view": "fragment", "id": "nested-nav"},
+      "headers": {"accept": "text/html"},
+      "expected": {"status": 200, "contentTypePrefix": "text/html"}
+    },
+    {
+      "id": "VC-09",
+      "method": "GET",
+      "route": "/api/admin/design-docs/nyt-homepage-preview",
+      "query": {"view": "fragment", "id": "lead-programming"},
+      "headers": {"accept": "text/html"},
+      "expected": {"status": 200, "contentTypePrefix": "text/html"}
+    },
+    {
+      "id": "VC-10",
+      "method": "GET",
+      "route": "/api/admin/design-docs/nyt-homepage-preview",
+      "query": {"view": "fragment", "id": "site-index"},
+      "headers": {"accept": "text/html"},
+      "expected": {"status": 200, "contentTypePrefix": "text/html"}
+    },
+    {
+      "id": "VC-11",
+      "method": "GET",
+      "route": "/api/admin/design-docs/nyt-homepage-preview",
+      "query": {"view": "fragment", "id": "footer"},
+      "headers": {"accept": "text/html"},
+      "expected": {"status": 200, "contentTypePrefix": "text/html"}
+    },
+    {
+      "id": "VC-12",
+      "method": "GET",
+      "route": "/api/admin/design-docs/nyt-homepage-preview",
+      "query": {"view": "fragment", "id": "tip-strip"},
+      "headers": {"accept": "text/html"},
+      "expected": {"status": 200, "contentTypePrefix": "text/html"}
+    },
+    {
+      "id": "VC-13",
+      "method": "GET",
+      "route": "/api/admin/design-docs/nyt-homepage-preview",
+      "query": {"view": "fragment", "id": "poetry-promo"},
+      "headers": {"accept": "text/html"},
+      "expected": {"status": 200, "contentTypePrefix": "text/html"}
+    },
+    {
+      "id": "VC-14",
+      "method": "GET",
+      "route": "/api/admin/design-docs/nyt-homepage-preview",
+      "query": {"view": "fragment", "id": "weather-strip"},
+      "headers": {"accept": "text/html"},
+      "expected": {"status": 200, "contentTypePrefix": "text/html"}
+    },
+    {
+      "id": "VC-15",
+      "method": "GET",
+      "route": "/api/admin/design-docs/nyt-homepage-preview",
+      "query": {"view": "fragment", "id": "opinion-label"},
+      "headers": {"accept": "text/html"},
+      "expected": {"status": 200, "contentTypePrefix": "text/html"}
+    },
+    {
+      "id": "VC-16",
+      "method": "GET",
+      "route": "/api/admin/design-docs/nyt-homepage-preview",
+      "query": {"view": "fragment", "id": "well-package"},
+      "headers": {"accept": "text/html"},
+      "expected": {"status": 200, "contentTypePrefix": "text/html"}
+    },
+    {
+      "id": "VC-17",
+      "method": "GET",
+      "route": "/api/admin/design-docs/nyt-homepage-preview",
+      "query": {"view": "fragment", "id": "culture-lifestyle-package"},
+      "headers": {"accept": "text/html"},
+      "expected": {"status": 200, "contentTypePrefix": "text/html"}
+    },
+    {
+      "id": "VC-18",
+      "method": "GET",
+      "route": "/api/admin/design-docs/nyt-homepage-preview",
+      "query": {"view": "fragment", "id": "athletic-package"},
+      "headers": {"accept": "text/html"},
+      "expected": {"status": 200, "contentTypePrefix": "text/html"}
+    },
+    {
+      "id": "VC-19",
+      "method": "GET",
+      "route": "/api/admin/design-docs/nyt-homepage-preview",
+      "query": {"view": "fragment", "id": "audio-package"},
+      "headers": {"accept": "text/html"},
+      "expected": {"status": 200, "contentTypePrefix": "text/html"}
+    },
+    {
+      "id": "VC-20",
+      "method": "GET",
+      "route": "/api/admin/design-docs/nyt-homepage-preview",
+      "query": {"view": "fragment", "id": "cooking-package"},
+      "headers": {"accept": "text/html"},
+      "expected": {"status": 200, "contentTypePrefix": "text/html"}
+    }
+  ]
+}

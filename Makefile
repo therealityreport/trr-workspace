@@ -2,7 +2,7 @@
 	dev dev-lite dev-cloud dev-hybrid dev-architecture-refactor architecture-refactor-check dev-hybrid-bg dev-hybrid-media-safe dev-hybrid-media-safe-posts dev-hybrid-media-safe-comments dev-hybrid-media-safe-bravotv dev-hybrid-social-safe dev-portless stop-portless portless-status portless-repair open-admin dev-local dev-full dev-redis \
 	preflight preflight-local preflight-cloud preflight-hybrid preflight-strict preflight-diagnostics env-contract env-contract-report env-hygiene architecture-contracts-check architecture-durable-contracts-check architecture-durable-candidate-check architecture-evidence-hygiene-check architecture-git-roots-check architecture-guard-tests architecture-hotspots-check architecture-release-manifests-check architecture-release-manifests-clean-candidate-check openapi-v2-contract-generate openapi-v2-contract-check runtime-capacity-check deployment-targets-check modal-invocation-check check-policy codex-check git-branch-report handoff-check handoff-sync smoke browser-smoke-admin-details status status-json backend-restart-diagnose stop logs logs-prune cleanup-disk help \
 	app-direct-sql-inventory redacted-env-inventory vercel-project-guard vercel-auth-doctor vercel-cleanup-doctor vercel-link-trr vercel-preview-ready migration-ownership-lint rls-grants-snapshot db-pressure-rehearsal supabase-mcp-access supabase-advisor-snapshot supabase-preview-branch-cleanup \
-	bootstrap doctor doctor-json app-check app-validate-quick test test-fast test-full test-changed test-env-sensitive \
+	bootstrap doctor doctor-json app-check app-validate-quick test test-fast test-full test-changed test-env-sensitive test-e8-browser-adapter \
 	workspace-contract-check workspace-hygiene-report workspace-hygiene-clean-dry-run \
 	cast-screentime-gap-check cast-screentime-live-check \
 	redis-up redis-down down chrome-repair chrome-devtools-mcp-status chrome-devtools-mcp-clean-stale chrome-devtools-mcp-stop-conflicts next-devtools-mcp-status node-repl-mcp-clean-stale codex-browser-transport-reset \
@@ -596,6 +596,9 @@ test-full:
 
 test-changed:
 	@bash scripts/test-changed.sh
+
+test-e8-browser-adapter:
+	@node --test scripts/tests/trr-e8-browser-adapter.test.cjs
 
 # Environment-sensitive regression gate across repos.
 test-env-sensitive:
