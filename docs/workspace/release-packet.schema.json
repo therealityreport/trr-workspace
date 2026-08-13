@@ -95,6 +95,10 @@
         "$ref": "#/$defs/supersession"
       }
     },
+    "immutable_successor": {
+      "description": "Optional v3 successor provenance. Its source packet is an immutable predecessor and its candidate tuple is independently reproducible.",
+      "$ref": "#/$defs/immutableSuccessor"
+    },
     "contracts": {
       "type": "object",
       "additionalProperties": false,
@@ -815,7 +819,59 @@
         "evidence_ids": {"$ref": "#/$defs/uniqueStringArray"}
       }
     },
-    "approval": {
+    "candidateTuple": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["workspace_sha", "app_sha", "backend_sha"],
+      "properties": {
+        "workspace_sha": {"$ref": "#/$defs/gitSha"},
+        "app_sha": {"$ref": "#/$defs/gitSha"},
+        "backend_sha": {"$ref": "#/$defs/gitSha"}
+      }
+    },
+    "candidatePreimage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "base_sha",
+        "owned_path_manifest_sha256",
+        "binary_tracked_diff_sha256"
+      ],
+      "properties": {
+        "base_sha": {"$ref": "#/$defs/gitSha"},
+        "owned_path_manifest_sha256": {"$ref": "#/$defs/sha256"},
+        "binary_tracked_diff_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "candidatePreimages": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["workspace", "app", "backend"],
+      "properties": {
+        "workspace": {"$ref": "#/$defs/candidatePreimage"},
+        "app": {"$ref": "#/$defs/candidatePreimage"},
+        "backend": {"$ref": "#/$defs/candidatePreimage"}
+      }
+    },
+    "immutableSuccessor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_packet_id",
+        "source_packet_sha256",
+        "scope",
+        "candidate_commits",
+        "preview_data_approval_id"
+      ],
+      "properties": {
+        "source_packet_id": {"$ref": "#/$defs/identifier"},
+        "source_packet_sha256": {"$ref": "#/$defs/sha256"},
+        "scope": {"enum": ["preview", "production"]},
+        "candidate_commits": {"$ref": "#/$defs/candidateTuple"},
+        "preview_data_approval_id": {"$ref": "#/$defs/identifier"}
+      }
+    },
+    "basicApproval": {
       "type": "object",
       "additionalProperties": false,
       "required": ["approval_id", "kind", "status", "scope", "approved_by", "approved_at"],
@@ -834,6 +890,66 @@
         },
         "approved_at": {"$ref": "#/$defs/nullableTimestamp"}
       }
+    },
+    "previewDataApproval": {
+      "description": "Typed approval for a preview data snapshot. It is required before a preview or production immutable successor may be emitted.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "approval_id",
+        "kind",
+        "status",
+        "scope",
+        "approved_by",
+        "approved_at",
+        "captured_at",
+        "preview_target_identity",
+        "dataset_id",
+        "snapshot_sha256",
+        "preimage_sha256",
+        "candidate_commits",
+        "candidate_preimages",
+        "predecessor_packet_ids",
+        "evidence_ids"
+      ],
+      "properties": {
+        "approval_id": {"$ref": "#/$defs/identifier"},
+        "kind": {"const": "preview_data_approval"},
+        "status": {"enum": ["pending", "approved", "denied", "expired"]},
+        "scope": {"const": "preview"},
+        "approved_by": {
+          "anyOf": [
+            {"type": "string", "maxLength": 200},
+            {"type": "null"}
+          ]
+        },
+        "approved_at": {"$ref": "#/$defs/nullableTimestamp"},
+        "captured_at": {"$ref": "#/$defs/timestamp"},
+        "preview_target_identity": {"type": "string", "minLength": 1, "maxLength": 1000},
+        "dataset_id": {"type": "string", "minLength": 1, "maxLength": 500},
+        "snapshot_sha256": {"$ref": "#/$defs/sha256"},
+        "preimage_sha256": {"$ref": "#/$defs/sha256"},
+        "candidate_commits": {"$ref": "#/$defs/candidateTuple"},
+        "candidate_preimages": {"$ref": "#/$defs/candidatePreimages"},
+        "predecessor_packet_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/identifier"}
+        },
+        "evidence_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/identifier"}
+        }
+      }
+    },
+    "approval": {
+      "oneOf": [
+        {"$ref": "#/$defs/basicApproval"},
+        {"$ref": "#/$defs/previewDataApproval"}
+      ]
     }
   }
 }

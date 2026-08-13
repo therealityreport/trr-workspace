@@ -624,6 +624,88 @@ def write_promotable_packet(
     return packet_path, git(tmp_path, "rev-parse", "HEAD")
 
 
+def write_immutable_successor_source(
+    tmp_path: Path,
+) -> tuple[Path, dict[str, str], dict, str]:
+    """Create one v2 predecessor with reproducible clean W/A/B candidates."""
+    module = load_module()
+    packet_paths, owned_paths = write_live_r0_workspace(tmp_path)
+    source_path = packet_paths[REQUIRED_LOCAL_PACKET_IDS[0]]
+    git(tmp_path, "add", *sorted(owned_paths.values()))
+    git(tmp_path, "commit", "-qm", "workspace candidate")
+    candidate_shas = {
+        "workspace": git(tmp_path, "rev-parse", "HEAD"),
+        "app": git(tmp_path / "TRR-APP", "rev-parse", "HEAD"),
+        "backend": git(tmp_path / "TRR-Backend", "rev-parse", "HEAD"),
+    }
+    source = json.loads(source_path.read_text(encoding="utf-8"))
+    source["repositories"] = {
+        repository: module.capture_committed_candidate(
+            tmp_path / {"workspace": ".", "app": "TRR-APP", "backend": "TRR-Backend"}[repository],
+            revision["base_sha"],
+            candidate_shas[repository],
+            revision["owned_paths"],
+        )
+        for repository, revision in source["repositories"].items()
+    }
+    source_path.write_text(json.dumps(source), encoding="utf-8")
+    return source_path, candidate_shas, source, hashlib.sha256(source_path.read_bytes()).hexdigest()
+
+
+def preview_data_approval(source: dict, candidate_shas: dict[str, str]) -> dict:
+    return {
+        "approval_id": "approval-preview-data",
+        "kind": "preview_data_approval",
+        "status": "approved",
+        "scope": "preview",
+        "approved_by": "user",
+        "approved_at": "2026-07-16T00:00:02Z",
+        "captured_at": "2026-07-16T00:00:01Z",
+        "preview_target_identity": (
+            "database_url_env=TRR_PREVIEW_DATABASE_URL;"
+            "project_ref_env=TRR_PREVIEW_SUPABASE_PROJECT_REF"
+        ),
+        "dataset_id": "preview-snapshot-20260716",
+        "snapshot_sha256": "e" * 64,
+        "preimage_sha256": "f" * 64,
+        "candidate_commits": {
+            "workspace_sha": candidate_shas["workspace"],
+            "app_sha": candidate_shas["app"],
+            "backend_sha": candidate_shas["backend"],
+        },
+        "candidate_preimages": {
+            repository: {
+                key: source["repositories"][repository][key]
+                for key in (
+                    "base_sha",
+                    "owned_path_manifest_sha256",
+                    "binary_tracked_diff_sha256",
+                )
+            }
+            for repository in ("workspace", "app", "backend")
+        },
+        "predecessor_packet_ids": [source["packet_id"]],
+        "evidence_ids": ["preview-data-approval-evidence"],
+    }
+
+
+def write_preview_data_evidence(tmp_path: Path, source: dict, *, scope: str = "preview") -> Path:
+    evidence_data = evidence()
+    evidence_data["evidence_id"] = "preview-data-approval-evidence"
+    evidence_data["packet_id"] = f"{source['packet_id']}-{scope}-successor"
+    evidence_data["gate"] = "gate-4"
+    evidence_data["truth_scope"] = scope
+    evidence_path = (
+        tmp_path
+        / "docs"
+        / "workspace"
+        / "architecture-evidence"
+        / f"{evidence_data['evidence_id']}.json"
+    )
+    evidence_path.write_text(json.dumps(evidence_data), encoding="utf-8")
+    return evidence_path
+
+
 def commit_unrelated_change(repo: Path) -> None:
     (repo / "unrelated.txt").write_text("unrelated\n", encoding="utf-8")
     git(repo, "add", "unrelated.txt")
@@ -1122,6 +1204,338 @@ def test_cli_candidate_promotion_is_a_dry_run_by_default(tmp_path: Path) -> None
     assert result.returncode == 0, result.stdout + result.stderr
     assert "DRY-RUN" in result.stdout
     assert packet_path.read_bytes() == before
+
+
+def test_cli_immutable_successor_is_dry_run_by_default(tmp_path: Path) -> None:
+    source_path, candidate_shas, source, source_sha256 = write_immutable_successor_source(
+        tmp_path
+    )
+    approval_path = tmp_path / "preview-approval.json"
+    approval_path.write_text(json.dumps(preview_data_approval(source, candidate_shas)))
+    write_preview_data_evidence(tmp_path, source)
+    output_path = tmp_path / "docs/workspace/release-packets/new-preview-successor.json"
+    before = source_path.read_bytes()
+
+    result = run_checker(
+        tmp_path,
+        "--emit-successor",
+        "--source-packet", source_path.relative_to(tmp_path).as_posix(),
+        "--successor-scope", "preview",
+        "--workspace-sha", candidate_shas["workspace"],
+        "--app-sha", candidate_shas["app"],
+        "--backend-sha", candidate_shas["backend"],
+        "--predecessor-packet-id", source["packet_id"],
+        "--predecessor-sha256", source_sha256,
+        "--output-packet", output_path.relative_to(tmp_path).as_posix(),
+        "--preview-approval-file", approval_path.relative_to(tmp_path).as_posix(),
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "DRY-RUN immutable-successor" in result.stdout
+    assert source_path.read_bytes() == before
+    assert not output_path.exists()
+
+
+def test_cli_immutable_successor_write_emits_new_typed_packet(tmp_path: Path) -> None:
+    source_path, candidate_shas, source, source_sha256 = write_immutable_successor_source(
+        tmp_path
+    )
+    approval_path = tmp_path / "preview-approval.json"
+    approval_path.write_text(json.dumps(preview_data_approval(source, candidate_shas)))
+    write_preview_data_evidence(tmp_path, source)
+    output_path = tmp_path / "docs/workspace/release-packets/new-preview-successor.json"
+
+    result = run_checker(
+        tmp_path,
+        "--emit-successor",
+        "--source-packet", source_path.relative_to(tmp_path).as_posix(),
+        "--successor-scope", "preview",
+        "--workspace-sha", candidate_shas["workspace"],
+        "--app-sha", candidate_shas["app"],
+        "--backend-sha", candidate_shas["backend"],
+        "--predecessor-packet-id", source["packet_id"],
+        "--predecessor-sha256", source_sha256,
+        "--output-packet", output_path.relative_to(tmp_path).as_posix(),
+        "--preview-approval-file", approval_path.relative_to(tmp_path).as_posix(),
+        "--write",
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "EMITTED immutable-successor" in result.stdout
+    emitted = json.loads(output_path.read_text(encoding="utf-8"))
+    assert emitted["schema_version"] == 3
+    assert emitted["immutable_successor"] == {
+        "source_packet_id": source["packet_id"],
+        "source_packet_sha256": source_sha256,
+        "scope": "preview",
+        "candidate_commits": {
+            "workspace_sha": candidate_shas["workspace"],
+            "app_sha": candidate_shas["app"],
+            "backend_sha": candidate_shas["backend"],
+        },
+        "preview_data_approval_id": "approval-preview-data",
+    }
+    assert emitted["approvals"][0]["kind"] == "preview_data_approval"
+    assert source_path.read_bytes() == json.dumps(source).encode()
+
+
+def emit_test_successor(
+    tmp_path: Path,
+) -> tuple[Path, Path, dict, dict[str, str], str]:
+    source_path, candidate_shas, source, source_sha256 = write_immutable_successor_source(
+        tmp_path
+    )
+    approval_path = tmp_path / "preview-approval.json"
+    approval_path.write_text(json.dumps(preview_data_approval(source, candidate_shas)))
+    write_preview_data_evidence(tmp_path, source)
+    output_path = tmp_path / "docs/workspace/release-packets/new-preview-successor.json"
+    result = run_checker(
+        tmp_path,
+        "--emit-successor",
+        "--source-packet", source_path.relative_to(tmp_path).as_posix(),
+        "--successor-scope", "preview",
+        "--workspace-sha", candidate_shas["workspace"],
+        "--app-sha", candidate_shas["app"],
+        "--backend-sha", candidate_shas["backend"],
+        "--predecessor-packet-id", source["packet_id"],
+        "--predecessor-sha256", source_sha256,
+        "--output-packet", output_path.relative_to(tmp_path).as_posix(),
+        "--preview-approval-file", approval_path.relative_to(tmp_path).as_posix(),
+        "--write",
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    return source_path, output_path, source, candidate_shas, source_sha256
+
+
+def validate_test_successor_cohort(
+    tmp_path: Path,
+    source_path: Path,
+    output_path: Path,
+) -> subprocess.CompletedProcess[str]:
+    source = json.loads(source_path.read_text(encoding="utf-8"))
+    evidence_paths = [
+        tmp_path
+        / "docs"
+        / "workspace"
+        / "architecture-evidence"
+        / f"{source['packet_id']}.quick.json",
+        tmp_path
+        / "docs"
+        / "workspace"
+        / "architecture-evidence"
+        / "preview-data-approval-evidence.json",
+    ]
+    return run_checker(
+        tmp_path,
+        "--packet", source_path.relative_to(tmp_path).as_posix(),
+        "--packet", output_path.relative_to(tmp_path).as_posix(),
+        *sum(
+            (
+                ["--evidence", evidence_path.relative_to(tmp_path).as_posix()]
+                for evidence_path in evidence_paths
+            ),
+            [],
+        ),
+        "--allow-partial",
+    )
+
+
+@pytest.mark.parametrize(
+    ("mutation", "expected"),
+    [
+        (
+            "digest",
+            "immutable successor predecessor SHA-256 does not match the referenced packet",
+        ),
+        (
+            "scope",
+            "immutable successor scope must match packet truth_scope",
+        ),
+    ],
+)
+def test_cli_immutable_successor_revalidates_stored_provenance(
+    tmp_path: Path,
+    mutation: str,
+    expected: str,
+) -> None:
+    source_path, output_path, source, _, _ = emit_test_successor(tmp_path)
+    emitted = json.loads(output_path.read_text(encoding="utf-8"))
+    if mutation == "digest":
+        emitted["immutable_successor"]["source_packet_sha256"] = "0" * 64
+    else:
+        emitted["immutable_successor"]["scope"] = "production"
+    output_path.write_text(json.dumps(emitted), encoding="utf-8")
+
+    validation = validate_test_successor_cohort(tmp_path, source_path, output_path)
+
+    assert validation.returncode == 1
+    assert expected in validation.stdout
+
+
+def test_cli_immutable_successor_rejects_missing_preview_approval_evidence(
+    tmp_path: Path,
+) -> None:
+    source_path, candidate_shas, source, source_sha256 = write_immutable_successor_source(
+        tmp_path
+    )
+    approval_path = tmp_path / "preview-approval.json"
+    approval_path.write_text(json.dumps(preview_data_approval(source, candidate_shas)))
+    output_path = tmp_path / "docs/workspace/release-packets/new-preview-successor.json"
+
+    result = run_checker(
+        tmp_path,
+        "--emit-successor",
+        "--source-packet", source_path.relative_to(tmp_path).as_posix(),
+        "--successor-scope", "preview",
+        "--workspace-sha", candidate_shas["workspace"],
+        "--app-sha", candidate_shas["app"],
+        "--backend-sha", candidate_shas["backend"],
+        "--predecessor-packet-id", source["packet_id"],
+        "--predecessor-sha256", source_sha256,
+        "--output-packet", output_path.relative_to(tmp_path).as_posix(),
+        "--preview-approval-file", approval_path.relative_to(tmp_path).as_posix(),
+        "--write",
+    )
+
+    assert result.returncode == 1
+    assert "missing referenced evidence: preview-data-approval-evidence" in result.stdout
+    assert not output_path.exists()
+
+
+@pytest.mark.parametrize(
+    ("mutation", "expected"),
+    [
+        ("existing_output", "output already exists"),
+        ("source_output", "must not overwrite source packet"),
+        ("wrong_identity", "predecessor identity does not match"),
+        ("wrong_sha", "predecessor SHA-256 does not match"),
+        ("dirty_owned", "candidate owned paths are dirty"),
+        ("approval_candidates", "preview_data_approval candidate tuple does not match"),
+        ("approval_preimage", "preview_data_approval workspace preimage does not match"),
+    ],
+)
+def test_cli_immutable_successor_rejects_unsafe_inputs(
+    tmp_path: Path,
+    mutation: str,
+    expected: str,
+) -> None:
+    source_path, candidate_shas, source, source_sha256 = write_immutable_successor_source(
+        tmp_path
+    )
+    approval = preview_data_approval(source, candidate_shas)
+    approval_path = tmp_path / "preview-approval.json"
+    output_path = tmp_path / "docs/workspace/release-packets/new-preview-successor.json"
+    predecessor_id = source["packet_id"]
+    predecessor_sha = source_sha256
+    if mutation == "existing_output":
+        output_path.write_text("{}")
+    elif mutation == "source_output":
+        output_path = source_path
+    elif mutation == "wrong_identity":
+        predecessor_id = "other-predecessor"
+    elif mutation == "wrong_sha":
+        predecessor_sha = "0" * 64
+    elif mutation == "dirty_owned":
+        owned_path = source["repositories"]["workspace"]["owned_paths"][0]
+        (tmp_path / owned_path).write_text("drift\n", encoding="utf-8")
+    elif mutation == "approval_candidates":
+        approval["candidate_commits"]["app_sha"] = "0" * 40
+    elif mutation == "approval_preimage":
+        approval["candidate_preimages"]["workspace"]["owned_path_manifest_sha256"] = "0" * 64
+    approval_path.write_text(json.dumps(approval))
+    before = source_path.read_bytes()
+
+    result = run_checker(
+        tmp_path,
+        "--emit-successor",
+        "--source-packet", source_path.relative_to(tmp_path).as_posix(),
+        "--successor-scope", "preview",
+        "--workspace-sha", candidate_shas["workspace"],
+        "--app-sha", candidate_shas["app"],
+        "--backend-sha", candidate_shas["backend"],
+        "--predecessor-packet-id", predecessor_id,
+        "--predecessor-sha256", predecessor_sha,
+        "--output-packet", output_path.relative_to(tmp_path).as_posix(),
+        "--preview-approval-file", approval_path.relative_to(tmp_path).as_posix(),
+        "--write",
+    )
+
+    assert result.returncode == 1
+    assert expected in result.stdout
+    assert source_path.read_bytes() == before
+
+
+def test_cli_immutable_successor_rejects_unreachable_candidate(tmp_path: Path) -> None:
+    source_path, candidate_shas, source, source_sha256 = write_immutable_successor_source(
+        tmp_path
+    )
+    workspace_revision = source["repositories"]["workspace"]
+    git(tmp_path, "switch", "-q", "--detach", workspace_revision["base_sha"])
+    owned_path = workspace_revision["owned_paths"][0]
+    (tmp_path / owned_path).write_text("local checkpoint\n", encoding="utf-8")
+    git(tmp_path, "add", owned_path)
+    git(tmp_path, "commit", "-qm", "unreachable equal-content candidate")
+    unreachable_sha = git(tmp_path, "rev-parse", "HEAD")
+    git(tmp_path, "switch", "-q", "--detach", candidate_shas["workspace"])
+    candidate_shas["workspace"] = unreachable_sha
+    approval_path = tmp_path / "preview-approval.json"
+    approval_path.write_text(json.dumps(preview_data_approval(source, candidate_shas)))
+    output_path = tmp_path / "docs/workspace/release-packets/new-preview-successor.json"
+
+    result = run_checker(
+        tmp_path,
+        "--emit-successor",
+        "--source-packet", source_path.relative_to(tmp_path).as_posix(),
+        "--successor-scope", "preview",
+        "--workspace-sha", candidate_shas["workspace"],
+        "--app-sha", candidate_shas["app"],
+        "--backend-sha", candidate_shas["backend"],
+        "--predecessor-packet-id", source["packet_id"],
+        "--predecessor-sha256", source_sha256,
+        "--output-packet", output_path.relative_to(tmp_path).as_posix(),
+        "--preview-approval-file", approval_path.relative_to(tmp_path).as_posix(),
+        "--write",
+    )
+
+    assert result.returncode == 1
+    assert "candidate_sha is not an ancestor of current HEAD" in result.stdout
+    assert not output_path.exists()
+
+
+def test_cli_immutable_successor_rejects_non_descendant_candidate(tmp_path: Path) -> None:
+    source_path, candidate_shas, source, source_sha256 = write_immutable_successor_source(
+        tmp_path
+    )
+    workspace_revision = source["repositories"]["workspace"]
+    git(tmp_path, "switch", "-q", "--detach", f"{workspace_revision['base_sha']}^")
+    owned_path = workspace_revision["owned_paths"][0]
+    (tmp_path / owned_path).parent.mkdir(parents=True, exist_ok=True)
+    (tmp_path / owned_path).write_text("local checkpoint\n", encoding="utf-8")
+    git(tmp_path, "add", owned_path)
+    git(tmp_path, "commit", "-qm", "non-descendant candidate")
+    candidate_shas["workspace"] = git(tmp_path, "rev-parse", "HEAD")
+    git(tmp_path, "switch", "-q", "--detach", source["repositories"]["workspace"]["candidate_sha"])
+    approval_path = tmp_path / "preview-approval.json"
+    approval_path.write_text(json.dumps(preview_data_approval(source, candidate_shas)))
+    output_path = tmp_path / "docs/workspace/release-packets/new-preview-successor.json"
+
+    result = run_checker(
+        tmp_path,
+        "--emit-successor",
+        "--source-packet", source_path.relative_to(tmp_path).as_posix(),
+        "--successor-scope", "preview",
+        "--workspace-sha", candidate_shas["workspace"],
+        "--app-sha", candidate_shas["app"],
+        "--backend-sha", candidate_shas["backend"],
+        "--predecessor-packet-id", source["packet_id"],
+        "--predecessor-sha256", source_sha256,
+        "--output-packet", output_path.relative_to(tmp_path).as_posix(),
+        "--preview-approval-file", approval_path.relative_to(tmp_path).as_posix(),
+    )
+
+    assert result.returncode == 1
+    assert "candidate_sha is not descended from base_sha" in result.stdout
+    assert not output_path.exists()
 
 
 def test_cli_candidate_promotion_write_mutates_only_named_revision_and_updated_at(
