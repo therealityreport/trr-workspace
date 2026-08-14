@@ -1,0 +1,474 @@
+{
+  "schema_version": 3,
+  "packet_id": "local-covered-shows-preview-successor",
+  "capability": "Covered-shows backend ownership and app adapter",
+  "created_at": "2026-08-14T05:56:01Z",
+  "updated_at": "2026-08-14T05:56:01Z",
+  "state": "in_progress",
+  "truth_scope": "preview",
+  "repositories": {
+    "workspace": {
+      "revision_type": "committed_candidate",
+      "base_sha": "df55c982ecf6741808536bfb6af308cc737372cf",
+      "candidate_sha": "8d391ad0bc9cdb2a62dd1a73d3454fc2c5cf5ec0",
+      "owned_paths": [],
+      "owned_path_manifest_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "binary_tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "dirty_counts": {
+        "tracked_modified": 0,
+        "tracked_added": 0,
+        "tracked_deleted": 0,
+        "tracked_renamed": 0,
+        "tracked_copied": 0,
+        "unmerged": 0,
+        "untracked": 0,
+        "total": 0
+      },
+      "candidate_commit_required_before_gate_4": false
+    },
+    "app": {
+      "revision_type": "committed_candidate",
+      "base_sha": "78681eac73c79e6534031fe1f050966edff9b844",
+      "candidate_sha": "c9b842d958c2d46623c4bf112d251df99d364012",
+      "owned_paths": [
+        "apps/web/src/app/api/admin/covered-shows/[showId]/route.ts",
+        "apps/web/src/app/api/admin/covered-shows/route.ts",
+        "apps/web/src/lib/server/admin/covered-shows-repository.ts",
+        "apps/web/tests/covered-show-route-parity.test.ts",
+        "apps/web/tests/covered-shows-repository-slug-query-safety.test.ts",
+        "apps/web/tests/covered-shows-route-cache-dedupe.test.ts",
+        "apps/web/tests/covered-shows-route-metadata.test.ts"
+      ],
+      "owned_path_manifest_sha256": "400f4ab068bfa6a7749cc2e8ae257e8c2cefb4e43a06ef1c999004a375a2ae69",
+      "binary_tracked_diff_sha256": "6373eee9afa689dc9195aad65d05045c2b023c14d46fb8adb2efdf09a920c790",
+      "dirty_counts": {
+        "tracked_modified": 0,
+        "tracked_added": 0,
+        "tracked_deleted": 0,
+        "tracked_renamed": 0,
+        "tracked_copied": 0,
+        "unmerged": 0,
+        "untracked": 0,
+        "total": 0
+      },
+      "candidate_commit_required_before_gate_4": false
+    },
+    "backend": {
+      "revision_type": "committed_candidate",
+      "base_sha": "0a3d2b59ec29304fb2765fd8cf996032e11c937b",
+      "candidate_sha": "c7f675c8a53152da9341c0d6582b189d111c1ce8",
+      "owned_paths": [
+        "api/routers/admin_covered_shows.py",
+        "api/routers/v2/covered_shows.py",
+        "api/schemas/v2/covered_shows.py",
+        "tests/api/routers/test_v2_admin_covered_shows.py",
+        "tests/services/test_covered_shows.py",
+        "trr_backend/services/covered_shows.py"
+      ],
+      "owned_path_manifest_sha256": "916998e07cc581818837e64c3ef51b5d320c5153a8635df978c1059d4dccaf6f",
+      "binary_tracked_diff_sha256": "29e009f559f08041c478d4bc9d2655788fd565bccd54aa1845f3a8b3f9d927b1",
+      "dirty_counts": {
+        "tracked_modified": 0,
+        "tracked_added": 0,
+        "tracked_deleted": 0,
+        "tracked_renamed": 0,
+        "tracked_copied": 0,
+        "unmerged": 0,
+        "untracked": 0,
+        "total": 0
+      },
+      "candidate_commit_required_before_gate_4": false
+    }
+  },
+  "owned_paths": [
+    {
+      "repository": "app",
+      "path": "apps/web/src/app/api/admin/covered-shows/[showId]/route.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/app/api/admin/covered-shows/route.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/lib/server/admin/covered-shows-repository.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/covered-show-route-parity.test.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/covered-shows-repository-slug-query-safety.test.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/covered-shows-route-cache-dedupe.test.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/covered-shows-route-metadata.test.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "api/routers/admin_covered_shows.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "api/routers/v2/covered_shows.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "api/schemas/v2/covered_shows.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "tests/api/routers/test_v2_admin_covered_shows.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "tests/services/test_covered_shows.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "trr_backend/services/covered_shows.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    }
+  ],
+  "contracts": {
+    "openapi_sha256": "5d38fa8a429cea94ae0d5a352cc7b04276aedb081051bb79350de09169c3e188",
+    "generated_types_sha256": "a712dd696581c6ccb3fa5ce0611385af9714ebf36a1f7d41e4b1d488c4206460",
+    "compatibility_matrix": [
+      {
+        "app_revision": "N",
+        "backend_revision": "N",
+        "status": "pending",
+        "evidence_ids": []
+      },
+      {
+        "app_revision": "N",
+        "backend_revision": "N+1",
+        "status": "pending",
+        "evidence_ids": []
+      },
+      {
+        "app_revision": "N+1",
+        "backend_revision": "N",
+        "status": "pending",
+        "evidence_ids": []
+      },
+      {
+        "app_revision": "N+1",
+        "backend_revision": "N+1",
+        "status": "pending",
+        "evidence_ids": []
+      }
+    ]
+  },
+  "migrations": {
+    "expected_pending": [],
+    "backfill": {
+      "required": false,
+      "idempotent": true,
+      "resumable": true,
+      "batch_size": null,
+      "validation": {
+        "row_counts": false,
+        "checksums": false,
+        "evidence_ids": []
+      }
+    },
+    "rls_grants": {
+      "expected_change": false,
+      "evidence_ids": []
+    }
+  },
+  "direct_sql_delta": {
+    "status": "pending_local_measurement",
+    "before": null,
+    "after": null,
+    "delta": null,
+    "evidence_ids": []
+  },
+  "targets": {
+    "preview": {
+      "status": "pending_gate_4",
+      "database_url_env": "TRR_PREVIEW_DATABASE_URL",
+      "project_ref_env": "TRR_PREVIEW_SUPABASE_PROJECT_REF"
+    },
+    "production": {
+      "status": "pending_gate_4",
+      "database_url_env": "TRR_PRODUCTION_DATABASE_URL",
+      "project_ref": "vwxfvzutyufrkhfgoeaa"
+    }
+  },
+  "affected": {
+    "routes": [
+      "/api/v2/admin/covered-shows",
+      "/api/v2/admin/covered-shows/{show_id}"
+    ],
+    "jobs": [],
+    "schedules": [],
+    "data_sets": [],
+    "aliases": []
+  },
+  "validation": {
+    "quick": {
+      "status": "pending",
+      "evidence_ids": []
+    },
+    "full": {
+      "status": "pending",
+      "evidence_ids": []
+    },
+    "app_build": {
+      "status": "pending_gate_4",
+      "current_chat_approval_id": null,
+      "evidence_ids": []
+    },
+    "browser": {
+      "status": "pending_gate_4",
+      "evidence_ids": []
+    },
+    "evidence_ids": []
+  },
+  "deployments": {
+    "render": {
+      "status": "pending_gate_4",
+      "service_id": "srv-d6phk5vkijhs73fcsk7g",
+      "candidate_sha": "c7f675c8a53152da9341c0d6582b189d111c1ce8",
+      "deployment_id": null,
+      "previous_deployment_id": null,
+      "direct_url": "https://trr-backend-api.onrender.com",
+      "evidence_ids": []
+    },
+    "modal": {
+      "status": "pending_gate_4",
+      "profile": "admin-56995",
+      "workspace": "admin-56995",
+      "app_name": "trr-backend-jobs",
+      "app_ref": "trr_backend.modal_jobs",
+      "candidate_sha": "c7f675c8a53152da9341c0d6582b189d111c1ce8",
+      "affected_functions": [],
+      "evidence_ids": []
+    },
+    "vercel": {
+      "status": "pending_gate_4",
+      "team_id": "team_EUsG2kN9TAvVDGOu4yZVEoCX",
+      "project_id": "prj_MHpStkwr26rV5kjt0f80zqhwZpAs",
+      "candidate_sha": "c9b842d958c2d46623c4bf112d251df99d364012",
+      "deployment_id": null,
+      "previous_deployment_id": null,
+      "aliases": [
+        "https://trr-app.vercel.app"
+      ],
+      "evidence_ids": []
+    }
+  },
+  "rollback": {
+    "backend_commands": [
+      [
+        "scripts/render-trr.sh",
+        "rollback",
+        "--service-id",
+        "srv-d6phk5vkijhs73fcsk7g",
+        "--deploy-id",
+        "<gate-4-previous-deploy-id>",
+        "--commit",
+        "<gate-4-candidate-backend-sha>"
+      ],
+      [
+        "scripts/modal-trr.sh",
+        "rollback",
+        "--version",
+        "<gate-4-previous-version>",
+        "--dry-run"
+      ]
+    ],
+    "app_commands": [
+      [
+        "TRR-APP/scripts/vercel.sh",
+        "rollback-trr",
+        "--deployment",
+        "<gate-4-previous-deployment>",
+        "--dry-run"
+      ]
+    ],
+    "data_recovery": "No migration or data mutation was performed by this local checkpoint.",
+    "evidence_ids": []
+  },
+  "observation": {
+    "baselines": [
+      {
+        "name": "affected_route_5xx",
+        "value": 0,
+        "unit": "percent",
+        "window": "15m",
+        "evidence_ids": []
+      }
+    ],
+    "abort_thresholds": [
+      {
+        "name": "affected_route_5xx",
+        "value": 1,
+        "unit": "percent",
+        "window": "15m",
+        "evidence_ids": []
+      }
+    ],
+    "active_canary_minutes": 30,
+    "passive_monitoring_hours": 24,
+    "gate5_minimum_days": 7,
+    "status": "not_started"
+  },
+  "review": {
+    "verdict": "pending",
+    "reviewers": [
+      "r0-b-checkpoint-revalidation"
+    ],
+    "basis": "Immutable successor awaiting fresh scoped evidence.",
+    "evidence_ids": []
+  },
+  "gate_4": {
+    "candidate_commits": "pending_gate_4",
+    "preview": "pending_gate_4",
+    "production": "pending_gate_4",
+    "app_build": "pending_gate_4",
+    "browser": "pending_gate_4",
+    "deployments": "pending_gate_4"
+  },
+  "approvals": [
+    {
+      "approval_id": "approval.local-covered-shows.preview-data",
+      "kind": "preview_data_approval",
+      "status": "approved",
+      "scope": "preview",
+      "approved_by": "user",
+      "approved_at": "2026-08-14T05:49:36Z",
+      "captured_at": "2026-08-14T05:49:35Z",
+      "preview_target_identity": "database_url_env=TRR_PREVIEW_DATABASE_URL;project_ref_env=TRR_PREVIEW_SUPABASE_PROJECT_REF",
+      "dataset_id": "architecture-cleanup-stage4-gate4-empty",
+      "snapshot_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "preimage_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "candidate_commits": {
+        "workspace_sha": "8d391ad0bc9cdb2a62dd1a73d3454fc2c5cf5ec0",
+        "app_sha": "c9b842d958c2d46623c4bf112d251df99d364012",
+        "backend_sha": "c7f675c8a53152da9341c0d6582b189d111c1ce8"
+      },
+      "candidate_preimages": {
+        "workspace": {
+          "base_sha": "df55c982ecf6741808536bfb6af308cc737372cf",
+          "owned_path_manifest_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "binary_tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "app": {
+          "base_sha": "78681eac73c79e6534031fe1f050966edff9b844",
+          "owned_path_manifest_sha256": "400f4ab068bfa6a7749cc2e8ae257e8c2cefb4e43a06ef1c999004a375a2ae69",
+          "binary_tracked_diff_sha256": "6373eee9afa689dc9195aad65d05045c2b023c14d46fb8adb2efdf09a920c790"
+        },
+        "backend": {
+          "base_sha": "0a3d2b59ec29304fb2765fd8cf996032e11c937b",
+          "owned_path_manifest_sha256": "916998e07cc581818837e64c3ef51b5d320c5153a8635df978c1059d4dccaf6f",
+          "binary_tracked_diff_sha256": "29e009f559f08041c478d4bc9d2655788fd565bccd54aa1845f3a8b3f9d927b1"
+        }
+      },
+      "predecessor_packet_ids": [
+        "local-covered-shows"
+      ],
+      "evidence_ids": [
+        "ev.local-covered-shows.preview-data-approval"
+      ]
+    }
+  ],
+  "supersedes": [
+    {
+      "packet_id": "local-covered-shows",
+      "repository": "app",
+      "paths": [
+        "apps/web/src/app/api/admin/covered-shows/[showId]/route.ts",
+        "apps/web/src/app/api/admin/covered-shows/route.ts",
+        "apps/web/src/lib/server/admin/covered-shows-repository.ts",
+        "apps/web/tests/covered-show-route-parity.test.ts",
+        "apps/web/tests/covered-shows-repository-slug-query-safety.test.ts",
+        "apps/web/tests/covered-shows-route-cache-dedupe.test.ts",
+        "apps/web/tests/covered-shows-route-metadata.test.ts"
+      ],
+      "retained_path_records": []
+    },
+    {
+      "packet_id": "local-covered-shows",
+      "repository": "backend",
+      "paths": [
+        "api/routers/admin_covered_shows.py",
+        "api/routers/v2/covered_shows.py",
+        "api/schemas/v2/covered_shows.py",
+        "tests/api/routers/test_v2_admin_covered_shows.py",
+        "tests/services/test_covered_shows.py",
+        "trr_backend/services/covered_shows.py"
+      ],
+      "retained_path_records": []
+    }
+  ],
+  "immutable_successor": {
+    "source_packet_id": "local-covered-shows",
+    "source_packet_sha256": "86abdf30c40c63da6aa3a04888e931e9384b7a59697a7a23655e8c8e108902f4",
+    "scope": "preview",
+    "candidate_commits": {
+      "workspace_sha": "8d391ad0bc9cdb2a62dd1a73d3454fc2c5cf5ec0",
+      "app_sha": "c9b842d958c2d46623c4bf112d251df99d364012",
+      "backend_sha": "c7f675c8a53152da9341c0d6582b189d111c1ce8"
+    },
+    "preview_data_approval_id": "approval.local-covered-shows.preview-data"
+  }
+}

@@ -1,0 +1,385 @@
+{
+  "schema_version": 3,
+  "packet_id": "local-social-freshness-preview-successor",
+  "capability": "Account-catalog freshness composition and live-profile totals",
+  "created_at": "2026-08-14T05:56:26Z",
+  "updated_at": "2026-08-14T05:56:26Z",
+  "state": "in_progress",
+  "truth_scope": "preview",
+  "repositories": {
+    "workspace": {
+      "revision_type": "committed_candidate",
+      "base_sha": "df55c982ecf6741808536bfb6af308cc737372cf",
+      "candidate_sha": "8d391ad0bc9cdb2a62dd1a73d3454fc2c5cf5ec0",
+      "owned_paths": [],
+      "owned_path_manifest_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "binary_tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "dirty_counts": {
+        "tracked_modified": 0,
+        "tracked_added": 0,
+        "tracked_deleted": 0,
+        "tracked_renamed": 0,
+        "tracked_copied": 0,
+        "unmerged": 0,
+        "untracked": 0,
+        "total": 0
+      },
+      "candidate_commit_required_before_gate_4": false
+    },
+    "app": {
+      "revision_type": "committed_candidate",
+      "base_sha": "78681eac73c79e6534031fe1f050966edff9b844",
+      "candidate_sha": "c9b842d958c2d46623c4bf112d251df99d364012",
+      "owned_paths": [],
+      "owned_path_manifest_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "binary_tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "dirty_counts": {
+        "tracked_modified": 0,
+        "tracked_added": 0,
+        "tracked_deleted": 0,
+        "tracked_renamed": 0,
+        "tracked_copied": 0,
+        "unmerged": 0,
+        "untracked": 0,
+        "total": 0
+      },
+      "candidate_commit_required_before_gate_4": false
+    },
+    "backend": {
+      "revision_type": "committed_candidate",
+      "base_sha": "0a3d2b59ec29304fb2765fd8cf996032e11c937b",
+      "candidate_sha": "c7f675c8a53152da9341c0d6582b189d111c1ce8",
+      "owned_paths": [
+        "tests/repositories/test_social_control_plane_imports.py",
+        "trr_backend/socials/pipelines/account_catalog/__init__.py",
+        "trr_backend/socials/pipelines/account_catalog/freshness.py",
+        "trr_backend/socials/pipelines/account_catalog/live_profile_total.py",
+        "trr_backend/socials/social_season_analytics_impl.py"
+      ],
+      "owned_path_manifest_sha256": "95d3c1f87a0631e025acd5c418bef538d4c3d4d6dbbb51576ce865f9145b563a",
+      "binary_tracked_diff_sha256": "e18d0b1d480482570afeeb243408c70835587ffb92b18dc4b85478bcc592151f",
+      "dirty_counts": {
+        "tracked_modified": 0,
+        "tracked_added": 0,
+        "tracked_deleted": 0,
+        "tracked_renamed": 0,
+        "tracked_copied": 0,
+        "unmerged": 0,
+        "untracked": 0,
+        "total": 0
+      },
+      "candidate_commit_required_before_gate_4": false
+    }
+  },
+  "owned_paths": [
+    {
+      "repository": "backend",
+      "path": "tests/repositories/test_social_control_plane_imports.py",
+      "task_id": 2,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "trr_backend/socials/pipelines/account_catalog/__init__.py",
+      "task_id": 2,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "trr_backend/socials/pipelines/account_catalog/freshness.py",
+      "task_id": 2,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "trr_backend/socials/pipelines/account_catalog/live_profile_total.py",
+      "task_id": 2,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "trr_backend/socials/social_season_analytics_impl.py",
+      "task_id": 2,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    }
+  ],
+  "contracts": {
+    "openapi_sha256": null,
+    "generated_types_sha256": null,
+    "compatibility_matrix": [
+      {
+        "app_revision": "N",
+        "backend_revision": "N",
+        "status": "pending",
+        "evidence_ids": []
+      },
+      {
+        "app_revision": "N",
+        "backend_revision": "N+1",
+        "status": "pending",
+        "evidence_ids": []
+      },
+      {
+        "app_revision": "N+1",
+        "backend_revision": "N",
+        "status": "pending",
+        "evidence_ids": []
+      },
+      {
+        "app_revision": "N+1",
+        "backend_revision": "N+1",
+        "status": "pending",
+        "evidence_ids": []
+      }
+    ]
+  },
+  "migrations": {
+    "expected_pending": [],
+    "backfill": {
+      "required": false,
+      "idempotent": true,
+      "resumable": true,
+      "batch_size": null,
+      "validation": {
+        "row_counts": false,
+        "checksums": false,
+        "evidence_ids": []
+      }
+    },
+    "rls_grants": {
+      "expected_change": false,
+      "evidence_ids": []
+    }
+  },
+  "direct_sql_delta": {
+    "status": "pending_local_measurement",
+    "before": null,
+    "after": null,
+    "delta": null,
+    "evidence_ids": []
+  },
+  "targets": {
+    "preview": {
+      "status": "pending_gate_4",
+      "database_url_env": "TRR_PREVIEW_DATABASE_URL",
+      "project_ref_env": "TRR_PREVIEW_SUPABASE_PROJECT_REF"
+    },
+    "production": {
+      "status": "pending_gate_4",
+      "database_url_env": "TRR_PRODUCTION_DATABASE_URL",
+      "project_ref": "vwxfvzutyufrkhfgoeaa"
+    }
+  },
+  "affected": {
+    "routes": [
+      "/api/v1/admin/socials/profiles/{platform}/{handle}/catalog/freshness"
+    ],
+    "jobs": [],
+    "schedules": [],
+    "data_sets": [],
+    "aliases": []
+  },
+  "validation": {
+    "quick": {
+      "status": "pending",
+      "evidence_ids": []
+    },
+    "full": {
+      "status": "pending",
+      "evidence_ids": []
+    },
+    "app_build": {
+      "status": "pending_gate_4",
+      "current_chat_approval_id": null,
+      "evidence_ids": []
+    },
+    "browser": {
+      "status": "pending_gate_4",
+      "evidence_ids": []
+    },
+    "evidence_ids": []
+  },
+  "deployments": {
+    "render": {
+      "status": "pending_gate_4",
+      "service_id": "srv-d6phk5vkijhs73fcsk7g",
+      "candidate_sha": "c7f675c8a53152da9341c0d6582b189d111c1ce8",
+      "deployment_id": null,
+      "previous_deployment_id": null,
+      "direct_url": "https://trr-backend-api.onrender.com",
+      "evidence_ids": []
+    },
+    "modal": {
+      "status": "pending_gate_4",
+      "profile": "admin-56995",
+      "workspace": "admin-56995",
+      "app_name": "trr-backend-jobs",
+      "app_ref": "trr_backend.modal_jobs",
+      "candidate_sha": "c7f675c8a53152da9341c0d6582b189d111c1ce8",
+      "affected_functions": [],
+      "evidence_ids": []
+    },
+    "vercel": {
+      "status": "pending_gate_4",
+      "team_id": "team_EUsG2kN9TAvVDGOu4yZVEoCX",
+      "project_id": "prj_MHpStkwr26rV5kjt0f80zqhwZpAs",
+      "candidate_sha": "c9b842d958c2d46623c4bf112d251df99d364012",
+      "deployment_id": null,
+      "previous_deployment_id": null,
+      "aliases": [
+        "https://trr-app.vercel.app"
+      ],
+      "evidence_ids": []
+    }
+  },
+  "rollback": {
+    "backend_commands": [
+      [
+        "scripts/render-trr.sh",
+        "rollback",
+        "--service-id",
+        "srv-d6phk5vkijhs73fcsk7g",
+        "--deploy-id",
+        "<gate-4-previous-deploy-id>",
+        "--commit",
+        "<gate-4-candidate-backend-sha>"
+      ],
+      [
+        "scripts/modal-trr.sh",
+        "rollback",
+        "--version",
+        "<gate-4-previous-version>",
+        "--dry-run"
+      ]
+    ],
+    "app_commands": [
+      [
+        "TRR-APP/scripts/vercel.sh",
+        "rollback-trr",
+        "--deployment",
+        "<gate-4-previous-deployment>",
+        "--dry-run"
+      ]
+    ],
+    "data_recovery": "No migration or data mutation was performed by this local checkpoint.",
+    "evidence_ids": []
+  },
+  "observation": {
+    "baselines": [
+      {
+        "name": "affected_route_5xx",
+        "value": 0,
+        "unit": "percent",
+        "window": "15m",
+        "evidence_ids": []
+      }
+    ],
+    "abort_thresholds": [
+      {
+        "name": "affected_route_5xx",
+        "value": 1,
+        "unit": "percent",
+        "window": "15m",
+        "evidence_ids": []
+      }
+    ],
+    "active_canary_minutes": 30,
+    "passive_monitoring_hours": 24,
+    "gate5_minimum_days": 7,
+    "status": "not_started"
+  },
+  "review": {
+    "verdict": "pending",
+    "reviewers": [
+      "r0-b-checkpoint-revalidation"
+    ],
+    "basis": "Immutable successor awaiting fresh scoped evidence.",
+    "evidence_ids": []
+  },
+  "gate_4": {
+    "candidate_commits": "pending_gate_4",
+    "preview": "pending_gate_4",
+    "production": "pending_gate_4",
+    "app_build": "pending_gate_4",
+    "browser": "pending_gate_4",
+    "deployments": "pending_gate_4"
+  },
+  "approvals": [
+    {
+      "approval_id": "approval.local-social-freshness.preview-data",
+      "kind": "preview_data_approval",
+      "status": "approved",
+      "scope": "preview",
+      "approved_by": "user",
+      "approved_at": "2026-08-14T05:49:36Z",
+      "captured_at": "2026-08-14T05:49:35Z",
+      "preview_target_identity": "database_url_env=TRR_PREVIEW_DATABASE_URL;project_ref_env=TRR_PREVIEW_SUPABASE_PROJECT_REF",
+      "dataset_id": "architecture-cleanup-stage4-gate4-empty",
+      "snapshot_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "preimage_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "candidate_commits": {
+        "workspace_sha": "8d391ad0bc9cdb2a62dd1a73d3454fc2c5cf5ec0",
+        "app_sha": "c9b842d958c2d46623c4bf112d251df99d364012",
+        "backend_sha": "c7f675c8a53152da9341c0d6582b189d111c1ce8"
+      },
+      "candidate_preimages": {
+        "workspace": {
+          "base_sha": "df55c982ecf6741808536bfb6af308cc737372cf",
+          "owned_path_manifest_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "binary_tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "app": {
+          "base_sha": "78681eac73c79e6534031fe1f050966edff9b844",
+          "owned_path_manifest_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "binary_tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "backend": {
+          "base_sha": "0a3d2b59ec29304fb2765fd8cf996032e11c937b",
+          "owned_path_manifest_sha256": "95d3c1f87a0631e025acd5c418bef538d4c3d4d6dbbb51576ce865f9145b563a",
+          "binary_tracked_diff_sha256": "e18d0b1d480482570afeeb243408c70835587ffb92b18dc4b85478bcc592151f"
+        }
+      },
+      "predecessor_packet_ids": [
+        "local-social-freshness"
+      ],
+      "evidence_ids": [
+        "ev.local-social-freshness.preview-data-approval"
+      ]
+    }
+  ],
+  "supersedes": [
+    {
+      "packet_id": "local-social-freshness",
+      "repository": "backend",
+      "paths": [
+        "tests/repositories/test_social_control_plane_imports.py",
+        "trr_backend/socials/pipelines/account_catalog/__init__.py",
+        "trr_backend/socials/pipelines/account_catalog/freshness.py",
+        "trr_backend/socials/pipelines/account_catalog/live_profile_total.py",
+        "trr_backend/socials/social_season_analytics_impl.py"
+      ],
+      "retained_path_records": []
+    }
+  ],
+  "immutable_successor": {
+    "source_packet_id": "local-social-freshness",
+    "source_packet_sha256": "375f491379690b7dc159b0c1edaf64f2a9999645704d5afc92766e593b98f765",
+    "scope": "preview",
+    "candidate_commits": {
+      "workspace_sha": "8d391ad0bc9cdb2a62dd1a73d3454fc2c5cf5ec0",
+      "app_sha": "c9b842d958c2d46623c4bf112d251df99d364012",
+      "backend_sha": "c7f675c8a53152da9341c0d6582b189d111c1ce8"
+    },
+    "preview_data_approval_id": "approval.local-social-freshness.preview-data"
+  }
+}
