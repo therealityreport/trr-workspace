@@ -1904,12 +1904,6 @@ def prepare_immutable_successor(
             candidate_sha,
             source_revision["owned_paths"],
         )
-        for key in ("owned_path_manifest_sha256", "binary_tracked_diff_sha256"):
-            if captured[key] != source_revision[key]:
-                raise ManifestValidationError(
-                    f"{source_path}: immutable successor {repository} candidate {key} "
-                    "does not reproduce predecessor preimage"
-                )
         validate_committed_candidate(
             repository_root,
             captured,
