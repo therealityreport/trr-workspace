@@ -1,0 +1,1144 @@
+{
+  "schema_version": 3,
+  "packet_id": "local-foundation-runtime-guards-preview-successor-refresh-4b60b834a3af",
+  "capability": "Workspace durability, safe runtime, and provider guard foundations",
+  "created_at": "2026-08-14T22:02:21Z",
+  "updated_at": "2026-08-14T22:02:21Z",
+  "state": "in_progress",
+  "truth_scope": "preview",
+  "repositories": {
+    "workspace": {
+      "revision_type": "committed_candidate",
+      "base_sha": "df55c982ecf6741808536bfb6af308cc737372cf",
+      "candidate_sha": "41ff2ab76abb103b3e71e29247caec0686161aea",
+      "owned_paths": [
+        "CONTEXT-MAP.md",
+        "Makefile",
+        "docs/workspace/architecture-evidence.schema.json",
+        "docs/workspace/architecture-hotspots.json",
+        "docs/workspace/architecture-task-locks.json",
+        "docs/workspace/deployment-targets.json",
+        "docs/workspace/env-contract.md",
+        "docs/workspace/output-disposition.json",
+        "docs/workspace/release-packet.schema.json",
+        "docs/workspace/runtime-capacity.json",
+        "profiles/architecture-refactor.env",
+        "profiles/default.env",
+        "profiles/local-cloud.env",
+        "profiles/local-docker.env",
+        "profiles/local-full.env",
+        "profiles/local-lite.env",
+        "profiles/local-redis.env",
+        "profiles/social-debug.env",
+        "scripts/architecture-refactor-preflight.sh",
+        "scripts/architecture/check-durable-contracts.py",
+        "scripts/architecture/check-evidence-hygiene.py",
+        "scripts/architecture/check-git-roots.py",
+        "scripts/architecture/check-hotspots.py",
+        "scripts/architecture/check-import-graph.py",
+        "scripts/architecture/check-release-manifests.py",
+        "scripts/architecture/tests/test_check_durable_contracts.py",
+        "scripts/architecture/tests/test_check_evidence_hygiene.py",
+        "scripts/architecture/tests/test_check_git_roots.py",
+        "scripts/architecture/tests/test_check_hotspots.py",
+        "scripts/architecture/tests/test_check_import_graph.py",
+        "scripts/architecture/tests/test_check_release_manifests.py",
+        "scripts/check-workspace-contract.sh",
+        "scripts/deployment_targets.py",
+        "scripts/dev-workspace.sh",
+        "scripts/modal-trr.sh",
+        "scripts/render-trr.sh",
+        "scripts/render_trr.py",
+        "scripts/runtime_capacity.py",
+        "scripts/status-workspace.sh",
+        "scripts/test_architecture_refactor_profile.py",
+        "scripts/test_connection_tooling.py",
+        "scripts/test_deployment_targets.py",
+        "scripts/test_modal_trr.py",
+        "scripts/test_render_trr.py",
+        "scripts/test_runtime_capacity.py",
+        "scripts/test_workspace_app_env_projection.py",
+        "scripts/vercel-project-guard.py"
+      ],
+      "owned_path_manifest_sha256": "0cde3a58b94d450c8a8fe4dc37a2a9d7c0b83e7d6fb8bacd19b4269ed0cde464",
+      "binary_tracked_diff_sha256": "b647d846175b5b5b3b4c6db11daa7f98bfbd7087d5cc8f8b73d208565773c981",
+      "dirty_counts": {
+        "tracked_modified": 0,
+        "tracked_added": 0,
+        "tracked_deleted": 0,
+        "tracked_renamed": 0,
+        "tracked_copied": 0,
+        "unmerged": 0,
+        "untracked": 0,
+        "total": 0
+      },
+      "candidate_commit_required_before_gate_4": false
+    },
+    "app": {
+      "revision_type": "committed_candidate",
+      "base_sha": "78681eac73c79e6534031fe1f050966edff9b844",
+      "candidate_sha": "c9b842d958c2d46623c4bf112d251df99d364012",
+      "owned_paths": [
+        "apps/web/tests/vercel-rollback-guard.test.ts",
+        "scripts/vercel.sh"
+      ],
+      "owned_path_manifest_sha256": "856082d7b09092f639cd286619390d999f66baefe99ab3d29edfed0ddd38bee8",
+      "binary_tracked_diff_sha256": "5f74af55a4b0d49f226a2d23db242982d503af3d4fceaf5e35b8623199c2d355",
+      "dirty_counts": {
+        "tracked_modified": 0,
+        "tracked_added": 0,
+        "tracked_deleted": 0,
+        "tracked_renamed": 0,
+        "tracked_copied": 0,
+        "unmerged": 0,
+        "untracked": 0,
+        "total": 0
+      },
+      "candidate_commit_required_before_gate_4": false
+    },
+    "backend": {
+      "revision_type": "committed_candidate",
+      "base_sha": "0a3d2b59ec29304fb2765fd8cf996032e11c937b",
+      "candidate_sha": "f2080b083fed6c4e27b17e42a10f11ff059a144b",
+      "owned_paths": [
+        "scripts/_workspace_runtime_env.py",
+        "scripts/modal/allowed_invocations.json",
+        "scripts/modal/check_invocations.py",
+        "scripts/modal/cleanup_wrong_workspace_deploy.py",
+        "scripts/modal/deploy_backend.py",
+        "scripts/modal/diagnose_instagram_comments_remote.py",
+        "scripts/modal/prepare_named_secrets.py",
+        "scripts/modal/reconcile_modal_runtime.py",
+        "scripts/modal/refresh_instagram_cookies_from_chrome.py",
+        "scripts/modal/render_cutover_commands.py",
+        "scripts/modal/repair_instagram_auth.py",
+        "scripts/modal/verify_instagram_posts_auth.py",
+        "scripts/modal/verify_instagram_public_history.py",
+        "tests/scripts/test_cleanup_wrong_workspace_modal.py",
+        "tests/scripts/test_deploy_backend_modal.py",
+        "tests/scripts/test_modal_auth_recovery_profile_pinning.py",
+        "tests/scripts/test_modal_invocation_guard.py",
+        "tests/scripts/test_prepare_named_secrets.py",
+        "tests/scripts/test_reconcile_modal_runtime.py",
+        "tests/scripts/test_render_cutover_commands.py",
+        "tests/scripts/test_repair_instagram_auth.py",
+        "tests/scripts/test_verify_instagram_posts_auth.py",
+        "tests/scripts/test_workspace_runtime_env.py",
+        "tests/test_modal_dispatch.py",
+        "tests/test_modal_jobs.py",
+        "trr_backend/modal_dispatch.py",
+        "trr_backend/modal_jobs.py",
+        "trr_backend/vision/people_count_service.py"
+      ],
+      "owned_path_manifest_sha256": "123f79786acc42f29991b72117026464194182efb92d5d6fb01cb671708c213e",
+      "binary_tracked_diff_sha256": "68ed884eed5ff89d24f908ad64508ea4e77cf3da4853030476edb2a4df81c966",
+      "dirty_counts": {
+        "tracked_modified": 0,
+        "tracked_added": 0,
+        "tracked_deleted": 0,
+        "tracked_renamed": 0,
+        "tracked_copied": 0,
+        "unmerged": 0,
+        "untracked": 0,
+        "total": 0
+      },
+      "candidate_commit_required_before_gate_4": false
+    }
+  },
+  "owned_paths": [
+    {
+      "repository": "workspace",
+      "path": "CONTEXT-MAP.md",
+      "task_id": 1,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "Makefile",
+      "task_id": 1,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "docs/workspace/architecture-evidence.schema.json",
+      "task_id": 1,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "docs/workspace/architecture-hotspots.json",
+      "task_id": 1,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "docs/workspace/architecture-task-locks.json",
+      "task_id": 1,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "docs/workspace/deployment-targets.json",
+      "task_id": 1,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "docs/workspace/env-contract.md",
+      "task_id": 1,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "docs/workspace/output-disposition.json",
+      "task_id": 1,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "docs/workspace/release-packet.schema.json",
+      "task_id": 1,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "docs/workspace/runtime-capacity.json",
+      "task_id": 1,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "profiles/architecture-refactor.env",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "profiles/default.env",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "profiles/local-cloud.env",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "profiles/local-docker.env",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "profiles/local-full.env",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "profiles/local-lite.env",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "profiles/local-redis.env",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "profiles/social-debug.env",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "scripts/architecture-refactor-preflight.sh",
+      "task_id": 1,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "scripts/architecture/check-durable-contracts.py",
+      "task_id": 1,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "scripts/architecture/check-evidence-hygiene.py",
+      "task_id": 1,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "scripts/architecture/check-git-roots.py",
+      "task_id": 1,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "scripts/architecture/check-hotspots.py",
+      "task_id": 1,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "scripts/architecture/check-import-graph.py",
+      "task_id": 1,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "scripts/architecture/check-release-manifests.py",
+      "task_id": 1,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "scripts/architecture/tests/test_check_durable_contracts.py",
+      "task_id": 1,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "scripts/architecture/tests/test_check_evidence_hygiene.py",
+      "task_id": 1,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "scripts/architecture/tests/test_check_git_roots.py",
+      "task_id": 1,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "scripts/architecture/tests/test_check_hotspots.py",
+      "task_id": 1,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "scripts/architecture/tests/test_check_import_graph.py",
+      "task_id": 1,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "scripts/architecture/tests/test_check_release_manifests.py",
+      "task_id": 1,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "scripts/check-workspace-contract.sh",
+      "task_id": 1,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "scripts/deployment_targets.py",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "scripts/dev-workspace.sh",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "scripts/modal-trr.sh",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "scripts/render-trr.sh",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "scripts/render_trr.py",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "scripts/runtime_capacity.py",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "scripts/status-workspace.sh",
+      "task_id": 1,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "scripts/test_architecture_refactor_profile.py",
+      "task_id": 1,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "scripts/test_connection_tooling.py",
+      "task_id": 1,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "scripts/test_deployment_targets.py",
+      "task_id": 1,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "scripts/test_modal_trr.py",
+      "task_id": 1,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "scripts/test_render_trr.py",
+      "task_id": 1,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "scripts/test_runtime_capacity.py",
+      "task_id": 1,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "scripts/test_workspace_app_env_projection.py",
+      "task_id": 1,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "workspace",
+      "path": "scripts/vercel-project-guard.py",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/vercel-rollback-guard.test.ts",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "scripts/vercel.sh",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/_workspace_runtime_env.py",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/modal/allowed_invocations.json",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/modal/check_invocations.py",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/modal/cleanup_wrong_workspace_deploy.py",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/modal/deploy_backend.py",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/modal/diagnose_instagram_comments_remote.py",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/modal/prepare_named_secrets.py",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/modal/reconcile_modal_runtime.py",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/modal/refresh_instagram_cookies_from_chrome.py",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/modal/render_cutover_commands.py",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/modal/repair_instagram_auth.py",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/modal/verify_instagram_posts_auth.py",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/modal/verify_instagram_public_history.py",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "tests/scripts/test_cleanup_wrong_workspace_modal.py",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "tests/scripts/test_deploy_backend_modal.py",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "tests/scripts/test_modal_auth_recovery_profile_pinning.py",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "tests/scripts/test_modal_invocation_guard.py",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "tests/scripts/test_prepare_named_secrets.py",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "tests/scripts/test_reconcile_modal_runtime.py",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "tests/scripts/test_render_cutover_commands.py",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "tests/scripts/test_repair_instagram_auth.py",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "tests/scripts/test_verify_instagram_posts_auth.py",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "tests/scripts/test_workspace_runtime_env.py",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "tests/test_modal_dispatch.py",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "tests/test_modal_jobs.py",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "trr_backend/modal_dispatch.py",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "trr_backend/modal_jobs.py",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "trr_backend/vision/people_count_service.py",
+      "task_id": 5,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    }
+  ],
+  "contracts": {
+    "openapi_sha256": null,
+    "generated_types_sha256": null,
+    "compatibility_matrix": [
+      {
+        "app_revision": "N",
+        "backend_revision": "N",
+        "status": "pending",
+        "evidence_ids": []
+      },
+      {
+        "app_revision": "N",
+        "backend_revision": "N+1",
+        "status": "pending",
+        "evidence_ids": []
+      },
+      {
+        "app_revision": "N+1",
+        "backend_revision": "N",
+        "status": "pending",
+        "evidence_ids": []
+      },
+      {
+        "app_revision": "N+1",
+        "backend_revision": "N+1",
+        "status": "pending",
+        "evidence_ids": []
+      }
+    ]
+  },
+  "migrations": {
+    "expected_pending": [
+      {
+        "id": "20260806120000",
+        "sha256": "b1346cb32f79148aecc1b1fdf40f1c4acbd1c2730e59f61cd7a62b833e81043b"
+      },
+      {
+        "id": "20260806123000",
+        "sha256": "2743f364a50ebac7208afc79b59d9e7bccb2d9f79f4a9c1c779f44e96d216813"
+      },
+      {
+        "id": "20260806130000",
+        "sha256": "72fd41f4c1c1db4c5aedbf39d824b92c9e59d3fa2fda51069294dccb7ff5bf88"
+      }
+    ],
+    "backfill": {
+      "required": false,
+      "idempotent": true,
+      "resumable": true,
+      "batch_size": null,
+      "validation": {
+        "row_counts": false,
+        "checksums": false,
+        "evidence_ids": []
+      }
+    },
+    "rls_grants": {
+      "expected_change": true,
+      "evidence_ids": []
+    }
+  },
+  "direct_sql_delta": {
+    "status": "pending_local_measurement",
+    "before": null,
+    "after": null,
+    "delta": null,
+    "evidence_ids": []
+  },
+  "targets": {
+    "preview": {
+      "status": "pending_gate_4",
+      "database_url_env": "TRR_PREVIEW_DATABASE_URL",
+      "project_ref_env": "TRR_PREVIEW_SUPABASE_PROJECT_REF"
+    },
+    "production": {
+      "status": "pending_gate_4",
+      "database_url_env": "TRR_PRODUCTION_DATABASE_URL",
+      "project_ref": "vwxfvzutyufrkhfgoeaa"
+    }
+  },
+  "affected": {
+    "routes": [],
+    "jobs": [],
+    "schedules": [],
+    "data_sets": [],
+    "aliases": []
+  },
+  "validation": {
+    "quick": {
+      "status": "pending",
+      "evidence_ids": []
+    },
+    "full": {
+      "status": "pending",
+      "evidence_ids": []
+    },
+    "app_build": {
+      "status": "pending_gate_4",
+      "current_chat_approval_id": null,
+      "evidence_ids": []
+    },
+    "browser": {
+      "status": "pending_gate_4",
+      "evidence_ids": []
+    },
+    "evidence_ids": []
+  },
+  "deployments": {
+    "render": {
+      "status": "pending_gate_4",
+      "service_id": "srv-d6phk5vkijhs73fcsk7g",
+      "candidate_sha": "f2080b083fed6c4e27b17e42a10f11ff059a144b",
+      "deployment_id": null,
+      "previous_deployment_id": null,
+      "direct_url": "https://trr-backend-api.onrender.com",
+      "evidence_ids": []
+    },
+    "modal": {
+      "status": "pending_gate_4",
+      "profile": "admin-56995",
+      "workspace": "admin-56995",
+      "app_name": "trr-backend-jobs",
+      "app_ref": "trr_backend.modal_jobs",
+      "candidate_sha": "f2080b083fed6c4e27b17e42a10f11ff059a144b",
+      "affected_functions": [
+        "probe_browser_image_runtime",
+        "run_show_season_media_watch_worker",
+        "poll_due_show_season_media_watches",
+        "run_admin_operation_v2",
+        "sweep_social_dispatch_queue",
+        "poll_decodo_proxy_usage",
+        "sync_nbcumv_official_images",
+        "heartbeat_remote_executors",
+        "purge_stale_social_worker_heartbeats",
+        "dispatch_show_season_media_watch_worker"
+      ],
+      "evidence_ids": []
+    },
+    "vercel": {
+      "status": "pending_gate_4",
+      "team_id": "team_EUsG2kN9TAvVDGOu4yZVEoCX",
+      "project_id": "prj_MHpStkwr26rV5kjt0f80zqhwZpAs",
+      "candidate_sha": "c9b842d958c2d46623c4bf112d251df99d364012",
+      "deployment_id": null,
+      "previous_deployment_id": null,
+      "aliases": [
+        "https://trr-app.vercel.app"
+      ],
+      "evidence_ids": []
+    }
+  },
+  "rollback": {
+    "backend_commands": [
+      [
+        "scripts/render-trr.sh",
+        "rollback",
+        "--service-id",
+        "srv-d6phk5vkijhs73fcsk7g",
+        "--deploy-id",
+        "<gate-4-previous-deploy-id>",
+        "--commit",
+        "<gate-4-candidate-backend-sha>"
+      ],
+      [
+        "scripts/modal-trr.sh",
+        "rollback",
+        "--version",
+        "<gate-4-previous-version>",
+        "--dry-run"
+      ]
+    ],
+    "app_commands": [
+      [
+        "TRR-APP/scripts/vercel.sh",
+        "rollback-trr",
+        "--deployment",
+        "<gate-4-previous-deployment>",
+        "--dry-run"
+      ]
+    ],
+    "data_recovery": "No migration or data mutation was performed by this local checkpoint.",
+    "evidence_ids": []
+  },
+  "observation": {
+    "baselines": [
+      {
+        "name": "affected_route_5xx",
+        "value": 0,
+        "unit": "percent",
+        "window": "15m",
+        "evidence_ids": []
+      }
+    ],
+    "abort_thresholds": [
+      {
+        "name": "affected_route_5xx",
+        "value": 1,
+        "unit": "percent",
+        "window": "15m",
+        "evidence_ids": []
+      }
+    ],
+    "active_canary_minutes": 30,
+    "passive_monitoring_hours": 24,
+    "gate5_minimum_days": 7,
+    "status": "not_started"
+  },
+  "review": {
+    "verdict": "pending",
+    "reviewers": [
+      "r0-b-checkpoint-revalidation"
+    ],
+    "basis": "Immutable successor awaiting fresh scoped evidence.",
+    "evidence_ids": []
+  },
+  "gate_4": {
+    "candidate_commits": "pending_gate_4",
+    "preview": "pending_gate_4",
+    "production": "pending_gate_4",
+    "app_build": "pending_gate_4",
+    "browser": "pending_gate_4",
+    "deployments": "pending_gate_4"
+  },
+  "approvals": [
+    {
+      "approval_id": "approval.local-foundation-runtime-guards-preview-successor-refresh-4b60b834a3af.preview-data",
+      "kind": "preview_data_approval",
+      "status": "approved",
+      "scope": "preview",
+      "approved_by": "user",
+      "approved_at": "2026-08-14T21:55:57Z",
+      "captured_at": "2026-08-14T21:55:57Z",
+      "preview_target_identity": "database_url_env=TRR_PREVIEW_DATABASE_URL;project_ref_env=TRR_PREVIEW_SUPABASE_PROJECT_REF",
+      "dataset_id": "architecture-cleanup-stage4-gate4-empty",
+      "snapshot_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "preimage_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "candidate_commits": {
+        "workspace_sha": "41ff2ab76abb103b3e71e29247caec0686161aea",
+        "app_sha": "c9b842d958c2d46623c4bf112d251df99d364012",
+        "backend_sha": "f2080b083fed6c4e27b17e42a10f11ff059a144b"
+      },
+      "candidate_preimages": {
+        "workspace": {
+          "base_sha": "df55c982ecf6741808536bfb6af308cc737372cf",
+          "owned_path_manifest_sha256": "0cde3a58b94d450c8a8fe4dc37a2a9d7c0b83e7d6fb8bacd19b4269ed0cde464",
+          "binary_tracked_diff_sha256": "b647d846175b5b5b3b4c6db11daa7f98bfbd7087d5cc8f8b73d208565773c981"
+        },
+        "app": {
+          "base_sha": "78681eac73c79e6534031fe1f050966edff9b844",
+          "owned_path_manifest_sha256": "856082d7b09092f639cd286619390d999f66baefe99ab3d29edfed0ddd38bee8",
+          "binary_tracked_diff_sha256": "5f74af55a4b0d49f226a2d23db242982d503af3d4fceaf5e35b8623199c2d355"
+        },
+        "backend": {
+          "base_sha": "0a3d2b59ec29304fb2765fd8cf996032e11c937b",
+          "owned_path_manifest_sha256": "123f79786acc42f29991b72117026464194182efb92d5d6fb01cb671708c213e",
+          "binary_tracked_diff_sha256": "68ed884eed5ff89d24f908ad64508ea4e77cf3da4853030476edb2a4df81c966"
+        }
+      },
+      "predecessor_packet_ids": [
+        "local-foundation-runtime-guards",
+        "local-foundation-runtime-guards-preview-successor"
+      ],
+      "evidence_ids": [
+        "ev.local-foundation-runtime-guards-preview-successor-refresh-4b60b834a3af.preview-data-approval"
+      ]
+    }
+  ],
+  "supersedes": [
+    {
+      "packet_id": "local-foundation-runtime-guards-preview-successor",
+      "repository": "workspace",
+      "paths": [
+        "CONTEXT-MAP.md",
+        "Makefile",
+        "docs/workspace/architecture-evidence.schema.json",
+        "docs/workspace/architecture-hotspots.json",
+        "docs/workspace/architecture-task-locks.json",
+        "docs/workspace/deployment-targets.json",
+        "docs/workspace/env-contract.md",
+        "docs/workspace/output-disposition.json",
+        "docs/workspace/release-packet.schema.json",
+        "docs/workspace/runtime-capacity.json",
+        "profiles/architecture-refactor.env",
+        "profiles/default.env",
+        "profiles/local-cloud.env",
+        "profiles/local-docker.env",
+        "profiles/local-full.env",
+        "profiles/local-lite.env",
+        "profiles/local-redis.env",
+        "profiles/social-debug.env",
+        "scripts/architecture-refactor-preflight.sh",
+        "scripts/architecture/check-durable-contracts.py",
+        "scripts/architecture/check-evidence-hygiene.py",
+        "scripts/architecture/check-git-roots.py",
+        "scripts/architecture/check-hotspots.py",
+        "scripts/architecture/check-import-graph.py",
+        "scripts/architecture/check-release-manifests.py",
+        "scripts/architecture/tests/test_check_durable_contracts.py",
+        "scripts/architecture/tests/test_check_evidence_hygiene.py",
+        "scripts/architecture/tests/test_check_git_roots.py",
+        "scripts/architecture/tests/test_check_hotspots.py",
+        "scripts/architecture/tests/test_check_import_graph.py",
+        "scripts/architecture/tests/test_check_release_manifests.py",
+        "scripts/check-workspace-contract.sh",
+        "scripts/deployment_targets.py",
+        "scripts/dev-workspace.sh",
+        "scripts/modal-trr.sh",
+        "scripts/render-trr.sh",
+        "scripts/render_trr.py",
+        "scripts/runtime_capacity.py",
+        "scripts/status-workspace.sh",
+        "scripts/test_architecture_refactor_profile.py",
+        "scripts/test_connection_tooling.py",
+        "scripts/test_deployment_targets.py",
+        "scripts/test_modal_trr.py",
+        "scripts/test_render_trr.py",
+        "scripts/test_runtime_capacity.py",
+        "scripts/test_workspace_app_env_projection.py",
+        "scripts/vercel-project-guard.py"
+      ],
+      "retained_path_records": []
+    },
+    {
+      "packet_id": "local-foundation-runtime-guards-preview-successor",
+      "repository": "app",
+      "paths": [
+        "apps/web/tests/vercel-rollback-guard.test.ts",
+        "scripts/vercel.sh"
+      ],
+      "retained_path_records": []
+    },
+    {
+      "packet_id": "local-foundation-runtime-guards-preview-successor",
+      "repository": "backend",
+      "paths": [
+        "scripts/_workspace_runtime_env.py",
+        "scripts/modal/allowed_invocations.json",
+        "scripts/modal/check_invocations.py",
+        "scripts/modal/cleanup_wrong_workspace_deploy.py",
+        "scripts/modal/deploy_backend.py",
+        "scripts/modal/diagnose_instagram_comments_remote.py",
+        "scripts/modal/prepare_named_secrets.py",
+        "scripts/modal/reconcile_modal_runtime.py",
+        "scripts/modal/refresh_instagram_cookies_from_chrome.py",
+        "scripts/modal/render_cutover_commands.py",
+        "scripts/modal/repair_instagram_auth.py",
+        "scripts/modal/verify_instagram_posts_auth.py",
+        "scripts/modal/verify_instagram_public_history.py",
+        "tests/scripts/test_cleanup_wrong_workspace_modal.py",
+        "tests/scripts/test_deploy_backend_modal.py",
+        "tests/scripts/test_modal_auth_recovery_profile_pinning.py",
+        "tests/scripts/test_modal_invocation_guard.py",
+        "tests/scripts/test_prepare_named_secrets.py",
+        "tests/scripts/test_reconcile_modal_runtime.py",
+        "tests/scripts/test_render_cutover_commands.py",
+        "tests/scripts/test_repair_instagram_auth.py",
+        "tests/scripts/test_verify_instagram_posts_auth.py",
+        "tests/scripts/test_workspace_runtime_env.py",
+        "tests/test_modal_dispatch.py",
+        "tests/test_modal_jobs.py",
+        "trr_backend/modal_dispatch.py",
+        "trr_backend/modal_jobs.py",
+        "trr_backend/vision/people_count_service.py"
+      ],
+      "retained_path_records": []
+    }
+  ],
+  "immutable_successor": {
+    "source_packet_id": "local-foundation-runtime-guards",
+    "source_packet_sha256": "54ffead1732c8ca6ca95e2a80845d8a697cae9b0373a4a7cb48ccbe7761a6da1",
+    "scope": "preview",
+    "candidate_commits": {
+      "workspace_sha": "41ff2ab76abb103b3e71e29247caec0686161aea",
+      "app_sha": "c9b842d958c2d46623c4bf112d251df99d364012",
+      "backend_sha": "f2080b083fed6c4e27b17e42a10f11ff059a144b"
+    },
+    "preview_data_approval_id": "approval.local-foundation-runtime-guards-preview-successor-refresh-4b60b834a3af.preview-data"
+  }
+}

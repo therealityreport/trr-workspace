@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "evidence_id": "ev.local-show-presentation-extractions-preview-successor-refresh-4b60b834a3af.preview-data-approval",
+  "packet_id": "local-show-presentation-extractions-preview-successor-refresh-4b60b834a3af",
+  "gate": "gate-4",
+  "truth_scope": "preview",
+  "command": {"argv": ["apply_patch", "record", "refreshed-preview-data-approval"], "cwd": "/private/tmp/trr-gate4-refreshed-successors", "mutating": true, "environment_variable_names": []},
+  "started_at": "2026-08-14T21:55:57Z",
+  "finished_at": "2026-08-14T21:55:57Z",
+  "exit_code": 0,
+  "expected_result": "Secret-free user-approved empty preview data contract is recorded for an immutable refreshed successor; provider runtime verification remains pending.",
+  "result": "pass",
+  "output": {"sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945", "size_bytes": 2, "stored_path": null},
+  "artifacts": [],
+  "target_observations": [{"target_type": "repository", "target_id": "workspace", "observed_at": "2026-08-14T21:55:57Z", "status": "pass", "facts": [{"name": "contract.schema-source", "value": "production"}, {"name": "contract.production-data", "value": false}, {"name": "contract.data-source", "value": "none/empty"}, {"name": "preview.name", "value": "architecture-cleanup-stage4-gate4"}, {"name": "preview.destroy-after-validation", "value": true}, {"name": "runtime.database-emptiness", "value": "pending-provider-verification"}, {"name": "provider.resources-created", "value": false}]}],
+  "approval": {"required": true, "approval_id": "approval.local-show-presentation-extractions-preview-successor-refresh-4b60b834a3af.preview-data", "status": "approved", "current_chat": true},
+  "redaction": {"status": "verified_clean", "scanner": "scripts/architecture/check-release-manifests.py", "safe_to_store": true, "credential_values_included": false, "environment_values_included": false}
+}

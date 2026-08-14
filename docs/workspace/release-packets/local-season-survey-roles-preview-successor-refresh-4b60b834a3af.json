@@ -1,0 +1,549 @@
+{
+  "schema_version": 3,
+  "packet_id": "local-season-survey-roles-preview-successor-refresh-4b60b834a3af",
+  "capability": "Season cast survey-role persistence and app adapter",
+  "created_at": "2026-08-14T22:02:35Z",
+  "updated_at": "2026-08-14T22:02:35Z",
+  "state": "in_progress",
+  "truth_scope": "preview",
+  "repositories": {
+    "workspace": {
+      "revision_type": "committed_candidate",
+      "base_sha": "df55c982ecf6741808536bfb6af308cc737372cf",
+      "candidate_sha": "41ff2ab76abb103b3e71e29247caec0686161aea",
+      "owned_paths": [],
+      "owned_path_manifest_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "binary_tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "dirty_counts": {
+        "tracked_modified": 0,
+        "tracked_added": 0,
+        "tracked_deleted": 0,
+        "tracked_renamed": 0,
+        "tracked_copied": 0,
+        "unmerged": 0,
+        "untracked": 0,
+        "total": 0
+      },
+      "candidate_commit_required_before_gate_4": false
+    },
+    "app": {
+      "revision_type": "committed_candidate",
+      "base_sha": "78681eac73c79e6534031fe1f050966edff9b844",
+      "candidate_sha": "c9b842d958c2d46623c4bf112d251df99d364012",
+      "owned_paths": [
+        "apps/web/src/app/api/admin/surveys/[surveyKey]/route.ts",
+        "apps/web/src/app/api/admin/trr-api/shows/[showId]/seasons/[seasonNumber]/survey-cast/route.ts",
+        "apps/web/src/app/api/admin/trr-api/shows/[showId]/surveys/route.ts",
+        "apps/web/src/lib/server/admin/season-cast-survey-roles-repository.ts",
+        "apps/web/src/lib/server/surveys/create-survey-from-show.ts",
+        "apps/web/tests/season-cast-survey-roles-repository.test.ts",
+        "apps/web/tests/season-cast-survey-route.test.ts",
+        "apps/web/tests/survey-detail-route.test.ts",
+        "apps/web/tests/survey-from-show-route.test.ts"
+      ],
+      "owned_path_manifest_sha256": "896c80ae993cb056104043e55bbb216fc67ead9f86eba4fbb6febb089996277f",
+      "binary_tracked_diff_sha256": "42d893569180a97dea346c2f129873bce5ed3f9614996c742b80eb4a909d1947",
+      "dirty_counts": {
+        "tracked_modified": 0,
+        "tracked_added": 0,
+        "tracked_deleted": 0,
+        "tracked_renamed": 0,
+        "tracked_copied": 0,
+        "unmerged": 0,
+        "untracked": 0,
+        "total": 0
+      },
+      "candidate_commit_required_before_gate_4": false
+    },
+    "backend": {
+      "revision_type": "committed_candidate",
+      "base_sha": "0a3d2b59ec29304fb2765fd8cf996032e11c937b",
+      "candidate_sha": "f2080b083fed6c4e27b17e42a10f11ff059a144b",
+      "owned_paths": [
+        "api/routers/v2/season_cast_survey_roles.py",
+        "api/schemas/v2/season_cast_survey_roles.py",
+        "docs/db/season-cast-survey-roles/20260716133000_rollback.sql",
+        "docs/db/season-cast-survey-roles/20260716133000_rollout.md",
+        "docs/db/season-cast-survey-roles/20260716133000_verify.sql",
+        "supabase/migrations/20260716133000_admin_season_cast_survey_roles.sql",
+        "tests/api/routers/test_v2_admin_season_cast_survey_roles.py",
+        "tests/migrations/test_admin_season_cast_survey_roles.py",
+        "tests/repositories/test_season_cast_survey_roles.py",
+        "trr_backend/repositories/season_cast_survey_roles.py",
+        "trr_backend/services/season_cast_survey_roles.py"
+      ],
+      "owned_path_manifest_sha256": "3df7eb86932cddf9ac3f44de51262ea538674453dd0611a4234e0ababeda4ebc",
+      "binary_tracked_diff_sha256": "205eae618c303d2cf37419f8b76070920a13a2d321833a6dfa53ee48d366b18c",
+      "dirty_counts": {
+        "tracked_modified": 0,
+        "tracked_added": 0,
+        "tracked_deleted": 0,
+        "tracked_renamed": 0,
+        "tracked_copied": 0,
+        "unmerged": 0,
+        "untracked": 0,
+        "total": 0
+      },
+      "candidate_commit_required_before_gate_4": false
+    }
+  },
+  "owned_paths": [
+    {
+      "repository": "app",
+      "path": "apps/web/src/app/api/admin/surveys/[surveyKey]/route.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/app/api/admin/trr-api/shows/[showId]/seasons/[seasonNumber]/survey-cast/route.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/app/api/admin/trr-api/shows/[showId]/surveys/route.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/lib/server/admin/season-cast-survey-roles-repository.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/lib/server/surveys/create-survey-from-show.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/season-cast-survey-roles-repository.test.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/season-cast-survey-route.test.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/survey-detail-route.test.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/tests/survey-from-show-route.test.ts",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "api/routers/v2/season_cast_survey_roles.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "api/schemas/v2/season_cast_survey_roles.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "docs/db/season-cast-survey-roles/20260716133000_rollback.sql",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "docs/db/season-cast-survey-roles/20260716133000_rollout.md",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "docs/db/season-cast-survey-roles/20260716133000_verify.sql",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "supabase/migrations/20260716133000_admin_season_cast_survey_roles.sql",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "tests/api/routers/test_v2_admin_season_cast_survey_roles.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "tests/migrations/test_admin_season_cast_survey_roles.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "tests/repositories/test_season_cast_survey_roles.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "trr_backend/repositories/season_cast_survey_roles.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    },
+    {
+      "repository": "backend",
+      "path": "trr_backend/services/season_cast_survey_roles.py",
+      "task_id": 3,
+      "reviewers": [
+        "r0-b-checkpoint-revalidation"
+      ]
+    }
+  ],
+  "contracts": {
+    "openapi_sha256": "5d38fa8a429cea94ae0d5a352cc7b04276aedb081051bb79350de09169c3e188",
+    "generated_types_sha256": "a712dd696581c6ccb3fa5ce0611385af9714ebf36a1f7d41e4b1d488c4206460",
+    "compatibility_matrix": [
+      {
+        "app_revision": "N",
+        "backend_revision": "N",
+        "status": "pending",
+        "evidence_ids": []
+      },
+      {
+        "app_revision": "N",
+        "backend_revision": "N+1",
+        "status": "pending",
+        "evidence_ids": []
+      },
+      {
+        "app_revision": "N+1",
+        "backend_revision": "N",
+        "status": "pending",
+        "evidence_ids": []
+      },
+      {
+        "app_revision": "N+1",
+        "backend_revision": "N+1",
+        "status": "pending",
+        "evidence_ids": []
+      }
+    ]
+  },
+  "migrations": {
+    "expected_pending": [
+      {
+        "id": "20260805140519",
+        "sha256": "bc9ff362d6843b8a212084375017b1a199555f504bba07e46d9fc772d1c061c1"
+      }
+    ],
+    "backfill": {
+      "required": false,
+      "idempotent": true,
+      "resumable": true,
+      "batch_size": null,
+      "validation": {
+        "row_counts": false,
+        "checksums": false,
+        "evidence_ids": []
+      }
+    },
+    "rls_grants": {
+      "expected_change": true,
+      "evidence_ids": []
+    }
+  },
+  "direct_sql_delta": {
+    "status": "pending_local_measurement",
+    "before": null,
+    "after": null,
+    "delta": null,
+    "evidence_ids": []
+  },
+  "targets": {
+    "preview": {
+      "status": "pending_gate_4",
+      "database_url_env": "TRR_PREVIEW_DATABASE_URL",
+      "project_ref_env": "TRR_PREVIEW_SUPABASE_PROJECT_REF"
+    },
+    "production": {
+      "status": "pending_gate_4",
+      "database_url_env": "TRR_PRODUCTION_DATABASE_URL",
+      "project_ref": "vwxfvzutyufrkhfgoeaa"
+    }
+  },
+  "affected": {
+    "routes": [
+      "/api/v2/admin/shows/{show_id}/seasons/{season_number}/cast-survey-roles"
+    ],
+    "jobs": [],
+    "schedules": [],
+    "data_sets": [],
+    "aliases": []
+  },
+  "validation": {
+    "quick": {
+      "status": "pending",
+      "evidence_ids": []
+    },
+    "full": {
+      "status": "pending",
+      "evidence_ids": []
+    },
+    "app_build": {
+      "status": "pending_gate_4",
+      "current_chat_approval_id": null,
+      "evidence_ids": []
+    },
+    "browser": {
+      "status": "pending_gate_4",
+      "evidence_ids": []
+    },
+    "evidence_ids": []
+  },
+  "deployments": {
+    "render": {
+      "status": "pending_gate_4",
+      "service_id": "srv-d6phk5vkijhs73fcsk7g",
+      "candidate_sha": "f2080b083fed6c4e27b17e42a10f11ff059a144b",
+      "deployment_id": null,
+      "previous_deployment_id": null,
+      "direct_url": "https://trr-backend-api.onrender.com",
+      "evidence_ids": []
+    },
+    "modal": {
+      "status": "pending_gate_4",
+      "profile": "admin-56995",
+      "workspace": "admin-56995",
+      "app_name": "trr-backend-jobs",
+      "app_ref": "trr_backend.modal_jobs",
+      "candidate_sha": "f2080b083fed6c4e27b17e42a10f11ff059a144b",
+      "affected_functions": [],
+      "evidence_ids": []
+    },
+    "vercel": {
+      "status": "pending_gate_4",
+      "team_id": "team_EUsG2kN9TAvVDGOu4yZVEoCX",
+      "project_id": "prj_MHpStkwr26rV5kjt0f80zqhwZpAs",
+      "candidate_sha": "c9b842d958c2d46623c4bf112d251df99d364012",
+      "deployment_id": null,
+      "previous_deployment_id": null,
+      "aliases": [
+        "https://trr-app.vercel.app"
+      ],
+      "evidence_ids": []
+    }
+  },
+  "rollback": {
+    "backend_commands": [
+      [
+        "scripts/render-trr.sh",
+        "rollback",
+        "--service-id",
+        "srv-d6phk5vkijhs73fcsk7g",
+        "--deploy-id",
+        "<gate-4-previous-deploy-id>",
+        "--commit",
+        "<gate-4-candidate-backend-sha>"
+      ],
+      [
+        "scripts/modal-trr.sh",
+        "rollback",
+        "--version",
+        "<gate-4-previous-version>",
+        "--dry-run"
+      ]
+    ],
+    "app_commands": [
+      [
+        "TRR-APP/scripts/vercel.sh",
+        "rollback-trr",
+        "--deployment",
+        "<gate-4-previous-deployment>",
+        "--dry-run"
+      ]
+    ],
+    "data_recovery": "Migrations are authored only and remain unapplied; exact rollback and verification require Gate 4 approval.",
+    "evidence_ids": []
+  },
+  "observation": {
+    "baselines": [
+      {
+        "name": "affected_route_5xx",
+        "value": 0,
+        "unit": "percent",
+        "window": "15m",
+        "evidence_ids": []
+      }
+    ],
+    "abort_thresholds": [
+      {
+        "name": "affected_route_5xx",
+        "value": 1,
+        "unit": "percent",
+        "window": "15m",
+        "evidence_ids": []
+      }
+    ],
+    "active_canary_minutes": 30,
+    "passive_monitoring_hours": 24,
+    "gate5_minimum_days": 7,
+    "status": "not_started"
+  },
+  "review": {
+    "verdict": "pending",
+    "reviewers": [
+      "r0-b-checkpoint-revalidation"
+    ],
+    "basis": "Immutable successor awaiting fresh scoped evidence.",
+    "evidence_ids": []
+  },
+  "gate_4": {
+    "candidate_commits": "pending_gate_4",
+    "preview": "pending_gate_4",
+    "production": "pending_gate_4",
+    "app_build": "pending_gate_4",
+    "browser": "pending_gate_4",
+    "deployments": "pending_gate_4"
+  },
+  "approvals": [
+    {
+      "approval_id": "approval.local-season-survey-roles-preview-successor-refresh-4b60b834a3af.preview-data",
+      "kind": "preview_data_approval",
+      "status": "approved",
+      "scope": "preview",
+      "approved_by": "user",
+      "approved_at": "2026-08-14T21:55:57Z",
+      "captured_at": "2026-08-14T21:55:57Z",
+      "preview_target_identity": "database_url_env=TRR_PREVIEW_DATABASE_URL;project_ref_env=TRR_PREVIEW_SUPABASE_PROJECT_REF",
+      "dataset_id": "architecture-cleanup-stage4-gate4-empty",
+      "snapshot_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "preimage_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "candidate_commits": {
+        "workspace_sha": "41ff2ab76abb103b3e71e29247caec0686161aea",
+        "app_sha": "c9b842d958c2d46623c4bf112d251df99d364012",
+        "backend_sha": "f2080b083fed6c4e27b17e42a10f11ff059a144b"
+      },
+      "candidate_preimages": {
+        "workspace": {
+          "base_sha": "df55c982ecf6741808536bfb6af308cc737372cf",
+          "owned_path_manifest_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "binary_tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "app": {
+          "base_sha": "78681eac73c79e6534031fe1f050966edff9b844",
+          "owned_path_manifest_sha256": "896c80ae993cb056104043e55bbb216fc67ead9f86eba4fbb6febb089996277f",
+          "binary_tracked_diff_sha256": "42d893569180a97dea346c2f129873bce5ed3f9614996c742b80eb4a909d1947"
+        },
+        "backend": {
+          "base_sha": "0a3d2b59ec29304fb2765fd8cf996032e11c937b",
+          "owned_path_manifest_sha256": "3df7eb86932cddf9ac3f44de51262ea538674453dd0611a4234e0ababeda4ebc",
+          "binary_tracked_diff_sha256": "205eae618c303d2cf37419f8b76070920a13a2d321833a6dfa53ee48d366b18c"
+        }
+      },
+      "predecessor_packet_ids": [
+        "local-season-survey-roles",
+        "local-season-survey-roles-preview-successor"
+      ],
+      "evidence_ids": [
+        "ev.local-season-survey-roles-preview-successor-refresh-4b60b834a3af.preview-data-approval"
+      ]
+    }
+  ],
+  "supersedes": [
+    {
+      "packet_id": "local-season-survey-roles-preview-successor",
+      "repository": "app",
+      "paths": [
+        "apps/web/src/app/api/admin/surveys/[surveyKey]/route.ts",
+        "apps/web/src/app/api/admin/trr-api/shows/[showId]/seasons/[seasonNumber]/survey-cast/route.ts",
+        "apps/web/src/app/api/admin/trr-api/shows/[showId]/surveys/route.ts",
+        "apps/web/src/lib/server/admin/season-cast-survey-roles-repository.ts",
+        "apps/web/src/lib/server/surveys/create-survey-from-show.ts",
+        "apps/web/tests/season-cast-survey-roles-repository.test.ts",
+        "apps/web/tests/season-cast-survey-route.test.ts",
+        "apps/web/tests/survey-detail-route.test.ts",
+        "apps/web/tests/survey-from-show-route.test.ts"
+      ],
+      "retained_path_records": []
+    },
+    {
+      "packet_id": "local-season-survey-roles-preview-successor",
+      "repository": "backend",
+      "paths": [
+        "api/routers/v2/season_cast_survey_roles.py",
+        "api/schemas/v2/season_cast_survey_roles.py",
+        "docs/db/season-cast-survey-roles/20260716133000_rollback.sql",
+        "docs/db/season-cast-survey-roles/20260716133000_rollout.md",
+        "docs/db/season-cast-survey-roles/20260716133000_verify.sql",
+        "supabase/migrations/20260716133000_admin_season_cast_survey_roles.sql",
+        "tests/api/routers/test_v2_admin_season_cast_survey_roles.py",
+        "tests/migrations/test_admin_season_cast_survey_roles.py",
+        "tests/repositories/test_season_cast_survey_roles.py",
+        "trr_backend/repositories/season_cast_survey_roles.py",
+        "trr_backend/services/season_cast_survey_roles.py"
+      ],
+      "retained_path_records": []
+    }
+  ],
+  "immutable_successor": {
+    "source_packet_id": "local-season-survey-roles",
+    "source_packet_sha256": "f9833ac6eae10b2f16ff18e98f87e74a7e14d5bf9f315f893eef45bfbd195b33",
+    "scope": "preview",
+    "candidate_commits": {
+      "workspace_sha": "41ff2ab76abb103b3e71e29247caec0686161aea",
+      "app_sha": "c9b842d958c2d46623c4bf112d251df99d364012",
+      "backend_sha": "f2080b083fed6c4e27b17e42a10f11ff059a144b"
+    },
+    "preview_data_approval_id": "approval.local-season-survey-roles-preview-successor-refresh-4b60b834a3af.preview-data"
+  }
+}
