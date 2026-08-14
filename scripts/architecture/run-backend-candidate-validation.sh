@@ -559,6 +559,8 @@ run_final_tail() {
 
 main() {
   local mode="${1:-}"
+  local -a ruff_paths=()
+  local arg_index
   shift || true
 
   activate_frozen_environment
@@ -585,12 +587,18 @@ main() {
       case "${COMMAND_ARGUMENTS[0]}" in
         check)
           (( ${#COMMAND_ARGUMENTS[@]} > 1 )) || die "Ruff check requires at least one path"
-          run_text_receipt "$RECEIPT_TARGET" "$RUFF_BIN" check --no-cache "${COMMAND_ARGUMENTS[@]:1}"
+          for ((arg_index = 1; arg_index < ${#COMMAND_ARGUMENTS[@]}; arg_index++)); do
+            ruff_paths+=("${COMMAND_ARGUMENTS[arg_index]}")
+          done
+          run_text_receipt "$RECEIPT_TARGET" "$RUFF_BIN" check --no-cache "${ruff_paths[@]}"
           ;;
         format)
           [[ "${COMMAND_ARGUMENTS[1]:-}" == "--check" ]] || die "Ruff format requires --check"
           (( ${#COMMAND_ARGUMENTS[@]} > 2 )) || die "Ruff format requires at least one path"
-          run_text_receipt "$RECEIPT_TARGET" "$RUFF_BIN" format --check --no-cache "${COMMAND_ARGUMENTS[@]:2}"
+          for ((arg_index = 2; arg_index < ${#COMMAND_ARGUMENTS[@]}; arg_index++)); do
+            ruff_paths+=("${COMMAND_ARGUMENTS[arg_index]}")
+          done
+          run_text_receipt "$RECEIPT_TARGET" "$RUFF_BIN" format --check --no-cache "${ruff_paths[@]}"
           ;;
         *)
           die "Ruff mode supports only check or format --check"
