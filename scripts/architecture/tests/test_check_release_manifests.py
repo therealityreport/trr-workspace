@@ -1368,6 +1368,180 @@ def emit_test_successor(
     return source_path, output_path, source, candidate_shas, source_sha256
 
 
+def write_refreshed_successor_inputs(
+    tmp_path: Path,
+) -> tuple[Path, Path, Path, Path, dict, dict[str, str], str]:
+    """Create an accepted first v3 successor and its refresh-specific inputs."""
+    module = load_module()
+    source_path, first_path, source, candidate_shas, source_sha256 = emit_test_successor(
+        tmp_path
+    )
+    first = json.loads(first_path.read_text(encoding="utf-8"))
+    first["created_at"] = "2026-07-17T00:00:00Z"
+    first["updated_at"] = "2026-07-17T00:00:01Z"
+    first_path.write_text(json.dumps(first), encoding="utf-8")
+
+    refreshed_id = module._refreshed_successor_packet_id(
+        source["packet_id"], "preview", candidate_shas
+    )
+    approval = preview_data_approval(source, candidate_shas)
+    approval["approval_id"] = f"approval.{refreshed_id}.preview-data"
+    approval["predecessor_packet_ids"] = sorted(
+        [source["packet_id"], first["packet_id"]]
+    )
+    approval["evidence_ids"] = [f"ev.{refreshed_id}.preview-data-approval"]
+    approval_path = tmp_path / "refreshed-preview-approval.json"
+    approval_path.write_text(json.dumps(approval), encoding="utf-8")
+
+    refreshed_evidence = evidence()
+    refreshed_evidence["evidence_id"] = approval["evidence_ids"][0]
+    refreshed_evidence["packet_id"] = refreshed_id
+    refreshed_evidence["gate"] = "gate-4"
+    refreshed_evidence["truth_scope"] = "preview"
+    evidence_path = (
+        tmp_path
+        / "docs"
+        / "workspace"
+        / "architecture-evidence"
+        / f"{refreshed_id}.preview-data-approval.json"
+    )
+    evidence_path.write_text(json.dumps(refreshed_evidence), encoding="utf-8")
+    output_path = (
+        tmp_path / "docs" / "workspace" / "release-packets" / f"{refreshed_id}.json"
+    )
+    return (
+        source_path,
+        first_path,
+        approval_path,
+        output_path,
+        source,
+        candidate_shas,
+        source_sha256,
+    )
+
+
+def test_cli_refreshed_successor_emits_connected_ownership_chain(tmp_path: Path) -> None:
+    (
+        source_path,
+        first_path,
+        approval_path,
+        output_path,
+        source,
+        candidate_shas,
+        source_sha256,
+    ) = write_refreshed_successor_inputs(tmp_path)
+    first_before = first_path.read_bytes()
+
+    result = run_checker(
+        tmp_path,
+        "--emit-successor",
+        "--source-packet", source_path.relative_to(tmp_path).as_posix(),
+        "--successor-scope", "preview",
+        "--workspace-sha", candidate_shas["workspace"],
+        "--app-sha", candidate_shas["app"],
+        "--backend-sha", candidate_shas["backend"],
+        "--predecessor-packet-id", source["packet_id"],
+        "--predecessor-sha256", source_sha256,
+        "--output-packet", output_path.relative_to(tmp_path).as_posix(),
+        "--preview-approval-file", approval_path.relative_to(tmp_path).as_posix(),
+        "--refresh-successor-of", f"{source['packet_id']}-preview-successor",
+        "--write",
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    emitted = json.loads(output_path.read_text(encoding="utf-8"))
+    first = json.loads(first_path.read_text(encoding="utf-8"))
+    assert emitted["packet_id"] == output_path.stem
+    assert emitted["immutable_successor"]["source_packet_id"] == source["packet_id"]
+    assert emitted["supersedes"]
+    assert {handoff["packet_id"] for handoff in emitted["supersedes"]} == {first["packet_id"]}
+    assert emitted["approvals"][0]["approval_id"] == f"approval.{output_path.stem}.preview-data"
+    assert first_path.read_bytes() == first_before
+
+    validation = run_checker(
+        tmp_path,
+        "--packet", source_path.relative_to(tmp_path).as_posix(),
+        "--packet", first_path.relative_to(tmp_path).as_posix(),
+        "--packet", output_path.relative_to(tmp_path).as_posix(),
+        "--evidence",
+        (tmp_path / "docs/workspace/architecture-evidence" / f"{source['packet_id']}.quick.json")
+        .relative_to(tmp_path)
+        .as_posix(),
+        "--evidence",
+        (tmp_path / "docs/workspace/architecture-evidence" / "preview-data-approval-evidence.json")
+        .relative_to(tmp_path)
+        .as_posix(),
+        "--evidence",
+        (tmp_path / "docs/workspace/architecture-evidence" / f"{output_path.stem}.preview-data-approval.json")
+        .relative_to(tmp_path)
+        .as_posix(),
+        "--allow-partial",
+    )
+    assert validation.returncode == 0, validation.stdout + validation.stderr
+
+
+@pytest.mark.parametrize(
+    ("mutation", "expected"),
+    [
+        ("output", "output filename must match computed packet_id"),
+        ("approval", "approval_id does not match computed packet_id"),
+        ("predecessor", "predecessor must be a schema-v3 packet"),
+    ],
+)
+def test_cli_refreshed_successor_rejects_unbound_inputs(
+    tmp_path: Path,
+    mutation: str,
+    expected: str,
+) -> None:
+    (
+        source_path,
+        _first_path,
+        approval_path,
+        output_path,
+        source,
+        candidate_shas,
+        source_sha256,
+    ) = write_refreshed_successor_inputs(tmp_path)
+    refresh_successor_of = f"{source['packet_id']}-preview-successor"
+    if mutation == "output":
+        output_path = output_path.with_name("wrong-refreshed-name.json")
+    elif mutation == "approval":
+        approval = json.loads(approval_path.read_text(encoding="utf-8"))
+        approval["approval_id"] = "approval.wrong.preview-data"
+        approval_path.write_text(json.dumps(approval), encoding="utf-8")
+    else:
+        refresh_successor_of = source["packet_id"]
+
+    result = run_checker(
+        tmp_path,
+        "--emit-successor",
+        "--source-packet", source_path.relative_to(tmp_path).as_posix(),
+        "--successor-scope", "preview",
+        "--workspace-sha", candidate_shas["workspace"],
+        "--app-sha", candidate_shas["app"],
+        "--backend-sha", candidate_shas["backend"],
+        "--predecessor-packet-id", source["packet_id"],
+        "--predecessor-sha256", source_sha256,
+        "--output-packet", output_path.relative_to(tmp_path).as_posix(),
+        "--preview-approval-file", approval_path.relative_to(tmp_path).as_posix(),
+        "--refresh-successor-of", refresh_successor_of,
+        "--write",
+    )
+
+    assert result.returncode == 1
+    assert expected in result.stdout
+    assert not output_path.exists()
+
+
+def test_cli_legacy_successor_id_is_unchanged_without_refresh_flag(tmp_path: Path) -> None:
+    source_path, output_path, source, _, _ = emit_test_successor(tmp_path)
+
+    emitted = json.loads(output_path.read_text(encoding="utf-8"))
+    assert emitted["packet_id"] == f"{source['packet_id']}-preview-successor"
+    assert emitted["supersedes"][0]["packet_id"] == source["packet_id"]
+    assert source_path.read_bytes() == json.dumps(source).encode()
+
+
 def validate_test_successor_cohort(
     tmp_path: Path,
     source_path: Path,

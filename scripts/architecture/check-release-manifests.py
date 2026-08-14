@@ -1705,6 +1705,21 @@ def _successor_packet_id(predecessor_packet_id: str, scope: str) -> str:
     return predecessor_packet_id[: 127 - len(suffix)] + suffix
 
 
+def _refreshed_successor_packet_id(
+    predecessor_packet_id: str,
+    scope: str,
+    candidate_shas: Mapping[str, str],
+) -> str:
+    """Return the fail-closed identity for a refreshed immutable successor."""
+    cohort_input = "".join(
+        f"{repository}_sha={candidate_shas[repository]}\n"
+        for repository in ("workspace", "app", "backend")
+    ).encode("ascii")
+    cohort_key = hashlib.sha256(cohort_input).hexdigest()[:12]
+    suffix = f"-{scope}-successor-refresh-{cohort_key}"
+    return predecessor_packet_id[: 127 - len(suffix)] + suffix
+
+
 def _successor_without_historical_claims(
     source: Mapping[str, Any],
     *,
@@ -1712,6 +1727,8 @@ def _successor_without_historical_claims(
     revisions: Mapping[str, Mapping[str, Any]],
     approval: Mapping[str, Any],
     source_sha256: str,
+    packet_id: str | None = None,
+    supersession_predecessor_id: str | None = None,
 ) -> dict[str, Any]:
     """Copy only the implementation plan; leave new proof/evidence pending."""
     now = datetime.now(timezone.utc)
@@ -1720,6 +1737,7 @@ def _successor_without_historical_claims(
         now = source_updated + timedelta(seconds=1)
     timestamp = now.isoformat(timespec="seconds").replace("+00:00", "Z")
     predecessor_id = source["packet_id"]
+    immediate_predecessor_id = supersession_predecessor_id or predecessor_id
     candidate_commits = {
         "workspace_sha": revisions["workspace"]["candidate_sha"],
         "app_sha": revisions["app"]["candidate_sha"],
@@ -1731,7 +1749,7 @@ def _successor_without_historical_claims(
         if paths:
             supersedes.append(
                 {
-                    "packet_id": predecessor_id,
+                    "packet_id": immediate_predecessor_id,
                     "repository": repository,
                     "paths": paths,
                     "retained_path_records": [],
@@ -1740,7 +1758,7 @@ def _successor_without_historical_claims(
     successor = {
         **source,
         "schema_version": 3,
-        "packet_id": _successor_packet_id(predecessor_id, scope),
+        "packet_id": packet_id or _successor_packet_id(predecessor_id, scope),
         "created_at": timestamp,
         "updated_at": timestamp,
         "state": "in_progress",
@@ -1851,6 +1869,7 @@ def prepare_immutable_successor(
     predecessor_sha256: str,
     output_packet_path: Path,
     preview_approval_path: Path,
+    refresh_successor_of: str | None = None,
 ) -> tuple[Path, dict[str, Any]]:
     """Validate and construct a new packet successor without changing its source."""
     root = root.resolve()
@@ -1894,6 +1913,113 @@ def prepare_immutable_successor(
     if not isinstance(approval, Mapping):
         raise ManifestValidationError("preview approval receipt must be a JSON object")
     scan_secret_free(approval)
+    successor_id = _successor_packet_id(source["packet_id"], scope)
+    supersession_predecessor_id: str | None = None
+    if refresh_successor_of is not None:
+        if scope != "preview":
+            raise ManifestValidationError(
+                "refreshed immutable successor scope must be preview"
+            )
+        successor_id = _refreshed_successor_packet_id(
+            source["packet_id"], scope, candidate_shas
+        )
+        if output_path.stem != successor_id:
+            raise ManifestValidationError(
+                "refreshed immutable successor output filename must match computed packet_id"
+            )
+
+        inventory: dict[str, tuple[Mapping[str, Any], Path]] = {}
+        for packet_path in discover_json(packet_directory):
+            packet = load_json(packet_path)
+            validate_document(packet, packet_schema, packet_path)
+            scan_secret_free(packet)
+            validate_packet_semantics(packet, packet_path)
+            packet_id = packet["packet_id"]
+            if packet_id in inventory:
+                raise ManifestValidationError(
+                    f"duplicate packet_id in release-packet inventory: {packet_id}"
+                )
+            inventory[packet_id] = (packet, packet_path)
+        if successor_id in inventory:
+            raise ManifestValidationError(
+                f"refreshed immutable successor packet_id already exists: {successor_id}"
+            )
+        predecessor = inventory.get(refresh_successor_of)
+        if predecessor is None:
+            raise ManifestValidationError(
+                "refreshed immutable successor predecessor is not in the packet inventory: "
+                f"{refresh_successor_of}"
+            )
+        predecessor_packet, predecessor_path = predecessor
+        if predecessor_packet["schema_version"] != 3:
+            raise ManifestValidationError(
+                "refreshed immutable successor predecessor must be a schema-v3 packet"
+            )
+        if predecessor_packet["truth_scope"] != scope:
+            raise ManifestValidationError(
+                "refreshed immutable successor predecessor scope does not match successor scope"
+            )
+        predecessor_immutable = predecessor_packet.get("immutable_successor")
+        if (
+            predecessor_immutable is None
+            or predecessor_immutable["source_packet_id"] != source["packet_id"]
+        ):
+            raise ManifestValidationError(
+                "refreshed immutable successor predecessor does not share the schema-v2 source"
+            )
+        validate_immutable_successor(
+            predecessor_packet,
+            predecessor_path,
+            predecessor_immutable,
+            (source, source_path),
+        )
+        for repository in REPOSITORY_PATHS:
+            source_paths = source["repositories"][repository]["owned_paths"]
+            if predecessor_packet["repositories"][repository]["owned_paths"] != source_paths:
+                raise ManifestValidationError(
+                    "refreshed immutable successor predecessor owned paths do not match "
+                    f"the schema-v2 source for {repository}"
+                )
+            if not source_paths:
+                continue
+            matching_handoffs = [
+                handoff
+                for handoff in predecessor_packet.get("supersedes", [])
+                if handoff["packet_id"] == source["packet_id"]
+                and handoff["repository"] == repository
+            ]
+            if len(matching_handoffs) != 1 or matching_handoffs[0]["paths"] != source_paths:
+                raise ManifestValidationError(
+                    "refreshed immutable successor predecessor does not own the complete "
+                    f"schema-v2 handoff for {repository}"
+                )
+
+        expected_predecessor_ids = sorted([source["packet_id"], refresh_successor_of])
+        expected_approval_id = f"approval.{successor_id}.preview-data"
+        expected_evidence_id = f"ev.{successor_id}.preview-data-approval"
+        if approval.get("approval_id") != expected_approval_id:
+            raise ManifestValidationError(
+                "refreshed immutable successor approval_id does not match computed packet_id"
+            )
+        if approval.get("predecessor_packet_ids") != expected_predecessor_ids:
+            raise ManifestValidationError(
+                "refreshed immutable successor approval predecessor_packet_ids must exactly "
+                "identify the schema-v2 source and immediate schema-v3 predecessor"
+            )
+        if approval.get("evidence_ids") != [expected_evidence_id]:
+            raise ManifestValidationError(
+                "refreshed immutable successor approval evidence_ids do not match "
+                "computed packet_id"
+            )
+        expected_evidence_path = (
+            root / DEFAULT_EVIDENCE_DIRECTORY / f"{successor_id}.preview-data-approval.json"
+        )
+        if not expected_evidence_path.is_file():
+            raise ManifestValidationError(
+                "refreshed immutable successor evidence file does not match computed packet_id"
+            )
+        supersession_predecessor_id = refresh_successor_of
+
     revisions: dict[str, Mapping[str, Any]] = {}
     for repository, candidate_sha in candidate_shas.items():
         source_revision = source["repositories"][repository]
@@ -1918,6 +2044,8 @@ def prepare_immutable_successor(
         revisions=revisions,
         approval=approval,
         source_sha256=actual_source_sha256,
+        packet_id=successor_id,
+        supersession_predecessor_id=supersession_predecessor_id,
     )
     validate_document(successor, packet_schema, output_path)
     scan_secret_free(successor)
@@ -2170,6 +2298,13 @@ def main() -> int:
     parser.add_argument("--predecessor-sha256")
     parser.add_argument("--output-packet", type=Path)
     parser.add_argument(
+        "--refresh-successor-of",
+        help=(
+            "Name the accepted schema-v3 preview successor whose ownership this "
+            "new immutable successor refreshes."
+        ),
+    )
+    parser.add_argument(
         "--preview-approval-file",
         type=Path,
         help="Secret-free JSON object matching the typed preview_data_approval receipt.",
@@ -2219,6 +2354,7 @@ def main() -> int:
                 args.predecessor_sha256,
                 args.output_packet,
                 args.preview_approval_file,
+                args.refresh_successor_of,
             )
             if args.write:
                 output_path.write_text(
@@ -2234,11 +2370,12 @@ def main() -> int:
                 f"predecessor={args.predecessor_packet_id} output={output_path}"
             )
             return 0
-        if any(successor_args):
+        if any((*successor_args, args.refresh_successor_of)):
             raise ManifestValidationError(
                 "--source-packet, --successor-scope, --workspace-sha, --app-sha, "
                 "--backend-sha, --predecessor-packet-id, --predecessor-sha256, "
-                "--output-packet, and --preview-approval-file require --emit-successor"
+                "--output-packet, --preview-approval-file, and --refresh-successor-of "
+                "require --emit-successor"
             )
         if args.promote_packet:
             if args.clean_candidate:
