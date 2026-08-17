@@ -130,7 +130,9 @@ def _normalized_owned_paths(owned_paths: Iterable[str]) -> list[str]:
                 f"owned path must be a normalized repository-relative path: {raw_path}"
             )
         if raw_path in {".", ""}:
-            raise ManifestValidationError(f"owned path must identify a file: {raw_path}")
+            raise ManifestValidationError(
+                f"owned path must identify a file: {raw_path}"
+            )
         normalized.append(raw_path)
     if len(normalized) != len(set(normalized)):
         raise ManifestValidationError("owned_paths contains duplicates")
@@ -259,23 +261,31 @@ def capture_local_dirty_checkpoint(
     """Capture deterministic, secret-free provenance for owned local work."""
     repository = repository.resolve()
     normalized_paths = _normalized_owned_paths(owned_paths)
-    resolved_base = _git_bytes(
-        repository,
-        "rev-parse",
-        "--verify",
-        f"{base_sha}^{{commit}}",
-    ).decode("ascii").strip()
+    resolved_base = (
+        _git_bytes(
+            repository,
+            "rev-parse",
+            "--verify",
+            f"{base_sha}^{{commit}}",
+        )
+        .decode("ascii")
+        .strip()
+    )
     if resolved_base != base_sha:
         raise ManifestValidationError(
             f"{repository}: local checkpoint requires a full base SHA"
         )
     current_head = _git_bytes(repository, "rev-parse", "HEAD").decode("ascii").strip()
-    merge_base = _git_bytes(
-        repository,
-        "merge-base",
-        base_sha,
-        current_head,
-    ).decode("ascii").strip()
+    merge_base = (
+        _git_bytes(
+            repository,
+            "merge-base",
+            base_sha,
+            current_head,
+        )
+        .decode("ascii")
+        .strip()
+    )
     if merge_base != base_sha:
         raise ManifestValidationError(
             f"{repository}: local checkpoint base_sha is not an ancestor of current HEAD"
@@ -319,28 +329,40 @@ def capture_committed_candidate(
     """Capture a committed candidate and its reproducible owned-path contents."""
     repository = repository.resolve()
     normalized_paths = _normalized_owned_paths(owned_paths)
-    resolved_base = _git_bytes(
-        repository,
-        "rev-parse",
-        "--verify",
-        f"{base_sha}^{{commit}}",
-    ).decode("ascii").strip()
-    resolved_candidate = _git_bytes(
-        repository,
-        "rev-parse",
-        "--verify",
-        f"{candidate_sha}^{{commit}}",
-    ).decode("ascii").strip()
+    resolved_base = (
+        _git_bytes(
+            repository,
+            "rev-parse",
+            "--verify",
+            f"{base_sha}^{{commit}}",
+        )
+        .decode("ascii")
+        .strip()
+    )
+    resolved_candidate = (
+        _git_bytes(
+            repository,
+            "rev-parse",
+            "--verify",
+            f"{candidate_sha}^{{commit}}",
+        )
+        .decode("ascii")
+        .strip()
+    )
     if resolved_base != base_sha or resolved_candidate != candidate_sha:
         raise ManifestValidationError(
             f"{repository}: committed candidate requires full base and candidate SHAs"
         )
-    merge_base = _git_bytes(
-        repository,
-        "merge-base",
-        base_sha,
-        candidate_sha,
-    ).decode("ascii").strip()
+    merge_base = (
+        _git_bytes(
+            repository,
+            "merge-base",
+            base_sha,
+            candidate_sha,
+        )
+        .decode("ascii")
+        .strip()
+    )
     if merge_base != base_sha:
         raise ManifestValidationError(
             f"{repository}: candidate_sha is not descended from base_sha"
@@ -413,12 +435,16 @@ def validate_committed_candidate(
         revision["owned_paths"],
     )
     current_head = _git_bytes(repository, "rev-parse", "HEAD").decode("ascii").strip()
-    merge_base = _git_bytes(
-        repository,
-        "merge-base",
-        revision["candidate_sha"],
-        current_head,
-    ).decode("ascii").strip()
+    merge_base = (
+        _git_bytes(
+            repository,
+            "merge-base",
+            revision["candidate_sha"],
+            current_head,
+        )
+        .decode("ascii")
+        .strip()
+    )
     if merge_base != revision["candidate_sha"]:
         raise ManifestValidationError(
             f"{packet_path}: candidate_sha is not an ancestor of current HEAD"
@@ -525,12 +551,16 @@ def _timestamp(value: str) -> datetime:
 def _workspace_manifest_path(root: Path, raw_path: Path) -> Path:
     path = raw_path if raw_path.is_absolute() else root / raw_path
     if path.is_symlink():
-        raise ManifestValidationError(f"manifest path must not be a symlink: {raw_path}")
+        raise ManifestValidationError(
+            f"manifest path must not be a symlink: {raw_path}"
+        )
     resolved = path.resolve()
     try:
         resolved.relative_to(root)
     except ValueError as exc:
-        raise ManifestValidationError(f"manifest path escapes workspace: {raw_path}") from exc
+        raise ManifestValidationError(
+            f"manifest path escapes workspace: {raw_path}"
+        ) from exc
     return resolved
 
 
@@ -560,7 +590,9 @@ def validate_evidence_semantics(evidence: Mapping[str, Any], path: Path) -> None
         )
 
     if evidence["redaction"]["status"] == "failed":
-        raise ManifestValidationError(f"{path}: redaction status failed; evidence is not safe to store")
+        raise ManifestValidationError(
+            f"{path}: redaction status failed; evidence is not safe to store"
+        )
 
     for observation in evidence["target_observations"]:
         observed_at = _timestamp(observation["observed_at"])
@@ -594,7 +626,9 @@ def packet_evidence_ids(packet: Mapping[str, Any]) -> set[str]:
     return found
 
 
-def completion_evidence_claims(packet: Mapping[str, Any]) -> list[tuple[str, list[str]]]:
+def completion_evidence_claims(
+    packet: Mapping[str, Any],
+) -> list[tuple[str, list[str]]]:
     claims = [
         ("quick validation", packet["validation"]["quick"]["evidence_ids"]),
         ("full validation", packet["validation"]["full"]["evidence_ids"]),
@@ -615,7 +649,9 @@ def completion_evidence_claims(packet: Mapping[str, Any]) -> list[tuple[str, lis
             claims.append((f"{provider} deployment", deployment["evidence_ids"]))
     for metric_group in ("baselines", "abort_thresholds"):
         for metric in packet["observation"][metric_group]:
-            claims.append((f"observation metric {metric['name']}", metric["evidence_ids"]))
+            claims.append(
+                (f"observation metric {metric['name']}", metric["evidence_ids"])
+            )
     return claims
 
 
@@ -682,7 +718,10 @@ def validate_packet_semantics(packet: Mapping[str, Any], path: Path) -> None:
             raise ManifestValidationError(
                 f"{path}: {repository} dirty_counts.total is inconsistent"
             )
-        if revision["revision_type"] == "committed_candidate" and dirty_counts["total"] != 0:
+        if (
+            revision["revision_type"] == "committed_candidate"
+            and dirty_counts["total"] != 0
+        ):
             raise ManifestValidationError(
                 f"{path}: {repository} committed candidate dirty counts must all be zero"
             )
@@ -748,7 +787,9 @@ def validate_packet_semantics(packet: Mapping[str, Any], path: Path) -> None:
             f"{path}: compatibility_matrix must contain each N/N+1 pairing exactly once"
         )
     if len(packet["contracts"]["compatibility_matrix"]) != len(cases):
-        raise ManifestValidationError(f"{path}: compatibility_matrix contains duplicates")
+        raise ManifestValidationError(
+            f"{path}: compatibility_matrix contains duplicates"
+        )
 
     backend_sha = packet["repositories"]["backend"]["candidate_sha"]
     app_sha = packet["repositories"]["app"]["candidate_sha"]
@@ -774,7 +815,9 @@ def validate_packet_semantics(packet: Mapping[str, Any], path: Path) -> None:
 
     if packet["truth_scope"] == "local":
         pending_fields = [
-            name for name, status in packet["gate_4"].items() if status != "pending_gate_4"
+            name
+            for name, status in packet["gate_4"].items()
+            if status != "pending_gate_4"
         ]
         for target_name, target in packet["targets"].items():
             if target["status"] != "pending_gate_4":
@@ -824,13 +867,21 @@ def validate_packet_semantics(packet: Mapping[str, Any], path: Path) -> None:
 
     if packet["state"] == "program_complete":
         if packet["validation"]["quick"]["status"] != "pass":
-            raise ManifestValidationError(f"{path}: program_complete requires quick validation")
+            raise ManifestValidationError(
+                f"{path}: program_complete requires quick validation"
+            )
         if packet["validation"]["full"]["status"] != "pass":
-            raise ManifestValidationError(f"{path}: program_complete requires full validation")
+            raise ManifestValidationError(
+                f"{path}: program_complete requires full validation"
+            )
         if app_build["status"] != "passed":
-            raise ManifestValidationError(f"{path}: program_complete requires app build proof")
+            raise ManifestValidationError(
+                f"{path}: program_complete requires app build proof"
+            )
         if packet["validation"]["browser"]["status"] != "pass":
-            raise ManifestValidationError(f"{path}: program_complete requires browser proof")
+            raise ManifestValidationError(
+                f"{path}: program_complete requires browser proof"
+            )
         incomplete_gate_4 = [
             name for name, status in packet["gate_4"].items() if status != "verified"
         ]
@@ -840,7 +891,9 @@ def validate_packet_semantics(packet: Mapping[str, Any], path: Path) -> None:
                 f"{', '.join(incomplete_gate_4)}"
             )
         if packet["observation"]["status"] != "passed":
-            raise ManifestValidationError(f"{path}: program_complete requires passed observation")
+            raise ManifestValidationError(
+                f"{path}: program_complete requires passed observation"
+            )
         invalid_deployments = [
             provider
             for provider, deployment in packet["deployments"].items()
@@ -865,11 +918,15 @@ def validate_packet_semantics(packet: Mapping[str, Any], path: Path) -> None:
         observation = packet["observation"]
         observation_started = observation.get("started_at")
         observation_ends = observation.get("ends_at")
-        if not isinstance(observation_started, str) or not isinstance(observation_ends, str):
+        if not isinstance(observation_started, str) or not isinstance(
+            observation_ends, str
+        ):
             raise ManifestValidationError(
                 f"{path}: program_complete requires observation started_at and ends_at"
             )
-        observed_duration = _timestamp(observation_ends) - _timestamp(observation_started)
+        observed_duration = _timestamp(observation_ends) - _timestamp(
+            observation_started
+        )
         minimum_duration = timedelta(days=observation["gate5_minimum_days"])
         if observed_duration < minimum_duration:
             raise ManifestValidationError(
@@ -902,7 +959,9 @@ def validate_immutable_successor(
 ) -> None:
     """Validate provenance and the typed preview receipt for a v3 successor."""
     if packet["schema_version"] != 3:
-        raise ManifestValidationError(f"{path}: immutable successor requires schema_version 3")
+        raise ManifestValidationError(
+            f"{path}: immutable successor requires schema_version 3"
+        )
     source_packet_id = successor["source_packet_id"]
     if successor["scope"] != packet["truth_scope"]:
         raise ManifestValidationError(
@@ -933,7 +992,9 @@ def validate_immutable_successor(
             f"{path}: immutable successor requires one approved preview_data_approval"
         )
     approval = matching_approvals[0]
-    if approval["preview_target_identity"] != _target_identity(packet["targets"]["preview"]):
+    if approval["preview_target_identity"] != _target_identity(
+        packet["targets"]["preview"]
+    ):
         raise ManifestValidationError(
             f"{path}: preview_data_approval target identity does not match preview target"
         )
@@ -1054,19 +1115,27 @@ def validate_parked_work_manifest(
             f"{path}: parked-unaccepted-local-work has unexpected fields: {', '.join(extra)}"
         )
     if document["schema_version"] != 1:
-        raise ManifestValidationError(f"{path}: parked manifest schema_version must be 1")
+        raise ManifestValidationError(
+            f"{path}: parked manifest schema_version must be 1"
+        )
     if document["manifest_id"] != "parked-unaccepted-local-work":
         raise ManifestValidationError(
             f"{path}: manifest_id must be parked-unaccepted-local-work"
         )
     if document["truth_scope"] != "local":
-        raise ManifestValidationError(f"{path}: parked manifest truth_scope must be local")
+        raise ManifestValidationError(
+            f"{path}: parked manifest truth_scope must be local"
+        )
     try:
         _timestamp(document["captured_at"])
     except (TypeError, ValueError) as exc:
-        raise ManifestValidationError(f"{path}: captured_at must be a date-time") from exc
+        raise ManifestValidationError(
+            f"{path}: captured_at must be a date-time"
+        ) from exc
     repositories = document["repositories"]
-    if not isinstance(repositories, Mapping) or set(repositories) != set(REPOSITORY_PATHS):
+    if not isinstance(repositories, Mapping) or set(repositories) != set(
+        REPOSITORY_PATHS
+    ):
         raise ManifestValidationError(
             f"{path}: parked manifest repositories must be workspace, app, and backend"
         )
@@ -1088,7 +1157,15 @@ def validate_parked_work_manifest(
     for index, entry in enumerate(entries):
         key = _validate_parked_path(entry, f"entries[{index}]")
         entry_keys.append(key)
-        required_entry_fields = {"repository", "path", "status", "owner", "reason", "missing_proof", "next_action"}
+        required_entry_fields = {
+            "repository",
+            "path",
+            "status",
+            "owner",
+            "reason",
+            "missing_proof",
+            "next_action",
+        }
         missing_entry_fields = sorted(required_entry_fields - entry.keys())
         if missing_entry_fields:
             raise ManifestValidationError(
@@ -1150,15 +1227,22 @@ def validate_parked_work_manifest(
         raise ManifestValidationError(f"{path}: parked entries must be sorted")
     if exclusion_keys != sorted(exclusion_keys):
         raise ManifestValidationError(f"{path}: excluded paths must be sorted")
-    if len(entry_keys) != len(set(entry_keys)) or len(exclusion_keys) != len(set(exclusion_keys)):
-        raise ManifestValidationError(f"{path}: parked path collections contain duplicates")
+    if len(entry_keys) != len(set(entry_keys)) or len(exclusion_keys) != len(
+        set(exclusion_keys)
+    ):
+        raise ManifestValidationError(
+            f"{path}: parked path collections contain duplicates"
+        )
     overlap = sorted(set(entry_keys) & set(exclusion_keys))
     if overlap:
         raise ManifestValidationError(
             f"{path}: paths cannot be both parked and excluded: "
             + ", ".join(f"{repository}:{item}" for repository, item in overlap)
         )
-    if not isinstance(document["promotion_policy"], str) or not document["promotion_policy"].strip():
+    if (
+        not isinstance(document["promotion_policy"], str)
+        or not document["promotion_policy"].strip()
+    ):
         raise ManifestValidationError(f"{path}: promotion_policy must be non-empty")
     return document
 
@@ -1175,16 +1259,22 @@ def validate_required_local_packet_set(
     for packet_id in sorted(REQUIRED_LOCAL_PACKET_IDS):
         packet, path = packets[packet_id]
         if packet["truth_scope"] != "local":
-            raise ManifestValidationError(f"{path}: required local packet truth_scope must be local")
+            raise ManifestValidationError(
+                f"{path}: required local packet truth_scope must be local"
+            )
         if packet["state"] != "implementation_complete_parked":
             raise ManifestValidationError(
                 f"{path}: required local packet state must be implementation_complete_parked"
             )
         if packet["validation"]["quick"]["status"] != "pass":
-            raise ManifestValidationError(f"{path}: required local packet quick validation must pass")
+            raise ManifestValidationError(
+                f"{path}: required local packet quick validation must pass"
+            )
         evidence_ids = packet["validation"]["evidence_ids"]
         if not evidence_ids:
-            raise ManifestValidationError(f"{path}: required local packet has no evidence")
+            raise ManifestValidationError(
+                f"{path}: required local packet has no evidence"
+            )
         invalid_evidence = [
             evidence_id
             for evidence_id in evidence_ids
@@ -1292,7 +1382,10 @@ def validate_packet_supersessions(
                 predecessor["repositories"][repository]["owned_paths"]
             )
             for relative_path in supersession["paths"]:
-                if relative_path not in successor_owned or relative_path not in predecessor_owned:
+                if (
+                    relative_path not in successor_owned
+                    or relative_path not in predecessor_owned
+                ):
                     raise ManifestValidationError(
                         f"{successor_path}: supersession path is not owned by both packets: "
                         f"{repository}:{relative_path}"
@@ -1398,7 +1491,9 @@ def validate_packet_supersessions(
         ordered_owners = sorted(owners)
         for index, first in enumerate(ordered_owners):
             for second in ordered_owners[index + 1 :]:
-                if not reaches(first, second, repository, relative_path) and not reaches(
+                if not reaches(
+                    first, second, repository, relative_path
+                ) and not reaches(
                     second,
                     first,
                     repository,
@@ -1493,6 +1588,183 @@ def validate_packet_supersessions(
     return superseded, retained_records
 
 
+def validate_preview_immutable_successor_chains(
+    packets: Mapping[str, tuple[Mapping[str, Any], Path]],
+    superseded: Mapping[tuple[str, str, str], str],
+) -> dict[str, str]:
+    """Require each immutable preview refresh group to be one exact path chain."""
+    successors_by_source: dict[str, list[str]] = {}
+    for packet_id, (packet, _) in packets.items():
+        immutable_successor = packet.get("immutable_successor")
+        if immutable_successor is None or packet["truth_scope"] != "preview":
+            continue
+        source_packet_id = immutable_successor["source_packet_id"]
+        source_entry = packets.get(source_packet_id)
+        if source_entry is None or source_entry[0]["schema_version"] != 2:
+            continue
+        successors_by_source.setdefault(source_packet_id, []).append(packet_id)
+
+    leaves: dict[str, str] = {}
+    for source_packet_id, successor_ids in successors_by_source.items():
+        source, source_path = packets[source_packet_id]
+        successor_id_set = set(successor_ids)
+        predecessor_by_successor: dict[str, str] = {}
+        for successor_id in sorted(successor_ids):
+            successor, successor_path = packets[successor_id]
+            immutable_successor = successor["immutable_successor"]
+            if immutable_successor["scope"] != "preview":
+                raise ManifestValidationError(
+                    f"{successor_path}: preview immutable successor scope must be preview"
+                )
+
+            nonempty_repositories = [
+                repository
+                for repository in REPOSITORY_PATHS
+                if source["repositories"][repository]["owned_paths"]
+            ]
+            handoff_predecessors: set[str] = set()
+            for repository in REPOSITORY_PATHS:
+                source_paths = source["repositories"][repository]["owned_paths"]
+                successor_paths = successor["repositories"][repository]["owned_paths"]
+                if successor_paths != source_paths:
+                    raise ManifestValidationError(
+                        f"{successor_path}: preview immutable successor owned paths do "
+                        f"not match source {source_packet_id} for {repository}"
+                    )
+                handoffs = [
+                    handoff
+                    for handoff in successor.get("supersedes", [])
+                    if handoff["repository"] == repository
+                ]
+                if not source_paths:
+                    if handoffs:
+                        raise ManifestValidationError(
+                            f"{successor_path}: preview immutable successor has a "
+                            f"foreign empty-repository handoff for {repository}"
+                        )
+                    continue
+                if len(handoffs) != 1:
+                    raise ManifestValidationError(
+                        f"{successor_path}: preview immutable successor requires one "
+                        f"complete predecessor handoff for {repository}"
+                    )
+                handoff = handoffs[0]
+                if handoff["paths"] != source_paths:
+                    raise ManifestValidationError(
+                        f"{successor_path}: preview immutable successor handoff paths "
+                        f"do not match source {source_packet_id} for {repository}"
+                    )
+                if handoff.get("retained_path_records", []):
+                    raise ManifestValidationError(
+                        f"{successor_path}: preview immutable successor cannot retain "
+                        f"paths in {repository}"
+                    )
+                handoff_predecessors.add(handoff["packet_id"])
+
+            if len(successor.get("supersedes", [])) != len(nonempty_repositories):
+                raise ManifestValidationError(
+                    f"{successor_path}: preview immutable successor has foreign or "
+                    "duplicate supersession handoffs"
+                )
+            if len(handoff_predecessors) != 1:
+                raise ManifestValidationError(
+                    f"{successor_path}: preview immutable successor handoffs must name "
+                    "one immediate predecessor"
+                )
+            immediate_predecessor = next(iter(handoff_predecessors))
+            if (
+                immediate_predecessor != source_packet_id
+                and immediate_predecessor not in successor_id_set
+            ):
+                raise ManifestValidationError(
+                    f"{successor_path}: preview immutable successor predecessor is "
+                    "outside its immutable source chain"
+                )
+            predecessor_by_successor[successor_id] = immediate_predecessor
+
+            approvals = [
+                approval
+                for approval in successor["approvals"]
+                if (
+                    approval["approval_id"]
+                    == immutable_successor["preview_data_approval_id"]
+                    and approval["kind"] == "preview_data_approval"
+                    and approval["status"] == "approved"
+                )
+            ]
+            if len(approvals) != 1:
+                raise ManifestValidationError(
+                    f"{successor_path}: preview immutable successor requires one "
+                    "approved preview_data_approval"
+                )
+            expected_predecessors = [source_packet_id]
+            if immediate_predecessor != source_packet_id:
+                expected_predecessors.append(immediate_predecessor)
+            if approvals[0]["predecessor_packet_ids"] != sorted(expected_predecessors):
+                raise ManifestValidationError(
+                    f"{successor_path}: preview immutable successor approval "
+                    "predecessor_packet_ids must exactly identify the immutable source "
+                    "and immediate predecessor"
+                )
+
+        successors_by_predecessor: dict[str, list[str]] = {}
+        for successor_id, predecessor_id in predecessor_by_successor.items():
+            successors_by_predecessor.setdefault(predecessor_id, []).append(
+                successor_id
+            )
+        for predecessor_id, children in successors_by_predecessor.items():
+            if len(children) > 1:
+                raise ManifestValidationError(
+                    f"{source_path}: preview immutable successor chain forks from "
+                    f"{predecessor_id}: {', '.join(sorted(children))}"
+                )
+
+        route = [source_packet_id]
+        visited = {source_packet_id}
+        current = source_packet_id
+        while current in successors_by_predecessor:
+            children = successors_by_predecessor[current]
+            if len(children) != 1:
+                raise ManifestValidationError(
+                    f"{source_path}: preview immutable successor chain must have one "
+                    f"next owner from {current}"
+                )
+            current = children[0]
+            if current in visited:
+                raise ManifestValidationError(
+                    f"{source_path}: preview immutable successor chain contains a cycle"
+                )
+            visited.add(current)
+            route.append(current)
+
+        if set(route[1:]) != successor_id_set:
+            disconnected = sorted(successor_id_set - set(route[1:]))
+            raise ManifestValidationError(
+                f"{source_path}: preview immutable successor chain is disconnected: "
+                f"{', '.join(disconnected)}"
+            )
+
+        for repository in REPOSITORY_PATHS:
+            for relative_path in source["repositories"][repository]["owned_paths"]:
+                path_route = [source_packet_id]
+                current = source_packet_id
+                while (current, repository, relative_path) in superseded:
+                    current = superseded[(current, repository, relative_path)]
+                    if current in path_route:
+                        raise ManifestValidationError(
+                            f"{source_path}: preview immutable successor path chain "
+                            f"contains a cycle for {repository}:{relative_path}"
+                        )
+                    path_route.append(current)
+                if path_route != route:
+                    raise ManifestValidationError(
+                        f"{source_path}: preview immutable successor path ownership is "
+                        f"not one complete chain for {repository}:{relative_path}"
+                    )
+        leaves[source_packet_id] = route[-1]
+    return leaves
+
+
 def validate_current_checkpoint(
     root: Path,
     packets: Mapping[str, tuple[Mapping[str, Any], Path]],
@@ -1500,9 +1772,7 @@ def validate_current_checkpoint(
     superseded: Mapping[tuple[str, str, str], str],
     retained_records: Mapping[tuple[str, str, str], str],
 ) -> None:
-    local_dirty_paths: dict[str, set[str]] = {
-        name: set() for name in REPOSITORY_PATHS
-    }
+    local_dirty_paths: dict[str, set[str]] = {name: set() for name in REPOSITORY_PATHS}
     ordered_packet_ids = sorted(
         packets,
         key=lambda packet_id: (
@@ -1536,7 +1806,9 @@ def validate_current_checkpoint(
                                 f"{repository}:{relative_path}"
                             )
                 try:
-                    validate_local_dirty_checkpoint(repository_root, revision, packet_path)
+                    validate_local_dirty_checkpoint(
+                        repository_root, revision, packet_path
+                    )
                 except ManifestValidationError:
                     if not superseded_paths:
                         raise
@@ -1574,7 +1846,11 @@ def validate_current_checkpoint(
     for repository, repository_path in REPOSITORY_PATHS.items():
         repository_root = (root / repository_path).resolve()
         actual = repository_dirty_paths(repository_root)
-        classified = local_dirty_paths[repository] | set(parked_paths[repository]) | set(excluded_paths[repository])
+        classified = (
+            local_dirty_paths[repository]
+            | set(parked_paths[repository])
+            | set(excluded_paths[repository])
+        )
         if repository == "workspace":
             classified |= auto_classified_workspace
         unclassified = sorted(set(actual) - classified)
@@ -1854,9 +2130,7 @@ def _successor_without_historical_claims(
             "evidence_ids": [],
         },
     }
-    successor["gate_4"] = {
-        name: "pending_gate_4" for name in source["gate_4"]
-    }
+    successor["gate_4"] = {name: "pending_gate_4" for name in source["gate_4"]}
     return successor
 
 
@@ -1878,20 +2152,30 @@ def prepare_immutable_successor(
     approval_path = _workspace_manifest_path(root, preview_approval_path)
     packet_directory = (root / DEFAULT_PACKET_DIRECTORY).resolve()
     if not source_path.is_file():
-        raise ManifestValidationError(f"source packet does not exist: {source_packet_path}")
+        raise ManifestValidationError(
+            f"source packet does not exist: {source_packet_path}"
+        )
     if source_path == output_path:
-        raise ManifestValidationError("immutable successor output must not overwrite source packet")
+        raise ManifestValidationError(
+            "immutable successor output must not overwrite source packet"
+        )
     if output_path.exists():
-        raise ManifestValidationError(f"immutable successor output already exists: {output_packet_path}")
+        raise ManifestValidationError(
+            f"immutable successor output already exists: {output_packet_path}"
+        )
     if output_path.parent != packet_directory or output_path.suffix != ".json":
         raise ManifestValidationError(
             "immutable successor output must be a new JSON file directly in "
             f"{DEFAULT_PACKET_DIRECTORY}"
         )
     if not output_path.parent.is_dir():
-        raise ManifestValidationError(f"immutable successor output directory is missing: {output_path.parent}")
+        raise ManifestValidationError(
+            f"immutable successor output directory is missing: {output_path.parent}"
+        )
     if not approval_path.is_file():
-        raise ManifestValidationError(f"preview approval receipt does not exist: {preview_approval_path}")
+        raise ManifestValidationError(
+            f"preview approval receipt does not exist: {preview_approval_path}"
+        )
 
     packet_schema_path = _workspace_manifest_path(root, PACKET_SCHEMA)
     packet_schema = load_json(packet_schema_path)
@@ -1903,11 +2187,17 @@ def prepare_immutable_successor(
     validate_packet_semantics(source, source_path)
     actual_source_sha256 = hashlib.sha256(source_bytes).hexdigest()
     if source["schema_version"] != 2:
-        raise ManifestValidationError("immutable successor source packet must be schema_version 2")
+        raise ManifestValidationError(
+            "immutable successor source packet must be schema_version 2"
+        )
     if source["packet_id"] != predecessor_packet_id:
-        raise ManifestValidationError("immutable successor predecessor identity does not match source packet_id")
+        raise ManifestValidationError(
+            "immutable successor predecessor identity does not match source packet_id"
+        )
     if actual_source_sha256 != predecessor_sha256:
-        raise ManifestValidationError("immutable successor predecessor SHA-256 does not match source packet")
+        raise ManifestValidationError(
+            "immutable successor predecessor SHA-256 does not match source packet"
+        )
 
     approval = load_json(approval_path)
     if not isinstance(approval, Mapping):
@@ -1915,6 +2205,7 @@ def prepare_immutable_successor(
     scan_secret_free(approval)
     successor_id = _successor_packet_id(source["packet_id"], scope)
     supersession_predecessor_id: str | None = None
+    refresh_inventory: dict[str, tuple[Mapping[str, Any], Path]] | None = None
     if refresh_successor_of is not None:
         if scope != "preview":
             raise ManifestValidationError(
@@ -1944,6 +2235,29 @@ def prepare_immutable_successor(
             raise ManifestValidationError(
                 f"refreshed immutable successor packet_id already exists: {successor_id}"
             )
+        for packet, packet_path in inventory.values():
+            immutable_successor = packet.get("immutable_successor")
+            if immutable_successor is None:
+                continue
+            immutable_predecessor = inventory.get(
+                immutable_successor["source_packet_id"]
+            )
+            if immutable_predecessor is None:
+                raise ManifestValidationError(
+                    f"{packet_path}: immutable successor predecessor packet is not "
+                    "in the packet inventory"
+                )
+            validate_immutable_successor(
+                packet,
+                packet_path,
+                immutable_successor,
+                immutable_predecessor,
+            )
+        inventory_superseded, _ = validate_packet_supersessions(inventory)
+        ownership_leaves = validate_preview_immutable_successor_chains(
+            inventory,
+            inventory_superseded,
+        )
         predecessor = inventory.get(refresh_successor_of)
         if predecessor is None:
             raise ManifestValidationError(
@@ -1973,26 +2287,11 @@ def prepare_immutable_successor(
             predecessor_immutable,
             (source, source_path),
         )
-        for repository in REPOSITORY_PATHS:
-            source_paths = source["repositories"][repository]["owned_paths"]
-            if predecessor_packet["repositories"][repository]["owned_paths"] != source_paths:
-                raise ManifestValidationError(
-                    "refreshed immutable successor predecessor owned paths do not match "
-                    f"the schema-v2 source for {repository}"
-                )
-            if not source_paths:
-                continue
-            matching_handoffs = [
-                handoff
-                for handoff in predecessor_packet.get("supersedes", [])
-                if handoff["packet_id"] == source["packet_id"]
-                and handoff["repository"] == repository
-            ]
-            if len(matching_handoffs) != 1 or matching_handoffs[0]["paths"] != source_paths:
-                raise ManifestValidationError(
-                    "refreshed immutable successor predecessor does not own the complete "
-                    f"schema-v2 handoff for {repository}"
-                )
+        if ownership_leaves.get(source["packet_id"]) != refresh_successor_of:
+            raise ManifestValidationError(
+                "refreshed immutable successor predecessor is not the unique current "
+                "ownership leaf for the schema-v2 source"
+            )
 
         expected_predecessor_ids = sorted([source["packet_id"], refresh_successor_of])
         expected_approval_id = f"approval.{successor_id}.preview-data"
@@ -2012,13 +2311,16 @@ def prepare_immutable_successor(
                 "computed packet_id"
             )
         expected_evidence_path = (
-            root / DEFAULT_EVIDENCE_DIRECTORY / f"{successor_id}.preview-data-approval.json"
+            root
+            / DEFAULT_EVIDENCE_DIRECTORY
+            / f"{successor_id}.preview-data-approval.json"
         )
         if not expected_evidence_path.is_file():
             raise ManifestValidationError(
                 "refreshed immutable successor evidence file does not match computed packet_id"
             )
         supersession_predecessor_id = refresh_successor_of
+        refresh_inventory = inventory
 
     revisions: dict[str, Mapping[str, Any]] = {}
     for repository, candidate_sha in candidate_shas.items():
@@ -2051,6 +2353,26 @@ def prepare_immutable_successor(
     scan_secret_free(successor)
     validate_packet_semantics(successor, output_path)
     _validate_successor_evidence(root, successor, output_path)
+    if refresh_inventory is not None:
+        validate_immutable_successor(
+            successor,
+            output_path,
+            successor["immutable_successor"],
+            (source, source_path),
+        )
+        prospective_inventory = {
+            **refresh_inventory,
+            successor["packet_id"]: (successor, output_path),
+        }
+        prospective_superseded, _ = validate_packet_supersessions(prospective_inventory)
+        prospective_leaves = validate_preview_immutable_successor_chains(
+            prospective_inventory,
+            prospective_superseded,
+        )
+        if prospective_leaves.get(source["packet_id"]) != successor["packet_id"]:
+            raise ManifestValidationError(
+                "refreshed immutable successor did not become the current ownership leaf"
+            )
     return output_path, successor
 
 
@@ -2150,6 +2472,7 @@ def validate_manifests(
         validate_immutable_successor(packet, path, immutable_successor, predecessor)
 
     superseded, retained_records = validate_packet_supersessions(packets)
+    validate_preview_immutable_successor_chains(packets, superseded)
 
     for raw_path in evidence_paths:
         path = _workspace_manifest_path(root, raw_path)
@@ -2425,7 +2748,9 @@ def main() -> int:
         print(f"architecture-release-manifests: ERROR {exc}")
         return 1
     mode = "clean-candidate " if args.clean_candidate else ""
-    print(f"architecture-release-manifests: OK {mode}packets={packet_count} evidence={evidence_count}")
+    print(
+        f"architecture-release-manifests: OK {mode}packets={packet_count} evidence={evidence_count}"
+    )
     return 0
 
 
