@@ -3,14 +3,14 @@
   "packet_id": "local-identity-canonical-routes",
   "capability": "Canonical public identity, slug aliases, and route resolution",
   "created_at": "2026-07-16T20:52:42.770997Z",
-  "updated_at": "2026-08-11T17:59:52Z",
+  "updated_at": "2026-08-17T22:02:20Z",
   "state": "implementation_complete_parked",
   "truth_scope": "local",
   "repositories": {
     "workspace": {
       "revision_type": "committed_candidate",
       "base_sha": "df55c982ecf6741808536bfb6af308cc737372cf",
-      "candidate_sha": "045e55ee86926b602dab32f5d4b64e36abab18da",
+      "candidate_sha": "38515ecbd55821e724d7fdf9714671357a454068",
       "owned_paths": [
         "docs/workspace/api-migration-ledger.md",
         "docs/workspace/app-direct-sql-inventory.md",
@@ -34,7 +34,7 @@
     "app": {
       "revision_type": "committed_candidate",
       "base_sha": "78681eac73c79e6534031fe1f050966edff9b844",
-      "candidate_sha": "0ec1fe9ddd7b38195bacc7a4ae703c59889d0ab8",
+      "candidate_sha": "c9b842d958c2d46623c4bf112d251df99d364012",
       "owned_paths": [
         "apps/web/package.json",
         "apps/web/scripts/generate-trr-v2-api-types.mjs",
@@ -69,8 +69,8 @@
         "apps/web/tests/trr-shows-repository-slug-query-safety.test.ts",
         "pnpm-lock.yaml"
       ],
-      "owned_path_manifest_sha256": "a1d63efc1cdd2bb14c5126682680ac0d5000b73d459990fc814f597de2482d70",
-      "binary_tracked_diff_sha256": "df619b55a29646ad0298a22d48a779a9b5711b1487ad797b2b83808a3db5ca4b",
+      "owned_path_manifest_sha256": "d95441ed94e4aa38ab9b2b6bc83d5003e52d62161e989ad7ab31cc1039a5a1a2",
+      "binary_tracked_diff_sha256": "22f7e9e0a91ea55a295d1bb715886969f7b85b13e64235c9250f71bea2c26e1b",
       "dirty_counts": {
         "tracked_modified": 0,
         "tracked_added": 0,
@@ -86,7 +86,7 @@
     "backend": {
       "revision_type": "committed_candidate",
       "base_sha": "0a3d2b59ec29304fb2765fd8cf996032e11c937b",
-      "candidate_sha": "97f0eefc319e11f3df3fc24a3cab1e43497f18ca",
+      "candidate_sha": "44e2402def63bb4d7e2f37d26e5d7f0626b2fd73",
       "owned_paths": [
         "api/auth.py",
         "api/main.py",
