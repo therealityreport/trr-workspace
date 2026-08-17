@@ -26,7 +26,9 @@ REQUIRED_LOCAL_PACKET_IDS = (
 
 
 def load_module():
-    spec = importlib.util.spec_from_file_location("check_release_manifests_under_test", SCRIPT)
+    spec = importlib.util.spec_from_file_location(
+        "check_release_manifests_under_test", SCRIPT
+    )
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
@@ -180,7 +182,9 @@ def packet() -> dict:
                 "project_ref": "vwxfvzutyufrkhfgoeaa",
             },
         },
-        "affected": {key: [] for key in ("routes", "jobs", "schedules", "data_sets", "aliases")},
+        "affected": {
+            key: [] for key in ("routes", "jobs", "schedules", "data_sets", "aliases")
+        },
         "validation": {
             "quick": {"status": "pass", "evidence_ids": ["ev.packet-1.quick"]},
             "full": {"status": "pending", "evidence_ids": []},
@@ -356,7 +360,9 @@ def parked_manifest() -> dict:
     }
 
 
-def write_workspace(tmp_path: Path, packet_data: dict, evidence_data: dict) -> tuple[Path, Path]:
+def write_workspace(
+    tmp_path: Path, packet_data: dict, evidence_data: dict
+) -> tuple[Path, Path]:
     schema_dir = tmp_path / "docs" / "workspace"
     schema_dir.mkdir(parents=True)
     for name in ("release-packet.schema.json", "architecture-evidence.schema.json"):
@@ -500,8 +506,7 @@ def write_live_r0_workspace(tmp_path: Path) -> tuple[dict[str, Path], dict[str, 
 
     parked = parked_manifest()
     parked["repositories"] = {
-        repository: {"base_sha": base_sha}
-        for repository, base_sha in base_shas.items()
+        repository: {"base_sha": base_sha} for repository, base_sha in base_shas.items()
     }
     (schema_dir / "parked-unaccepted-local-work.json").write_text(
         json.dumps(parked),
@@ -564,7 +569,9 @@ def promote_live_r0_workspace_candidates(
 def add_parked_app_path(tmp_path: Path) -> Path:
     parked_path = tmp_path / "TRR-APP" / "parked.txt"
     parked_path.write_text("parked\n", encoding="utf-8")
-    manifest_path = tmp_path / "docs" / "workspace" / "parked-unaccepted-local-work.json"
+    manifest_path = (
+        tmp_path / "docs" / "workspace" / "parked-unaccepted-local-work.json"
+    )
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     manifest["entries"] = [
         {
@@ -600,7 +607,9 @@ def write_promotable_packet(
     (tmp_path / "tracked.txt").write_text("candidate\n", encoding="utf-8")
     owned_paths = ["tracked.txt"]
     if include_untracked_owned_path:
-        (tmp_path / "untracked.txt").write_text("new candidate file\n", encoding="utf-8")
+        (tmp_path / "untracked.txt").write_text(
+            "new candidate file\n", encoding="utf-8"
+        )
         owned_paths.append("untracked.txt")
 
     packet_data = packet()
@@ -641,7 +650,10 @@ def write_immutable_successor_source(
     source = json.loads(source_path.read_text(encoding="utf-8"))
     source["repositories"] = {
         repository: module.capture_committed_candidate(
-            tmp_path / {"workspace": ".", "app": "TRR-APP", "backend": "TRR-Backend"}[repository],
+            tmp_path
+            / {"workspace": ".", "app": "TRR-APP", "backend": "TRR-Backend"}[
+                repository
+            ],
             revision["base_sha"],
             candidate_shas[repository],
             revision["owned_paths"],
@@ -649,7 +661,12 @@ def write_immutable_successor_source(
         for repository, revision in source["repositories"].items()
     }
     source_path.write_text(json.dumps(source), encoding="utf-8")
-    return source_path, candidate_shas, source, hashlib.sha256(source_path.read_bytes()).hexdigest()
+    return (
+        source_path,
+        candidate_shas,
+        source,
+        hashlib.sha256(source_path.read_bytes()).hexdigest(),
+    )
 
 
 def preview_data_approval(source: dict, candidate_shas: dict[str, str]) -> dict:
@@ -689,7 +706,9 @@ def preview_data_approval(source: dict, candidate_shas: dict[str, str]) -> dict:
     }
 
 
-def write_preview_data_evidence(tmp_path: Path, source: dict, *, scope: str = "preview") -> Path:
+def write_preview_data_evidence(
+    tmp_path: Path, source: dict, *, scope: str = "preview"
+) -> Path:
     evidence_data = evidence()
     evidence_data["evidence_id"] = "preview-data-approval-evidence"
     evidence_data["packet_id"] = f"{source['packet_id']}-{scope}-successor"
@@ -1031,7 +1050,9 @@ def write_sequential_disjoint_partial_supersession_workspace(
         successor_evidence["evidence_id"] = evidence_id
         packet_path = tmp_path / "docs/workspace/release-packets" / f"{packet_id}.json"
         evidence_path = (
-            tmp_path / "docs/workspace/architecture-evidence" / f"{packet_id}.quick.json"
+            tmp_path
+            / "docs/workspace/architecture-evidence"
+            / f"{packet_id}.quick.json"
         )
         packet_path.write_text(json.dumps(successor), encoding="utf-8")
         evidence_path.write_text(json.dumps(successor_evidence), encoding="utf-8")
@@ -1068,9 +1089,7 @@ def write_three_generation_supersession_workspace(
     write_partial_local_supersession_workspace(tmp_path)
     middle_id = "local-partial-successor"
     latest_id = "local-third-generation-successor"
-    middle_path = (
-        tmp_path / "docs/workspace/release-packets" / f"{middle_id}.json"
-    )
+    middle_path = tmp_path / "docs/workspace/release-packets" / f"{middle_id}.json"
     middle = json.loads(middle_path.read_text(encoding="utf-8"))
     shared_path = middle["repositories"]["workspace"]["owned_paths"][0]
     base_sha = middle["repositories"]["workspace"]["base_sha"]
@@ -1180,7 +1199,9 @@ def test_valid_packet_and_evidence_pass(tmp_path: Path) -> None:
     module = load_module()
     packet_path, evidence_path = write_workspace(tmp_path, packet(), evidence())
 
-    counts = module.validate_manifests(tmp_path, [packet_path], [evidence_path], require_packets=True)
+    counts = module.validate_manifests(
+        tmp_path, [packet_path], [evidence_path], require_packets=True
+    )
 
     assert counts == (1, 1)
 
@@ -1207,8 +1228,8 @@ def test_cli_candidate_promotion_is_a_dry_run_by_default(tmp_path: Path) -> None
 
 
 def test_cli_immutable_successor_is_dry_run_by_default(tmp_path: Path) -> None:
-    source_path, candidate_shas, source, source_sha256 = write_immutable_successor_source(
-        tmp_path
+    source_path, candidate_shas, source, source_sha256 = (
+        write_immutable_successor_source(tmp_path)
     )
     approval_path = tmp_path / "preview-approval.json"
     approval_path.write_text(json.dumps(preview_data_approval(source, candidate_shas)))
@@ -1219,15 +1240,24 @@ def test_cli_immutable_successor_is_dry_run_by_default(tmp_path: Path) -> None:
     result = run_checker(
         tmp_path,
         "--emit-successor",
-        "--source-packet", source_path.relative_to(tmp_path).as_posix(),
-        "--successor-scope", "preview",
-        "--workspace-sha", candidate_shas["workspace"],
-        "--app-sha", candidate_shas["app"],
-        "--backend-sha", candidate_shas["backend"],
-        "--predecessor-packet-id", source["packet_id"],
-        "--predecessor-sha256", source_sha256,
-        "--output-packet", output_path.relative_to(tmp_path).as_posix(),
-        "--preview-approval-file", approval_path.relative_to(tmp_path).as_posix(),
+        "--source-packet",
+        source_path.relative_to(tmp_path).as_posix(),
+        "--successor-scope",
+        "preview",
+        "--workspace-sha",
+        candidate_shas["workspace"],
+        "--app-sha",
+        candidate_shas["app"],
+        "--backend-sha",
+        candidate_shas["backend"],
+        "--predecessor-packet-id",
+        source["packet_id"],
+        "--predecessor-sha256",
+        source_sha256,
+        "--output-packet",
+        output_path.relative_to(tmp_path).as_posix(),
+        "--preview-approval-file",
+        approval_path.relative_to(tmp_path).as_posix(),
     )
 
     assert result.returncode == 0, result.stdout + result.stderr
@@ -1237,8 +1267,8 @@ def test_cli_immutable_successor_is_dry_run_by_default(tmp_path: Path) -> None:
 
 
 def test_cli_immutable_successor_write_emits_new_typed_packet(tmp_path: Path) -> None:
-    source_path, candidate_shas, source, source_sha256 = write_immutable_successor_source(
-        tmp_path
+    source_path, candidate_shas, source, source_sha256 = (
+        write_immutable_successor_source(tmp_path)
     )
     approval_path = tmp_path / "preview-approval.json"
     approval_path.write_text(json.dumps(preview_data_approval(source, candidate_shas)))
@@ -1248,15 +1278,24 @@ def test_cli_immutable_successor_write_emits_new_typed_packet(tmp_path: Path) ->
     result = run_checker(
         tmp_path,
         "--emit-successor",
-        "--source-packet", source_path.relative_to(tmp_path).as_posix(),
-        "--successor-scope", "preview",
-        "--workspace-sha", candidate_shas["workspace"],
-        "--app-sha", candidate_shas["app"],
-        "--backend-sha", candidate_shas["backend"],
-        "--predecessor-packet-id", source["packet_id"],
-        "--predecessor-sha256", source_sha256,
-        "--output-packet", output_path.relative_to(tmp_path).as_posix(),
-        "--preview-approval-file", approval_path.relative_to(tmp_path).as_posix(),
+        "--source-packet",
+        source_path.relative_to(tmp_path).as_posix(),
+        "--successor-scope",
+        "preview",
+        "--workspace-sha",
+        candidate_shas["workspace"],
+        "--app-sha",
+        candidate_shas["app"],
+        "--backend-sha",
+        candidate_shas["backend"],
+        "--predecessor-packet-id",
+        source["packet_id"],
+        "--predecessor-sha256",
+        source_sha256,
+        "--output-packet",
+        output_path.relative_to(tmp_path).as_posix(),
+        "--preview-approval-file",
+        approval_path.relative_to(tmp_path).as_posix(),
         "--write",
     )
 
@@ -1283,8 +1322,8 @@ def test_cli_immutable_successor_accepts_clean_descendant_with_changed_owned_byt
     tmp_path: Path,
 ) -> None:
     module = load_module()
-    source_path, candidate_shas, source, source_sha256 = write_immutable_successor_source(
-        tmp_path
+    source_path, candidate_shas, source, source_sha256 = (
+        write_immutable_successor_source(tmp_path)
     )
     workspace_revision = source["repositories"]["workspace"]
     owned_path = workspace_revision["owned_paths"][0]
@@ -1316,15 +1355,24 @@ def test_cli_immutable_successor_accepts_clean_descendant_with_changed_owned_byt
     result = run_checker(
         tmp_path,
         "--emit-successor",
-        "--source-packet", source_path.relative_to(tmp_path).as_posix(),
-        "--successor-scope", "preview",
-        "--workspace-sha", candidate_shas["workspace"],
-        "--app-sha", candidate_shas["app"],
-        "--backend-sha", candidate_shas["backend"],
-        "--predecessor-packet-id", source["packet_id"],
-        "--predecessor-sha256", source_sha256,
-        "--output-packet", output_path.relative_to(tmp_path).as_posix(),
-        "--preview-approval-file", approval_path.relative_to(tmp_path).as_posix(),
+        "--source-packet",
+        source_path.relative_to(tmp_path).as_posix(),
+        "--successor-scope",
+        "preview",
+        "--workspace-sha",
+        candidate_shas["workspace"],
+        "--app-sha",
+        candidate_shas["app"],
+        "--backend-sha",
+        candidate_shas["backend"],
+        "--predecessor-packet-id",
+        source["packet_id"],
+        "--predecessor-sha256",
+        source_sha256,
+        "--output-packet",
+        output_path.relative_to(tmp_path).as_posix(),
+        "--preview-approval-file",
+        approval_path.relative_to(tmp_path).as_posix(),
         "--write",
     )
 
@@ -1343,8 +1391,8 @@ def test_cli_immutable_successor_accepts_clean_descendant_with_changed_owned_byt
 def emit_test_successor(
     tmp_path: Path,
 ) -> tuple[Path, Path, dict, dict[str, str], str]:
-    source_path, candidate_shas, source, source_sha256 = write_immutable_successor_source(
-        tmp_path
+    source_path, candidate_shas, source, source_sha256 = (
+        write_immutable_successor_source(tmp_path)
     )
     approval_path = tmp_path / "preview-approval.json"
     approval_path.write_text(json.dumps(preview_data_approval(source, candidate_shas)))
@@ -1353,15 +1401,24 @@ def emit_test_successor(
     result = run_checker(
         tmp_path,
         "--emit-successor",
-        "--source-packet", source_path.relative_to(tmp_path).as_posix(),
-        "--successor-scope", "preview",
-        "--workspace-sha", candidate_shas["workspace"],
-        "--app-sha", candidate_shas["app"],
-        "--backend-sha", candidate_shas["backend"],
-        "--predecessor-packet-id", source["packet_id"],
-        "--predecessor-sha256", source_sha256,
-        "--output-packet", output_path.relative_to(tmp_path).as_posix(),
-        "--preview-approval-file", approval_path.relative_to(tmp_path).as_posix(),
+        "--source-packet",
+        source_path.relative_to(tmp_path).as_posix(),
+        "--successor-scope",
+        "preview",
+        "--workspace-sha",
+        candidate_shas["workspace"],
+        "--app-sha",
+        candidate_shas["app"],
+        "--backend-sha",
+        candidate_shas["backend"],
+        "--predecessor-packet-id",
+        source["packet_id"],
+        "--predecessor-sha256",
+        source_sha256,
+        "--output-packet",
+        output_path.relative_to(tmp_path).as_posix(),
+        "--preview-approval-file",
+        approval_path.relative_to(tmp_path).as_posix(),
         "--write",
     )
     assert result.returncode == 0, result.stdout + result.stderr
@@ -1373,8 +1430,8 @@ def write_refreshed_successor_inputs(
 ) -> tuple[Path, Path, Path, Path, dict, dict[str, str], str]:
     """Create an accepted first v3 successor and its refresh-specific inputs."""
     module = load_module()
-    source_path, first_path, source, candidate_shas, source_sha256 = emit_test_successor(
-        tmp_path
+    source_path, first_path, source, candidate_shas, source_sha256 = (
+        emit_test_successor(tmp_path)
     )
     first = json.loads(first_path.read_text(encoding="utf-8"))
     first["created_at"] = "2026-07-17T00:00:00Z"
@@ -1420,7 +1477,324 @@ def write_refreshed_successor_inputs(
     )
 
 
-def test_cli_refreshed_successor_emits_connected_ownership_chain(tmp_path: Path) -> None:
+def write_preview_successor_evidence(
+    tmp_path: Path,
+    packet_id: str,
+    evidence_id: str,
+) -> Path:
+    evidence_data = evidence()
+    evidence_data["evidence_id"] = evidence_id
+    evidence_data["packet_id"] = packet_id
+    evidence_data["gate"] = "gate-4"
+    evidence_data["truth_scope"] = "preview"
+    evidence_path = (
+        tmp_path
+        / "docs"
+        / "workspace"
+        / "architecture-evidence"
+        / f"{packet_id}.preview-data-approval.json"
+    )
+    evidence_path.write_text(json.dumps(evidence_data), encoding="utf-8")
+    return evidence_path
+
+
+def write_preview_refresh_chain(
+    tmp_path: Path,
+) -> tuple[Path, list[Path], list[Path], dict, dict[str, str], str]:
+    """Create v2 -> first preview successor -> accepted 4b refresh."""
+    module = load_module()
+    source_path, candidate_shas, source, source_sha256 = (
+        write_immutable_successor_source(tmp_path)
+    )
+    packet_directory = tmp_path / "docs/workspace/release-packets"
+    predecessor_id = source["packet_id"]
+    packet_paths: list[Path] = []
+    evidence_paths = [
+        tmp_path
+        / "docs"
+        / "workspace"
+        / "architecture-evidence"
+        / f"{source['packet_id']}.quick.json"
+    ]
+    suffixes = (
+        "preview-successor",
+        "preview-successor-refresh-4b60b834a3af",
+    )
+    for index, suffix in enumerate(suffixes, start=1):
+        packet_id = f"{source['packet_id']}-{suffix}"
+        evidence_id = f"ev.{packet_id}.preview-data-approval"
+        approval = preview_data_approval(source, candidate_shas)
+        approval["approval_id"] = f"approval.{packet_id}.preview-data"
+        approval["predecessor_packet_ids"] = sorted(
+            [
+                source["packet_id"],
+                *([] if predecessor_id == source["packet_id"] else [predecessor_id]),
+            ]
+        )
+        approval["evidence_ids"] = [evidence_id]
+        successor = module._successor_without_historical_claims(
+            source,
+            scope="preview",
+            revisions=source["repositories"],
+            approval=approval,
+            source_sha256=source_sha256,
+            packet_id=packet_id,
+            supersession_predecessor_id=predecessor_id,
+        )
+        successor["created_at"] = f"2026-07-17T00:00:0{index}Z"
+        successor["updated_at"] = f"2026-07-17T00:00:1{index}Z"
+        packet_path = packet_directory / f"{packet_id}.json"
+        packet_path.write_text(json.dumps(successor), encoding="utf-8")
+        packet_paths.append(packet_path)
+        evidence_paths.append(
+            write_preview_successor_evidence(tmp_path, packet_id, evidence_id)
+        )
+        predecessor_id = packet_id
+    return (
+        source_path,
+        packet_paths,
+        evidence_paths,
+        source,
+        candidate_shas,
+        source_sha256,
+    )
+
+
+def preview_chain_validation(
+    tmp_path: Path,
+    source_path: Path,
+    packet_paths: list[Path],
+    evidence_paths: list[Path],
+) -> subprocess.CompletedProcess[str]:
+    arguments: list[str] = []
+    for packet_path in [source_path, *packet_paths]:
+        arguments.extend(["--packet", packet_path.relative_to(tmp_path).as_posix()])
+    for evidence_path in evidence_paths:
+        arguments.extend(["--evidence", evidence_path.relative_to(tmp_path).as_posix()])
+    return run_checker(tmp_path, *arguments, "--allow-partial")
+
+
+def write_current_leaf_refresh_inputs(
+    tmp_path: Path,
+    source: dict,
+    candidate_shas: dict[str, str],
+    immediate_predecessor_id: str,
+) -> tuple[Path, Path]:
+    module = load_module()
+    successor_id = module._refreshed_successor_packet_id(
+        source["packet_id"], "preview", candidate_shas
+    )
+    approval = preview_data_approval(source, candidate_shas)
+    approval["approval_id"] = f"approval.{successor_id}.preview-data"
+    approval["predecessor_packet_ids"] = sorted(
+        [source["packet_id"], immediate_predecessor_id]
+    )
+    approval["evidence_ids"] = [f"ev.{successor_id}.preview-data-approval"]
+    approval_path = tmp_path / "refresh-approval.json"
+    approval_path.write_text(json.dumps(approval), encoding="utf-8")
+    write_preview_successor_evidence(
+        tmp_path,
+        successor_id,
+        approval["evidence_ids"][0],
+    )
+    output_path = tmp_path / "docs/workspace/release-packets" / f"{successor_id}.json"
+    return approval_path, output_path
+
+
+def refresh_successor_command(
+    tmp_path: Path,
+    source_path: Path,
+    source: dict,
+    candidate_shas: dict[str, str],
+    source_sha256: str,
+    approval_path: Path,
+    output_path: Path,
+    refresh_successor_of: str,
+    *,
+    write: bool = False,
+) -> subprocess.CompletedProcess[str]:
+    arguments = [
+        "--emit-successor",
+        "--source-packet",
+        source_path.relative_to(tmp_path).as_posix(),
+        "--successor-scope",
+        "preview",
+        "--workspace-sha",
+        candidate_shas["workspace"],
+        "--app-sha",
+        candidate_shas["app"],
+        "--backend-sha",
+        candidate_shas["backend"],
+        "--predecessor-packet-id",
+        source["packet_id"],
+        "--predecessor-sha256",
+        source_sha256,
+        "--output-packet",
+        output_path.relative_to(tmp_path).as_posix(),
+        "--preview-approval-file",
+        approval_path.relative_to(tmp_path).as_posix(),
+        "--refresh-successor-of",
+        refresh_successor_of,
+    ]
+    if write:
+        arguments.append("--write")
+    return run_checker(tmp_path, *arguments)
+
+
+def test_cli_refreshed_successor_accepts_four_link_current_leaf(
+    tmp_path: Path,
+) -> None:
+    (
+        source_path,
+        packet_paths,
+        evidence_paths,
+        source,
+        candidate_shas,
+        source_sha256,
+    ) = write_preview_refresh_chain(tmp_path)
+    immediate_predecessor_id = packet_paths[-1].stem
+    approval_path, output_path = write_current_leaf_refresh_inputs(
+        tmp_path,
+        source,
+        candidate_shas,
+        immediate_predecessor_id,
+    )
+    historical_bytes = {
+        path: path.read_bytes()
+        for path in [source_path, *packet_paths, *evidence_paths]
+    }
+
+    dry_run = refresh_successor_command(
+        tmp_path,
+        source_path,
+        source,
+        candidate_shas,
+        source_sha256,
+        approval_path,
+        output_path,
+        immediate_predecessor_id,
+    )
+
+    assert dry_run.returncode == 0, dry_run.stdout + dry_run.stderr
+    assert "DRY-RUN immutable-successor" in dry_run.stdout
+    assert not output_path.exists()
+    assert {path: path.read_bytes() for path in historical_bytes} == historical_bytes
+
+    stale = refresh_successor_command(
+        tmp_path,
+        source_path,
+        source,
+        candidate_shas,
+        source_sha256,
+        approval_path,
+        output_path,
+        packet_paths[0].stem,
+    )
+
+    assert stale.returncode == 1
+    assert "not the unique current ownership leaf" in stale.stdout
+
+    emitted = refresh_successor_command(
+        tmp_path,
+        source_path,
+        source,
+        candidate_shas,
+        source_sha256,
+        approval_path,
+        output_path,
+        immediate_predecessor_id,
+        write=True,
+    )
+
+    assert emitted.returncode == 0, emitted.stdout + emitted.stderr
+    assert output_path.is_file()
+    assert {path: path.read_bytes() for path in historical_bytes} == historical_bytes
+    validation = preview_chain_validation(
+        tmp_path,
+        source_path,
+        [*packet_paths, output_path],
+        [
+            *evidence_paths,
+            tmp_path
+            / "docs"
+            / "workspace"
+            / "architecture-evidence"
+            / f"{output_path.stem}.preview-data-approval.json",
+        ],
+    )
+    assert validation.returncode == 0, validation.stdout + validation.stderr
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    (
+        "fork",
+        "merge",
+        "cycle",
+        "wrong_source",
+        "wrong_scope",
+        "wrong_path",
+        "partial_path",
+        "foreign_evidence",
+        "candidate_mismatch",
+    ),
+)
+def test_cli_rejects_invalid_preview_refresh_chain(
+    tmp_path: Path,
+    mutation: str,
+) -> None:
+    (
+        source_path,
+        packet_paths,
+        evidence_paths,
+        _source,
+        _candidate_shas,
+        _source_sha256,
+    ) = write_preview_refresh_chain(tmp_path)
+    first_path, current_path = packet_paths
+    first = json.loads(first_path.read_text(encoding="utf-8"))
+    current = json.loads(current_path.read_text(encoding="utf-8"))
+    if mutation == "fork":
+        current["supersedes"][0]["packet_id"] = source_path.stem
+    elif mutation == "merge":
+        extra_handoff = dict(current["supersedes"][0])
+        extra_handoff["packet_id"] = source_path.stem
+        current["supersedes"].append(extra_handoff)
+    elif mutation == "cycle":
+        first["supersedes"][0]["packet_id"] = current_path.stem
+    elif mutation == "wrong_source":
+        current["immutable_successor"]["source_packet_id"] = (
+            "local-identity-canonical-routes"
+        )
+    elif mutation == "wrong_scope":
+        current["truth_scope"] = "production"
+    elif mutation == "wrong_path":
+        current["supersedes"][0]["paths"] = ["outside-owned-paths.txt"]
+    elif mutation == "partial_path":
+        current["supersedes"] = []
+    elif mutation == "foreign_evidence":
+        current["approvals"][0]["evidence_ids"] = [
+            f"ev.{first_path.stem}.preview-data-approval"
+        ]
+    else:
+        current["immutable_successor"]["candidate_commits"]["workspace_sha"] = "0" * 40
+    first_path.write_text(json.dumps(first), encoding="utf-8")
+    current_path.write_text(json.dumps(current), encoding="utf-8")
+
+    validation = preview_chain_validation(
+        tmp_path,
+        source_path,
+        packet_paths,
+        evidence_paths,
+    )
+
+    assert validation.returncode == 1
+    assert "architecture-release-manifests: ERROR" in validation.stdout
+
+
+def test_cli_refreshed_successor_emits_connected_ownership_chain(
+    tmp_path: Path,
+) -> None:
     (
         source_path,
         first_path,
@@ -1435,16 +1809,26 @@ def test_cli_refreshed_successor_emits_connected_ownership_chain(tmp_path: Path)
     result = run_checker(
         tmp_path,
         "--emit-successor",
-        "--source-packet", source_path.relative_to(tmp_path).as_posix(),
-        "--successor-scope", "preview",
-        "--workspace-sha", candidate_shas["workspace"],
-        "--app-sha", candidate_shas["app"],
-        "--backend-sha", candidate_shas["backend"],
-        "--predecessor-packet-id", source["packet_id"],
-        "--predecessor-sha256", source_sha256,
-        "--output-packet", output_path.relative_to(tmp_path).as_posix(),
-        "--preview-approval-file", approval_path.relative_to(tmp_path).as_posix(),
-        "--refresh-successor-of", f"{source['packet_id']}-preview-successor",
+        "--source-packet",
+        source_path.relative_to(tmp_path).as_posix(),
+        "--successor-scope",
+        "preview",
+        "--workspace-sha",
+        candidate_shas["workspace"],
+        "--app-sha",
+        candidate_shas["app"],
+        "--backend-sha",
+        candidate_shas["backend"],
+        "--predecessor-packet-id",
+        source["packet_id"],
+        "--predecessor-sha256",
+        source_sha256,
+        "--output-packet",
+        output_path.relative_to(tmp_path).as_posix(),
+        "--preview-approval-file",
+        approval_path.relative_to(tmp_path).as_posix(),
+        "--refresh-successor-of",
+        f"{source['packet_id']}-preview-successor",
         "--write",
     )
 
@@ -1454,25 +1838,45 @@ def test_cli_refreshed_successor_emits_connected_ownership_chain(tmp_path: Path)
     assert emitted["packet_id"] == output_path.stem
     assert emitted["immutable_successor"]["source_packet_id"] == source["packet_id"]
     assert emitted["supersedes"]
-    assert {handoff["packet_id"] for handoff in emitted["supersedes"]} == {first["packet_id"]}
-    assert emitted["approvals"][0]["approval_id"] == f"approval.{output_path.stem}.preview-data"
+    assert {handoff["packet_id"] for handoff in emitted["supersedes"]} == {
+        first["packet_id"]
+    }
+    assert (
+        emitted["approvals"][0]["approval_id"]
+        == f"approval.{output_path.stem}.preview-data"
+    )
     assert first_path.read_bytes() == first_before
 
     validation = run_checker(
         tmp_path,
-        "--packet", source_path.relative_to(tmp_path).as_posix(),
-        "--packet", first_path.relative_to(tmp_path).as_posix(),
-        "--packet", output_path.relative_to(tmp_path).as_posix(),
+        "--packet",
+        source_path.relative_to(tmp_path).as_posix(),
+        "--packet",
+        first_path.relative_to(tmp_path).as_posix(),
+        "--packet",
+        output_path.relative_to(tmp_path).as_posix(),
         "--evidence",
-        (tmp_path / "docs/workspace/architecture-evidence" / f"{source['packet_id']}.quick.json")
+        (
+            tmp_path
+            / "docs/workspace/architecture-evidence"
+            / f"{source['packet_id']}.quick.json"
+        )
         .relative_to(tmp_path)
         .as_posix(),
         "--evidence",
-        (tmp_path / "docs/workspace/architecture-evidence" / "preview-data-approval-evidence.json")
+        (
+            tmp_path
+            / "docs/workspace/architecture-evidence"
+            / "preview-data-approval-evidence.json"
+        )
         .relative_to(tmp_path)
         .as_posix(),
         "--evidence",
-        (tmp_path / "docs/workspace/architecture-evidence" / f"{output_path.stem}.preview-data-approval.json")
+        (
+            tmp_path
+            / "docs/workspace/architecture-evidence"
+            / f"{output_path.stem}.preview-data-approval.json"
+        )
         .relative_to(tmp_path)
         .as_posix(),
         "--allow-partial",
@@ -1515,16 +1919,26 @@ def test_cli_refreshed_successor_rejects_unbound_inputs(
     result = run_checker(
         tmp_path,
         "--emit-successor",
-        "--source-packet", source_path.relative_to(tmp_path).as_posix(),
-        "--successor-scope", "preview",
-        "--workspace-sha", candidate_shas["workspace"],
-        "--app-sha", candidate_shas["app"],
-        "--backend-sha", candidate_shas["backend"],
-        "--predecessor-packet-id", source["packet_id"],
-        "--predecessor-sha256", source_sha256,
-        "--output-packet", output_path.relative_to(tmp_path).as_posix(),
-        "--preview-approval-file", approval_path.relative_to(tmp_path).as_posix(),
-        "--refresh-successor-of", refresh_successor_of,
+        "--source-packet",
+        source_path.relative_to(tmp_path).as_posix(),
+        "--successor-scope",
+        "preview",
+        "--workspace-sha",
+        candidate_shas["workspace"],
+        "--app-sha",
+        candidate_shas["app"],
+        "--backend-sha",
+        candidate_shas["backend"],
+        "--predecessor-packet-id",
+        source["packet_id"],
+        "--predecessor-sha256",
+        source_sha256,
+        "--output-packet",
+        output_path.relative_to(tmp_path).as_posix(),
+        "--preview-approval-file",
+        approval_path.relative_to(tmp_path).as_posix(),
+        "--refresh-successor-of",
+        refresh_successor_of,
         "--write",
     )
 
@@ -1533,7 +1947,9 @@ def test_cli_refreshed_successor_rejects_unbound_inputs(
     assert not output_path.exists()
 
 
-def test_cli_legacy_successor_id_is_unchanged_without_refresh_flag(tmp_path: Path) -> None:
+def test_cli_legacy_successor_id_is_unchanged_without_refresh_flag(
+    tmp_path: Path,
+) -> None:
     source_path, output_path, source, _, _ = emit_test_successor(tmp_path)
 
     emitted = json.loads(output_path.read_text(encoding="utf-8"))
@@ -1562,8 +1978,10 @@ def validate_test_successor_cohort(
     ]
     return run_checker(
         tmp_path,
-        "--packet", source_path.relative_to(tmp_path).as_posix(),
-        "--packet", output_path.relative_to(tmp_path).as_posix(),
+        "--packet",
+        source_path.relative_to(tmp_path).as_posix(),
+        "--packet",
+        output_path.relative_to(tmp_path).as_posix(),
         *sum(
             (
                 ["--evidence", evidence_path.relative_to(tmp_path).as_posix()]
@@ -1610,8 +2028,8 @@ def test_cli_immutable_successor_revalidates_stored_provenance(
 def test_cli_immutable_successor_rejects_missing_preview_approval_evidence(
     tmp_path: Path,
 ) -> None:
-    source_path, candidate_shas, source, source_sha256 = write_immutable_successor_source(
-        tmp_path
+    source_path, candidate_shas, source, source_sha256 = (
+        write_immutable_successor_source(tmp_path)
     )
     approval_path = tmp_path / "preview-approval.json"
     approval_path.write_text(json.dumps(preview_data_approval(source, candidate_shas)))
@@ -1620,20 +2038,31 @@ def test_cli_immutable_successor_rejects_missing_preview_approval_evidence(
     result = run_checker(
         tmp_path,
         "--emit-successor",
-        "--source-packet", source_path.relative_to(tmp_path).as_posix(),
-        "--successor-scope", "preview",
-        "--workspace-sha", candidate_shas["workspace"],
-        "--app-sha", candidate_shas["app"],
-        "--backend-sha", candidate_shas["backend"],
-        "--predecessor-packet-id", source["packet_id"],
-        "--predecessor-sha256", source_sha256,
-        "--output-packet", output_path.relative_to(tmp_path).as_posix(),
-        "--preview-approval-file", approval_path.relative_to(tmp_path).as_posix(),
+        "--source-packet",
+        source_path.relative_to(tmp_path).as_posix(),
+        "--successor-scope",
+        "preview",
+        "--workspace-sha",
+        candidate_shas["workspace"],
+        "--app-sha",
+        candidate_shas["app"],
+        "--backend-sha",
+        candidate_shas["backend"],
+        "--predecessor-packet-id",
+        source["packet_id"],
+        "--predecessor-sha256",
+        source_sha256,
+        "--output-packet",
+        output_path.relative_to(tmp_path).as_posix(),
+        "--preview-approval-file",
+        approval_path.relative_to(tmp_path).as_posix(),
         "--write",
     )
 
     assert result.returncode == 1
-    assert "missing referenced evidence: preview-data-approval-evidence" in result.stdout
+    assert (
+        "missing referenced evidence: preview-data-approval-evidence" in result.stdout
+    )
     assert not output_path.exists()
 
 
@@ -1646,7 +2075,10 @@ def test_cli_immutable_successor_rejects_missing_preview_approval_evidence(
         ("wrong_sha", "predecessor SHA-256 does not match"),
         ("dirty_owned", "candidate owned paths are dirty"),
         ("approval_candidates", "preview_data_approval candidate tuple does not match"),
-        ("approval_preimage", "preview_data_approval workspace preimage does not match"),
+        (
+            "approval_preimage",
+            "preview_data_approval workspace preimage does not match",
+        ),
     ],
 )
 def test_cli_immutable_successor_rejects_unsafe_inputs(
@@ -1654,8 +2086,8 @@ def test_cli_immutable_successor_rejects_unsafe_inputs(
     mutation: str,
     expected: str,
 ) -> None:
-    source_path, candidate_shas, source, source_sha256 = write_immutable_successor_source(
-        tmp_path
+    source_path, candidate_shas, source, source_sha256 = (
+        write_immutable_successor_source(tmp_path)
     )
     approval = preview_data_approval(source, candidate_shas)
     approval_path = tmp_path / "preview-approval.json"
@@ -1676,22 +2108,33 @@ def test_cli_immutable_successor_rejects_unsafe_inputs(
     elif mutation == "approval_candidates":
         approval["candidate_commits"]["app_sha"] = "0" * 40
     elif mutation == "approval_preimage":
-        approval["candidate_preimages"]["workspace"]["owned_path_manifest_sha256"] = "0" * 64
+        approval["candidate_preimages"]["workspace"]["owned_path_manifest_sha256"] = (
+            "0" * 64
+        )
     approval_path.write_text(json.dumps(approval))
     before = source_path.read_bytes()
 
     result = run_checker(
         tmp_path,
         "--emit-successor",
-        "--source-packet", source_path.relative_to(tmp_path).as_posix(),
-        "--successor-scope", "preview",
-        "--workspace-sha", candidate_shas["workspace"],
-        "--app-sha", candidate_shas["app"],
-        "--backend-sha", candidate_shas["backend"],
-        "--predecessor-packet-id", predecessor_id,
-        "--predecessor-sha256", predecessor_sha,
-        "--output-packet", output_path.relative_to(tmp_path).as_posix(),
-        "--preview-approval-file", approval_path.relative_to(tmp_path).as_posix(),
+        "--source-packet",
+        source_path.relative_to(tmp_path).as_posix(),
+        "--successor-scope",
+        "preview",
+        "--workspace-sha",
+        candidate_shas["workspace"],
+        "--app-sha",
+        candidate_shas["app"],
+        "--backend-sha",
+        candidate_shas["backend"],
+        "--predecessor-packet-id",
+        predecessor_id,
+        "--predecessor-sha256",
+        predecessor_sha,
+        "--output-packet",
+        output_path.relative_to(tmp_path).as_posix(),
+        "--preview-approval-file",
+        approval_path.relative_to(tmp_path).as_posix(),
         "--write",
     )
 
@@ -1701,8 +2144,8 @@ def test_cli_immutable_successor_rejects_unsafe_inputs(
 
 
 def test_cli_immutable_successor_rejects_unreachable_candidate(tmp_path: Path) -> None:
-    source_path, candidate_shas, source, source_sha256 = write_immutable_successor_source(
-        tmp_path
+    source_path, candidate_shas, source, source_sha256 = (
+        write_immutable_successor_source(tmp_path)
     )
     workspace_revision = source["repositories"]["workspace"]
     git(tmp_path, "switch", "-q", "--detach", workspace_revision["base_sha"])
@@ -1720,15 +2163,24 @@ def test_cli_immutable_successor_rejects_unreachable_candidate(tmp_path: Path) -
     result = run_checker(
         tmp_path,
         "--emit-successor",
-        "--source-packet", source_path.relative_to(tmp_path).as_posix(),
-        "--successor-scope", "preview",
-        "--workspace-sha", candidate_shas["workspace"],
-        "--app-sha", candidate_shas["app"],
-        "--backend-sha", candidate_shas["backend"],
-        "--predecessor-packet-id", source["packet_id"],
-        "--predecessor-sha256", source_sha256,
-        "--output-packet", output_path.relative_to(tmp_path).as_posix(),
-        "--preview-approval-file", approval_path.relative_to(tmp_path).as_posix(),
+        "--source-packet",
+        source_path.relative_to(tmp_path).as_posix(),
+        "--successor-scope",
+        "preview",
+        "--workspace-sha",
+        candidate_shas["workspace"],
+        "--app-sha",
+        candidate_shas["app"],
+        "--backend-sha",
+        candidate_shas["backend"],
+        "--predecessor-packet-id",
+        source["packet_id"],
+        "--predecessor-sha256",
+        source_sha256,
+        "--output-packet",
+        output_path.relative_to(tmp_path).as_posix(),
+        "--preview-approval-file",
+        approval_path.relative_to(tmp_path).as_posix(),
         "--write",
     )
 
@@ -1737,9 +2189,11 @@ def test_cli_immutable_successor_rejects_unreachable_candidate(tmp_path: Path) -
     assert not output_path.exists()
 
 
-def test_cli_immutable_successor_rejects_non_descendant_candidate(tmp_path: Path) -> None:
-    source_path, candidate_shas, source, source_sha256 = write_immutable_successor_source(
-        tmp_path
+def test_cli_immutable_successor_rejects_non_descendant_candidate(
+    tmp_path: Path,
+) -> None:
+    source_path, candidate_shas, source, source_sha256 = (
+        write_immutable_successor_source(tmp_path)
     )
     workspace_revision = source["repositories"]["workspace"]
     git(tmp_path, "switch", "-q", "--detach", f"{workspace_revision['base_sha']}^")
@@ -1749,7 +2203,13 @@ def test_cli_immutable_successor_rejects_non_descendant_candidate(tmp_path: Path
     git(tmp_path, "add", owned_path)
     git(tmp_path, "commit", "-qm", "non-descendant candidate")
     candidate_shas["workspace"] = git(tmp_path, "rev-parse", "HEAD")
-    git(tmp_path, "switch", "-q", "--detach", source["repositories"]["workspace"]["candidate_sha"])
+    git(
+        tmp_path,
+        "switch",
+        "-q",
+        "--detach",
+        source["repositories"]["workspace"]["candidate_sha"],
+    )
     approval_path = tmp_path / "preview-approval.json"
     approval_path.write_text(json.dumps(preview_data_approval(source, candidate_shas)))
     output_path = tmp_path / "docs/workspace/release-packets/new-preview-successor.json"
@@ -1757,15 +2217,24 @@ def test_cli_immutable_successor_rejects_non_descendant_candidate(tmp_path: Path
     result = run_checker(
         tmp_path,
         "--emit-successor",
-        "--source-packet", source_path.relative_to(tmp_path).as_posix(),
-        "--successor-scope", "preview",
-        "--workspace-sha", candidate_shas["workspace"],
-        "--app-sha", candidate_shas["app"],
-        "--backend-sha", candidate_shas["backend"],
-        "--predecessor-packet-id", source["packet_id"],
-        "--predecessor-sha256", source_sha256,
-        "--output-packet", output_path.relative_to(tmp_path).as_posix(),
-        "--preview-approval-file", approval_path.relative_to(tmp_path).as_posix(),
+        "--source-packet",
+        source_path.relative_to(tmp_path).as_posix(),
+        "--successor-scope",
+        "preview",
+        "--workspace-sha",
+        candidate_shas["workspace"],
+        "--app-sha",
+        candidate_shas["app"],
+        "--backend-sha",
+        candidate_shas["backend"],
+        "--predecessor-packet-id",
+        source["packet_id"],
+        "--predecessor-sha256",
+        source_sha256,
+        "--output-packet",
+        output_path.relative_to(tmp_path).as_posix(),
+        "--preview-approval-file",
+        approval_path.relative_to(tmp_path).as_posix(),
     )
 
     assert result.returncode == 1
@@ -1981,7 +2450,9 @@ def test_cli_candidate_promotion_rejects_dirty_owned_paths_after_candidate(
     )
 
     assert result.returncode == 1
-    assert "candidate owned paths are dirty in the current working tree" in result.stdout
+    assert (
+        "candidate owned paths are dirty in the current working tree" in result.stdout
+    )
     assert packet_path.read_bytes() == before
 
 
@@ -2006,7 +2477,9 @@ def test_default_cli_accepts_candidate_commit_then_metadata_receipt_commit(
     )
     assert promotion.returncode == 0, promotion.stdout + promotion.stderr
     promoted = json.loads(packet_paths[packet_id].read_text(encoding="utf-8"))
-    assert promoted["repositories"]["workspace"]["revision_type"] == "committed_candidate"
+    assert (
+        promoted["repositories"]["workspace"]["revision_type"] == "committed_candidate"
+    )
     git(
         tmp_path,
         "add",
@@ -2018,7 +2491,9 @@ def test_default_cli_accepts_candidate_commit_then_metadata_receipt_commit(
     validation = run_checker(tmp_path)
 
     assert validation.returncode == 0, validation.stdout + validation.stderr
-    assert "architecture-release-manifests: OK packets=9 evidence=9" in validation.stdout
+    assert (
+        "architecture-release-manifests: OK packets=9 evidence=9" in validation.stdout
+    )
 
 
 def test_clean_candidate_mode_is_explicit_and_preserves_strict_parked_dirt(
@@ -2036,12 +2511,20 @@ def test_clean_candidate_mode_is_explicit_and_preserves_strict_parked_dirt(
     strict_without_parked_dirt = run_checker(tmp_path)
 
     assert strict_without_parked_dirt.returncode == 1
-    assert "classified paths are not currently dirty in app: parked.txt" in strict_without_parked_dirt.stdout
+    assert (
+        "classified paths are not currently dirty in app: parked.txt"
+        in strict_without_parked_dirt.stdout
+    )
 
     clean_candidate = run_checker(tmp_path, "--clean-candidate")
 
-    assert clean_candidate.returncode == 0, clean_candidate.stdout + clean_candidate.stderr
-    assert "architecture-release-manifests: OK clean-candidate packets=9 evidence=9" in clean_candidate.stdout
+    assert clean_candidate.returncode == 0, (
+        clean_candidate.stdout + clean_candidate.stderr
+    )
+    assert (
+        "architecture-release-manifests: OK clean-candidate packets=9 evidence=9"
+        in clean_candidate.stdout
+    )
 
 
 def test_clean_candidate_mode_rejects_local_checkpoint(tmp_path: Path) -> None:
@@ -2050,10 +2533,15 @@ def test_clean_candidate_mode_rejects_local_checkpoint(tmp_path: Path) -> None:
     validation = run_checker(tmp_path, "--clean-candidate")
 
     assert validation.returncode == 1
-    assert "clean-candidate mode requires a committed candidate revision" in validation.stdout
+    assert (
+        "clean-candidate mode requires a committed candidate revision"
+        in validation.stdout
+    )
 
 
-def test_clean_candidate_mode_rejects_invalid_candidate_contents(tmp_path: Path) -> None:
+def test_clean_candidate_mode_rejects_invalid_candidate_contents(
+    tmp_path: Path,
+) -> None:
     packet_paths, owned_paths = write_live_r0_workspace(tmp_path)
     promote_live_r0_workspace_candidates(tmp_path, packet_paths, owned_paths)
     packet_path = packet_paths[REQUIRED_LOCAL_PACKET_IDS[0]]
@@ -2076,7 +2564,9 @@ def test_default_cli_accepts_explicit_sequential_supersession(tmp_path: Path) ->
     validation = run_checker(tmp_path)
 
     assert validation.returncode == 0, validation.stdout + validation.stderr
-    assert "architecture-release-manifests: OK packets=10 evidence=10" in validation.stdout
+    assert (
+        "architecture-release-manifests: OK packets=10 evidence=10" in validation.stdout
+    )
     assert predecessor_id != successor_id
 
 
@@ -2088,7 +2578,9 @@ def test_default_cli_accepts_partial_local_supersession_with_retained_records(
     validation = run_checker(tmp_path)
 
     assert validation.returncode == 0, validation.stdout + validation.stderr
-    assert "architecture-release-manifests: OK packets=10 evidence=10" in validation.stdout
+    assert (
+        "architecture-release-manifests: OK packets=10 evidence=10" in validation.stdout
+    )
 
 
 def test_default_cli_rejects_drift_in_retained_predecessor_sibling(
@@ -2111,7 +2603,9 @@ def test_default_cli_accepts_sequential_disjoint_partial_local_supersessions(
     validation = run_checker(tmp_path)
 
     assert validation.returncode == 0, validation.stdout + validation.stderr
-    assert "architecture-release-manifests: OK packets=11 evidence=11" in validation.stdout
+    assert (
+        "architecture-release-manifests: OK packets=11 evidence=11" in validation.stdout
+    )
 
 
 def test_default_cli_accepts_legacy_omitted_records_later_transferred(
@@ -2125,7 +2619,9 @@ def test_default_cli_accepts_legacy_omitted_records_later_transferred(
     validation = run_checker(tmp_path)
 
     assert validation.returncode == 0, validation.stdout + validation.stderr
-    assert "architecture-release-manifests: OK packets=11 evidence=11" in validation.stdout
+    assert (
+        "architecture-release-manifests: OK packets=11 evidence=11" in validation.stdout
+    )
 
 
 def test_default_cli_uses_packet_id_to_order_equal_timestamp_partial_handoffs(
@@ -2139,14 +2635,16 @@ def test_default_cli_uses_packet_id_to_order_equal_timestamp_partial_handoffs(
     validation = run_checker(tmp_path)
 
     assert validation.returncode == 0, validation.stdout + validation.stderr
-    assert "architecture-release-manifests: OK packets=11 evidence=11" in validation.stdout
+    assert (
+        "architecture-release-manifests: OK packets=11 evidence=11" in validation.stdout
+    )
 
 
 def test_default_cli_rejects_final_live_path_missing_from_every_handoff(
     tmp_path: Path,
 ) -> None:
-    first_path, second_path, _ = write_sequential_disjoint_partial_supersession_workspace(
-        tmp_path
+    first_path, second_path, _ = (
+        write_sequential_disjoint_partial_supersession_workspace(tmp_path)
     )
     for packet_path in (first_path, second_path):
         successor = json.loads(packet_path.read_text(encoding="utf-8"))
@@ -2163,7 +2661,9 @@ def test_default_cli_rejects_final_live_path_missing_from_every_handoff(
 def test_default_cli_rejects_conflicting_repeated_retained_record_hashes(
     tmp_path: Path,
 ) -> None:
-    _, second_path, _ = write_sequential_disjoint_partial_supersession_workspace(tmp_path)
+    _, second_path, _ = write_sequential_disjoint_partial_supersession_workspace(
+        tmp_path
+    )
     successor = json.loads(second_path.read_text(encoding="utf-8"))
     successor["supersedes"][0]["retained_path_records"][0]["record_sha256"] = "0" * 64
     second_path.write_text(json.dumps(successor), encoding="utf-8")
@@ -2177,14 +2677,13 @@ def test_default_cli_rejects_conflicting_repeated_retained_record_hashes(
 def test_default_cli_rejects_retained_record_claimed_in_same_handoff(
     tmp_path: Path,
 ) -> None:
-    first_path, second_path, _ = write_sequential_disjoint_partial_supersession_workspace(
-        tmp_path
+    first_path, second_path, _ = (
+        write_sequential_disjoint_partial_supersession_workspace(tmp_path)
     )
     first = json.loads(first_path.read_text(encoding="utf-8"))
     successor = json.loads(second_path.read_text(encoding="utf-8"))
     successor["supersedes"][0]["retained_path_records"].insert(
-        0,
-        first["supersedes"][0]["retained_path_records"][0]
+        0, first["supersedes"][0]["retained_path_records"][0]
     )
     second_path.write_text(json.dumps(successor), encoding="utf-8")
 
@@ -2223,7 +2722,9 @@ def test_default_cli_accepts_three_generation_supersession_chain(
     validation = run_checker(tmp_path)
 
     assert validation.returncode == 0, validation.stdout + validation.stderr
-    assert "architecture-release-manifests: OK packets=11 evidence=11" in validation.stdout
+    assert (
+        "architecture-release-manifests: OK packets=11 evidence=11" in validation.stdout
+    )
 
 
 def test_default_cli_rejects_supersession_fork(tmp_path: Path) -> None:
@@ -2402,7 +2903,10 @@ def test_default_cli_rejects_divergent_local_checkpoint_base(tmp_path: Path) -> 
     validation = run_checker(tmp_path)
 
     assert validation.returncode == 1
-    assert "local checkpoint base_sha is not an ancestor of current HEAD" in validation.stdout
+    assert (
+        "local checkpoint base_sha is not an ancestor of current HEAD"
+        in validation.stdout
+    )
 
 
 @pytest.mark.parametrize(
@@ -2478,7 +2982,9 @@ def test_missing_evidence_reference_is_rejected(tmp_path: Path) -> None:
     packet_data["validation"]["quick"]["evidence_ids"].append("ev.packet-1.missing")
     packet_path, evidence_path = write_workspace(tmp_path, packet_data, evidence())
 
-    with pytest.raises(module.ManifestValidationError, match="missing referenced evidence"):
+    with pytest.raises(
+        module.ManifestValidationError, match="missing referenced evidence"
+    ):
         module.validate_manifests(tmp_path, [packet_path], [evidence_path])
 
 
@@ -2544,17 +3050,23 @@ def test_target_observation_must_fall_inside_evidence_window(tmp_path: Path) -> 
     ]
     packet_path, evidence_path = write_workspace(tmp_path, packet(), evidence_data)
 
-    with pytest.raises(module.ManifestValidationError, match="outside started_at/finished_at"):
+    with pytest.raises(
+        module.ManifestValidationError, match="outside started_at/finished_at"
+    ):
         module.validate_manifests(tmp_path, [packet_path], [evidence_path])
 
 
-def test_program_complete_requires_evidence_for_every_completion_claim(tmp_path: Path) -> None:
+def test_program_complete_requires_evidence_for_every_completion_claim(
+    tmp_path: Path,
+) -> None:
     module = load_module()
     packet_data = program_complete_packet()
     packet_data["validation"]["full"]["evidence_ids"] = []
     packet_path, evidence_path = write_workspace(tmp_path, packet_data, evidence())
 
-    with pytest.raises(module.ManifestValidationError, match="full validation requires evidence"):
+    with pytest.raises(
+        module.ManifestValidationError, match="full validation requires evidence"
+    ):
         module.validate_manifests(tmp_path, [packet_path], [evidence_path])
 
 
@@ -2564,7 +3076,9 @@ def test_program_complete_rejects_failing_compatibility_case(tmp_path: Path) -> 
     packet_data["contracts"]["compatibility_matrix"][0]["status"] = "fail"
     packet_path, evidence_path = write_workspace(tmp_path, packet_data, evidence())
 
-    with pytest.raises(module.ManifestValidationError, match="compatibility cases must pass"):
+    with pytest.raises(
+        module.ManifestValidationError, match="compatibility cases must pass"
+    ):
         module.validate_manifests(tmp_path, [packet_path], [evidence_path])
 
 
@@ -2589,7 +3103,9 @@ def test_program_complete_claims_require_passing_evidence(tmp_path: Path) -> Non
         evidence_data,
     )
 
-    with pytest.raises(module.ManifestValidationError, match="requires passing evidence"):
+    with pytest.raises(
+        module.ManifestValidationError, match="requires passing evidence"
+    ):
         module.validate_manifests(tmp_path, [packet_path], [evidence_path])
 
 
@@ -2606,7 +3122,9 @@ def test_valid_program_complete_packet_passes(tmp_path: Path) -> None:
     assert counts == (1, 1)
 
 
-def test_program_complete_evidence_cannot_postdate_packet_update(tmp_path: Path) -> None:
+def test_program_complete_evidence_cannot_postdate_packet_update(
+    tmp_path: Path,
+) -> None:
     module = load_module()
     evidence_data = evidence()
     evidence_data["finished_at"] = "2026-07-16T00:00:03Z"
@@ -2616,7 +3134,9 @@ def test_program_complete_evidence_cannot_postdate_packet_update(tmp_path: Path)
         evidence_data,
     )
 
-    with pytest.raises(module.ManifestValidationError, match="postdates packet updated_at"):
+    with pytest.raises(
+        module.ManifestValidationError, match="postdates packet updated_at"
+    ):
         module.validate_manifests(tmp_path, [packet_path], [evidence_path])
 
 
@@ -2634,7 +3154,9 @@ def test_packet_cannot_borrow_evidence_from_another_packet(tmp_path: Path) -> No
     module = load_module()
     packet_one = packet()
     packet_one["validation"]["quick"]["evidence_ids"].append("ev.packet-2.quick")
-    packet_one_path, evidence_one_path = write_workspace(tmp_path, packet_one, evidence())
+    packet_one_path, evidence_one_path = write_workspace(
+        tmp_path, packet_one, evidence()
+    )
 
     packet_two = json.loads(json.dumps(packet()).replace("packet-1", "packet-2"))
     packet_two["repositories"]["workspace"]["owned_paths"] = ["example-2"]
@@ -2645,7 +3167,9 @@ def test_packet_cannot_borrow_evidence_from_another_packet(tmp_path: Path) -> No
     packet_two_path.write_text(json.dumps(packet_two), encoding="utf-8")
     evidence_two_path.write_text(json.dumps(evidence_two), encoding="utf-8")
 
-    with pytest.raises(module.ManifestValidationError, match="evidence for another packet"):
+    with pytest.raises(
+        module.ManifestValidationError, match="evidence for another packet"
+    ):
         module.validate_manifests(
             tmp_path,
             [packet_one_path, packet_two_path],
@@ -2653,7 +3177,9 @@ def test_packet_cannot_borrow_evidence_from_another_packet(tmp_path: Path) -> No
         )
 
 
-def test_local_dirty_checkpoint_hashes_tracked_and_untracked_owned_paths(tmp_path: Path) -> None:
+def test_local_dirty_checkpoint_hashes_tracked_and_untracked_owned_paths(
+    tmp_path: Path,
+) -> None:
     module = load_module()
     repo = tmp_path / "repo"
     repo.mkdir()
@@ -2704,11 +3230,15 @@ def test_local_dirty_checkpoint_detects_owned_path_drift(tmp_path: Path) -> None
     checkpoint = module.capture_local_dirty_checkpoint(repo, base_sha, ["tracked.txt"])
     (repo / "tracked.txt").write_text("changed again\n", encoding="utf-8")
 
-    with pytest.raises(module.ManifestValidationError, match="owned-path manifest SHA-256"):
+    with pytest.raises(
+        module.ManifestValidationError, match="owned-path manifest SHA-256"
+    ):
         module.validate_local_dirty_checkpoint(repo, checkpoint, Path("packet.json"))
 
 
-def test_committed_candidate_reproduces_local_owned_path_manifest(tmp_path: Path) -> None:
+def test_committed_candidate_reproduces_local_owned_path_manifest(
+    tmp_path: Path,
+) -> None:
     module = load_module()
     repo = tmp_path / "repo"
     repo.mkdir()
@@ -2744,7 +3274,9 @@ def test_committed_candidate_reproduces_local_owned_path_manifest(tmp_path: Path
     module.validate_committed_candidate(repo, committed, Path("packet.json"))
 
 
-def test_committed_candidate_rejects_nonreproducing_owned_contents(tmp_path: Path) -> None:
+def test_committed_candidate_rejects_nonreproducing_owned_contents(
+    tmp_path: Path,
+) -> None:
     module = load_module()
     repo = tmp_path / "repo"
     repo.mkdir()
@@ -2767,7 +3299,9 @@ def test_committed_candidate_rejects_nonreproducing_owned_contents(tmp_path: Pat
     )
     committed["owned_path_manifest_sha256"] = "0" * 64
 
-    with pytest.raises(module.ManifestValidationError, match="candidate owned-path manifest"):
+    with pytest.raises(
+        module.ManifestValidationError, match="candidate owned-path manifest"
+    ):
         module.validate_committed_candidate(repo, committed, Path("packet.json"))
 
 
@@ -2777,7 +3311,9 @@ def test_local_dirty_checkpoint_requires_sorted_owned_paths(tmp_path: Path) -> N
     packet_data["repositories"]["workspace"]["owned_paths"] = ["z", "a"]
     packet_path, evidence_path = write_workspace(tmp_path, packet_data, evidence())
 
-    with pytest.raises(module.ManifestValidationError, match="owned_paths must be sorted"):
+    with pytest.raises(
+        module.ManifestValidationError, match="owned_paths must be sorted"
+    ):
         module.validate_manifests(tmp_path, [packet_path], [evidence_path])
 
 
@@ -2799,7 +3335,9 @@ def test_r0_requires_all_nine_exact_local_packet_ids(tmp_path: Path) -> None:
     missing_evidence = evidence_paths.pop()
     missing_evidence.unlink()
 
-    with pytest.raises(module.ManifestValidationError, match="missing required local packet IDs"):
+    with pytest.raises(
+        module.ManifestValidationError, match="missing required local packet IDs"
+    ):
         module.validate_manifests(
             tmp_path,
             packet_paths,
@@ -2814,7 +3352,9 @@ def test_r0_requires_parked_unaccepted_work_manifest(tmp_path: Path) -> None:
     packet_paths, evidence_paths, parked_path = write_r0_workspace(tmp_path)
     parked_path.unlink()
 
-    with pytest.raises(module.ManifestValidationError, match="parked-unaccepted-local-work"):
+    with pytest.raises(
+        module.ManifestValidationError, match="parked-unaccepted-local-work"
+    ):
         module.validate_manifests(
             tmp_path,
             packet_paths,
@@ -2824,7 +3364,9 @@ def test_r0_requires_parked_unaccepted_work_manifest(tmp_path: Path) -> None:
         )
 
 
-def test_parked_entry_requires_owner_reason_missing_proof_and_next_action(tmp_path: Path) -> None:
+def test_parked_entry_requires_owner_reason_missing_proof_and_next_action(
+    tmp_path: Path,
+) -> None:
     module = load_module()
     packet_paths, evidence_paths, parked_path = write_r0_workspace(tmp_path)
     parked = parked_manifest()
