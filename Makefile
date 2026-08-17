@@ -424,7 +424,7 @@ architecture-guard-tests:
 		scripts/architecture/tests/test_check_release_manifests.py
 
 architecture-hotspots-check:
-	@python3 scripts/architecture/check-hotspots.py --fail-expired
+	@TRR-Backend/.venv/bin/python scripts/architecture/check-hotspots.py --fail-expired
 
 architecture-release-manifests-check:
 	@TRR-Backend/.venv/bin/python scripts/architecture/check-release-manifests.py

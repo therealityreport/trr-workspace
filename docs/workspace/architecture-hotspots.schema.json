@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TRR architecture hotspot manifest",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "policy",
+    "ceiling_exceptions",
+    "hotspots"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "policy": {
+      "type": "object",
+      "required": [
+        "production_hotspot_lines",
+        "route_page_target_lines",
+        "review_window_days"
+      ]
+    },
+    "ceiling_exceptions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/ceilingException"
+      }
+    },
+    "hotspots": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/hotspot"
+      }
+    }
+  },
+  "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "ceilingException": {
+      "type": "object",
+      "required": [
+        "name",
+        "path",
+        "approver",
+        "reason",
+        "expires_on",
+        "independent_reviewer"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "path": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "approver": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "reason": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "expires_on": {
+          "type": "string",
+          "format": "date"
+        },
+        "independent_reviewer": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      }
+    },
+    "hotspot": {
+      "type": "object",
+      "required": [
+        "path",
+        "owner",
+        "classification",
+        "line_ceiling",
+        "target_lines",
+        "reason",
+        "review_by",
+        "removal_plan"
+      ],
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "owner": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "classification": {
+          "enum": [
+            "existing_hotspot",
+            "temporary_exception"
+          ]
+        },
+        "line_ceiling": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "target_lines": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "reason": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "review_by": {
+          "type": "string",
+          "format": "date"
+        },
+        "removal_plan": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      }
+    }
+  }
+}
