@@ -12,9 +12,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[3]
 SCRIPT = ROOT / "scripts" / "architecture" / "check-hotspots.py"
-TEST_PRODUCTION_SOURCE_TREES = (
-    (Path("src"), frozenset({".tsx"})),
-)
+TEST_PRODUCTION_SOURCE_TREES = ((Path("src"), frozenset({".tsx"})),)
 
 
 def load_module():
@@ -34,6 +32,7 @@ def manifest(*, ceiling: int = 2, review_by: str = "2026-08-14") -> dict:
             "route_page_target_lines": 1,
             "review_window_days": 30,
         },
+        "ceiling_exceptions": [],
         "hotspots": [
             {
                 "path": "src/known.tsx",
@@ -47,6 +46,37 @@ def manifest(*, ceiling: int = 2, review_by: str = "2026-08-14") -> dict:
             }
         ],
     }
+
+
+def write_origin_main_baseline(tmp_path: Path, payload: dict) -> None:
+    """Create the exact baseline object required by the CLI without a remote."""
+
+    manifest_path = tmp_path / "hotspots.json"
+    manifest_path.write_text(json.dumps(payload), encoding="utf-8")
+    schema_path = tmp_path / "docs/workspace/architecture-hotspots.schema.json"
+    schema_path.parent.mkdir(parents=True)
+    schema_path.write_text(
+        (ROOT / "docs/workspace/architecture-hotspots.schema.json").read_text(
+            encoding="utf-8"
+        ),
+        encoding="utf-8",
+    )
+    for command in (
+        ["git", "init", "--initial-branch=main", str(tmp_path)],
+        ["git", "-C", str(tmp_path), "config", "user.email", "hotspots@example.test"],
+        ["git", "-C", str(tmp_path), "config", "user.name", "Hotspot Tests"],
+        ["git", "-C", str(tmp_path), "add", "hotspots.json"],
+        ["git", "-C", str(tmp_path), "commit", "-m", "baseline"],
+        [
+            "git",
+            "-C",
+            str(tmp_path),
+            "update-ref",
+            "refs/remotes/origin/main",
+            "HEAD",
+        ],
+    ):
+        subprocess.run(command, check=True, capture_output=True, text=True)
 
 
 def test_current_or_smaller_hotspot_passes(tmp_path: Path) -> None:
@@ -79,6 +109,155 @@ def test_growth_past_ceiling_fails(tmp_path: Path) -> None:
     )
 
     assert any("grew past line ceiling" in error for error in errors)
+
+
+def test_baseline_ratchet_rejects_a_ceiling_increase() -> None:
+    module = load_module()
+    baseline = manifest(ceiling=2)
+    proposed = manifest(ceiling=3)
+
+    errors = module.validate_baseline_ratchet(
+        proposed,
+        baseline,
+        baseline_ref="origin/main",
+    )
+
+    assert errors == [
+        "src/known.tsx: line_ceiling increase from baseline 2 to 3 is not allowed"
+    ]
+
+
+def test_baseline_ratchet_allows_retained_or_lowered_ceiling() -> None:
+    module = load_module()
+    baseline = manifest(ceiling=3)
+
+    assert (
+        module.validate_baseline_ratchet(
+            manifest(ceiling=3), baseline, baseline_ref="origin/main"
+        )
+        == []
+    )
+    assert (
+        module.validate_baseline_ratchet(
+            manifest(ceiling=2), baseline, baseline_ref="origin/main"
+        )
+        == []
+    )
+
+
+def test_schema_validation_rejects_a_missing_required_hotspot_field() -> None:
+    module = load_module()
+    payload = manifest()
+    del payload["hotspots"][0]["owner"]
+
+    errors = module.validate_manifest_schema(
+        payload,
+        module.load_manifest_schema(ROOT),
+    )
+
+    assert errors == ["schema: hotspots.0: 'owner' is a required property"]
+
+
+def test_real_manifest_passes_the_checked_in_schema() -> None:
+    module = load_module()
+    payload = json.loads(
+        (ROOT / "docs/workspace/architecture-hotspots.json").read_text(encoding="utf-8")
+    )
+
+    assert (
+        module.validate_manifest_schema(
+            payload,
+            module.load_manifest_schema(ROOT),
+        )
+        == []
+    )
+
+
+def test_complete_unexpired_exception_permits_only_its_measured_overage(
+    tmp_path: Path,
+) -> None:
+    module = load_module()
+    source = tmp_path / "src/known.tsx"
+    source.parent.mkdir()
+    source.write_text("one\ntwo\nthree\n", encoding="utf-8")
+    payload = manifest(ceiling=2, review_by="2026-09-16")
+    payload["ceiling_exceptions"] = [
+        {
+            "name": "known-tsx-2026-09-16",
+            "path": "src/known.tsx",
+            "approver": "Thomas Hulihan",
+            "reason": "The fixture verifies a narrow temporary measured overage.",
+            "expires_on": "2026-09-16",
+            "independent_reviewer": "Codex implementation_reviewer T2-REVIEW-20260817",
+        }
+    ]
+
+    errors = module.validate_hotspots(
+        tmp_path,
+        payload,
+        fail_expired=True,
+        as_of=date(2026, 8, 17),
+        production_source_trees=TEST_PRODUCTION_SOURCE_TREES,
+    )
+
+    assert errors == []
+
+
+def test_incomplete_or_expired_exception_cannot_permit_an_overage(
+    tmp_path: Path,
+) -> None:
+    module = load_module()
+    source = tmp_path / "src/known.tsx"
+    source.parent.mkdir()
+    source.write_text("one\ntwo\nthree\n", encoding="utf-8")
+    payload = manifest(ceiling=2, review_by="2026-09-16")
+    payload["ceiling_exceptions"] = [
+        {
+            "name": "known-tsx-2026-09-16",
+            "path": "src/known.tsx",
+            "reason": "The fixture verifies exception validation.",
+            "expires_on": "2026-08-16",
+            "independent_reviewer": "Codex implementation_reviewer T2-REVIEW-20260817",
+        }
+    ]
+
+    errors = module.validate_hotspots(
+        tmp_path,
+        payload,
+        as_of=date(2026, 8, 17),
+        production_source_trees=TEST_PRODUCTION_SOURCE_TREES,
+    )
+
+    assert any("missing approver" in error for error in errors)
+    assert any("ceiling exception expired" in error for error in errors)
+    assert any("grew past line ceiling" in error for error in errors)
+
+
+def test_exception_name_and_path_must_each_be_unique(tmp_path: Path) -> None:
+    module = load_module()
+    source = tmp_path / "src/known.tsx"
+    source.parent.mkdir()
+    source.write_text("one\ntwo\nthree\n", encoding="utf-8")
+    payload = manifest(ceiling=2, review_by="2026-09-16")
+    exception = {
+        "name": "known-tsx-2026-09-16",
+        "path": "src/known.tsx",
+        "approver": "Thomas Hulihan",
+        "reason": "The fixture verifies unique exception identity.",
+        "expires_on": "2026-09-16",
+        "independent_reviewer": "Codex implementation_reviewer T2-REVIEW-20260817",
+    }
+    payload["ceiling_exceptions"] = [exception, exception.copy()]
+
+    errors = module.validate_hotspots(
+        tmp_path,
+        payload,
+        as_of=date(2026, 8, 17),
+        production_source_trees=TEST_PRODUCTION_SOURCE_TREES,
+    )
+
+    assert any("duplicate ceiling exception name" in error for error in errors)
+    assert any("duplicate ceiling exception path" in error for error in errors)
 
 
 def test_unlisted_new_hotspot_fails(tmp_path: Path) -> None:
@@ -131,8 +310,8 @@ def test_cli_discovers_hotspots_across_code_owned_production_trees(
             }
         ],
     }
+    write_origin_main_baseline(tmp_path, payload)
     manifest_path = tmp_path / "hotspots.json"
-    manifest_path.write_text(json.dumps(payload), encoding="utf-8")
 
     completed = subprocess.run(
         [
@@ -158,6 +337,60 @@ def test_cli_discovers_hotspots_across_code_owned_production_trees(
     )
 
 
+def test_cli_wires_the_checked_in_schema_for_invalid_manifest_shape(
+    tmp_path: Path,
+) -> None:
+    backend_api = tmp_path / "TRR-Backend/api"
+    (tmp_path / "TRR-Backend/trr_backend").mkdir(parents=True)
+    (tmp_path / "TRR-APP/apps/web/src").mkdir(parents=True)
+    backend_api.mkdir(parents=True)
+    (backend_api / "known.py").write_text("one\ntwo\n", encoding="utf-8")
+    payload = {
+        "schema_version": 1,
+        "policy": {
+            "production_hotspot_lines": 2,
+            "route_page_target_lines": 1,
+            "review_window_days": 30,
+        },
+        "ceiling_exceptions": [],
+        "hotspots": [
+            {
+                "path": "TRR-Backend/api/known.py",
+                "classification": "existing_hotspot",
+                "line_ceiling": 2,
+                "target_lines": 1,
+                "reason": "Schema wiring fixture.",
+                "review_by": "2026-08-14",
+                "removal_plan": "Schema wiring fixture.",
+            }
+        ],
+    }
+    write_origin_main_baseline(tmp_path, payload)
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(SCRIPT),
+            "--root",
+            str(tmp_path),
+            "--manifest",
+            str(tmp_path / "hotspots.json"),
+            "--as-of",
+            "2026-07-16",
+        ],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert completed.returncode == 1
+    assert (
+        "architecture-hotspots: ERROR schema: hotspots.0: 'owner' is a required property"
+        in completed.stdout
+    )
+
+
 def test_cli_rejects_symlinked_directory_inside_production_tree(
     tmp_path: Path,
 ) -> None:
@@ -171,21 +404,18 @@ def test_cli_rejects_symlinked_directory_inside_production_tree(
     outside.mkdir()
     (outside / "hidden.py").write_text("one\ntwo\nthree\n", encoding="utf-8")
     (backend_api / "linked").symlink_to(outside, target_is_directory=True)
+    payload = {
+        "schema_version": 1,
+        "policy": {
+            "production_hotspot_lines": 2,
+            "route_page_target_lines": 1,
+            "review_window_days": 30,
+        },
+        "ceiling_exceptions": [],
+        "hotspots": [],
+    }
+    write_origin_main_baseline(tmp_path, payload)
     manifest_path = tmp_path / "hotspots.json"
-    manifest_path.write_text(
-        json.dumps(
-            {
-                "schema_version": 1,
-                "policy": {
-                    "production_hotspot_lines": 2,
-                    "route_page_target_lines": 1,
-                    "review_window_days": 30,
-                },
-                "hotspots": [],
-            }
-        ),
-        encoding="utf-8",
-    )
 
     completed = subprocess.run(
         [
@@ -217,21 +447,18 @@ def test_cli_rejects_symlinked_ancestor_of_production_root(tmp_path: Path) -> No
     (outside_backend / "trr_backend").mkdir()
     (tmp_path / "TRR-Backend").symlink_to(outside_backend, target_is_directory=True)
     (tmp_path / "TRR-APP/apps/web/src").mkdir(parents=True)
+    payload = {
+        "schema_version": 1,
+        "policy": {
+            "production_hotspot_lines": 2,
+            "route_page_target_lines": 1,
+            "review_window_days": 30,
+        },
+        "ceiling_exceptions": [],
+        "hotspots": [],
+    }
+    write_origin_main_baseline(tmp_path, payload)
     manifest_path = tmp_path / "hotspots.json"
-    manifest_path.write_text(
-        json.dumps(
-            {
-                "schema_version": 1,
-                "policy": {
-                    "production_hotspot_lines": 2,
-                    "route_page_target_lines": 1,
-                    "review_window_days": 30,
-                },
-                "hotspots": [],
-            }
-        ),
-        encoding="utf-8",
-    )
 
     completed = subprocess.run(
         [
@@ -305,12 +532,12 @@ def test_route_page_target_cannot_exceed_policy(tmp_path: Path) -> None:
     errors = module.validate_hotspots(
         tmp_path,
         payload,
-        production_source_trees=(
-            (Path("TRR-APP/apps/web/src"), frozenset({".tsx"})),
-        ),
+        production_source_trees=((Path("TRR-APP/apps/web/src"), frozenset({".tsx"})),),
     )
 
-    assert any("route/page target_lines must be no greater than 1" in error for error in errors)
+    assert any(
+        "route/page target_lines must be no greater than 1" in error for error in errors
+    )
 
 
 def test_review_date_cannot_disable_the_review_window(tmp_path: Path) -> None:
@@ -345,7 +572,9 @@ def test_missing_production_source_root_fails(tmp_path: Path) -> None:
     assert errors == ["production source root does not exist: missing"]
 
 
-def test_invalid_review_window_reports_an_error_instead_of_crashing(tmp_path: Path) -> None:
+def test_invalid_review_window_reports_an_error_instead_of_crashing(
+    tmp_path: Path,
+) -> None:
     module = load_module()
     source = tmp_path / "src/known.tsx"
     source.parent.mkdir()

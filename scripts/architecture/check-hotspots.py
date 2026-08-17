@@ -8,12 +8,23 @@ from collections import Counter
 from datetime import date, timedelta
 import json
 from pathlib import Path
+import subprocess
 from typing import Any
 
 
 WORKSPACE_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MANIFEST = Path("docs/workspace/architecture-hotspots.json")
+DEFAULT_SCHEMA = Path("docs/workspace/architecture-hotspots.schema.json")
+DEFAULT_BASELINE_REF = "origin/main"
 VALID_CLASSIFICATIONS = {"existing_hotspot", "temporary_exception"}
+REQUIRED_EXCEPTION_FIELDS = (
+    "name",
+    "path",
+    "approver",
+    "reason",
+    "expires_on",
+    "independent_reviewer",
+)
 PRODUCTION_SOURCE_TREES: tuple[tuple[Path, frozenset[str]], ...] = (
     (Path("TRR-Backend/api"), frozenset({".py"})),
     (Path("TRR-Backend/trr_backend"), frozenset({".py"})),
@@ -47,6 +58,151 @@ def load_manifest(path: Path) -> dict[str, Any]:
     return payload
 
 
+def load_manifest_schema(root: Path) -> dict[str, Any]:
+    """Load the checked-in JSON Schema used to validate the proposed manifest."""
+
+    schema_path = resolve_manifest_path(root, DEFAULT_SCHEMA)
+    try:
+        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise HotspotValidationError(
+            f"{schema_path}: cannot read schema: {exc}"
+        ) from exc
+    if not isinstance(schema, dict):
+        raise HotspotValidationError(f"{schema_path}: schema must be an object")
+    try:
+        import jsonschema
+
+        jsonschema.Draft202012Validator.check_schema(schema)
+    except ModuleNotFoundError as exc:
+        raise HotspotValidationError(
+            "architecture-hotspots schema validation requires the jsonschema package"
+        ) from exc
+    except jsonschema.SchemaError as exc:
+        raise HotspotValidationError(
+            f"{schema_path}: invalid JSON Schema: {exc.message}"
+        ) from exc
+    return schema
+
+
+def validate_manifest_schema(
+    manifest: dict[str, Any], schema: dict[str, Any]
+) -> list[str]:
+    """Return every JSON Schema violation in stable path order."""
+
+    import jsonschema
+
+    validator = jsonschema.Draft202012Validator(
+        schema,
+        format_checker=jsonschema.Draft202012Validator.FORMAT_CHECKER,
+    )
+    errors: list[str] = []
+    for error in sorted(
+        validator.iter_errors(manifest), key=lambda item: list(item.path)
+    ):
+        location = ".".join(str(part) for part in error.absolute_path) or "$"
+        errors.append(f"schema: {location}: {error.message}")
+    return errors
+
+
+def load_baseline_manifest(
+    root: Path,
+    manifest_path: Path,
+    baseline_ref: str,
+) -> dict[str, Any]:
+    """Read the manifest from an exact Git object, never from the worktree."""
+
+    root = root.resolve()
+    try:
+        relative_manifest = manifest_path.resolve().relative_to(root).as_posix()
+    except ValueError as exc:
+        raise HotspotValidationError(
+            f"baseline manifest must stay workspace-relative: {manifest_path}"
+        ) from exc
+    if not baseline_ref.strip():
+        raise HotspotValidationError("baseline_ref must not be empty")
+    completed = subprocess.run(
+        ["git", "-C", str(root), "show", f"{baseline_ref}:{relative_manifest}"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if completed.returncode:
+        detail = completed.stderr.strip() or completed.stdout.strip()
+        raise HotspotValidationError(
+            f"cannot read baseline manifest from {baseline_ref}: {detail}"
+        )
+    try:
+        payload = json.loads(completed.stdout)
+    except json.JSONDecodeError as exc:
+        raise HotspotValidationError(
+            f"baseline manifest from {baseline_ref} is not valid JSON: {exc}"
+        ) from exc
+    if not isinstance(payload, dict) or payload.get("schema_version") != 1:
+        raise HotspotValidationError(
+            f"baseline manifest from {baseline_ref}: schema_version must be 1"
+        )
+    return payload
+
+
+def validate_baseline_ratchet(
+    manifest: dict[str, Any],
+    baseline_manifest: dict[str, Any],
+    *,
+    baseline_ref: str,
+) -> list[str]:
+    """Reject manifest regressions against the exact remote-main Git object."""
+
+    errors: list[str] = []
+    proposed_records = manifest.get("hotspots")
+    baseline_records = baseline_manifest.get("hotspots")
+    if not isinstance(proposed_records, list) or not all(
+        isinstance(record, dict) for record in proposed_records
+    ):
+        return ["hotspots must be an array of objects"]
+    if not isinstance(baseline_records, list) or not all(
+        isinstance(record, dict) for record in baseline_records
+    ):
+        return [f"baseline {baseline_ref}: hotspots must be an array of objects"]
+
+    proposed_by_path = {
+        record.get("path"): record
+        for record in proposed_records
+        if isinstance(record.get("path"), str)
+    }
+    baseline_by_path = {
+        record.get("path"): record
+        for record in baseline_records
+        if isinstance(record.get("path"), str)
+    }
+    for path, count in sorted(
+        Counter(
+            record.get("path")
+            for record in baseline_records
+            if isinstance(record.get("path"), str)
+        ).items()
+    ):
+        if count > 1:
+            errors.append(f"baseline {baseline_ref}: duplicate hotspot path: {path}")
+    for path in sorted(baseline_by_path):
+        if path not in proposed_by_path:
+            errors.append(f"{path}: baseline hotspot is missing from proposed manifest")
+            continue
+        baseline_ceiling = baseline_by_path[path].get("line_ceiling")
+        proposed_ceiling = proposed_by_path[path].get("line_ceiling")
+        if not _positive_integer(baseline_ceiling):
+            errors.append(
+                f"baseline {baseline_ref}: {path}: line_ceiling must be a positive integer"
+            )
+        elif (
+            _positive_integer(proposed_ceiling) and proposed_ceiling > baseline_ceiling
+        ):
+            errors.append(
+                f"{path}: line_ceiling increase from baseline {baseline_ceiling} to {proposed_ceiling} is not allowed"
+            )
+    return errors
+
+
 def resolve_manifest_path(root: Path, raw_path: Path) -> Path:
     root = root.resolve()
     path = raw_path if raw_path.is_absolute() else root / raw_path
@@ -56,7 +212,9 @@ def resolve_manifest_path(root: Path, raw_path: Path) -> Path:
     try:
         resolved.relative_to(root)
     except ValueError as exc:
-        raise HotspotValidationError(f"manifest path escapes workspace: {raw_path}") from exc
+        raise HotspotValidationError(
+            f"manifest path escapes workspace: {raw_path}"
+        ) from exc
     return resolved
 
 
@@ -122,6 +280,84 @@ def discover_production_files(
     return files, errors
 
 
+def validate_ceiling_exceptions(
+    manifest: dict[str, Any],
+    records_by_path: dict[str, dict[str, Any]],
+    measured_lines: dict[str, int],
+    *,
+    effective_date: date,
+    review_window: int,
+) -> tuple[list[str], set[str]]:
+    """Validate path-scoped temporary permission for a measured ceiling overage."""
+
+    errors: list[str] = []
+    active_paths: set[str] = set()
+    exceptions = manifest.get("ceiling_exceptions")
+    if not isinstance(exceptions, list) or not all(
+        isinstance(exception, dict) for exception in exceptions
+    ):
+        return ["ceiling_exceptions must be an array of objects"], active_paths
+
+    names: Counter[str] = Counter()
+    paths: Counter[str] = Counter()
+    for index, exception in enumerate(exceptions):
+        label = f"ceiling_exceptions[{index}]"
+        complete = True
+        for field in REQUIRED_EXCEPTION_FIELDS:
+            value = exception.get(field)
+            if not isinstance(value, str) or not value.strip():
+                errors.append(f"{label}: missing {field}")
+                complete = False
+        name = exception.get("name")
+        path = exception.get("path")
+        if isinstance(name, str) and name.strip():
+            names[name] += 1
+        if isinstance(path, str) and path.strip():
+            paths[path] += 1
+        expires_on = exception.get("expires_on")
+        try:
+            expiration = (
+                date.fromisoformat(expires_on) if isinstance(expires_on, str) else None
+            )
+        except ValueError:
+            expiration = None
+        if expiration is None or expiration.isoformat() != expires_on:
+            errors.append(f"{label}: expires_on must use YYYY-MM-DD")
+            complete = False
+        elif expiration < effective_date:
+            errors.append(f"{label}: ceiling exception expired on {expires_on}")
+            complete = False
+        elif expiration > effective_date + timedelta(days=review_window):
+            errors.append(
+                f"{label}: expires_on {expires_on} exceeds the {review_window}-day review window"
+            )
+            complete = False
+        if not isinstance(path, str) or path not in records_by_path:
+            errors.append(f"{label}: path must identify a hotspot record")
+            complete = False
+        elif path not in measured_lines:
+            complete = False
+        elif measured_lines[path] <= records_by_path[path]["line_ceiling"]:
+            errors.append(
+                f"{label}: exception path is not currently over its stored ceiling"
+            )
+            complete = False
+        if complete and isinstance(path, str):
+            active_paths.add(path)
+
+    for name, count in sorted(names.items()):
+        if count > 1:
+            errors.append(f"duplicate ceiling exception name: {name}")
+            for exception in exceptions:
+                if exception.get("name") == name:
+                    active_paths.discard(exception.get("path"))
+    for path, count in sorted(paths.items()):
+        if count > 1:
+            errors.append(f"duplicate ceiling exception path: {path}")
+            active_paths.discard(path)
+    return errors, active_paths
+
+
 def validate_hotspots(
     root: Path,
     manifest: dict[str, Any],
@@ -151,22 +387,36 @@ def validate_hotspots(
         review_window = 30
 
     records = manifest.get("hotspots")
-    if not isinstance(records, list) or not all(isinstance(record, dict) for record in records):
+    if not isinstance(records, list) or not all(
+        isinstance(record, dict) for record in records
+    ):
         return [*errors, "hotspots must be an array of objects"]
-    paths = [record.get("path") for record in records if isinstance(record.get("path"), str)]
+    paths = [
+        record.get("path") for record in records if isinstance(record.get("path"), str)
+    ]
     for path, count in sorted(Counter(paths).items()):
         if count > 1:
             errors.append(f"duplicate hotspot path: {path}")
 
     effective_date = as_of or date.today()
     listed_paths: set[str] = set()
+    records_by_path: dict[str, dict[str, Any]] = {}
+    measured_lines: dict[str, int] = {}
     for index, record in enumerate(records):
         relative = record.get("path")
-        label = relative if isinstance(relative, str) and relative else f"hotspots[{index}]"
-        if not isinstance(relative, str) or not relative or relative.startswith("/") or ".." in Path(relative).parts:
+        label = (
+            relative if isinstance(relative, str) and relative else f"hotspots[{index}]"
+        )
+        if (
+            not isinstance(relative, str)
+            or not relative
+            or relative.startswith("/")
+            or ".." in Path(relative).parts
+        ):
             errors.append(f"{label}: path must be workspace-relative")
             continue
         listed_paths.add(relative)
+        records_by_path[relative] = record
         source_path = (root / relative).resolve()
         try:
             source_path.relative_to(root)
@@ -189,7 +439,9 @@ def validate_hotspots(
             errors.append(f"{label}: line_ceiling must be a positive integer")
             continue
         if not _positive_integer(target) or target > ceiling:
-            errors.append(f"{label}: target_lines must be positive and no greater than line_ceiling")
+            errors.append(
+                f"{label}: target_lines must be positive and no greater than line_ceiling"
+            )
         relative_path = Path(relative)
         if (
             relative.startswith("TRR-APP/apps/web/src/app/")
@@ -201,14 +453,13 @@ def validate_hotspots(
                 f"{label}: route/page target_lines must be no greater than {route_target}"
             )
         current_lines = line_count(source_path)
-        if current_lines > ceiling:
-            errors.append(
-                f"{label}: grew past line ceiling current={current_lines} ceiling={ceiling}"
-            )
+        measured_lines[relative] = current_lines
 
         review_by = record.get("review_by")
         try:
-            review_date = date.fromisoformat(review_by) if isinstance(review_by, str) else None
+            review_date = (
+                date.fromisoformat(review_by) if isinstance(review_by, str) else None
+            )
         except ValueError:
             review_date = None
         if review_date is None or review_date.isoformat() != review_by:
@@ -218,6 +469,21 @@ def validate_hotspots(
         elif review_date > effective_date + timedelta(days=review_window):
             errors.append(
                 f"{label}: review_by {review_by} exceeds the {review_window}-day review window"
+            )
+
+    exception_errors, active_exception_paths = validate_ceiling_exceptions(
+        manifest,
+        records_by_path,
+        measured_lines,
+        effective_date=effective_date,
+        review_window=review_window,
+    )
+    errors.extend(exception_errors)
+    for relative, current_lines in measured_lines.items():
+        ceiling = records_by_path[relative].get("line_ceiling")
+        if current_lines > ceiling and relative not in active_exception_paths:
+            errors.append(
+                f"{relative}: grew past line ceiling current={current_lines} ceiling={ceiling}"
             )
 
     if "scan_globs" in manifest:
@@ -250,6 +516,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=WORKSPACE_ROOT)
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
+    parser.add_argument(
+        "--baseline-ref",
+        default=DEFAULT_BASELINE_REF,
+        help="Git ref containing the exact workspace baseline manifest (default: origin/main)",
+    )
     parser.add_argument("--fail-expired", action="store_true")
     parser.add_argument("--as-of", type=date.fromisoformat)
     args = parser.parse_args()
@@ -258,14 +529,30 @@ def main() -> int:
     try:
         manifest_path = resolve_manifest_path(root, args.manifest)
         manifest = load_manifest(manifest_path)
+        schema = load_manifest_schema(root)
+        baseline_manifest = load_baseline_manifest(
+            root,
+            manifest_path,
+            args.baseline_ref,
+        )
     except HotspotValidationError as exc:
         print(f"architecture-hotspots: ERROR {exc}")
         return 1
-    errors = validate_hotspots(
-        root,
-        manifest,
-        fail_expired=args.fail_expired,
-        as_of=args.as_of,
+    errors = validate_manifest_schema(manifest, schema)
+    errors.extend(
+        validate_hotspots(
+            root,
+            manifest,
+            fail_expired=args.fail_expired,
+            as_of=args.as_of,
+        )
+    )
+    errors.extend(
+        validate_baseline_ratchet(
+            manifest,
+            baseline_manifest,
+            baseline_ref=args.baseline_ref,
+        )
     )
     if errors:
         for error in errors:
