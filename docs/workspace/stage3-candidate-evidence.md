@@ -41,3 +41,19 @@ TRR-Backend/.venv/bin/python scripts/architecture/check-release-manifests.py --c
 ```
 
 Result: `architecture-release-manifests: OK clean-candidate packets=9 evidence=15`.
+
+## E13 addendum — current-candidate preview prerequisite (2026-08-19)
+
+Status: **failed/incomplete; all temporary resources removed**.
+
+The current production candidate was rebound to workspace `a991d0f01671c50da0515a75a4694d914d9d251b`, backend `e92e06dbbcb6125797ff7e552eded468c46da1da`, and app `c9b842d958c2d46623c4bf112d251df99d364012`. Before preview work, the backend migration regression suite passed `3/3`, the combined focused backend suite passed `153/153`, app quick validation passed `3` files and `14` tests, the import graph had zero prohibited cycles, the 148-file hotspot ratchet passed, clean-candidate validation passed with nine packets and 15 evidence records, and candidate durability passed `46/46`.
+
+Three bounded attempts stopped before Modal or Vercel preview creation:
+
+- Branch `03c26a95-10ca-4068-bd38-fd9d9016fb73` (`azpcptzpofoepxubykup`) was created and deleted after the exact `TRR` Chrome connection reset during Vercel preflight.
+- Branch `6d5f52af-41e5-4c00-96d2-711d52ecc8ab` (`kjtnhpvvpcuxqhayikvp`) was created and deleted when the branch-detail credential response could not be safely consumed under the first evidence-handling contract.
+- Final branch `3a563215-0723-454f-b184-a6b6ad8e9d15` (`doxrzezlkycftemmurxc`) passed the recovered `TRR` Chrome gate but entered `MIGRATIONS_FAILED` during Supabase provisioning. It was deleted by exact ID.
+
+Post-cleanup inventory contained only production Supabase `main` (`ab2fc1bb-05e5-4976-a7b8-4e04852e6fac`), production retained 311 migration receipts, and protected Modal production remained app `ap-DkLTRoSvqhbkGO7fHyHxrD` version `v41`. No Modal preview environment, app, or secret; Vercel deployment, alias, or token; Render resource; production provider mutation; or production data/schema mutation occurred. The total quoted branch rate was `$0.01344/hour` per short-lived branch, with each attempt removed promptly.
+
+E13 therefore does not pass. The sole current release blocker is a fresh Supabase Preview Branch reaching `MIGRATIONS_FAILED`; Phase 5 production deployment and E14 remain prohibited until a separately authorized diagnosis produces a successful preview and teardown receipt.
