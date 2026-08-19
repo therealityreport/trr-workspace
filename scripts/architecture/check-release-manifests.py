@@ -22,6 +22,8 @@ PACKET_SCHEMA = Path("docs/workspace/release-packet.schema.json")
 EVIDENCE_SCHEMA = Path("docs/workspace/architecture-evidence.schema.json")
 DEFAULT_PACKET_DIRECTORY = Path("docs/workspace/release-packets")
 DEFAULT_EVIDENCE_DIRECTORY = Path("docs/workspace/architecture-evidence")
+SUPERSEDED_PACKET_DIRECTORY = Path("docs/workspace/superseded-release-packets")
+SUPERSEDED_EVIDENCE_DIRECTORY = Path("docs/workspace/superseded-architecture-evidence")
 DEFAULT_PARKED_WORK_MANIFEST = Path("docs/workspace/parked-unaccepted-local-work.json")
 REPOSITORY_PATHS = {
     "workspace": Path("."),
@@ -660,6 +662,14 @@ def validate_pass_claim_evidence(
     path: Path,
     evidence: Mapping[str, tuple[Mapping[str, Any], Path]],
 ) -> None:
+    provenance = packet.get("successor_provenance")
+    expected_truth_scope = (
+        "preview"
+        if isinstance(provenance, Mapping)
+        and provenance.get("kind") == "e13_preview_successor"
+        and packet["state"] == "preview_complete"
+        else "local"
+    )
     claims: list[tuple[str, list[str]]] = []
     quick = packet["validation"]["quick"]
     if quick["status"] == "pass":
@@ -680,12 +690,12 @@ def validate_pass_claim_evidence(
             evidence_id
             for evidence_id in evidence_ids
             if evidence[evidence_id][0]["packet_id"] != packet["packet_id"]
-            or evidence[evidence_id][0]["truth_scope"] != "local"
+            or evidence[evidence_id][0]["truth_scope"] != expected_truth_scope
             or evidence[evidence_id][0]["result"] != "pass"
         ]
         if invalid:
             raise ManifestValidationError(
-                f"{path}: {label} requires passing evidence at local truth scope: "
+                f"{path}: {label} requires passing evidence at {expected_truth_scope} truth scope: "
                 f"{', '.join(invalid)}"
             )
 
@@ -957,7 +967,7 @@ def validate_immutable_successor(
     successor: Mapping[str, Any],
     predecessor: tuple[Mapping[str, Any], Path] | None = None,
 ) -> None:
-    """Validate provenance and the typed preview receipt for a v3 successor."""
+    """Validate a v3 source root and its typed E13/E14 receipt when present."""
     if packet["schema_version"] != 3:
         raise ManifestValidationError(
             f"{path}: immutable successor requires schema_version 3"
@@ -980,33 +990,46 @@ def validate_immutable_successor(
                 f"{path}: immutable successor predecessor SHA-256 does not match "
                 "the referenced packet"
             )
-    matching_approvals = [
-        approval
-        for approval in packet["approvals"]
-        if approval["approval_id"] == successor["preview_data_approval_id"]
-        and approval["kind"] == "preview_data_approval"
-        and approval["status"] == "approved"
-    ]
-    if len(matching_approvals) != 1:
-        raise ManifestValidationError(
-            f"{path}: immutable successor requires one approved preview_data_approval"
-        )
-    approval = matching_approvals[0]
-    if approval["preview_target_identity"] != _target_identity(
-        packet["targets"]["preview"]
-    ):
-        raise ManifestValidationError(
-            f"{path}: preview_data_approval target identity does not match preview target"
-        )
-    if source_packet_id not in approval["predecessor_packet_ids"]:
-        raise ManifestValidationError(
-            f"{path}: preview_data_approval does not identify immutable predecessor "
-            f"{source_packet_id}"
-        )
-    if _timestamp(approval["captured_at"]) > _timestamp(approval["approved_at"]):
-        raise ManifestValidationError(
-            f"{path}: preview_data_approval captured_at follows approved_at"
-        )
+    provenance = packet.get("successor_provenance")
+    approval_id = successor.get("preview_data_approval_id")
+    approval: Mapping[str, Any] | None = None
+    if approval_id is None:
+        if (
+            packet["truth_scope"] != "production"
+            or not isinstance(provenance, Mapping)
+            or provenance.get("kind") != "e14_production_successor"
+        ):
+            raise ManifestValidationError(
+                f"{path}: immutable successor without preview_data_approval_id requires typed E14 production provenance"
+            )
+    else:
+        matching_approvals = [
+            approval
+            for approval in packet["approvals"]
+            if approval["approval_id"] == approval_id
+            and approval["kind"] == "preview_data_approval"
+            and approval["status"] == "approved"
+        ]
+        if len(matching_approvals) != 1:
+            raise ManifestValidationError(
+                f"{path}: immutable successor requires one approved preview_data_approval"
+            )
+        approval = matching_approvals[0]
+        if approval["preview_target_identity"] != _target_identity(
+            packet["targets"]["preview"]
+        ):
+            raise ManifestValidationError(
+                f"{path}: preview_data_approval target identity does not match preview target"
+            )
+        if source_packet_id not in approval["predecessor_packet_ids"]:
+            raise ManifestValidationError(
+                f"{path}: preview_data_approval does not identify immutable predecessor "
+                f"{source_packet_id}"
+            )
+        if _timestamp(approval["captured_at"]) > _timestamp(approval["approved_at"]):
+            raise ManifestValidationError(
+                f"{path}: preview_data_approval captured_at follows approved_at"
+            )
 
     expected_commits = {
         "workspace_sha": packet["repositories"]["workspace"]["candidate_sha"],
@@ -1017,10 +1040,37 @@ def validate_immutable_successor(
         raise ManifestValidationError(
             f"{path}: immutable successor candidate tuple does not match repositories"
         )
-    if approval["candidate_commits"] != expected_commits:
+    if approval is not None and approval["candidate_commits"] != expected_commits:
         raise ManifestValidationError(
             f"{path}: preview_data_approval candidate tuple does not match repositories"
         )
+    if provenance is not None:
+        if provenance["source_packet_id"] != source_packet_id:
+            raise ManifestValidationError(
+                f"{path}: successor provenance source_packet_id does not match immutable successor"
+            )
+        if provenance["source_packet_sha256"] != successor["source_packet_sha256"]:
+            raise ManifestValidationError(
+                f"{path}: successor provenance source_packet_sha256 does not match immutable successor"
+            )
+        if provenance["candidate_commits"] != expected_commits:
+            raise ManifestValidationError(
+                f"{path}: successor provenance candidate tuple does not match repositories"
+            )
+        if provenance["kind"] == "e13_preview_successor":
+            if packet["truth_scope"] != "preview":
+                raise ManifestValidationError(
+                    f"{path}: typed E13 provenance requires preview truth_scope"
+                )
+            if approval_id != provenance["preview_data_approval_id"]:
+                raise ManifestValidationError(
+                    f"{path}: typed E13 provenance approval does not match immutable successor"
+                )
+        elif provenance["kind"] == "e14_production_successor":
+            if packet["truth_scope"] != "production" or approval_id is not None:
+                raise ManifestValidationError(
+                    f"{path}: typed E14 provenance requires production without a new preview_data_approval"
+                )
     for repository in REPOSITORY_PATHS:
         revision = packet["repositories"][repository]
         if revision["revision_type"] != "committed_candidate":
@@ -1035,7 +1085,10 @@ def validate_immutable_successor(
                 "binary_tracked_diff_sha256",
             )
         }
-        if approval["candidate_preimages"][repository] != expected_preimage:
+        if (
+            approval is not None
+            and approval["candidate_preimages"][repository] != expected_preimage
+        ):
             raise ManifestValidationError(
                 f"{path}: preview_data_approval {repository} preimage does not match "
                 "recomputed candidate"
@@ -1756,13 +1809,393 @@ def validate_preview_immutable_successor_chains(
                             f"contains a cycle for {repository}:{relative_path}"
                         )
                     path_route.append(current)
-                if path_route != route:
+                if path_route[: len(route)] != route:
                     raise ManifestValidationError(
                         f"{source_path}: preview immutable successor path ownership is "
                         f"not one complete chain for {repository}:{relative_path}"
                     )
+                if len(path_route) > len(route):
+                    next_owner = packets[path_route[len(route)]][0]
+                    if next_owner["truth_scope"] != "production":
+                        raise ManifestValidationError(
+                            f"{source_path}: preview immutable successor path ownership "
+                            f"continues outside its preview chain for {repository}:{relative_path}"
+                        )
         leaves[source_packet_id] = route[-1]
     return leaves
+
+
+def _require_packet_owned_preview_evidence(
+    packet: Mapping[str, Any],
+    path: Path,
+    evidence: Mapping[str, tuple[Mapping[str, Any], Path]],
+    label: str,
+    evidence_ids: Iterable[str],
+) -> None:
+    """Require a completed E13 claim to have one or more passing preview receipts."""
+    claimed_ids = list(evidence_ids)
+    if not claimed_ids:
+        raise ManifestValidationError(
+            f"{path}: typed E13 preview completion {label} requires packet-owned evidence"
+        )
+    missing = [
+        evidence_id for evidence_id in claimed_ids if evidence_id not in evidence
+    ]
+    if missing:
+        raise ManifestValidationError(
+            f"{path}: typed E13 preview completion {label} is missing evidence: "
+            f"{', '.join(missing)}"
+        )
+    invalid = [
+        evidence_id
+        for evidence_id in claimed_ids
+        if evidence[evidence_id][0]["packet_id"] != packet["packet_id"]
+        or evidence[evidence_id][0]["truth_scope"] != "preview"
+        or evidence[evidence_id][0]["result"] != "pass"
+    ]
+    if invalid:
+        raise ManifestValidationError(
+            f"{path}: typed E13 preview completion {label} requires passing "
+            f"packet-owned preview evidence: {', '.join(invalid)}"
+        )
+
+
+E13_PLACEHOLDER = re.compile(r"<[^>\r\n]+>")
+
+
+def _e13_placeholders(value: Any) -> list[str]:
+    """Return unresolved placeholder tokens from a completed E13 proof field."""
+    if isinstance(value, str):
+        return E13_PLACEHOLDER.findall(value)
+    if isinstance(value, Mapping):
+        return [
+            placeholder
+            for nested_value in value.values()
+            for placeholder in _e13_placeholders(nested_value)
+        ]
+    if isinstance(value, Iterable):
+        return [
+            placeholder
+            for nested_value in value
+            for placeholder in _e13_placeholders(nested_value)
+        ]
+    return []
+
+
+def _require_e13_resolved_value(path: Path, label: str, value: Any) -> None:
+    """Reject inherited plan placeholders where E13 requires an exact receipt."""
+    placeholders = sorted(set(_e13_placeholders(value)))
+    if placeholders:
+        raise ManifestValidationError(
+            f"{path}: typed E13 preview completion requires exact non-placeholder "
+            f"{label}: {', '.join(placeholders)}"
+        )
+
+
+def validate_e13_preview_completion(
+    packet: Mapping[str, Any],
+    path: Path,
+    evidence: Mapping[str, tuple[Mapping[str, Any], Path]],
+) -> None:
+    """Require an accepted E13 preview to be complete, torn down, and evidenced."""
+    if packet["truth_scope"] != "preview" or packet["state"] != "preview_complete":
+        raise ManifestValidationError(
+            f"{path}: typed E13 preview completion requires preview_complete preview truth_scope"
+        )
+    if packet["review"]["verdict"] != "accepted_preview":
+        raise ManifestValidationError(
+            f"{path}: typed E13 preview completion requires accepted_preview review"
+        )
+    if packet["targets"]["preview"]["status"] != "verified":
+        raise ManifestValidationError(
+            f"{path}: typed E13 preview completion requires verified preview target"
+        )
+    if packet["targets"]["production"]["status"] != "pending_gate_4":
+        raise ManifestValidationError(
+            f"{path}: typed E13 preview completion must leave production target pending_gate_4"
+        )
+    _require_e13_resolved_value(path, "targets", packet["targets"])
+
+    validation = packet["validation"]
+    for label, stage in (
+        ("quick validation", validation["quick"]),
+        ("full validation", validation["full"]),
+        ("browser validation", validation["browser"]),
+    ):
+        if stage["status"] != "pass":
+            raise ManifestValidationError(
+                f"{path}: typed E13 preview completion requires {label}"
+            )
+        _require_packet_owned_preview_evidence(
+            packet, path, evidence, label, stage["evidence_ids"]
+        )
+    if validation["app_build"]["status"] != "passed":
+        raise ManifestValidationError(
+            f"{path}: typed E13 preview completion requires app build proof"
+        )
+    _require_packet_owned_preview_evidence(
+        packet,
+        path,
+        evidence,
+        "app build",
+        validation["app_build"]["evidence_ids"],
+    )
+    _require_packet_owned_preview_evidence(
+        packet,
+        path,
+        evidence,
+        "preview validation summary",
+        validation["evidence_ids"],
+    )
+    _require_packet_owned_preview_evidence(
+        packet, path, evidence, "review", packet["review"]["evidence_ids"]
+    )
+
+    expected_gate_4 = {
+        "candidate_commits": "verified",
+        "preview": "verified",
+        "production": "pending_gate_4",
+        "app_build": "verified",
+        "browser": "verified",
+        "deployments": "verified",
+    }
+    incorrect_gate_4 = [
+        name
+        for name, expected_status in expected_gate_4.items()
+        if packet["gate_4"][name] != expected_status
+    ]
+    if incorrect_gate_4:
+        raise ManifestValidationError(
+            f"{path}: typed E13 preview completion has incomplete Gate 4 proof: "
+            f"{', '.join(incorrect_gate_4)}"
+        )
+
+    for provider, deployment in packet["deployments"].items():
+        if deployment["status"] not in {"rolled_back", "not_applicable"}:
+            raise ManifestValidationError(
+                f"{path}: typed E13 preview completion requires verified teardown or "
+                f"not_applicable disposition for {provider}"
+            )
+        if deployment["status"] == "rolled_back":
+            if provider in {"render", "vercel"} and (
+                not deployment["deployment_id"]
+                or not deployment["previous_deployment_id"]
+            ):
+                raise ManifestValidationError(
+                    f"{path}: typed E13 preview completion requires exact teardown and prior IDs for {provider}"
+                )
+            if provider == "modal" and not deployment["app_ref"]:
+                raise ManifestValidationError(
+                    f"{path}: typed E13 preview completion requires an exact temporary Modal app_ref"
+                )
+        _require_e13_resolved_value(path, f"{provider} teardown", deployment)
+        _require_packet_owned_preview_evidence(
+            packet,
+            path,
+            evidence,
+            f"{provider} teardown",
+            deployment["evidence_ids"],
+        )
+
+    rollback = packet["rollback"]
+    if not rollback["backend_commands"] or not rollback["app_commands"]:
+        raise ManifestValidationError(
+            f"{path}: typed E13 preview completion requires backend and app rollback commands"
+        )
+    _require_e13_resolved_value(
+        path,
+        "rollback commands",
+        {
+            "backend_commands": rollback["backend_commands"],
+            "app_commands": rollback["app_commands"],
+        },
+    )
+    _require_e13_resolved_value(
+        path, "preview data disposition", rollback["data_recovery"]
+    )
+    if _target_identity(packet["targets"]["preview"]) not in rollback["data_recovery"]:
+        raise ManifestValidationError(
+            f"{path}: typed E13 preview completion requires preview data disposition "
+            "bound to the exact preview target identity"
+        )
+    _require_packet_owned_preview_evidence(
+        packet, path, evidence, "rollback", rollback["evidence_ids"]
+    )
+
+    immutable_successor = packet.get("immutable_successor")
+    if immutable_successor is None:
+        raise ManifestValidationError(
+            f"{path}: typed E13 preview completion requires immutable_successor"
+        )
+    approval_id = immutable_successor.get("preview_data_approval_id")
+    matching_approvals = [
+        approval
+        for approval in packet["approvals"]
+        if approval["approval_id"] == approval_id
+        and approval["kind"] == "preview_data_approval"
+        and approval["status"] == "approved"
+    ]
+    if len(matching_approvals) != 1:
+        raise ManifestValidationError(
+            f"{path}: typed E13 preview completion requires its approved preview_data_approval"
+        )
+    _require_packet_owned_preview_evidence(
+        packet,
+        path,
+        evidence,
+        "preview data approval",
+        matching_approvals[0]["evidence_ids"],
+    )
+
+
+def validate_e14_production_successor_chains(
+    packets: Mapping[str, tuple[Mapping[str, Any], Path]],
+    superseded: Mapping[tuple[str, str, str], str],
+    preview_leaves: Mapping[str, str],
+    evidence: Mapping[str, tuple[Mapping[str, Any], Path]],
+) -> None:
+    """Require typed E14 packets to hand off exactly one accepted E13 leaf."""
+    for packet_id, (packet, path) in packets.items():
+        provenance = packet.get("successor_provenance")
+        if (
+            packet["truth_scope"] != "production"
+            or not isinstance(provenance, Mapping)
+            or provenance.get("kind") != "e14_production_successor"
+        ):
+            continue
+
+        immutable_successor = packet.get("immutable_successor")
+        if immutable_successor is None:
+            raise ManifestValidationError(
+                f"{path}: typed E14 provenance requires immutable_successor"
+            )
+        source_packet_id = immutable_successor["source_packet_id"]
+        preview_packet_id = provenance["accepted_preview_packet_id"]
+        source_entry = packets.get(source_packet_id)
+        preview_entry = packets.get(preview_packet_id)
+        if source_entry is None or source_entry[0]["schema_version"] != 2:
+            raise ManifestValidationError(
+                f"{path}: typed E14 provenance source must be an active schema-v2 packet"
+            )
+        if preview_entry is None:
+            raise ManifestValidationError(
+                f"{path}: typed E14 provenance accepted preview packet is not in the packet inventory: "
+                f"{preview_packet_id}"
+            )
+        preview, preview_path = preview_entry
+        if preview["schema_version"] != 3 or preview["truth_scope"] != "preview":
+            raise ManifestValidationError(
+                f"{path}: typed E14 provenance accepted preview packet must be schema-v3 preview"
+            )
+        if preview_leaves.get(source_packet_id) != preview_packet_id:
+            raise ManifestValidationError(
+                f"{path}: typed E14 provenance accepted preview packet is not the unique preview leaf for "
+                f"{source_packet_id}"
+            )
+        actual_preview_sha256 = hashlib.sha256(preview_path.read_bytes()).hexdigest()
+        if provenance["accepted_preview_packet_sha256"] != actual_preview_sha256:
+            raise ManifestValidationError(
+                f"{path}: typed E14 provenance accepted preview SHA-256 does not match the referenced packet"
+            )
+        validate_e13_preview_completion(preview, preview_path, evidence)
+        preview_provenance = preview.get("successor_provenance")
+        if (
+            not isinstance(preview_provenance, Mapping)
+            or preview_provenance.get("kind") != "e13_preview_successor"
+        ):
+            raise ManifestValidationError(
+                f"{path}: typed E14 provenance accepted preview packet must have typed E13 provenance"
+            )
+        if preview_provenance["source_packet_id"] != source_packet_id:
+            raise ManifestValidationError(
+                f"{path}: typed E14 provenance accepted preview packet does not share the schema-v2 source"
+            )
+        if (
+            provenance["accepted_preview_approval_id"]
+            != preview_provenance["preview_data_approval_id"]
+        ):
+            raise ManifestValidationError(
+                f"{path}: typed E14 provenance accepted preview approval does not match E13 provenance"
+            )
+        matching_preview_approvals = [
+            approval
+            for approval in preview["approvals"]
+            if approval["approval_id"] == provenance["accepted_preview_approval_id"]
+            and approval["kind"] == "preview_data_approval"
+            and approval["status"] == "approved"
+        ]
+        if len(matching_preview_approvals) != 1:
+            raise ManifestValidationError(
+                f"{path}: typed E14 provenance requires the accepted preview's approved preview_data_approval"
+            )
+        preview_immutable = preview.get("immutable_successor")
+        if (
+            preview_immutable is None
+            or preview_immutable["source_packet_id"] != source_packet_id
+            or preview_immutable["source_packet_sha256"]
+            != immutable_successor["source_packet_sha256"]
+        ):
+            raise ManifestValidationError(
+                f"{path}: typed E14 provenance preview/source immutable provenance does not match"
+            )
+        for repository in REPOSITORY_PATHS:
+            if (
+                packet["repositories"][repository]
+                != preview["repositories"][repository]
+            ):
+                raise ManifestValidationError(
+                    f"{path}: typed E14 provenance cohort does not exactly match accepted preview for {repository}"
+                )
+
+        nonempty_repositories = [
+            repository
+            for repository in REPOSITORY_PATHS
+            if preview["repositories"][repository]["owned_paths"]
+        ]
+        handoff_predecessors: set[str] = set()
+        for repository in REPOSITORY_PATHS:
+            preview_paths = preview["repositories"][repository]["owned_paths"]
+            handoffs = [
+                handoff
+                for handoff in packet.get("supersedes", [])
+                if handoff["repository"] == repository
+            ]
+            if not preview_paths:
+                if handoffs:
+                    raise ManifestValidationError(
+                        f"{path}: typed E14 provenance has a foreign empty-repository handoff for {repository}"
+                    )
+                continue
+            if len(handoffs) != 1:
+                raise ManifestValidationError(
+                    f"{path}: typed E14 provenance requires one complete accepted-preview handoff for {repository}"
+                )
+            handoff = handoffs[0]
+            if handoff["packet_id"] != preview_packet_id:
+                raise ManifestValidationError(
+                    f"{path}: typed E14 provenance handoff must name the accepted preview packet for {repository}"
+                )
+            if handoff["paths"] != preview_paths:
+                raise ManifestValidationError(
+                    f"{path}: typed E14 provenance handoff paths do not match accepted preview for {repository}"
+                )
+            if handoff.get("retained_path_records", []):
+                raise ManifestValidationError(
+                    f"{path}: typed E14 provenance cannot retain accepted preview paths in {repository}"
+                )
+            handoff_predecessors.add(handoff["packet_id"])
+            for relative_path in preview_paths:
+                if (packet_id, repository, relative_path) in superseded:
+                    raise ManifestValidationError(
+                        f"{path}: typed E14 provenance production successor must remain the unique leaf for "
+                        f"{repository}:{relative_path}"
+                    )
+        if len(packet.get("supersedes", [])) != len(
+            nonempty_repositories
+        ) or handoff_predecessors != {preview_packet_id}:
+            raise ManifestValidationError(
+                f"{path}: typed E14 provenance has foreign or duplicate accepted-preview handoffs"
+            )
 
 
 def validate_current_checkpoint(
@@ -1996,15 +2429,66 @@ def _refreshed_successor_packet_id(
     return predecessor_packet_id[: 127 - len(suffix)] + suffix
 
 
+def _cohort_successor_packet_id(
+    source_packet_id: str,
+    scope: str,
+    candidate_shas: Mapping[str, str],
+) -> str:
+    """Return the durable E13/E14 identity for one exact candidate cohort."""
+    cohort_input = "".join(
+        f"{repository}_sha={candidate_shas[repository]}\n"
+        for repository in ("workspace", "app", "backend")
+    ).encode("ascii")
+    cohort_key = hashlib.sha256(cohort_input).hexdigest()[:12]
+    suffix = f"-{scope}-successor-cohort-{cohort_key}"
+    return source_packet_id[: 127 - len(suffix)] + suffix
+
+
+def _assert_global_cohort_identity_available(root: Path, successor_id: str) -> None:
+    """Reserve new cohort identities across active and superseded durable history."""
+    packet_matches: list[Path] = []
+    for directory in (DEFAULT_PACKET_DIRECTORY, SUPERSEDED_PACKET_DIRECTORY):
+        for packet_path in discover_json(root / directory):
+            document = load_json(packet_path)
+            if (
+                isinstance(document, Mapping)
+                and document.get("packet_id") == successor_id
+            ):
+                packet_matches.append(packet_path)
+    if packet_matches:
+        locations = ", ".join(str(path) for path in packet_matches)
+        raise ManifestValidationError(
+            "cohort successor packet_id already exists in active or superseded inventory: "
+            f"{successor_id} ({locations})"
+        )
+
+    approval_evidence_id = f"ev.{successor_id}.preview-data-approval"
+    evidence_matches: list[Path] = []
+    for evidence_path in discover_json(root / SUPERSEDED_EVIDENCE_DIRECTORY):
+        document = load_json(evidence_path)
+        if (
+            isinstance(document, Mapping)
+            and document.get("evidence_id") == approval_evidence_id
+        ):
+            evidence_matches.append(evidence_path)
+    if evidence_matches:
+        locations = ", ".join(str(path) for path in evidence_matches)
+        raise ManifestValidationError(
+            "cohort successor approval evidence_id already exists in superseded "
+            f"inventory: {approval_evidence_id} ({locations})"
+        )
+
+
 def _successor_without_historical_claims(
     source: Mapping[str, Any],
     *,
     scope: str,
     revisions: Mapping[str, Mapping[str, Any]],
-    approval: Mapping[str, Any],
+    approval: Mapping[str, Any] | None,
     source_sha256: str,
     packet_id: str | None = None,
     supersession_predecessor_id: str | None = None,
+    successor_provenance: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Copy only the implementation plan; leave new proof/evidence pending."""
     now = datetime.now(timezone.utc)
@@ -2046,7 +2530,6 @@ def _successor_without_historical_claims(
             "source_packet_sha256": source_sha256,
             "scope": scope,
             "candidate_commits": candidate_commits,
-            "preview_data_approval_id": approval["approval_id"],
         },
         "direct_sql_delta": {
             "status": "pending_local_measurement",
@@ -2072,8 +2555,14 @@ def _successor_without_historical_claims(
             "basis": "Immutable successor awaiting fresh scoped evidence.",
             "evidence_ids": [],
         },
-        "approvals": [dict(approval)],
+        "approvals": [dict(approval)] if approval is not None else [],
     }
+    if approval is not None:
+        successor["immutable_successor"]["preview_data_approval_id"] = approval[
+            "approval_id"
+        ]
+    if successor_provenance is not None:
+        successor["successor_provenance"] = dict(successor_provenance)
     successor["contracts"] = {
         **source["contracts"],
         "compatibility_matrix": [
@@ -2134,6 +2623,74 @@ def _successor_without_historical_claims(
     return successor
 
 
+def _load_release_evidence_inventory(
+    root: Path,
+) -> dict[str, tuple[Mapping[str, Any], Path]]:
+    """Load the active evidence inventory used to qualify an E13/E14 handoff."""
+    evidence_schema_path = _workspace_manifest_path(root, EVIDENCE_SCHEMA)
+    evidence_schema = load_json(evidence_schema_path)
+    validate_schema(evidence_schema, evidence_schema_path)
+    evidence: dict[str, tuple[Mapping[str, Any], Path]] = {}
+    for evidence_path in discover_json(root / DEFAULT_EVIDENCE_DIRECTORY):
+        document = load_json(evidence_path)
+        validate_document(document, evidence_schema, evidence_path)
+        scan_secret_free(document)
+        validate_evidence_semantics(document, evidence_path)
+        evidence_id = document["evidence_id"]
+        if evidence_id in evidence:
+            raise ManifestValidationError(f"duplicate evidence_id: {evidence_id}")
+        evidence[evidence_id] = (document, evidence_path)
+    return evidence
+
+
+def _load_release_packet_inventory(
+    root: Path,
+    packet_directory: Path,
+    packet_schema: Mapping[str, Any],
+) -> tuple[
+    dict[str, tuple[Mapping[str, Any], Path]],
+    dict[tuple[str, str, str], str],
+    dict[str, str],
+    dict[str, tuple[Mapping[str, Any], Path]],
+]:
+    """Load active packet/evidence inventories; archived files remain immutable history."""
+    inventory: dict[str, tuple[Mapping[str, Any], Path]] = {}
+    for packet_path in discover_json(packet_directory):
+        packet = load_json(packet_path)
+        validate_document(packet, packet_schema, packet_path)
+        scan_secret_free(packet)
+        validate_packet_semantics(packet, packet_path)
+        packet_id = packet["packet_id"]
+        if packet_id in inventory:
+            raise ManifestValidationError(
+                f"duplicate packet_id in release-packet inventory: {packet_id}"
+            )
+        inventory[packet_id] = (packet, packet_path)
+    for packet, packet_path in inventory.values():
+        immutable_successor = packet.get("immutable_successor")
+        if immutable_successor is None:
+            continue
+        immutable_predecessor = inventory.get(immutable_successor["source_packet_id"])
+        if immutable_predecessor is None:
+            raise ManifestValidationError(
+                f"{packet_path}: immutable successor predecessor packet is not "
+                "in the packet inventory"
+            )
+        validate_immutable_successor(
+            packet,
+            packet_path,
+            immutable_successor,
+            immutable_predecessor,
+        )
+    superseded, _ = validate_packet_supersessions(inventory)
+    preview_leaves = validate_preview_immutable_successor_chains(inventory, superseded)
+    evidence = _load_release_evidence_inventory(root)
+    validate_e14_production_successor_chains(
+        inventory, superseded, preview_leaves, evidence
+    )
+    return inventory, superseded, preview_leaves, evidence
+
+
 def prepare_immutable_successor(
     root: Path,
     source_packet_path: Path,
@@ -2142,14 +2699,20 @@ def prepare_immutable_successor(
     predecessor_packet_id: str,
     predecessor_sha256: str,
     output_packet_path: Path,
-    preview_approval_path: Path,
+    preview_approval_path: Path | None,
     refresh_successor_of: str | None = None,
+    fresh_successor: bool = False,
+    production_successor_of_preview: str | None = None,
 ) -> tuple[Path, dict[str, Any]]:
     """Validate and construct a new packet successor without changing its source."""
     root = root.resolve()
     source_path = _workspace_manifest_path(root, source_packet_path)
     output_path = _workspace_manifest_path(root, output_packet_path)
-    approval_path = _workspace_manifest_path(root, preview_approval_path)
+    approval_path = (
+        _workspace_manifest_path(root, preview_approval_path)
+        if preview_approval_path is not None
+        else None
+    )
     packet_directory = (root / DEFAULT_PACKET_DIRECTORY).resolve()
     if not source_path.is_file():
         raise ManifestValidationError(
@@ -2158,10 +2721,6 @@ def prepare_immutable_successor(
     if source_path == output_path:
         raise ManifestValidationError(
             "immutable successor output must not overwrite source packet"
-        )
-    if output_path.exists():
-        raise ManifestValidationError(
-            f"immutable successor output already exists: {output_packet_path}"
         )
     if output_path.parent != packet_directory or output_path.suffix != ".json":
         raise ManifestValidationError(
@@ -2172,10 +2731,32 @@ def prepare_immutable_successor(
         raise ManifestValidationError(
             f"immutable successor output directory is missing: {output_path.parent}"
         )
-    if not approval_path.is_file():
-        raise ManifestValidationError(
-            f"preview approval receipt does not exist: {preview_approval_path}"
+    successor_modes = sum(
+        mode is not None and mode is not False
+        for mode in (
+            refresh_successor_of,
+            fresh_successor,
+            production_successor_of_preview,
         )
+    )
+    if successor_modes > 1:
+        raise ManifestValidationError(
+            "immutable successor modes are mutually exclusive"
+        )
+    if scope == "preview" and approval_path is None:
+        raise ManifestValidationError(
+            "preview immutable successor requires --preview-approval-file"
+        )
+    if scope == "production" and production_successor_of_preview is None:
+        raise ManifestValidationError(
+            "production immutable successor requires --production-successor-of-preview"
+        )
+    if scope == "production" and approval_path is not None:
+        raise ManifestValidationError(
+            "production immutable successor must not use --preview-approval-file"
+        )
+    if fresh_successor and scope != "preview":
+        raise ManifestValidationError("fresh immutable successor scope must be preview")
 
     packet_schema_path = _workspace_manifest_path(root, PACKET_SCHEMA)
     packet_schema = load_json(packet_schema_path)
@@ -2199,14 +2780,143 @@ def prepare_immutable_successor(
             "immutable successor predecessor SHA-256 does not match source packet"
         )
 
-    approval = load_json(approval_path)
-    if not isinstance(approval, Mapping):
-        raise ManifestValidationError("preview approval receipt must be a JSON object")
-    scan_secret_free(approval)
+    approval: Mapping[str, Any] | None = None
+    if approval_path is not None:
+        if not approval_path.is_file():
+            raise ManifestValidationError(
+                f"preview approval receipt does not exist: {preview_approval_path}"
+            )
+        approval = load_json(approval_path)
+        if not isinstance(approval, Mapping):
+            raise ManifestValidationError(
+                "preview approval receipt must be a JSON object"
+            )
+        scan_secret_free(approval)
     successor_id = _successor_packet_id(source["packet_id"], scope)
     supersession_predecessor_id: str | None = None
     refresh_inventory: dict[str, tuple[Mapping[str, Any], Path]] | None = None
-    if refresh_successor_of is not None:
+    refresh_evidence: dict[str, tuple[Mapping[str, Any], Path]] | None = None
+    successor_provenance: Mapping[str, Any] | None = None
+    if fresh_successor:
+        assert approval is not None
+        successor_id = _cohort_successor_packet_id(
+            source["packet_id"], scope, candidate_shas
+        )
+        _assert_global_cohort_identity_available(root, successor_id)
+        if output_path.stem != successor_id:
+            raise ManifestValidationError(
+                "fresh immutable successor output filename must match computed cohort packet_id"
+            )
+        inventory, _, ownership_leaves, inventory_evidence = (
+            _load_release_packet_inventory(root, packet_directory, packet_schema)
+        )
+        if successor_id in inventory:
+            raise ManifestValidationError(
+                f"fresh immutable successor packet_id already exists: {successor_id}"
+            )
+        if source["packet_id"] in ownership_leaves:
+            raise ManifestValidationError(
+                "fresh immutable successor source already has an active preview leaf: "
+                f"{ownership_leaves[source['packet_id']]}"
+            )
+        expected_approval_id = f"approval.{successor_id}.preview-data"
+        expected_evidence_id = f"ev.{successor_id}.preview-data-approval"
+        if approval.get("approval_id") != expected_approval_id:
+            raise ManifestValidationError(
+                "fresh immutable successor approval_id does not match computed cohort packet_id"
+            )
+        if approval.get("predecessor_packet_ids") != [source["packet_id"]]:
+            raise ManifestValidationError(
+                "fresh immutable successor approval predecessor_packet_ids must exactly identify the schema-v2 source"
+            )
+        if approval.get("evidence_ids") != [expected_evidence_id]:
+            raise ManifestValidationError(
+                "fresh immutable successor approval evidence_ids do not match computed cohort packet_id"
+            )
+        expected_evidence_path = (
+            root
+            / DEFAULT_EVIDENCE_DIRECTORY
+            / f"{successor_id}.preview-data-approval.json"
+        )
+        if not expected_evidence_path.is_file():
+            raise ManifestValidationError(
+                "fresh immutable successor evidence file does not match computed cohort packet_id"
+            )
+        successor_provenance = {
+            "kind": "e13_preview_successor",
+            "source_packet_id": source["packet_id"],
+            "source_packet_sha256": actual_source_sha256,
+            "candidate_commits": {
+                "workspace_sha": candidate_shas["workspace"],
+                "app_sha": candidate_shas["app"],
+                "backend_sha": candidate_shas["backend"],
+            },
+            "preview_data_approval_id": approval["approval_id"],
+        }
+        refresh_inventory = inventory
+        refresh_evidence = inventory_evidence
+    elif production_successor_of_preview is not None:
+        successor_id = _cohort_successor_packet_id(
+            source["packet_id"], scope, candidate_shas
+        )
+        _assert_global_cohort_identity_available(root, successor_id)
+        if output_path.stem != successor_id:
+            raise ManifestValidationError(
+                "production immutable successor output filename must match computed cohort packet_id"
+            )
+        inventory, _, ownership_leaves, inventory_evidence = (
+            _load_release_packet_inventory(root, packet_directory, packet_schema)
+        )
+        if successor_id in inventory:
+            raise ManifestValidationError(
+                f"production immutable successor packet_id already exists: {successor_id}"
+            )
+        preview_entry = inventory.get(production_successor_of_preview)
+        if preview_entry is None:
+            raise ManifestValidationError(
+                "production immutable successor accepted preview is not in the packet inventory: "
+                f"{production_successor_of_preview}"
+            )
+        preview, preview_path = preview_entry
+        if ownership_leaves.get(source["packet_id"]) != production_successor_of_preview:
+            raise ManifestValidationError(
+                "production immutable successor accepted preview is not the unique current preview leaf for "
+                f"{source['packet_id']}"
+            )
+        validate_e13_preview_completion(preview, preview_path, inventory_evidence)
+        preview_provenance = preview.get("successor_provenance")
+        if (
+            not isinstance(preview_provenance, Mapping)
+            or preview_provenance.get("kind") != "e13_preview_successor"
+        ):
+            raise ManifestValidationError(
+                "production immutable successor accepted preview must have typed E13 provenance"
+            )
+        if preview_provenance["source_packet_id"] != source["packet_id"]:
+            raise ManifestValidationError(
+                "production immutable successor accepted preview does not share the schema-v2 source"
+            )
+        supersession_predecessor_id = production_successor_of_preview
+        successor_provenance = {
+            "kind": "e14_production_successor",
+            "source_packet_id": source["packet_id"],
+            "source_packet_sha256": actual_source_sha256,
+            "candidate_commits": {
+                "workspace_sha": candidate_shas["workspace"],
+                "app_sha": candidate_shas["app"],
+                "backend_sha": candidate_shas["backend"],
+            },
+            "accepted_preview_packet_id": production_successor_of_preview,
+            "accepted_preview_packet_sha256": hashlib.sha256(
+                preview_path.read_bytes()
+            ).hexdigest(),
+            "accepted_preview_approval_id": preview_provenance[
+                "preview_data_approval_id"
+            ],
+        }
+        refresh_inventory = inventory
+        refresh_evidence = inventory_evidence
+    elif refresh_successor_of is not None:
         if scope != "preview":
             raise ManifestValidationError(
                 "refreshed immutable successor scope must be preview"
@@ -2214,50 +2924,20 @@ def prepare_immutable_successor(
         successor_id = _refreshed_successor_packet_id(
             source["packet_id"], scope, candidate_shas
         )
+        _assert_global_cohort_identity_available(root, successor_id)
         if output_path.stem != successor_id:
             raise ManifestValidationError(
                 "refreshed immutable successor output filename must match computed packet_id"
             )
 
-        inventory: dict[str, tuple[Mapping[str, Any], Path]] = {}
-        for packet_path in discover_json(packet_directory):
-            packet = load_json(packet_path)
-            validate_document(packet, packet_schema, packet_path)
-            scan_secret_free(packet)
-            validate_packet_semantics(packet, packet_path)
-            packet_id = packet["packet_id"]
-            if packet_id in inventory:
-                raise ManifestValidationError(
-                    f"duplicate packet_id in release-packet inventory: {packet_id}"
-                )
-            inventory[packet_id] = (packet, packet_path)
+        assert approval is not None
+        inventory, _, ownership_leaves, inventory_evidence = (
+            _load_release_packet_inventory(root, packet_directory, packet_schema)
+        )
         if successor_id in inventory:
             raise ManifestValidationError(
                 f"refreshed immutable successor packet_id already exists: {successor_id}"
             )
-        for packet, packet_path in inventory.values():
-            immutable_successor = packet.get("immutable_successor")
-            if immutable_successor is None:
-                continue
-            immutable_predecessor = inventory.get(
-                immutable_successor["source_packet_id"]
-            )
-            if immutable_predecessor is None:
-                raise ManifestValidationError(
-                    f"{packet_path}: immutable successor predecessor packet is not "
-                    "in the packet inventory"
-                )
-            validate_immutable_successor(
-                packet,
-                packet_path,
-                immutable_successor,
-                immutable_predecessor,
-            )
-        inventory_superseded, _ = validate_packet_supersessions(inventory)
-        ownership_leaves = validate_preview_immutable_successor_chains(
-            inventory,
-            inventory_superseded,
-        )
         predecessor = inventory.get(refresh_successor_of)
         if predecessor is None:
             raise ManifestValidationError(
@@ -2321,6 +3001,12 @@ def prepare_immutable_successor(
             )
         supersession_predecessor_id = refresh_successor_of
         refresh_inventory = inventory
+        refresh_evidence = inventory_evidence
+
+    if output_path.exists():
+        raise ManifestValidationError(
+            f"immutable successor output already exists: {output_packet_path}"
+        )
 
     revisions: dict[str, Mapping[str, Any]] = {}
     for repository, candidate_sha in candidate_shas.items():
@@ -2348,12 +3034,32 @@ def prepare_immutable_successor(
         source_sha256=actual_source_sha256,
         packet_id=successor_id,
         supersession_predecessor_id=supersession_predecessor_id,
+        successor_provenance=successor_provenance,
     )
+    if refresh_inventory is not None and supersession_predecessor_id is not None:
+        immediate_predecessor, _ = refresh_inventory[supersession_predecessor_id]
+        successor_created_at = _timestamp(successor["created_at"])
+        predecessor_timestamp = max(
+            _timestamp(immediate_predecessor["created_at"]),
+            _timestamp(immediate_predecessor["updated_at"]),
+        )
+        if successor_created_at <= predecessor_timestamp:
+            successor_timestamp = (
+                (predecessor_timestamp + timedelta(seconds=1))
+                .isoformat(timespec="seconds")
+                .replace("+00:00", "Z")
+            )
+            successor = {
+                **successor,
+                "created_at": successor_timestamp,
+                "updated_at": successor_timestamp,
+            }
     validate_document(successor, packet_schema, output_path)
     scan_secret_free(successor)
     validate_packet_semantics(successor, output_path)
     _validate_successor_evidence(root, successor, output_path)
     if refresh_inventory is not None:
+        assert refresh_evidence is not None
         validate_immutable_successor(
             successor,
             output_path,
@@ -2369,9 +3075,18 @@ def prepare_immutable_successor(
             prospective_inventory,
             prospective_superseded,
         )
-        if prospective_leaves.get(source["packet_id"]) != successor["packet_id"]:
+        validate_e14_production_successor_chains(
+            prospective_inventory,
+            prospective_superseded,
+            prospective_leaves,
+            refresh_evidence,
+        )
+        if (
+            scope == "preview"
+            and prospective_leaves.get(source["packet_id"]) != successor["packet_id"]
+        ):
             raise ManifestValidationError(
-                "refreshed immutable successor did not become the current ownership leaf"
+                "immutable preview successor did not become the current ownership leaf"
             )
     return output_path, successor
 
@@ -2472,7 +3187,7 @@ def validate_manifests(
         validate_immutable_successor(packet, path, immutable_successor, predecessor)
 
     superseded, retained_records = validate_packet_supersessions(packets)
-    validate_preview_immutable_successor_chains(packets, superseded)
+    preview_leaves = validate_preview_immutable_successor_chains(packets, superseded)
 
     for raw_path in evidence_paths:
         path = _workspace_manifest_path(root, raw_path)
@@ -2484,6 +3199,10 @@ def validate_manifests(
         if evidence_id in evidence:
             raise ManifestValidationError(f"duplicate evidence_id: {evidence_id}")
         evidence[evidence_id] = (document, path)
+
+    validate_e14_production_successor_chains(
+        packets, superseded, preview_leaves, evidence
+    )
 
     if require_packets and not packets:
         raise ManifestValidationError("no release packets were found")
@@ -2628,6 +3347,21 @@ def main() -> int:
         ),
     )
     parser.add_argument(
+        "--fresh-successor",
+        action="store_true",
+        help=(
+            "Start a fresh cohort-qualified E13 preview successor directly from an "
+            "active schema-v2 source; archived history is not live inventory."
+        ),
+    )
+    parser.add_argument(
+        "--production-successor-of-preview",
+        help=(
+            "Name the exact accepted E13 preview leaf from which this E14 production "
+            "successor must take ownership."
+        ),
+    )
+    parser.add_argument(
         "--preview-approval-file",
         type=Path,
         help="Secret-free JSON object matching the typed preview_data_approval receipt.",
@@ -2651,7 +3385,6 @@ def main() -> int:
             args.predecessor_packet_id,
             args.predecessor_sha256,
             args.output_packet,
-            args.preview_approval_file,
         )
         if args.emit_successor:
             if args.clean_candidate or args.promote_packet:
@@ -2662,7 +3395,18 @@ def main() -> int:
                 raise ManifestValidationError(
                     "--emit-successor requires --source-packet, --successor-scope, "
                     "--workspace-sha, --app-sha, --backend-sha, --predecessor-packet-id, "
-                    "--predecessor-sha256, --output-packet, and --preview-approval-file"
+                    "and --predecessor-sha256, --output-packet"
+                )
+            if args.successor_scope == "preview" and args.preview_approval_file is None:
+                raise ManifestValidationError(
+                    "--emit-successor preview requires --preview-approval-file"
+                )
+            if (
+                args.successor_scope == "production"
+                and args.production_successor_of_preview is None
+            ):
+                raise ManifestValidationError(
+                    "--emit-successor production requires --production-successor-of-preview"
                 )
             output_path, successor = prepare_immutable_successor(
                 root,
@@ -2678,6 +3422,8 @@ def main() -> int:
                 args.output_packet,
                 args.preview_approval_file,
                 args.refresh_successor_of,
+                args.fresh_successor,
+                args.production_successor_of_preview,
             )
             if args.write:
                 output_path.write_text(
@@ -2693,11 +3439,20 @@ def main() -> int:
                 f"predecessor={args.predecessor_packet_id} output={output_path}"
             )
             return 0
-        if any((*successor_args, args.refresh_successor_of)):
+        if any(
+            (
+                *successor_args,
+                args.preview_approval_file,
+                args.refresh_successor_of,
+                args.fresh_successor,
+                args.production_successor_of_preview,
+            )
+        ):
             raise ManifestValidationError(
                 "--source-packet, --successor-scope, --workspace-sha, --app-sha, "
                 "--backend-sha, --predecessor-packet-id, --predecessor-sha256, "
-                "--output-packet, --preview-approval-file, and --refresh-successor-of "
+                "--output-packet, --preview-approval-file, --refresh-successor-of, "
+                "--fresh-successor, and --production-successor-of-preview "
                 "require --emit-successor"
             )
         if args.promote_packet:

@@ -1425,6 +1425,348 @@ def emit_test_successor(
     return source_path, output_path, source, candidate_shas, source_sha256
 
 
+def emit_fresh_e13_successor(
+    tmp_path: Path,
+    *,
+    archived_legacy_packet: bytes | None = None,
+) -> tuple[Path, Path, dict, dict[str, str], str, Path]:
+    """Emit one fresh cohort-qualified E13 preview from an active v2 source."""
+    module = load_module()
+    source_path, candidate_shas, source, source_sha256 = (
+        write_immutable_successor_source(tmp_path)
+    )
+    if archived_legacy_packet is not None:
+        archive_path = (
+            tmp_path
+            / "docs"
+            / "workspace"
+            / "superseded-release-packets"
+            / f"{source['packet_id']}-preview-successor.json"
+        )
+        archive_path.parent.mkdir(parents=True, exist_ok=True)
+        archive_path.write_bytes(archived_legacy_packet)
+    successor_id = module._cohort_successor_packet_id(
+        source["packet_id"], "preview", candidate_shas
+    )
+    approval = preview_data_approval(source, candidate_shas)
+    approval["approval_id"] = f"approval.{successor_id}.preview-data"
+    approval["predecessor_packet_ids"] = [source["packet_id"]]
+    approval["evidence_ids"] = [f"ev.{successor_id}.preview-data-approval"]
+    approval_path = tmp_path / "fresh-preview-approval.json"
+    approval_path.write_text(json.dumps(approval), encoding="utf-8")
+    evidence_path = write_preview_successor_evidence(
+        tmp_path, successor_id, approval["evidence_ids"][0]
+    )
+    output_path = (
+        tmp_path / "docs" / "workspace" / "release-packets" / f"{successor_id}.json"
+    )
+    result = run_checker(
+        tmp_path,
+        "--emit-successor",
+        "--source-packet",
+        source_path.relative_to(tmp_path).as_posix(),
+        "--successor-scope",
+        "preview",
+        "--workspace-sha",
+        candidate_shas["workspace"],
+        "--app-sha",
+        candidate_shas["app"],
+        "--backend-sha",
+        candidate_shas["backend"],
+        "--predecessor-packet-id",
+        source["packet_id"],
+        "--predecessor-sha256",
+        source_sha256,
+        "--output-packet",
+        output_path.relative_to(tmp_path).as_posix(),
+        "--preview-approval-file",
+        approval_path.relative_to(tmp_path).as_posix(),
+        "--fresh-successor",
+        "--write",
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    return (
+        source_path,
+        output_path,
+        source,
+        candidate_shas,
+        source_sha256,
+        evidence_path,
+    )
+
+
+def write_e13_completion_evidence(
+    tmp_path: Path, packet_id: str, label: str
+) -> tuple[str, Path]:
+    """Write one packet-owned passing preview receipt for a completed E13 claim."""
+    evidence_id = f"ev.{packet_id}.e13-{label}"
+    evidence_data = evidence()
+    evidence_data.update(
+        {
+            "evidence_id": evidence_id,
+            "packet_id": packet_id,
+            "gate": "gate-4",
+            "truth_scope": "preview",
+        }
+    )
+    evidence_path = (
+        tmp_path
+        / "docs"
+        / "workspace"
+        / "architecture-evidence"
+        / f"{packet_id}.e13-{label}.json"
+    )
+    evidence_path.write_text(json.dumps(evidence_data), encoding="utf-8")
+    return evidence_id, evidence_path
+
+
+def accept_fresh_e13_preview(
+    tmp_path: Path, output_path: Path
+) -> tuple[dict, list[Path]]:
+    """Record a complete, teardown-verified E13 leaf suitable for E14 handoff."""
+    preview = json.loads(output_path.read_text(encoding="utf-8"))
+    evidence_ids: dict[str, str] = {}
+    evidence_paths: list[Path] = []
+    for label in (
+        "quick",
+        "full",
+        "app-build",
+        "browser",
+        "summary",
+        "review",
+        "render-teardown",
+        "modal-teardown",
+        "vercel-teardown",
+        "rollback",
+    ):
+        evidence_id, evidence_path = write_e13_completion_evidence(
+            tmp_path, preview["packet_id"], label
+        )
+        evidence_ids[label] = evidence_id
+        evidence_paths.append(evidence_path)
+    preview["created_at"] = "2026-08-18T00:00:00Z"
+    preview["updated_at"] = "2026-08-18T00:00:01Z"
+    preview["state"] = "preview_complete"
+    preview["targets"]["preview"] = {
+        "status": "verified",
+        "database_url_env": "TRR_E13_PREVIEW_DATABASE_URL",
+        "project_ref": "e13previewtarget0001",
+    }
+    preview["targets"]["production"]["status"] = "pending_gate_4"
+    preview_target_identity = (
+        "database_url_env=TRR_E13_PREVIEW_DATABASE_URL;project_ref=e13previewtarget0001"
+    )
+    for approval in preview["approvals"]:
+        if (
+            approval["approval_id"]
+            == preview["immutable_successor"]["preview_data_approval_id"]
+        ):
+            approval["preview_target_identity"] = preview_target_identity
+    preview["validation"] = {
+        "quick": {"status": "pass", "evidence_ids": [evidence_ids["quick"]]},
+        "full": {"status": "pass", "evidence_ids": [evidence_ids["full"]]},
+        "app_build": {
+            "status": "passed",
+            "current_chat_approval_id": f"approval.{preview['packet_id']}.full-app-build",
+            "evidence_ids": [evidence_ids["app-build"]],
+        },
+        "browser": {"status": "pass", "evidence_ids": [evidence_ids["browser"]]},
+        "evidence_ids": [evidence_ids["summary"]],
+    }
+    preview["review"] = {
+        **preview["review"],
+        "verdict": "accepted_preview",
+        "basis": "Accepted E13 preview receipt for exact cohort handoff.",
+        "evidence_ids": [evidence_ids["review"]],
+    }
+    preview["approvals"].append(
+        {
+            "approval_id": f"approval.{preview['packet_id']}.full-app-build",
+            "kind": "full_app_build",
+            "status": "approved",
+            "scope": "E13 preview full app build",
+            "approved_by": "user",
+            "approved_at": "2026-08-18T00:00:00Z",
+        }
+    )
+    preview["deployments"]["render"] = {
+        **preview["deployments"]["render"],
+        "status": "rolled_back",
+        "deployment_id": "dep-e13-preview-render-20260818",
+        "previous_deployment_id": "dep-e13-preview-render-prior-20260818",
+        "evidence_ids": [evidence_ids["render-teardown"]],
+    }
+    preview["deployments"]["modal"] = {
+        **preview["deployments"]["modal"],
+        "status": "rolled_back",
+        "app_ref": "trr_backend.preview_e13_20260818",
+        "evidence_ids": [evidence_ids["modal-teardown"]],
+    }
+    preview["deployments"]["vercel"] = {
+        **preview["deployments"]["vercel"],
+        "status": "rolled_back",
+        "deployment_id": "dpl_e13_preview_20260818",
+        "previous_deployment_id": "dpl_e13_preview_prior_20260818",
+        "evidence_ids": [evidence_ids["vercel-teardown"]],
+    }
+    preview["rollback"] = {
+        **preview["rollback"],
+        "backend_commands": [
+            [
+                "scripts/render-trr.sh",
+                "rollback",
+                "--service-id",
+                "srv-e13-preview-api",
+                "--deploy-id",
+                "dep-e13-preview-render-prior-20260818",
+                "--commit",
+                preview["repositories"]["backend"]["candidate_sha"],
+            ],
+            [
+                "scripts/modal-trr.sh",
+                "rollback",
+                "--app-ref",
+                "trr_backend.preview_e13_20260818",
+            ],
+        ],
+        "app_commands": [
+            [
+                "TRR-APP/scripts/vercel.sh",
+                "rollback-trr",
+                "--deployment",
+                "dpl_e13_preview_prior_20260818",
+            ]
+        ],
+        "data_recovery": (
+            f"Preview data disposition for {preview_target_identity}: no data "
+            "mutation was applied and the preview target was torn down after validation."
+        ),
+        "evidence_ids": [evidence_ids["rollback"]],
+    }
+    preview["gate_4"] = {
+        "candidate_commits": "verified",
+        "preview": "verified",
+        "production": "pending_gate_4",
+        "app_build": "verified",
+        "browser": "verified",
+        "deployments": "verified",
+    }
+    output_path.write_text(json.dumps(preview), encoding="utf-8")
+    return preview, evidence_paths
+
+
+def emit_e14_production_successor(
+    tmp_path: Path,
+) -> tuple[Path, Path, Path, dict, dict[str, str], list[Path]]:
+    """Create an active v2 -> accepted E13 -> emitted E14 successor chain."""
+    (
+        source_path,
+        preview_path,
+        source,
+        candidate_shas,
+        source_sha256,
+        preview_evidence_path,
+    ) = emit_fresh_e13_successor(tmp_path)
+    _, completion_evidence_paths = accept_fresh_e13_preview(tmp_path, preview_path)
+    module = load_module()
+    production_id = module._cohort_successor_packet_id(
+        source["packet_id"], "production", candidate_shas
+    )
+    production_path = (
+        tmp_path / "docs" / "workspace" / "release-packets" / f"{production_id}.json"
+    )
+    result = run_checker(
+        tmp_path,
+        "--emit-successor",
+        "--source-packet",
+        source_path.relative_to(tmp_path).as_posix(),
+        "--successor-scope",
+        "production",
+        "--workspace-sha",
+        candidate_shas["workspace"],
+        "--app-sha",
+        candidate_shas["app"],
+        "--backend-sha",
+        candidate_shas["backend"],
+        "--predecessor-packet-id",
+        source["packet_id"],
+        "--predecessor-sha256",
+        source_sha256,
+        "--output-packet",
+        production_path.relative_to(tmp_path).as_posix(),
+        "--production-successor-of-preview",
+        preview_path.stem,
+        "--write",
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    evidence_paths = [
+        tmp_path
+        / "docs"
+        / "workspace"
+        / "architecture-evidence"
+        / f"{source['packet_id']}.quick.json",
+        preview_evidence_path,
+        *completion_evidence_paths,
+    ]
+    return (
+        source_path,
+        preview_path,
+        production_path,
+        source,
+        candidate_shas,
+        evidence_paths,
+    )
+
+
+def e14_chain_validation(
+    tmp_path: Path,
+    source_path: Path,
+    preview_path: Path,
+    production_path: Path,
+    evidence_paths: list[Path],
+) -> subprocess.CompletedProcess[str]:
+    arguments: list[str] = []
+    for packet_path in (source_path, preview_path, production_path):
+        arguments.extend(["--packet", packet_path.relative_to(tmp_path).as_posix()])
+    for evidence_path in evidence_paths:
+        arguments.extend(["--evidence", evidence_path.relative_to(tmp_path).as_posix()])
+    return run_checker(tmp_path, *arguments, "--allow-partial")
+
+
+def production_successor_command(
+    tmp_path: Path,
+    source_path: Path,
+    preview_path: Path,
+    source: dict,
+    candidate_shas: dict[str, str],
+    source_sha256: str,
+    output_path: Path,
+) -> subprocess.CompletedProcess[str]:
+    return run_checker(
+        tmp_path,
+        "--emit-successor",
+        "--source-packet",
+        source_path.relative_to(tmp_path).as_posix(),
+        "--successor-scope",
+        "production",
+        "--workspace-sha",
+        candidate_shas["workspace"],
+        "--app-sha",
+        candidate_shas["app"],
+        "--backend-sha",
+        candidate_shas["backend"],
+        "--predecessor-packet-id",
+        source["packet_id"],
+        "--predecessor-sha256",
+        source_sha256,
+        "--output-packet",
+        output_path.relative_to(tmp_path).as_posix(),
+        "--production-successor-of-preview",
+        preview_path.stem,
+        "--write",
+    )
+
+
 def write_refreshed_successor_inputs(
     tmp_path: Path,
 ) -> tuple[Path, Path, Path, Path, dict, dict[str, str], str]:
@@ -1956,6 +2298,407 @@ def test_cli_legacy_successor_id_is_unchanged_without_refresh_flag(
     assert emitted["packet_id"] == f"{source['packet_id']}-preview-successor"
     assert emitted["supersedes"][0]["packet_id"] == source["packet_id"]
     assert source_path.read_bytes() == json.dumps(source).encode()
+
+
+def test_cli_fresh_e13_successor_uses_unique_cohort_id_after_archived_collision(
+    tmp_path: Path,
+) -> None:
+    archived_bytes = b'{"historical":"legacy preview successor"}\n'
+    (
+        source_path,
+        output_path,
+        source,
+        candidate_shas,
+        _source_sha256,
+        evidence_path,
+    ) = emit_fresh_e13_successor(tmp_path, archived_legacy_packet=archived_bytes)
+    module = load_module()
+    emitted = json.loads(output_path.read_text(encoding="utf-8"))
+    archived_path = (
+        tmp_path
+        / "docs"
+        / "workspace"
+        / "superseded-release-packets"
+        / f"{source['packet_id']}-preview-successor.json"
+    )
+
+    assert output_path.stem == module._cohort_successor_packet_id(
+        source["packet_id"], "preview", candidate_shas
+    )
+    assert output_path.stem != f"{source['packet_id']}-preview-successor"
+    assert archived_path.read_bytes() == archived_bytes
+    assert emitted["successor_provenance"] == {
+        "kind": "e13_preview_successor",
+        "source_packet_id": source["packet_id"],
+        "source_packet_sha256": hashlib.sha256(source_path.read_bytes()).hexdigest(),
+        "candidate_commits": {
+            "workspace_sha": candidate_shas["workspace"],
+            "app_sha": candidate_shas["app"],
+            "backend_sha": candidate_shas["backend"],
+        },
+        "preview_data_approval_id": f"approval.{output_path.stem}.preview-data",
+    }
+    assert {handoff["packet_id"] for handoff in emitted["supersedes"]} == {
+        source["packet_id"]
+    }
+    validation = preview_chain_validation(
+        tmp_path,
+        source_path,
+        [output_path],
+        [
+            tmp_path
+            / "docs"
+            / "workspace"
+            / "architecture-evidence"
+            / f"{source['packet_id']}.quick.json",
+            evidence_path,
+        ],
+    )
+    assert validation.returncode == 0, validation.stdout + validation.stderr
+
+
+@pytest.mark.parametrize(
+    "inventory_directory",
+    ("release-packets", "superseded-release-packets"),
+)
+def test_cli_fresh_e13_rejects_active_or_archived_same_cohort_identity(
+    tmp_path: Path,
+    inventory_directory: str,
+) -> None:
+    module = load_module()
+    source_path, candidate_shas, source, source_sha256 = (
+        write_immutable_successor_source(tmp_path)
+    )
+    successor_id = module._cohort_successor_packet_id(
+        source["packet_id"], "preview", candidate_shas
+    )
+    approval = preview_data_approval(source, candidate_shas)
+    approval["approval_id"] = f"approval.{successor_id}.preview-data"
+    approval["predecessor_packet_ids"] = [source["packet_id"]]
+    approval["evidence_ids"] = [f"ev.{successor_id}.preview-data-approval"]
+    approval_path = tmp_path / "fresh-preview-approval.json"
+    approval_path.write_text(json.dumps(approval), encoding="utf-8")
+    write_preview_successor_evidence(
+        tmp_path, successor_id, approval["evidence_ids"][0]
+    )
+    collision_path = (
+        tmp_path / "docs" / "workspace" / inventory_directory / f"{successor_id}.json"
+    )
+    collision_path.parent.mkdir(parents=True, exist_ok=True)
+    collision_bytes = json.dumps({"packet_id": successor_id}).encode("utf-8")
+    collision_path.write_bytes(collision_bytes)
+    output_path = (
+        tmp_path / "docs" / "workspace" / "release-packets" / f"{successor_id}.json"
+    )
+
+    result = run_checker(
+        tmp_path,
+        "--emit-successor",
+        "--source-packet",
+        source_path.relative_to(tmp_path).as_posix(),
+        "--successor-scope",
+        "preview",
+        "--workspace-sha",
+        candidate_shas["workspace"],
+        "--app-sha",
+        candidate_shas["app"],
+        "--backend-sha",
+        candidate_shas["backend"],
+        "--predecessor-packet-id",
+        source["packet_id"],
+        "--predecessor-sha256",
+        source_sha256,
+        "--output-packet",
+        output_path.relative_to(tmp_path).as_posix(),
+        "--preview-approval-file",
+        approval_path.relative_to(tmp_path).as_posix(),
+        "--fresh-successor",
+        "--write",
+    )
+
+    assert result.returncode == 1
+    assert (
+        "cohort successor packet_id already exists in active or superseded inventory"
+        in result.stdout
+    )
+    assert collision_path.read_bytes() == collision_bytes
+    if inventory_directory == "superseded-release-packets":
+        assert not output_path.exists()
+
+
+@pytest.mark.parametrize(
+    ("mutation", "expected"),
+    [
+        ("target", "requires verified preview target"),
+        ("gate_4", "has incomplete Gate 4 proof"),
+        ("quick", "requires quick validation"),
+        ("app_build", "requires app build proof"),
+        ("browser", "requires browser validation"),
+        (
+            "deployment",
+            "requires verified teardown or not_applicable disposition for render",
+        ),
+        ("rollback", "rollback requires packet-owned evidence"),
+        ("rollback_placeholder", "requires exact non-placeholder rollback commands"),
+        ("teardown_placeholder", "requires exact non-placeholder render teardown"),
+        (
+            "data_disposition_placeholder",
+            "requires exact non-placeholder preview data disposition",
+        ),
+        (
+            "data_disposition_unbound",
+            "requires preview data disposition bound to the exact preview target identity",
+        ),
+        ("review", "review requires packet-owned evidence"),
+    ],
+)
+def test_cli_e14_rejects_incomplete_e13_readiness(
+    tmp_path: Path,
+    mutation: str,
+    expected: str,
+) -> None:
+    (
+        source_path,
+        preview_path,
+        source,
+        candidate_shas,
+        source_sha256,
+        _preview_approval_evidence_path,
+    ) = emit_fresh_e13_successor(tmp_path)
+    accept_fresh_e13_preview(tmp_path, preview_path)
+    preview = json.loads(preview_path.read_text(encoding="utf-8"))
+    if mutation == "target":
+        preview["targets"]["preview"]["status"] = "pending_gate_4"
+    elif mutation == "gate_4":
+        preview["gate_4"]["deployments"] = "pending_gate_4"
+    elif mutation == "quick":
+        preview["validation"]["quick"]["status"] = "pending"
+    elif mutation == "app_build":
+        preview["validation"]["app_build"]["status"] = "pending_gate_4"
+    elif mutation == "browser":
+        preview["validation"]["browser"]["status"] = "pending_gate_4"
+    elif mutation == "deployment":
+        preview["deployments"]["render"]["status"] = "verified"
+    elif mutation == "rollback":
+        preview["rollback"]["evidence_ids"] = []
+    elif mutation == "rollback_placeholder":
+        preview["rollback"]["backend_commands"][0][-1] = (
+            "<gate-4-candidate-backend-sha>"
+        )
+    elif mutation == "teardown_placeholder":
+        preview["deployments"]["render"]["deployment_id"] = (
+            "<gate-4-preview-deployment>"
+        )
+    elif mutation == "data_disposition_placeholder":
+        preview["rollback"]["data_recovery"] = "<gate-4-preview-data-disposition>"
+    elif mutation == "data_disposition_unbound":
+        preview["rollback"]["data_recovery"] = (
+            "Preview data was not changed during validation."
+        )
+    else:
+        preview["review"]["evidence_ids"] = []
+    preview_path.write_text(json.dumps(preview), encoding="utf-8")
+    module = load_module()
+    output_path = (
+        tmp_path
+        / "docs"
+        / "workspace"
+        / "release-packets"
+        / f"{module._cohort_successor_packet_id(source['packet_id'], 'production', candidate_shas)}.json"
+    )
+
+    result = production_successor_command(
+        tmp_path,
+        source_path,
+        preview_path,
+        source,
+        candidate_shas,
+        source_sha256,
+        output_path,
+    )
+
+    assert result.returncode == 1
+    assert expected in result.stdout
+    assert not output_path.exists()
+
+
+def test_e13_completion_rejects_placeholder_target(tmp_path: Path) -> None:
+    (
+        _source_path,
+        preview_path,
+        _source,
+        _candidate_shas,
+        _source_sha256,
+        approval_evidence_path,
+    ) = emit_fresh_e13_successor(tmp_path)
+    preview, completion_evidence_paths = accept_fresh_e13_preview(
+        tmp_path, preview_path
+    )
+    preview["targets"]["preview"]["project_ref"] = "<gate-4-preview-project-ref>"
+    evidence_by_id = {
+        document["evidence_id"]: (document, evidence_path)
+        for evidence_path in [approval_evidence_path, *completion_evidence_paths]
+        for document in [json.loads(evidence_path.read_text(encoding="utf-8"))]
+    }
+    module = load_module()
+
+    with pytest.raises(
+        module.ManifestValidationError,
+        match="requires exact non-placeholder targets",
+    ):
+        module.validate_e13_preview_completion(preview, preview_path, evidence_by_id)
+
+
+def test_cli_e14_successor_hands_off_exact_accepted_e13_leaf(
+    tmp_path: Path,
+) -> None:
+    (
+        source_path,
+        preview_path,
+        production_path,
+        source,
+        candidate_shas,
+        evidence_paths,
+    ) = emit_e14_production_successor(tmp_path)
+    production = json.loads(production_path.read_text(encoding="utf-8"))
+    preview_sha256 = hashlib.sha256(preview_path.read_bytes()).hexdigest()
+
+    assert production["immutable_successor"].get("preview_data_approval_id") is None
+    assert production["successor_provenance"] == {
+        "kind": "e14_production_successor",
+        "source_packet_id": source["packet_id"],
+        "source_packet_sha256": hashlib.sha256(source_path.read_bytes()).hexdigest(),
+        "candidate_commits": {
+            "workspace_sha": candidate_shas["workspace"],
+            "app_sha": candidate_shas["app"],
+            "backend_sha": candidate_shas["backend"],
+        },
+        "accepted_preview_packet_id": preview_path.stem,
+        "accepted_preview_packet_sha256": preview_sha256,
+        "accepted_preview_approval_id": (f"approval.{preview_path.stem}.preview-data"),
+    }
+    assert {handoff["packet_id"] for handoff in production["supersedes"]} == {
+        preview_path.stem
+    }
+    preview = json.loads(preview_path.read_text(encoding="utf-8"))
+    for handoff in production["supersedes"]:
+        assert (
+            handoff["paths"]
+            == preview["repositories"][handoff["repository"]]["owned_paths"]
+        )
+    validation = e14_chain_validation(
+        tmp_path,
+        source_path,
+        preview_path,
+        production_path,
+        evidence_paths,
+    )
+    assert validation.returncode == 0, validation.stdout + validation.stderr
+
+
+def test_e14_rejects_mismatched_cohort(tmp_path: Path) -> None:
+    (
+        source_path,
+        preview_path,
+        production_path,
+        _source,
+        _candidate_shas,
+        evidence_paths,
+    ) = emit_e14_production_successor(tmp_path)
+    production = json.loads(production_path.read_text(encoding="utf-8"))
+    production["repositories"]["workspace"]["base_sha"] = "0" * 40
+    production_path.write_text(json.dumps(production), encoding="utf-8")
+
+    validation = e14_chain_validation(
+        tmp_path,
+        source_path,
+        preview_path,
+        production_path,
+        evidence_paths,
+    )
+    assert validation.returncode == 1
+    assert (
+        "typed E14 provenance cohort does not exactly match accepted preview"
+        in validation.stdout
+    )
+
+
+@pytest.mark.parametrize(
+    ("mutation", "expected"),
+    [
+        ("fork", "ambiguous supersession fork"),
+        ("merge", "ambiguous supersession merge"),
+        ("cycle", "supersession cycle detected"),
+    ],
+)
+def test_e14_rejects_fork_or_cycle(
+    tmp_path: Path,
+    mutation: str,
+    expected: str,
+) -> None:
+    (
+        source_path,
+        preview_path,
+        production_path,
+        _source,
+        _candidate_shas,
+        evidence_paths,
+    ) = emit_e14_production_successor(tmp_path)
+    packet_paths = [source_path, preview_path, production_path]
+    if mutation == "fork":
+        fork = json.loads(production_path.read_text(encoding="utf-8"))
+        fork["packet_id"] = "production-successor-fork"
+        fork["created_at"] = "2026-08-19T00:00:00Z"
+        fork["updated_at"] = "2026-08-19T00:00:01Z"
+        fork_path = production_path.with_name("production-successor-fork.json")
+        fork_path.write_text(json.dumps(fork), encoding="utf-8")
+        packet_paths.append(fork_path)
+    elif mutation == "merge":
+        production = json.loads(production_path.read_text(encoding="utf-8"))
+        merge_predecessor = json.loads(production_path.read_text(encoding="utf-8"))
+        merge_predecessor["packet_id"] = "production-successor-merge-predecessor"
+        merge_predecessor["created_at"] = "2026-08-18T00:00:02Z"
+        merge_predecessor["updated_at"] = "2026-08-18T00:00:03Z"
+        merge_predecessor["supersedes"] = []
+        merge_predecessor.pop("immutable_successor")
+        merge_predecessor.pop("successor_provenance")
+        merge_predecessor_path = production_path.with_name(
+            "production-successor-merge-predecessor.json"
+        )
+        merge_predecessor_path.write_text(
+            json.dumps(merge_predecessor), encoding="utf-8"
+        )
+        packet_paths.append(merge_predecessor_path)
+        extra_handoff = dict(production["supersedes"][0])
+        extra_handoff["packet_id"] = merge_predecessor_path.stem
+        production["supersedes"].append(extra_handoff)
+        production_path.write_text(json.dumps(production), encoding="utf-8")
+    else:
+        middle = json.loads(production_path.read_text(encoding="utf-8"))
+        middle["packet_id"] = "production-successor-cycle-middle"
+        middle["created_at"] = "2026-08-18T00:00:02Z"
+        middle["updated_at"] = "2026-08-18T00:00:03Z"
+        for handoff in middle["supersedes"]:
+            handoff["packet_id"] = production_path.stem
+        middle_path = production_path.with_name(
+            "production-successor-cycle-middle.json"
+        )
+        middle_path.write_text(json.dumps(middle), encoding="utf-8")
+        packet_paths.append(middle_path)
+        preview = json.loads(preview_path.read_text(encoding="utf-8"))
+        for handoff in preview["supersedes"]:
+            handoff["packet_id"] = middle_path.stem
+        preview_path.write_text(json.dumps(preview), encoding="utf-8")
+
+    arguments: list[str] = []
+    for packet_path in packet_paths:
+        arguments.extend(["--packet", packet_path.relative_to(tmp_path).as_posix()])
+    for evidence_path in evidence_paths:
+        arguments.extend(["--evidence", evidence_path.relative_to(tmp_path).as_posix()])
+    validation = run_checker(tmp_path, *arguments, "--allow-partial")
+
+    assert validation.returncode == 1
+    assert expected in validation.stdout
 
 
 def validate_test_successor_cohort(

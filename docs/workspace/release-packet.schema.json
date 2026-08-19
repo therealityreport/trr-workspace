@@ -54,6 +54,7 @@
         "approved_for_cutover",
         "cutover_in_progress",
         "cutover_complete_observing",
+        "preview_complete",
         "program_complete",
         "rolled_back",
         "blocked"
@@ -98,6 +99,10 @@
     "immutable_successor": {
       "description": "Optional v3 successor provenance. Its source packet is an immutable predecessor and its candidate tuple is independently reproducible.",
       "$ref": "#/$defs/immutableSuccessor"
+    },
+    "successor_provenance": {
+      "description": "Typed E13/E14 handoff provenance for a cohort-qualified immutable successor.",
+      "$ref": "#/$defs/successorProvenance"
     },
     "contracts": {
       "type": "object",
@@ -712,7 +717,7 @@
       "required": ["verdict", "reviewers", "basis", "evidence_ids"],
       "properties": {
         "verdict": {
-          "enum": ["accepted_local", "accepted_with_follow_up", "pending", "rejected"]
+          "enum": ["accepted_local", "accepted_preview", "accepted_with_follow_up", "pending", "rejected"]
         },
         "reviewers": {"$ref": "#/$defs/uniqueStringArray"},
         "basis": {"type": "string", "minLength": 1, "maxLength": 2000},
@@ -854,6 +859,12 @@
       }
     },
     "immutableSuccessor": {
+      "oneOf": [
+        {"$ref": "#/$defs/previewImmutableSuccessor"},
+        {"$ref": "#/$defs/productionImmutableSuccessor"}
+      ]
+    },
+    "previewImmutableSuccessor": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -869,6 +880,71 @@
         "scope": {"enum": ["preview", "production"]},
         "candidate_commits": {"$ref": "#/$defs/candidateTuple"},
         "preview_data_approval_id": {"$ref": "#/$defs/identifier"}
+      }
+    },
+    "productionImmutableSuccessor": {
+      "description": "E14 production successors retain the schema-v2 source root and bind their accepted E13 leaf through successor_provenance.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_packet_id",
+        "source_packet_sha256",
+        "scope",
+        "candidate_commits"
+      ],
+      "properties": {
+        "source_packet_id": {"$ref": "#/$defs/identifier"},
+        "source_packet_sha256": {"$ref": "#/$defs/sha256"},
+        "scope": {"const": "production"},
+        "candidate_commits": {"$ref": "#/$defs/candidateTuple"}
+      }
+    },
+    "successorProvenance": {
+      "oneOf": [
+        {"$ref": "#/$defs/e13SuccessorProvenance"},
+        {"$ref": "#/$defs/e14SuccessorProvenance"}
+      ]
+    },
+    "e13SuccessorProvenance": {
+      "description": "Typed provenance for a fresh cohort-qualified preview successor.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "source_packet_id",
+        "source_packet_sha256",
+        "candidate_commits",
+        "preview_data_approval_id"
+      ],
+      "properties": {
+        "kind": {"const": "e13_preview_successor"},
+        "source_packet_id": {"$ref": "#/$defs/identifier"},
+        "source_packet_sha256": {"$ref": "#/$defs/sha256"},
+        "candidate_commits": {"$ref": "#/$defs/candidateTuple"},
+        "preview_data_approval_id": {"$ref": "#/$defs/identifier"}
+      }
+    },
+    "e14SuccessorProvenance": {
+      "description": "Typed provenance for a production successor that hands off from one accepted E13 preview leaf.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "source_packet_id",
+        "source_packet_sha256",
+        "candidate_commits",
+        "accepted_preview_packet_id",
+        "accepted_preview_packet_sha256",
+        "accepted_preview_approval_id"
+      ],
+      "properties": {
+        "kind": {"const": "e14_production_successor"},
+        "source_packet_id": {"$ref": "#/$defs/identifier"},
+        "source_packet_sha256": {"$ref": "#/$defs/sha256"},
+        "candidate_commits": {"$ref": "#/$defs/candidateTuple"},
+        "accepted_preview_packet_id": {"$ref": "#/$defs/identifier"},
+        "accepted_preview_packet_sha256": {"$ref": "#/$defs/sha256"},
+        "accepted_preview_approval_id": {"$ref": "#/$defs/identifier"}
       }
     },
     "basicApproval": {
