@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import os
-import shutil
 import subprocess
+import sys
 import tempfile
 import time
 from pathlib import Path
@@ -56,8 +56,8 @@ def test_doctor_plugin_registry_declares_live_mcp_mapping() -> None:
 
 
 def test_doctor_plugin_registry_selects_cache_build_semantically(tmp_path: Path) -> None:
-    python311 = shutil.which("python3.11")
-    assert python311, "Python 3.11 is required by the registry's tomllib parser"
+    assert sys.version_info >= (3, 11), "Python 3.11+ is required by the registry's tomllib parser"
+    runtime_python = sys.executable
     config = tmp_path / "config.toml"
     config.write_text(
         '[plugins."scrapling@local-plugins"]\nenabled = true\n',
@@ -70,7 +70,7 @@ def test_doctor_plugin_registry_selects_cache_build_semantically(tmp_path: Path)
         manifest.write_text("{}\n", encoding="utf-8")
 
     command = (
-        f'MCP_RUNTIME_PYTHON_BIN="{python311}"; '
+        f'MCP_RUNTIME_PYTHON_BIN="{runtime_python}"; '
         f'CODEX_CONFIG_FILE="{config}"; '
         f'source "{REGISTRY}"; '
         f'doctor_plugin_enabled_status "scrapling@local-plugins" "{cache_root}/*/.codex-plugin/plugin.json"'
@@ -247,8 +247,8 @@ env = { MODAL_PROFILE = "wrong" }
 
 
 def test_modal_doctor_accepts_equivalent_symlinked_workspace_paths(tmp_path: Path) -> None:
-    python311 = shutil.which("python3.11")
-    assert python311, "Python 3.11 is required by the registry's tomllib parser"
+    assert sys.version_info >= (3, 11), "Python 3.11+ is required by the registry's tomllib parser"
+    runtime_python = sys.executable
     real_root = tmp_path / "Development" / "Projects" / "TRR"
     alias_root = tmp_path / "Projects" / "TRR"
     python = real_root / "TRR-Backend" / ".venv" / "bin" / "python"
@@ -273,7 +273,7 @@ default_tools_approval_mode = "approve"
     )
 
     command = (
-        f'MCP_RUNTIME_PYTHON_BIN="{python311}"; '
+        f'MCP_RUNTIME_PYTHON_BIN="{runtime_python}"; '
         f'ROOT="{real_root}"; '
         f'source "{REGISTRY}"; '
         'doctor_plugin_project_mcp_status modal-ops'
