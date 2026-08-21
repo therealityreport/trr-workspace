@@ -244,3 +244,48 @@ env = { MODAL_PROFILE = "wrong" }
         assert f'command = "{tmp}/TRR-Backend/.venv/bin/python"' in repaired
         assert f'args = ["{tmp}/TRR-Backend/scripts/modal/modal_ops_mcp.py"]' in repaired
         assert 'TRR_MODAL_APP_NAME = "trr-backend-jobs"' in repaired
+
+
+def test_modal_doctor_accepts_equivalent_symlinked_workspace_paths(tmp_path: Path) -> None:
+    python311 = shutil.which("python3.11")
+    assert python311, "Python 3.11 is required by the registry's tomllib parser"
+    real_root = tmp_path / "Development" / "Projects" / "TRR"
+    alias_root = tmp_path / "Projects" / "TRR"
+    python = real_root / "TRR-Backend" / ".venv" / "bin" / "python"
+    script = real_root / "TRR-Backend" / "scripts" / "modal" / "modal_ops_mcp.py"
+    python.parent.mkdir(parents=True)
+    script.parent.mkdir(parents=True)
+    python.write_text("", encoding="utf-8")
+    script.write_text("", encoding="utf-8")
+    alias_root.parent.mkdir(parents=True)
+    alias_root.symlink_to(real_root, target_is_directory=True)
+
+    config = real_root / ".codex" / "config.toml"
+    config.parent.mkdir()
+    config.write_text(
+        f'''[mcp_servers.modal-ops]
+command = "{alias_root}/TRR-Backend/.venv/bin/python"
+args = ["{alias_root}/TRR-Backend/scripts/modal/modal_ops_mcp.py"]
+env = {{ MODAL_PROFILE = "admin-56995", MODAL_PROFILE_NAME = "admin-56995", MODAL_PROFILE_LABEL = "TRR Backend Jobs", TRR_MODAL_APP_NAME = "trr-backend-jobs" }}
+default_tools_approval_mode = "approve"
+''',
+        encoding="utf-8",
+    )
+
+    command = (
+        f'MCP_RUNTIME_PYTHON_BIN="{python311}"; '
+        f'ROOT="{real_root}"; '
+        f'source "{REGISTRY}"; '
+        'doctor_plugin_project_mcp_status modal-ops'
+    )
+    result = subprocess.run(
+        ["bash", "-lc", command],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "profile=admin-56995; app=trr-backend-jobs" in result.stdout
+    assert 'default_tools_approval_mode = "approve"' in config.read_text(encoding="utf-8")
