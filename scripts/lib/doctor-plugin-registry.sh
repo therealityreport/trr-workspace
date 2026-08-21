@@ -314,10 +314,14 @@ if server_name == "modal-ops":
         "MODAL_PROFILE_LABEL": "TRR Backend Jobs",
         "TRR_MODAL_APP_NAME": "trr-backend-jobs",
     }
-    if server.get("command") != expected_command:
+    def same_path(actual: object, expected: str) -> bool:
+        return isinstance(actual, str) and pathlib.Path(actual).resolve() == pathlib.Path(expected).resolve()
+
+    if not same_path(server.get("command"), expected_command):
         print(f"modal command mismatch: {server.get('command')!r}")
         raise SystemExit(1)
-    if server.get("args") != expected_args:
+    actual_args = server.get("args")
+    if not isinstance(actual_args, list) or len(actual_args) != 1 or not same_path(actual_args[0], expected_args[0]):
         print(f"modal args mismatch: {server.get('args')!r}")
         raise SystemExit(1)
     env = server.get("env") or {}

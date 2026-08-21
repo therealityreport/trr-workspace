@@ -428,9 +428,6 @@ required_user_servers = {
 }
 required_top_level = {
     "personality": "pragmatic",
-    "approval_policy": "never",
-    "sandbox_mode": "danger-full-access",
-    "web_search": "cached",
     "project_doc_max_bytes": 65536,
     "project_doc_fallback_filenames": [],
 }
@@ -463,6 +460,13 @@ def matches_expected(actual, expected):
         )
     return actual == expected
 
+def matches_resolved_path(actual, expected):
+    return (
+        isinstance(actual, str)
+        and isinstance(expected, str)
+        and pathlib.Path(actual).resolve() == pathlib.Path(expected).resolve()
+    )
+
 for key, value in required_top_level.items():
     actual = data.get(key)
     if not matches_expected(actual, value):
@@ -477,6 +481,18 @@ for name, expectations in required_servers.items():
         actual = server.get(key)
         if key == "env":
             actual = actual or {}
+        if name == "modal-ops" and key == "command":
+            if not matches_resolved_path(actual, value):
+                errors.append(f"[mcp_servers.{name}] expected {key}={value!r}, found {actual!r}")
+            continue
+        if name == "modal-ops" and key == "args":
+            if (
+                not isinstance(actual, list)
+                or len(actual) != len(value)
+                or any(not matches_resolved_path(item, expected_item) for item, expected_item in zip(actual, value))
+            ):
+                errors.append(f"[mcp_servers.{name}] expected {key}={value!r}, found {actual!r}")
+            continue
         if not matches_expected(actual, value):
             errors.append(f"[mcp_servers.{name}] expected {key}={value!r}, found {actual!r}")
 

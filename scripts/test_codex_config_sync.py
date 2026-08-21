@@ -59,8 +59,6 @@ def test_bootstrap_accepts_tracked_project_mcp_servers() -> None:
             ROOT / "config" / "codex" / "user-bootstrap.toml.tmpl",
             temp_root / "config" / "codex" / "user-bootstrap.toml.tmpl",
         )
-        shutil.copytree(ROOT / ".codex" / "agents", temp_root / ".codex" / "agents")
-
         project_config = (ROOT / ".codex" / "config.toml").read_text(encoding="utf-8")
         parsed_config = tomllib.loads(project_config)
         modal_command = parsed_config["mcp_servers"]["modal-ops"]["command"]
