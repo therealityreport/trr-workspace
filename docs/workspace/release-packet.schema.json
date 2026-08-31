@@ -498,6 +498,7 @@
       }
     },
     "ownedPath": {
+      "description": "One path owned by this release packet. expected_state defaults to present; deleted paths must be removed by the committed candidate from a blob that existed at base.",
       "type": "object",
       "additionalProperties": false,
       "required": ["repository", "path", "task_id", "reviewers"],
@@ -509,6 +510,11 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 500
+        },
+        "expected_state": {
+          "description": "The candidate state expected for this path. Omitted means present.",
+          "enum": ["present", "deleted"],
+          "default": "present"
         },
         "task_id": {
           "type": "integer",

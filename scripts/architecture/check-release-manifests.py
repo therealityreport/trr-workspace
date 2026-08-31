@@ -172,37 +172,88 @@ def _owned_path_record_at_commit(
     repository: Path,
     candidate_sha: str,
     relative_path: str,
+    *,
+    base_sha: str | None = None,
+    expected_state: str = "present",
 ) -> bytes:
-    tree_record = _git_bytes(
-        repository,
-        "ls-tree",
-        "-z",
-        candidate_sha,
-        "--",
-        relative_path,
-    )
-    if not tree_record:
-        mode = "000000"
-        content = b""
-    else:
+    if expected_state not in {"present", "deleted"}:
+        raise ManifestValidationError(
+            f"{repository}: unsupported expected state for owned path {relative_path}: "
+            f"{expected_state}"
+        )
+
+    def blob_at_commit(commit_sha: str, commit_label: str) -> tuple[str, bytes] | None:
+        tree_record = _git_bytes(
+            repository,
+            "ls-tree",
+            "-z",
+            commit_sha,
+            "--",
+            relative_path,
+        )
+        if not tree_record:
+            return None
         record = tree_record.rstrip(b"\0")
         try:
             metadata, returned_path = record.split(b"\t", 1)
             mode_bytes, object_type, object_sha = metadata.split(b" ", 2)
         except ValueError as exc:
             raise ManifestValidationError(
-                f"{repository}: cannot parse candidate tree record for {relative_path}"
+                f"{repository}: cannot parse {commit_label} tree record for {relative_path}"
             ) from exc
         if returned_path.decode("utf-8", errors="surrogateescape") != relative_path:
             raise ManifestValidationError(
-                f"{repository}: candidate tree path mismatch for {relative_path}"
+                f"{repository}: {commit_label} tree path mismatch for {relative_path}"
             )
         if object_type != b"blob":
             raise ManifestValidationError(
-                f"{repository}: candidate owned path is not a blob: {relative_path}"
+                f"{repository}: {commit_label} owned path is not a blob: {relative_path}"
             )
-        mode = mode_bytes.decode("ascii")
-        content = _git_bytes(repository, "cat-file", "blob", object_sha.decode("ascii"))
+        return (
+            mode_bytes.decode("ascii"),
+            _git_bytes(repository, "cat-file", "blob", object_sha.decode("ascii")),
+        )
+
+    candidate_blob = blob_at_commit(candidate_sha, "candidate")
+    if expected_state == "present":
+        if candidate_blob is None:
+            raise ManifestValidationError(
+                f"{repository}: candidate owned path is missing but expected present: "
+                f"{relative_path}"
+            )
+        mode, content = candidate_blob
+    else:
+        if candidate_blob is not None:
+            raise ManifestValidationError(
+                f"{repository}: candidate owned path is present but expected deleted: "
+                f"{relative_path}"
+            )
+        if base_sha is None:
+            raise ManifestValidationError(
+                f"{repository}: deleted owned path requires a base_sha: {relative_path}"
+            )
+        if blob_at_commit(base_sha, "base") is None:
+            raise ManifestValidationError(
+                f"{repository}: deleted owned path must exist as a base blob: "
+                f"{relative_path}"
+            )
+        deletion = _git_bytes(
+            repository,
+            "diff",
+            "--name-status",
+            "--no-renames",
+            base_sha,
+            candidate_sha,
+            "--",
+            relative_path,
+        )
+        if deletion != f"D\t{relative_path}\n".encode("utf-8"):
+            raise ManifestValidationError(
+                f"{repository}: deleted owned path is not represented as a base-to-candidate "
+                f"deletion: {relative_path}"
+            )
+        mode = "000000"
+        content = b""
     content_sha256 = hashlib.sha256(content).hexdigest()
     return (
         relative_path.encode("utf-8")
@@ -327,10 +378,16 @@ def capture_committed_candidate(
     base_sha: str,
     candidate_sha: str,
     owned_paths: Iterable[str],
+    *,
+    expected_states: Mapping[str, str] | None = None,
 ) -> dict[str, Any]:
     """Capture a committed candidate and its reproducible owned-path contents."""
     repository = repository.resolve()
     normalized_paths = _normalized_owned_paths(owned_paths)
+    path_states = {
+        relative_path: (expected_states or {}).get(relative_path, "present")
+        for relative_path in normalized_paths
+    }
     resolved_base = (
         _git_bytes(
             repository,
@@ -370,7 +427,13 @@ def capture_committed_candidate(
             f"{repository}: candidate_sha is not descended from base_sha"
         )
     manifest_bytes = b"".join(
-        _owned_path_record_at_commit(repository, candidate_sha, relative_path)
+        _owned_path_record_at_commit(
+            repository,
+            candidate_sha,
+            relative_path,
+            base_sha=base_sha,
+            expected_state=path_states[relative_path],
+        )
         for relative_path in normalized_paths
     )
     if normalized_paths:
@@ -428,6 +491,7 @@ def validate_committed_candidate(
     revision: Mapping[str, Any],
     packet_path: Path,
     *,
+    expected_states: Mapping[str, str] | None = None,
     require_current_clean: bool = False,
 ) -> None:
     expected = capture_committed_candidate(
@@ -435,6 +499,7 @@ def validate_committed_candidate(
         revision["base_sha"],
         revision["candidate_sha"],
         revision["owned_paths"],
+        expected_states=expected_states,
     )
     current_head = _git_bytes(repository, "rev-parse", "HEAD").decode("ascii").strip()
     merge_base = (
@@ -698,6 +763,17 @@ def validate_pass_claim_evidence(
                 f"{path}: {label} requires passing evidence at {expected_truth_scope} truth scope: "
                 f"{', '.join(invalid)}"
             )
+
+
+def _expected_owned_path_states(
+    packet: Mapping[str, Any], repository: str
+) -> dict[str, str]:
+    """Return candidate-state assertions for one packet repository."""
+    return {
+        item["path"]: item.get("expected_state", "present")
+        for item in packet["owned_paths"]
+        if item["repository"] == repository
+    }
 
 
 def validate_packet_semantics(packet: Mapping[str, Any], path: Path) -> None:
@@ -2247,7 +2323,12 @@ def validate_current_checkpoint(
                         raise
                 local_dirty_paths[repository].update(retained_paths)
             else:
-                validate_committed_candidate(repository_root, revision, packet_path)
+                validate_committed_candidate(
+                    repository_root,
+                    revision,
+                    packet_path,
+                    expected_states=_expected_owned_path_states(packet, repository),
+                )
 
     parked_paths = {
         repository: {
@@ -2328,6 +2409,7 @@ def validate_clean_candidate_checkpoint(
                 repository_root,
                 revision,
                 packet_path,
+                expected_states=_expected_owned_path_states(packet, repository),
                 require_current_clean=True,
             )
 
@@ -2378,6 +2460,7 @@ def prepare_candidate_promotion(
         revision["base_sha"],
         candidate_sha,
         revision["owned_paths"],
+        expected_states=_expected_owned_path_states(packet, repository),
     )
     promoted_revision = {
         **captured,
@@ -2387,6 +2470,7 @@ def prepare_candidate_promotion(
         repository_root,
         promoted_revision,
         packet_path,
+        expected_states=_expected_owned_path_states(packet, repository),
         require_current_clean=True,
     )
 
@@ -3017,11 +3101,13 @@ def prepare_immutable_successor(
             source_revision["base_sha"],
             candidate_sha,
             source_revision["owned_paths"],
+            expected_states=_expected_owned_path_states(source, repository),
         )
         validate_committed_candidate(
             repository_root,
             captured,
             source_path,
+            expected_states=_expected_owned_path_states(source, repository),
             require_current_clean=True,
         )
         revisions[repository] = captured
