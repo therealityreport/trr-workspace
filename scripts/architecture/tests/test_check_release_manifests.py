@@ -4048,6 +4048,143 @@ def test_committed_candidate_rejects_nonreproducing_owned_contents(
         module.validate_committed_candidate(repo, committed, Path("packet.json"))
 
 
+def _init_owned_path_repository(tmp_path: Path, path: str = "owned.txt") -> tuple[Path, str]:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    git(repo, "init", "-q")
+    git(repo, "config", "user.email", "test@example.invalid")
+    git(repo, "config", "user.name", "Test User")
+    owned_path = repo / path
+    owned_path.parent.mkdir(parents=True, exist_ok=True)
+    owned_path.write_text("base\n", encoding="utf-8")
+    git(repo, "add", path)
+    git(repo, "commit", "-qm", "base")
+    return repo, git(repo, "rev-parse", "HEAD")
+
+
+def test_committed_candidate_hashes_explicit_deleted_owned_path(
+    tmp_path: Path,
+) -> None:
+    module = load_module()
+    repo, base_sha = _init_owned_path_repository(tmp_path, "removed.txt")
+    (repo / "removed.txt").unlink()
+    git(repo, "add", "-u")
+    git(repo, "commit", "-qm", "remove owned path")
+    candidate_sha = git(repo, "rev-parse", "HEAD")
+
+    committed = module.capture_committed_candidate(
+        repo,
+        base_sha,
+        candidate_sha,
+        ["removed.txt"],
+        expected_states={"removed.txt": "deleted"},
+    )
+
+    deleted_record = (
+        b"removed.txt\0"
+        b"000000\0"
+        + hashlib.sha256(b"").hexdigest().encode("ascii")
+        + b"\n"
+    )
+    assert committed["owned_path_manifest_sha256"] == hashlib.sha256(
+        deleted_record
+    ).hexdigest()
+    module.validate_committed_candidate(
+        repo,
+        committed,
+        Path("packet.json"),
+        expected_states={"removed.txt": "deleted"},
+    )
+
+
+def test_committed_candidate_rejects_unclassified_missing_owned_path(
+    tmp_path: Path,
+) -> None:
+    module = load_module()
+    repo, base_sha = _init_owned_path_repository(tmp_path, "removed.txt")
+    (repo / "removed.txt").unlink()
+    git(repo, "add", "-u")
+    git(repo, "commit", "-qm", "remove owned path")
+
+    with pytest.raises(
+        module.ManifestValidationError, match="missing but expected present"
+    ):
+        module.capture_committed_candidate(
+            repo,
+            base_sha,
+            git(repo, "rev-parse", "HEAD"),
+            ["removed.txt"],
+        )
+
+
+def test_committed_candidate_rejects_candidate_present_deleted_owned_path(
+    tmp_path: Path,
+) -> None:
+    module = load_module()
+    repo, base_sha = _init_owned_path_repository(tmp_path)
+
+    with pytest.raises(
+        module.ManifestValidationError, match="present but expected deleted"
+    ):
+        module.capture_committed_candidate(
+            repo,
+            base_sha,
+            base_sha,
+            ["owned.txt"],
+            expected_states={"owned.txt": "deleted"},
+        )
+
+
+def test_committed_candidate_rejects_never_existent_deleted_owned_path(
+    tmp_path: Path,
+) -> None:
+    module = load_module()
+    repo, base_sha = _init_owned_path_repository(tmp_path)
+
+    with pytest.raises(
+        module.ManifestValidationError, match="must exist as a base blob"
+    ):
+        module.capture_committed_candidate(
+            repo,
+            base_sha,
+            base_sha,
+            ["never-existed.txt"],
+            expected_states={"never-existed.txt": "deleted"},
+        )
+
+
+def test_committed_candidate_rejects_directory_owned_path(
+    tmp_path: Path,
+) -> None:
+    module = load_module()
+    repo, base_sha = _init_owned_path_repository(tmp_path, "owned")
+    (repo / "owned").unlink()
+    (repo / "owned").mkdir()
+    (repo / "owned" / "child.txt").write_text("child\n", encoding="utf-8")
+    git(repo, "add", "-A")
+    git(repo, "commit", "-qm", "replace owned file with directory")
+
+    with pytest.raises(
+        module.ManifestValidationError, match="candidate owned path is not a blob"
+    ):
+        module.capture_committed_candidate(
+            repo,
+            base_sha,
+            git(repo, "rev-parse", "HEAD"),
+            ["owned"],
+        )
+
+
+def test_owned_path_expected_state_is_an_optional_enum(tmp_path: Path) -> None:
+    module = load_module()
+    packet_data = packet()
+    packet_data["owned_paths"][0]["expected_state"] = "gone"
+    packet_path, evidence_path = write_workspace(tmp_path, packet_data, evidence())
+
+    with pytest.raises(module.ManifestValidationError, match="expected_state"):
+        module.validate_manifests(tmp_path, [packet_path], [evidence_path])
+
+
 def test_local_dirty_checkpoint_requires_sorted_owned_paths(tmp_path: Path) -> None:
     module = load_module()
     packet_data = packet()

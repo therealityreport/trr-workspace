@@ -33,6 +33,10 @@ This file owns shared TRR policy. Nested `AGENTS.md` files inherit it and add on
 - For [@Chrome](plugin://chrome@openai-bundled), use friendly names: `TRR` for admin and real Codex only when requested; never use `openai-agent` instead.
 - Set `CODEX_CHROME_PREFERENCES_PATH="/Users/thomashulihan/Library/Application Support/Google/Chrome/Profile 11/Preferences"` before Chrome-backed launches unless another profile is requested.
 - For Supabase, prefer the repo-local MCP and `TRR_SUPABASE_ACCESS_TOKEN`.
+- The only default Supabase project for this workspace is `vwxfvzutyufrkhfgoeaa` (`trr-core`). Stop if a plugin, MCP, CLI link, plan, or tool result identifies any other project; never select a project from connector defaults or list order.
+- For [@supabase](plugin://supabase@openai-curated-remote) calls, pass and verify project ref `vwxfvzutyufrkhfgoeaa`. Never use the THB-BBL project `aywqykmrlgzgdhaysajr` for TRR work.
+- The repo-local Supabase MCP must remain scoped with `project_ref=vwxfvzutyufrkhfgoeaa` and authenticate through `TRR_SUPABASE_ACCESS_TOKEN`; do not use a global unscoped Supabase MCP for project data or mutations.
+- Run remote Supabase CLI commands from `TRR-Backend` only after confirming `TRR-Backend/supabase/.temp/project-ref` equals `vwxfvzutyufrkhfgoeaa`. Use `env -u PROJECT_ID SUPABASE_ACCESS_TOKEN="$TRR_SUPABASE_ACCESS_TOKEN" supabase ...` so a generic `PROJECT_ID` or token cannot silently override the workspace binding.
 - Use [@modal-platform](plugin://modal-platform@local-plugins) with admin-56995 / trr-backend-jobs for Modal work.
 - Use [@cloudflare](plugin://cloudflare@openai-curated) with the TRR account owning `thereality.report`, never the THB-BBL account.
 - Use `TRR_CLOUDFLARE_API_TOKEN`; never store Cloudflare secrets in repo files.
