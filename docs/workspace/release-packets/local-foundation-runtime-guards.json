@@ -3,14 +3,14 @@
   "packet_id": "local-foundation-runtime-guards",
   "capability": "Workspace durability, safe runtime, and provider guard foundations",
   "created_at": "2026-07-16T20:52:42.770997Z",
-  "updated_at": "2026-08-17T22:02:20Z",
+  "updated_at": "2026-08-31T23:36:58Z",
   "state": "implementation_complete_parked",
   "truth_scope": "local",
   "repositories": {
     "workspace": {
       "revision_type": "committed_candidate",
       "base_sha": "df55c982ecf6741808536bfb6af308cc737372cf",
-      "candidate_sha": "38515ecbd55821e724d7fdf9714671357a454068",
+      "candidate_sha": "a9ae98ac32799fe561b57121ed9a89241448ef56",
       "owned_paths": [
         "CONTEXT-MAP.md",
         "Makefile",
@@ -60,8 +60,8 @@
         "scripts/test_workspace_app_env_projection.py",
         "scripts/vercel-project-guard.py"
       ],
-      "owned_path_manifest_sha256": "26ff2318c93aec7a6d2471c94656d17a671aad7280adbadca0403aa8aa83e381",
-      "binary_tracked_diff_sha256": "8e58e2f896b6a25846251d6d715dcf0ea9beb19443ee07539f28d41092a34dba",
+      "owned_path_manifest_sha256": "66f4a26e73738e289e6c569b2e6c910903f88dc5b62d209bbb185ad1fc718ce0",
+      "binary_tracked_diff_sha256": "2a262a331984d76857500c8d666b4ca41f1f7307efc3e6610820e613856480d5",
       "dirty_counts": {
         "tracked_modified": 0,
         "tracked_added": 0,
@@ -77,7 +77,7 @@
     "app": {
       "revision_type": "committed_candidate",
       "base_sha": "78681eac73c79e6534031fe1f050966edff9b844",
-      "candidate_sha": "c9b842d958c2d46623c4bf112d251df99d364012",
+      "candidate_sha": "4d05b1f12b155d5561eeea67220c8bfe14530585",
       "owned_paths": [
         "apps/web/tests/vercel-rollback-guard.test.ts",
         "scripts/vercel.sh"
@@ -99,7 +99,7 @@
     "backend": {
       "revision_type": "committed_candidate",
       "base_sha": "0a3d2b59ec29304fb2765fd8cf996032e11c937b",
-      "candidate_sha": "44e2402def63bb4d7e2f37d26e5d7f0626b2fd73",
+      "candidate_sha": "a01bf8442302a7e63c034a462c072c7e23352c0c",
       "owned_paths": [
         "scripts/_workspace_runtime_env.py",
         "scripts/modal/allowed_invocations.json",
@@ -130,8 +130,8 @@
         "trr_backend/modal_jobs.py",
         "trr_backend/vision/people_count_service.py"
       ],
-      "owned_path_manifest_sha256": "123f79786acc42f29991b72117026464194182efb92d5d6fb01cb671708c213e",
-      "binary_tracked_diff_sha256": "68ed884eed5ff89d24f908ad64508ea4e77cf3da4853030476edb2a4df81c966",
+      "owned_path_manifest_sha256": "1539c6d9103dd7a06fa5ea39a3ca9091939696841c0950d7ebad8b30f7bfe637",
+      "binary_tracked_diff_sha256": "e4c3829ee1d55c1f126889519283363b33a69d5a27bb599693b0d3ff7af23033",
       "dirty_counts": {
         "tracked_modified": 0,
         "tracked_added": 0,

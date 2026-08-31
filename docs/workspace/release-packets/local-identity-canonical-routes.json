@@ -3,14 +3,14 @@
   "packet_id": "local-identity-canonical-routes",
   "capability": "Canonical public identity, slug aliases, and route resolution",
   "created_at": "2026-07-16T20:52:42.770997Z",
-  "updated_at": "2026-08-17T22:02:20Z",
+  "updated_at": "2026-08-31T23:36:58Z",
   "state": "implementation_complete_parked",
   "truth_scope": "local",
   "repositories": {
     "workspace": {
       "revision_type": "committed_candidate",
       "base_sha": "df55c982ecf6741808536bfb6af308cc737372cf",
-      "candidate_sha": "38515ecbd55821e724d7fdf9714671357a454068",
+      "candidate_sha": "a9ae98ac32799fe561b57121ed9a89241448ef56",
       "owned_paths": [
         "docs/workspace/api-migration-ledger.md",
         "docs/workspace/app-direct-sql-inventory.md",
@@ -34,7 +34,7 @@
     "app": {
       "revision_type": "committed_candidate",
       "base_sha": "78681eac73c79e6534031fe1f050966edff9b844",
-      "candidate_sha": "c9b842d958c2d46623c4bf112d251df99d364012",
+      "candidate_sha": "4d05b1f12b155d5561eeea67220c8bfe14530585",
       "owned_paths": [
         "apps/web/package.json",
         "apps/web/scripts/generate-trr-v2-api-types.mjs",
@@ -69,8 +69,8 @@
         "apps/web/tests/trr-shows-repository-slug-query-safety.test.ts",
         "pnpm-lock.yaml"
       ],
-      "owned_path_manifest_sha256": "d95441ed94e4aa38ab9b2b6bc83d5003e52d62161e989ad7ab31cc1039a5a1a2",
-      "binary_tracked_diff_sha256": "22f7e9e0a91ea55a295d1bb715886969f7b85b13e64235c9250f71bea2c26e1b",
+      "owned_path_manifest_sha256": "536ffa642dbd7920c0f0d0c7d44ffd451951cee701972e28980f49df19376bfc",
+      "binary_tracked_diff_sha256": "8402f9fd034de53ae450d5b5627001ec803f7a4a5150f8e4d1146216bd8a6794",
       "dirty_counts": {
         "tracked_modified": 0,
         "tracked_added": 0,
@@ -86,7 +86,7 @@
     "backend": {
       "revision_type": "committed_candidate",
       "base_sha": "0a3d2b59ec29304fb2765fd8cf996032e11c937b",
-      "candidate_sha": "44e2402def63bb4d7e2f37d26e5d7f0626b2fd73",
+      "candidate_sha": "a01bf8442302a7e63c034a462c072c7e23352c0c",
       "owned_paths": [
         "api/auth.py",
         "api/main.py",
@@ -98,8 +98,8 @@
         "api/schemas/v2/show_slugs.py",
         "docs/api/openapi.v2.json",
         "scripts/dev/export_v2_openapi.py",
-        "supabase/migrations/20260716040000_public_identity_slug_aliases.sql",
-        "supabase/migrations/20260716050000_core_show_slug_normalized_unique.sql",
+        "supabase/migrations/20260805140501_public_identity_slug_aliases_20260805.sql",
+        "supabase/migrations/20260805140512_core_show_slug_normalized_unique_20260805.sql",
         "tests/api/routers/test_v2_admin_show_slugs.py",
         "tests/api/routers/test_v2_public_identities.py",
         "tests/api/test_internal_admin_openapi.py",
@@ -113,8 +113,8 @@
         "trr_backend/repositories/show_slug_reads.py",
         "trr_backend/services/public_identity.py"
       ],
-      "owned_path_manifest_sha256": "e1e35aa90865389a7794319cd20dcba2a47fb0446eb5ce0bb960ff4695877fa9",
-      "binary_tracked_diff_sha256": "1af84416fba2c56ae1ab1c68ab88b01fad9fd36a662f94d65e4fcccbff073779",
+      "owned_path_manifest_sha256": "f055de0fc45f4dd24f9d53858a5bade0749094319a424cf21c51409b8656df74",
+      "binary_tracked_diff_sha256": "e0577561c15b414fec1e998884b8ec2cc80cc63de0cf6f11831f50c9878742a3",
       "dirty_counts": {
         "tracked_modified": 0,
         "tracked_added": 0,
@@ -499,7 +499,7 @@
     },
     {
       "repository": "backend",
-      "path": "supabase/migrations/20260716040000_public_identity_slug_aliases.sql",
+      "path": "supabase/migrations/20260805140501_public_identity_slug_aliases_20260805.sql",
       "task_id": 3,
       "reviewers": [
         "r0-b-checkpoint-revalidation"
@@ -507,7 +507,7 @@
     },
     {
       "repository": "backend",
-      "path": "supabase/migrations/20260716050000_core_show_slug_normalized_unique.sql",
+      "path": "supabase/migrations/20260805140512_core_show_slug_normalized_unique_20260805.sql",
       "task_id": 3,
       "reviewers": [
         "r0-b-checkpoint-revalidation"

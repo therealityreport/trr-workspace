@@ -3,14 +3,14 @@
   "packet_id": "local-season-survey-roles",
   "capability": "Season cast survey-role persistence and app adapter",
   "created_at": "2026-07-16T20:52:42.770997Z",
-  "updated_at": "2026-08-17T22:02:20Z",
+  "updated_at": "2026-08-31T23:36:58Z",
   "state": "implementation_complete_parked",
   "truth_scope": "local",
   "repositories": {
     "workspace": {
       "revision_type": "committed_candidate",
       "base_sha": "df55c982ecf6741808536bfb6af308cc737372cf",
-      "candidate_sha": "38515ecbd55821e724d7fdf9714671357a454068",
+      "candidate_sha": "a9ae98ac32799fe561b57121ed9a89241448ef56",
       "owned_paths": [],
       "owned_path_manifest_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "binary_tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -29,7 +29,7 @@
     "app": {
       "revision_type": "committed_candidate",
       "base_sha": "78681eac73c79e6534031fe1f050966edff9b844",
-      "candidate_sha": "c9b842d958c2d46623c4bf112d251df99d364012",
+      "candidate_sha": "4d05b1f12b155d5561eeea67220c8bfe14530585",
       "owned_paths": [
         "apps/web/src/app/api/admin/surveys/[surveyKey]/route.ts",
         "apps/web/src/app/api/admin/trr-api/shows/[showId]/seasons/[seasonNumber]/survey-cast/route.ts",
@@ -58,22 +58,22 @@
     "backend": {
       "revision_type": "committed_candidate",
       "base_sha": "0a3d2b59ec29304fb2765fd8cf996032e11c937b",
-      "candidate_sha": "44e2402def63bb4d7e2f37d26e5d7f0626b2fd73",
+      "candidate_sha": "a01bf8442302a7e63c034a462c072c7e23352c0c",
       "owned_paths": [
         "api/routers/v2/season_cast_survey_roles.py",
         "api/schemas/v2/season_cast_survey_roles.py",
-        "docs/db/season-cast-survey-roles/20260716133000_rollback.sql",
-        "docs/db/season-cast-survey-roles/20260716133000_rollout.md",
-        "docs/db/season-cast-survey-roles/20260716133000_verify.sql",
-        "supabase/migrations/20260716133000_admin_season_cast_survey_roles.sql",
+        "docs/db/season-cast-survey-roles/20260805140519_rollback.sql",
+        "docs/db/season-cast-survey-roles/20260805140519_rollout.md",
+        "docs/db/season-cast-survey-roles/20260805140519_verify.sql",
+        "supabase/migrations/20260805140519_admin_season_cast_survey_roles_20260805.sql",
         "tests/api/routers/test_v2_admin_season_cast_survey_roles.py",
         "tests/migrations/test_admin_season_cast_survey_roles.py",
         "tests/repositories/test_season_cast_survey_roles.py",
         "trr_backend/repositories/season_cast_survey_roles.py",
         "trr_backend/services/season_cast_survey_roles.py"
       ],
-      "owned_path_manifest_sha256": "3df7eb86932cddf9ac3f44de51262ea538674453dd0611a4234e0ababeda4ebc",
-      "binary_tracked_diff_sha256": "205eae618c303d2cf37419f8b76070920a13a2d321833a6dfa53ee48d366b18c",
+      "owned_path_manifest_sha256": "01e4df6bdc8c08c7d039f0f472ff302c618ce2cde59b58901c402fc5ad4a9204",
+      "binary_tracked_diff_sha256": "d31b990d2121f9bc490d7d2c19218615cd17c4ab9a5f110e67de0fa46651a8f2",
       "dirty_counts": {
         "tracked_modified": 0,
         "tracked_added": 0,
@@ -178,7 +178,7 @@
     },
     {
       "repository": "backend",
-      "path": "docs/db/season-cast-survey-roles/20260716133000_rollback.sql",
+      "path": "docs/db/season-cast-survey-roles/20260805140519_rollback.sql",
       "task_id": 3,
       "reviewers": [
         "r0-b-checkpoint-revalidation"
@@ -186,7 +186,7 @@
     },
     {
       "repository": "backend",
-      "path": "docs/db/season-cast-survey-roles/20260716133000_rollout.md",
+      "path": "docs/db/season-cast-survey-roles/20260805140519_rollout.md",
       "task_id": 3,
       "reviewers": [
         "r0-b-checkpoint-revalidation"
@@ -194,7 +194,7 @@
     },
     {
       "repository": "backend",
-      "path": "docs/db/season-cast-survey-roles/20260716133000_verify.sql",
+      "path": "docs/db/season-cast-survey-roles/20260805140519_verify.sql",
       "task_id": 3,
       "reviewers": [
         "r0-b-checkpoint-revalidation"
@@ -202,7 +202,7 @@
     },
     {
       "repository": "backend",
-      "path": "supabase/migrations/20260716133000_admin_season_cast_survey_roles.sql",
+      "path": "supabase/migrations/20260805140519_admin_season_cast_survey_roles_20260805.sql",
       "task_id": 3,
       "reviewers": [
         "r0-b-checkpoint-revalidation"

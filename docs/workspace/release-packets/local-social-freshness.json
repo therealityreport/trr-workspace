@@ -3,14 +3,14 @@
   "packet_id": "local-social-freshness",
   "capability": "Account-catalog freshness composition and live-profile totals",
   "created_at": "2026-07-16T20:52:42.770997Z",
-  "updated_at": "2026-08-17T22:02:20Z",
+  "updated_at": "2026-08-31T23:36:58Z",
   "state": "implementation_complete_parked",
   "truth_scope": "local",
   "repositories": {
     "workspace": {
       "revision_type": "committed_candidate",
       "base_sha": "df55c982ecf6741808536bfb6af308cc737372cf",
-      "candidate_sha": "38515ecbd55821e724d7fdf9714671357a454068",
+      "candidate_sha": "a9ae98ac32799fe561b57121ed9a89241448ef56",
       "owned_paths": [],
       "owned_path_manifest_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "binary_tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -29,7 +29,7 @@
     "app": {
       "revision_type": "committed_candidate",
       "base_sha": "78681eac73c79e6534031fe1f050966edff9b844",
-      "candidate_sha": "c9b842d958c2d46623c4bf112d251df99d364012",
+      "candidate_sha": "4d05b1f12b155d5561eeea67220c8bfe14530585",
       "owned_paths": [],
       "owned_path_manifest_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "binary_tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -48,7 +48,7 @@
     "backend": {
       "revision_type": "committed_candidate",
       "base_sha": "0a3d2b59ec29304fb2765fd8cf996032e11c937b",
-      "candidate_sha": "44e2402def63bb4d7e2f37d26e5d7f0626b2fd73",
+      "candidate_sha": "a01bf8442302a7e63c034a462c072c7e23352c0c",
       "owned_paths": [
         "tests/repositories/test_social_control_plane_imports.py",
         "trr_backend/socials/pipelines/account_catalog/__init__.py",
@@ -56,8 +56,8 @@
         "trr_backend/socials/pipelines/account_catalog/live_profile_total.py",
         "trr_backend/socials/social_season_analytics_impl.py"
       ],
-      "owned_path_manifest_sha256": "0e13e4fe9f6318452b4140d832286af1736136f9b6ca5eac46917c9f2b2b8fc3",
-      "binary_tracked_diff_sha256": "3cc47937794fb1371cec351acca54de77680f5207e321c46470ffea9ff34cc80",
+      "owned_path_manifest_sha256": "fce4d97f49234fdfa33768e5dd39b82799db6afd457e80cb6a7362a751c42d00",
+      "binary_tracked_diff_sha256": "f821ad4af0c7effe207e5c79681e671b1a5717c68c746edb26e21c90fd6c7f7f",
       "dirty_counts": {
         "tracked_modified": 0,
         "tracked_added": 0,
