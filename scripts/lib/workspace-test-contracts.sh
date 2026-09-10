@@ -3,6 +3,7 @@
 trr_workspace_pytest_contracts() {
   local root="$1"
   python3 -m pytest -q \
+    "$root/scripts/test_check_policy.py" \
     "$root/scripts/test_doctor_plugin_repair_registry.py" \
     "$root/scripts/test_env_hygiene.py" \
     "$root/scripts/test_instagram_auth_freshness.py" \
