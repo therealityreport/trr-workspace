@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import sys
 from pathlib import Path
 
 
 SCRIPT_PATH = Path(__file__).resolve().parent / "workspace" / "env_hygiene.py"
+MANIFEST_PATH = Path(__file__).resolve().parent.parent / "docs" / "workspace" / "shared-env-manifest.json"
 
 
 def _load_module():
@@ -241,3 +243,24 @@ def test_cleanup_actions_cover_all_env_file_authority_classes(tmp_path: Path, mo
     assert ("local_secret_adapters", "TRR-APP/apps/web/.env.local", "LOCAL_ONLY_KEY", "keep", "surface-local key is not part of the shared TRR env contract") in actions
     assert ("retired_env_surfaces", "screenalytics/.env", "SCREENALYTICS_LOCAL_ONLY", "remove", "retired Screenalytics env surface; unclassified Screenalytics-prefixed key should not become current authority") in actions
     assert ("evidence_snapshots", ".logs/workspace/pids.env", "WORKSPACE_MANAGER_PID", "keep", "evidence snapshot; report only and do not edit generated/pulled env evidence") in actions
+
+
+def test_shared_env_manifest_matches_backend_contract() -> None:
+    manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+
+    canonical = set(manifest["canonical"])
+    transitional = set(manifest["transitional"])
+    backend_contract = manifest["repo_validation"]["TRR-Backend"]
+
+    assert {"TRR_DB_DIRECT_URL", "TRR_DB_URL", "TRR_DB_FALLBACK_URL", "TRR_INTERNAL_ADMIN_SHARED_SECRET"} <= canonical
+    assert "SCREENALYTICS_API_URL" not in transitional
+    assert "SCREENALYTICS_SERVICE_TOKEN" not in transitional
+    assert set(backend_contract["db_any_of"]) == {
+        "TRR_DB_DIRECT_URL",
+        "TRR_DB_SESSION_URL",
+        "TRR_DB_URL",
+        "TRR_DB_FALLBACK_URL",
+    }
+    assert set(backend_contract["required_in_deployed"]) == {"TRR_INTERNAL_ADMIN_SHARED_SECRET", "SUPABASE_JWT_SECRET"}
+    assert "SCREENALYTICS_API_URL" not in set(backend_contract["transitional_compat"])
+    assert "SCREENALYTICS_SERVICE_TOKEN" not in set(backend_contract["transitional_compat"])
