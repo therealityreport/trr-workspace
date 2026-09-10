@@ -5,42 +5,33 @@ This runbook is for browser tasks that need the user's existing Chrome state, su
 ## Practical Rule
 
 - Use the `TRR` Chrome profile for normal TRR/admin work.
-- Use the real Codex Chrome profile only when the user asks for the Codex profile or `codex@thereality.report`.
+- Use the friendly `codex` Chrome profile only when the user requests it.
 - Do not treat the managed `openai-agent` automation clone as the Codex profile.
 - Do not rely on the generic Chrome `extension` alias when a specific saved profile matters.
 
 ## Agent Selection Flow
 
-1. Connect to the Chrome plugin.
-2. Call `agent.browsers.list()`.
-3. Select the Chrome extension instance by `metadata.profileName`:
-   - `TRR` for admin/TRR/default workspace pages.
-   - `Codex` for explicit Codex-profile work.
-4. If `metadata.profileIsLastUsed` is not `"true"`, warn before continuing:
+1. Follow the active browser tool's supported setup and identity-verification instructions.
+2. Select the exact friendly profile: `TRR` for normal workspace work, or `codex` when explicitly requested. Do not assume that capitalization, a generic alias, or the last-used profile identifies the requested account.
+3. Require an unambiguous match before account-specific actions. Pause that part of the task on a missing or ambiguous match and continue independent work.
+4. Recheck after a profile switch, reconnection, or evidence that the account changed.
+5. Inspect tabs on the verified connection using safe fields such as title and origin/path. An absent tab is not permission to switch accounts.
 
-   ```text
-   Chrome attached to <profile>, but it is not the last-used Chrome profile. I will continue with <profile> because it matches your request.
-   ```
+### Browser-client example
 
-5. Use `browser.user.openTabs()` on the selected instance and match tabs by safe preview fields: title, origin/path, tab group, and recency.
-6. If no tab is found, retry once on the explicit profile instance before falling back to screenshots or asking for the missing page.
-
-## Example Browser-Client Pattern
+Use this example only when the active tool's documentation exposes these APIs; other tools have their own supported setup.
 
 ```js
 const browsers = await agent.browsers.list();
 const requestedProfile = "TRR";
-const chromeInfo = browsers.find((candidate) =>
+const matches = browsers.filter((candidate) =>
   candidate.type === "extension" &&
   candidate.metadata?.profileName === requestedProfile
 );
-
-if (!chromeInfo) throw new Error(`Chrome profile not available: ${requestedProfile}`);
-if (chromeInfo.metadata?.profileIsLastUsed !== "true") {
-  console.warn(`Chrome attached to ${requestedProfile}, but it is not the last-used Chrome profile.`);
+if (matches.length !== 1) {
+  throw new Error(`Chrome profile missing or ambiguous: ${requestedProfile}`);
 }
-
-const chrome = await agent.browsers.get(chromeInfo.id);
+const chrome = await agent.browsers.get(matches[0].id);
 const tabs = await chrome.user.openTabs();
 ```
 
@@ -50,7 +41,7 @@ The generic `extension` alias previously attached to another Chrome profile and 
 
 ## Chrome DevTools Boundary
 
-The local `@ChromeDevTools` plugin is useful for dry-run evidence planning and fixture-backed evidence. It does not currently provide live Chrome tab attachment in this local first-slice mode. For live profile tabs, use `@Chrome` with the explicit profile selection flow above.
+Inspect the active tools before choosing a route; installed plugin names do not prove current live-tab support. Use any suitable supported tool that can verify the intended profile. Keep fixture evidence separate from live browser verification.
 
 ## E8 canary evaluator boundary
 
@@ -75,6 +66,6 @@ Hard stop rules:
 
 ## Viewport/Window Resize Guardrail
 
-Window-bounds resize actions (`resize_page` / `resize_window` / `preview_resize`) must target the headful keeper on port `9222`, never the headless keeper on `9422`. The headless keeper has no real OS window, so a window-bounds reset never completes and hits the fixed per-call timeout. Only issue a resize when the active page is idle.
+For the optional managed-keeper workflow, window-bounds resize actions (`resize_page` / `resize_window` / `preview_resize`) must target the headful keeper on port `9222`, never the headless keeper on `9422`. The headless keeper has no real OS window, so a window-bounds reset never completes and hits the fixed per-call timeout. Only issue a resize when the active page is idle.
 
-A timed-out resize-reset is a stale-transport signal. Run `make codex-browser-transport-reset` once and do not retry; restart the session if the next call still uses the stale transport. See `docs/workspace/chrome-devtools.md` for the full stale-transport recovery flow.
+A timed-out resize-reset may indicate a headless-window mismatch or stale transport. Inspect the target and error before repair; do not retry blindly. See `docs/workspace/chrome-devtools.md` for scoped recovery and restart guidance.

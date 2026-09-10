@@ -5,3 +5,23 @@ TRR-APP/
 TRR-Backend/
 /graphify-out/
 # project-manager:graphify-corpus:end
+
+# Structural workspace index: history stays in original documents and Engram.
+# Keep nested repositories independently scoped; omit generated/planning evidence.
+.planning/
+.vscode/
+.agents/
+.codex/
+plans/
+reviews/
+specs/
+modal-deploy-slices/
+tool-finder-reddit-post-count/
+tool-finder-reddit-post-count-pushshift/
+**/*.md
+docs/workspace/architecture-evidence/
+docs/workspace/release-packets/
+docs/workspace/architecture-hotspots.json
+docs/workspace/architecture-task-locks.json
+docs/workspace/output-disposition.json
+docs/workspace/parked-unaccepted-local-work.json

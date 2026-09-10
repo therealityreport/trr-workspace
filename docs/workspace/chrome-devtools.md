@@ -1,75 +1,27 @@
 # Managed Chrome and Chrome DevTools MCP
 
-`chrome-devtools` is the browser automation path for workspace browser tasks. Codex inherits the default shared headless configuration from `~/.codex/config.toml`; explicit isolated/debug launches are exceptions. The active global wrapper seeds managed Chrome sessions from `~/.chrome-profiles/openai-agent` by default. This managed clone is not the real Codex Chrome profile.
+## Browser policy and profile identity
 
-This document describes browser policy only. Actual MCP defaults live in `~/.codex/config.toml` for Codex and in `~/.claude.json` for Claude.
+- The workspace `AGENTS.md` owns browser choices and account bindings. Use any suitable supported browser tool; follow its current setup documentation.
+- Use the friendly `TRR` profile for account-specific TRR work, or `codex` when explicitly requested. Verify identity before first account-specific use and after a profile switch, reconnection, or evidence of an account change.
+- The historical `openai-agent` managed clone is not the user's `TRR` or `codex` profile. Do not substitute it for an account-specific request.
+- `CODEX_CHROME_PREFERENCES_PATH` is a saved-window recovery hint; it does not select or verify a live connection.
+- Follow `docs/workspace/browser-debug.md` for profile selection. A matching requested profile need not be Chrome's last-used profile.
+- If a browser tool is unavailable, use another suitable supported tool with the same verified identity. Pause only account-dependent work when identity is missing or ambiguous.
 
-For profile-specific live Chrome work, use the selection rules in `docs/workspace/browser-debug.md`. In short: choose the explicit `TRR` Chrome extension instance for normal TRR/admin work, choose the real Codex profile only when requested, and warn if Chrome attaches to a profile that is not the last-used profile.
+## Optional managed-browser workflow
 
-## Chrome Profile Identity
-Codex and Claude Code agents in the TRR Workspace use the `openai-agent` managed clone for routine browser automation. The real Codex Chrome profile means the saved Chrome profile signed in as `codex@thereality.report` and should be used when the user explicitly asks for the Codex profile. The admin@thereality.report profile (`~/.chrome-profiles/claude-agent`) is reserved for user-authorized tasks only — for example, accessing paywalled sites like NYTimes where the owner's subscription is required. If a site is inaccessible under the routine managed clone, stop and ask the user before switching. Set `CHROME_AGENT_ADMIN_OVERRIDE=1` when the user grants permission; return to the managed clone when the authorized task is complete.
+The remainder of this guide describes the repository's managed Chrome keepers and repair scripts. It is operational reference for that selected workflow, not a required setup, fallback, or cleanup procedure for every browser task. Check live configuration and script behavior before relying on historical defaults. Codex settings live in `~/.codex/config.toml`; Claude settings are separate.
 
-The managed `openai-agent` Chrome user-data directory may contain multiple Chrome subprofiles. Managed launches must pass the detected inner `--profile-directory` in addition to `--user-data-dir`.
-
-Profile 11 admin examples (`TRR` friendly profile, admin account):
-
-```bash
-export CODEX_CHROME_PREFERENCES_PATH="/Users/thomashulihan/Library/Application Support/Google/Chrome/Profile 11/Preferences"
-```
-
-That preferences path selects the saved admin profile for profile-aware Codex tooling. The managed Chrome launcher uses `CHROME_AGENT_*` variables, so pass the admin managed clone explicitly when a task is approved for the admin profile.
-
-Run the standard repair/status path with the admin managed clone:
-
-```bash
-CODEX_CHROME_PREFERENCES_PATH="/Users/thomashulihan/Library/Application Support/Google/Chrome/Profile 11/Preferences" \
-CHROME_AGENT_ADMIN_OVERRIDE=1 \
-CHROME_AGENT_PROFILE_DIR="$HOME/.chrome-profiles/claude-agent" \
-CHROME_AGENT_PROFILE_EMAIL=admin@thereality.report \
-CODEX_CHROME_SHARED_PORT=9222 \
-  make chrome-repair
-```
-
-Start only the visible admin Chrome keeper:
-
-```bash
-CHROME_AGENT_ADMIN_OVERRIDE=1 \
-CHROME_AGENT_PROFILE_DIR="$HOME/.chrome-profiles/claude-agent" \
-CHROME_AGENT_PROFILE_EMAIL=admin@thereality.report \
-CHROME_AGENT_DEBUG_PORT=9222 \
-CHROME_AGENT_HEADLESS=0 \
-scripts/ensure-managed-chrome.sh
-```
-
-**Exception:** Claude in Chrome (the Claude desktop app's browser automation) is permitted to use the admin@thereality.report profile. This restriction applies only to Codex and Claude Code agents running within the TRR Workspace context.
-
-## Default Behavior
-- Default mode for Codex automation is shared headless, with the shared keeper auto-launched when needed.
-- Claude can use the shared `9422` keeper through `chrome-devtools` or `chrome-devtools-codex-shared`, and the visible/manual `9222` keeper through `chrome-devtools-visible`.
-- Reuse the current page instead of spawning tabs.
-- Keep one working tab by default and stay under the three-tab cap.
-- Do not use ad-hoc browsers for chat-driven browsing.
-- The long-lived shared browsers on `9222` and `9422` remain managed keepers for exception paths, not leak signals by themselves.
-- The repo-local TRR wrapper is opt-in for isolated/debug scenarios, not the default browser path.
-
-## Fallback When MCP Is Unavailable
-The canonical path is still a working `chrome-devtools` MCP session. Some Codex threads, however, may not expose that transport even when the managed Chrome runtime is healthy. When that happens:
-
-- Keep browser work on the managed Chrome path.
-- Use the workspace scripts instead of changing tracked MCP config:
-  - `make chrome-repair` to clean stale browser MCP state, start shared Chrome, check extension/native-host readiness, and print the reload hint
-  - `scripts/ensure-managed-chrome.sh` to guarantee a managed browser exists
-  - `scripts/open-or-refresh-browser-tab.sh` to reuse or reload the current workspace tab
-  - `scripts/chrome-devtools-mcp-status.sh` and `scripts/codex-mcp-session-reaper.sh` for diagnostics and cleanup
-- Prefer reusing the existing tab and explicitly reloading it when the test requires reload behavior.
-- Do not add a repo-tracked fallback browser MCP block as a workaround for one broken session.
-
-This fallback is for live verification only. Browser defaults still belong in wrapper scripts and user-level config, not in prompt prose or repo-local MCP drift.
+- Reuse relevant tabs where practical and avoid unnecessary browser launches.
+- Ports `9222` and `9422` identify managed keepers, not proof of the requested account. Verify identity separately before account-specific actions.
+- Inspect status before repair. Read the relevant script before running cleanup or reset operations, preserve active sessions and unrelated work, and follow existing authorization and recoverable-cleanup requirements.
+- A broken session does not require adding a repo-tracked fallback MCP configuration. Use another suitable tool when available.
 
 ## Useful Overrides
 - Use isolated headful for visible debugging.
 - Use shared headful only when shared auth or state is truly required.
-- Restart the session after changing managed-Chrome mode.
+- Reconnect if a managed-Chrome mode change requires it, then reverify identity. Restart an active app or task only within existing authorization.
 - Use `CODEX_CHROME_SKIP_BROWSER_BOOT=1` only for wrapper diagnostics that must not launch Chrome.
 
 ## Cleanup and Troubleshooting
@@ -87,7 +39,7 @@ If `make chrome-repair` reports a healthy shared Chrome runtime but an already-o
 Recovery:
 1. Keep the shared Chrome keeper running.
 2. Run `make codex-browser-transport-reset` once.
-3. Restart the Codex session or thread if tool calls still use the stale transport.
+3. Use another suitable available tool if transport remains stale. If a task reload is still required, report that limitation and follow existing restart authorization.
 4. Rerun `make chrome-devtools-mcp-status` in the new session.
 
 Do not keep retrying scraper, app, or Instagram workflows while the already-loaded MCP transport is stale. Do not add a repo-local fallback MCP block for one stale chat.
@@ -96,7 +48,7 @@ Do not keep retrying scraper, app, or Instagram workflows while the already-load
 
 Window-bounds resize actions (`resize_page` / `resize_window` / `preview_resize`) must target the **headful** keeper on port `9222`, never the **headless** keeper on `9422`. The headless keeper has no real OS window, so a window-bounds reset waits for a state change that never lands and hits the fixed per-call timeout. Only issue a resize when the active page is idle.
 
-A timed-out resize-reset is a stale-transport signal. Run `make codex-browser-transport-reset` once and **do not retry**; restart the session or thread if the next call still uses the stale transport. As an alternative to resizing, drive against the headful `9222` keeper or skip the resize and use full-page `take_screenshot`.
+A timed-out resize-reset may indicate a headless-window mismatch or stale transport. Inspect the target and error before applying the stale-transport recovery above; do not retry blindly. As an alternative to resizing, drive against the headful `9222` keeper or skip the resize and use full-page `take_screenshot`.
 
 ## Chrome Dock Recents
 
