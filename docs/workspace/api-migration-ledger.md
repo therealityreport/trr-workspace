@@ -10,6 +10,26 @@ can remain in Next.js until it becomes shared backend behavior.
 
 ## Required Row Fields
 
+### Post Details version 1 progress and resume
+
+The account progress response adds versioned manifest/outcome fields documented
+in [Backend Runtime Ownership](backend-runtime-ownership.md#instagram-post-details-outcomes-contract-version-1).
+`POST /api/v1/admin/socials/profiles/{platform}/{account_handle}/catalog/retry-targets`
+accepts `{run_id, manifest_identity, source_scope, dispatch_immediately}` for
+detail resume. Omit `retry_targets`; detail resume does not support `dry_run`.
+The existing comments/media behavior remains when `manifest_identity` is absent.
+The thin authenticated Next.js `catalog/retry-targets` proxy forwards the body
+without retries. Success returns `run_id`, `manifest_identity`, `resumed`,
+`detail_contract_version`, `detail_outcomes`, `reason`, and optional `dispatch`.
+The UI retains the original manifest instead of sending edited date/task inputs.
+
+FastAPI owns shared SQL and validates run/account/scope/manifest and active-job
+ownership. The Next.js proxy requires the existing admin session and preserves
+the shared backend error envelope. Resume is uncached. No app direct SQL caller
+or migration ownership changed; no inventory reclassification is required.
+Focused verification uses the existing social-account profile runtime suite;
+browser and deployed API proof are separate release gates.
+
 | Field | Meaning |
 |---|---|
 | App caller | File and function that previously used direct SQL. |
