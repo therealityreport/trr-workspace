@@ -79,6 +79,44 @@ Use these commands from `/Users/thomashulihan/Projects/TRR`.
 - `make mcp-clean`
 - `make help`
 
+## Instagram Post Details Recovery
+
+Start `make dev-hybrid` and inspect the account in the TRR browser profile at
+`https://admin.trr.localhost`. For contract version 1, reconcile total targets
+against successfully refreshed, cache-satisfied, unavailable and remaining
+targets. Failed/retrying counts belong to remaining, and attempts are separate
+activity. Missing legacy counters mean unknown outcomes, not zero failures or
+successful completion. See [the shared outcome contract](backend-runtime-ownership.md#instagram-post-details-outcomes-contract-version-1).
+
+Before resuming, retain the run ID, account manifest identity, source scope,
+dates and selected tasks from the progress response. Resume only when the API
+reports eligibility; it must use this frozen manifest and must not launch a
+fresh whole-account backfill. Cooldowns and exhausted attempt caps survive
+resume. Active jobs retain ownership. Auth/challenge failures need a reviewed
+transport/auth repair; 429 respects its cooldown. Unknown redirect, timeout,
+parse and network failures must not be relabeled unavailable or refreshed.
+The "Resume unfinished Post Details" control calls the existing authenticated
+`catalog/retry-targets` operation with `run_id`, `manifest_identity`, the saved
+`source_scope`, and `dispatch_immediately: true`. It omits `retry_targets` and
+does not send new dates or tasks. A missing manifest binding disables resume.
+
+For release, verify the identities in `deployment-targets.json` live:
+Supabase `vwxfvzutyufrkhfgoeaa`; Modal `admin-56995` / `main` /
+`trr-backend-jobs`; Render `srv-d6phk5vkijhs73fcsk7g` (`trr-backend-api`);
+Vercel `prj_MHpStkwr26rV5kjt0f80zqhwZpAs` (`trr-app`). Apply additive backend
+migrations, promote compatible API readers, then worker writers and app
+consumers. Follow `modal-safe-backend-deploy-set.md`; deploy the reviewed clean
+source set and record separate API, Modal and app revisions. Run
+`python3.11 scripts/modal/verify_modal_readiness.py --env main` from TRR-Backend
+and verify the same canary manifest through API, database, worker receipt and UI.
+Local checks do not establish production delivery.
+
+On false success, lost targets or stale-owner writes, disable new detail
+launches, stop/drain affected workers and restore compatible API/Modal/app
+revisions. Retain additive schema, manifests, outcomes and receipts; do not
+drop target tables or re-enable the unsafe historical detail path. Historical
+timestamp/job corrections require their own exact reviewed repair scope.
+
 ## Social Media Queue Recovery
 
 Use the Social Analytics Media Queue panel first when the admin app is running. It shows recent media runs, stale media counts, oldest queued media jobs, recovery history for actions from the panel, and links to saved queue snapshots under `.logs/workspace/social-queue-snapshots/`.
@@ -432,7 +470,13 @@ Shared-schema migration ownership is documented in `/Users/thomashulihan/Project
 
 If runtime reconcile blocks on Supabase history drift, use `/Users/thomashulihan/Projects/TRR/TRR-Backend/docs/runbooks/supabase_migration_history_repair.md`. If runtime reconcile blocks on Modal, inspect `python TRR-Backend/scripts/modal/verify_modal_readiness.py --json --probe-remote-auth instagram` for blocking readiness, then add `--probe-getty-remote-access` when you want advisory Getty transport diagnostics. `make status` now surfaces the nested Getty probe under the Modal runtime section. Render and Decodo checks remain advisory-only and are surfaced there as well.
 
-When running Modal readiness from `TRR-Backend`, prefer `.venv/bin/python scripts/modal/verify_modal_readiness.py --json`. The readiness entrypoint also re-execs into `TRR-Backend/.venv/bin/python` when launched with system `python3.11`, so dependency loading stays tied to the repo environment.
+When running Modal readiness from `TRR-Backend`, prefer `.venv/bin/python scripts/modal/verify_modal_readiness.py --env main --json` with `MODAL_PROFILE=admin-56995`. The readiness entrypoint also re-execs into `TRR-Backend/.venv/bin/python` when launched with system `python3.11`, so dependency loading stays tied to the repo environment.
+
+Readiness always executes the deployed `probe_social_control_plane_providers` on the selected app and environment. This state-free probe loads and verifies the social provider namespace without querying the database, dispatching jobs, checking external authentication, or writing heartbeats. A missing probe, timeout, exception, or incomplete provider payload blocks readiness; resolving function names alone does not prove runtime assembly.
+
+Social Modal entrypoints initialize providers through `register_social_control_plane_providers()` before importing control-plane operations. Keep this bootstrap inside each entrypoint so importing `modal_jobs` does not load the large social implementation into unrelated containers. The API uses the same named bootstrap before loading its routers.
+
+For provider initialization releases, acceptance also requires successful `sweep_social_dispatch_queue` and `heartbeat_remote_executors` executions on `admin-56995 / main / trr-backend-jobs`, including subsequent scheduled calls. Verify normal recovery (including pending launches), persisted social heartbeat metadata, and no `RUN_LIFECYCLE_PROVIDER_UNCONFIGURED` or `Queue-status provider is not configured` errors in those calls. Retain the existing two-minute recovery and one-minute heartbeat schedules; record call IDs, deployment revision, and rollback version. The state-free probe does not replace these operational checks.
 
 For startup tuning and env overrides, see `/Users/thomashulihan/Projects/TRR/docs/workspace/env-contract.md`.
 
@@ -447,3 +491,14 @@ For social/admin index recommendation evidence, use
 after an approved dated review. The helper uses `TRR_DB_SESSION_URL`, then
 `TRR_DB_URL`, then `TRR_DB_FALLBACK_URL`; it writes redacted reports under
 `docs/workspace/` and never executes advisor-returned DDL.
+
+
+### Catalog finalization recovery
+
+Account recovery keeps its `social_control` connection; launch-group ownership uses a separate one-connection `catalog_launch` pool. Both locks remain held until finalizer cleanup completes. The default query-pool limit is unchanged.
+
+`TRR_CATALOG_FINALIZE_LAUNCH_TIMEOUT_S` (default 100 seconds; 0 disables it) is a work deadline. Expiry cancels only the attempt's checked-out database connections and waits for its worker to unwind before recording timeout metadata or closing pools. Cleanup can extend the response beyond the work deadline. Timeout metadata is guarded by the launch attempt identity and terminal state.
+
+Reserved catalog launches commit the complete initial job batch and `catalog_launch_job_ids` marker atomically. Recovery can repair a completed batch after obtaining group ownership; an unmarked legacy partial batch remains unresolved rather than being duplicated or declared ready. The sweep includes marked incomplete launches. Recovered bounded-window or local-preference comments use the durable deferred path with their date bounds, worker count, and group identity; this can delay comments until catalog completion, while preserving target coverage and reusing an existing child.
+
+Instagram launch planning uses a stored-source catalog count with the requested date bounds and skips materialized detail-gap scans. This is a sizing estimate: ownership/collaborator targeting retains its full matcher, an empty estimate keeps discovery enabled, and planning never proves detail completion.
