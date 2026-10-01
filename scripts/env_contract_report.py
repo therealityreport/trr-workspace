@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -81,7 +82,6 @@ DEPRECATED_NAMES = ("SUPABASE_DB_URL", "DATABASE_URL", "SUPABASE_SERVICE_ROLE_KE
 HISTORICAL_PATH_FRAGMENTS = (
     "docs/cross-collab/",
     "docs/ai/",
-    "docs/codex/plans/",
     "docs/_archive/",
     "docs/superpowers/plans/",
 )
@@ -348,6 +348,28 @@ def _classify_deprecation_hit(
     text: str,
 ) -> DeprecationHit | None:
     lower_text = text.lower()
+
+    if path == "scripts/architecture-refactor-preflight.sh" and re.fullmatch(
+        rf"(?:env\s+)?-u\s+{re.escape(name)}\s*\\?", text
+    ):
+        return DeprecationHit(
+            name=name,
+            path=path,
+            line_number=line_number,
+            text=text,
+            classification="compatibility-only",
+            rationale="The architecture preflight explicitly removes this deprecated variable from its child environment.",
+        )
+
+    if path == "scripts/architecture/tests/test_check_evidence_hygiene.py" and name == "DATABASE_URL":
+        return DeprecationHit(
+            name=name,
+            path=path,
+            line_number=line_number,
+            text=text,
+            classification="compatibility-only",
+            rationale="Evidence-hygiene regression fixture checks that a deprecated database URL assignment is rejected.",
+        )
 
     if name == "SUPABASE_SERVICE_ROLE_KEY":
         if path in SUPABASE_SERVICE_ROLE_KEY_CANONICAL_PATHS:

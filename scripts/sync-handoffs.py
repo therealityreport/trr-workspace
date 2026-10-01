@@ -107,7 +107,7 @@ def build_scopes(root: Path) -> dict[str, ScopeConfig]:
             local_status_dir=root / "docs/ai/local-status",
             static_links=(
                 ("History archive", "archive/HANDOFF-legacy-2026-03-16.md"),
-                ("Canonical workflow", "../cross-collab/WORKFLOW.md"),
+                ("Cross-repo coordination", "../cross-collab/WORKFLOW.md"),
                 ("Workspace policy", "../../AGENTS.md"),
                 ("TRR-Backend handoff", "../../TRR-Backend/docs/ai/HANDOFF.md"),
                 ("TRR-APP handoff", "../../TRR-APP/docs/ai/HANDOFF.md"),
@@ -122,7 +122,7 @@ def build_scopes(root: Path) -> dict[str, ScopeConfig]:
             local_status_dir=root / "TRR-Backend/docs/ai/local-status",
             static_links=(
                 ("History archive", "archive/HANDOFF-legacy-2026-03-16.md"),
-                ("Canonical workflow", "../../../docs/cross-collab/WORKFLOW.md"),
+                ("Cross-repo coordination", "../../../docs/cross-collab/WORKFLOW.md"),
                 ("Repo policy", "../../AGENTS.md"),
             ),
         ),
@@ -135,7 +135,7 @@ def build_scopes(root: Path) -> dict[str, ScopeConfig]:
             local_status_dir=root / "TRR-APP/docs/ai/local-status",
             static_links=(
                 ("History archive", "archive/HANDOFF-legacy-2026-03-16.md"),
-                ("Canonical workflow", "../../../docs/cross-collab/WORKFLOW.md"),
+                ("Cross-repo coordination", "../../../docs/cross-collab/WORKFLOW.md"),
                 ("Repo policy", "../../AGENTS.md"),
             ),
         ),

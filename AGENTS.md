@@ -24,7 +24,7 @@ This file owns shared TRR policy. Nested `AGENTS.md` files inherit it and add on
 - This file owns current project account/profile bindings, cross-repo ordering, and deployment-target selection. Older descriptions in linked guides do not replace those bindings.
 - `.codex/rules/trr-project.md` owns detailed app-build gates and completion requirements; `docs/workspace/env-contract.md` owns environment-variable contracts; `docs/workspace/dev-commands.md` documents startup/validation commands.
 - `docs/workspace/chrome-devtools.md` and `docs/workspace/browser-debug.md` provide browser procedures. Use the friendly profile rules below; managed-browser troubleshooting applies only when that workflow is selected.
-- `docs/ai/HANDOFF_WORKFLOW.md` owns handoff state and lifecycle; `docs/cross-collab/WORKFLOW.md` owns cross-repository task coordination.
+- `docs/ai/HANDOFF_WORKFLOW.md` owns handoff state and lifecycle; `docs/cross-collab/WORKFLOW.md` contains only cross-repository coordination rules and links to their procedure owners.
 - `docs/agent-governance/skill_routing.md` maps project skills; `docs/agent-governance/mcp_inventory.md` records tool/config owners. Use live tool availability rather than assuming the inventory is current.
 - `docs/agent-governance/claude_skill_overlap.md` is the local-skill retirement record; consult it for skill ownership or migration work only.
 - If a material conflict remains between current requirements, inspect the owning source and resolve it before dependent work; do not silently choose an older guide.
@@ -90,7 +90,6 @@ This file owns shared TRR policy. Nested `AGENTS.md` files inherit it and add on
 <!-- project-manager:graphify:start -->
 ## Project knowledge
 
-- Follow [Memory and project knowledge](/Users/thomashulihan/.codex/instructions/RULES/memory-and-project-knowledge.md) for Engram startup and history ownership, plus on-demand Graphify structural retrieval.
-- Check task-relevant freshness before using Graphify evidence. If the graph is missing, stale, or blocked, continue from current source and report that limitation.
-- Project Manager keeps `.plan-work/`, `.loom-backup/`, and discovered nested repositories outside the corpus through `.graphifyignore`; keep `graphify-out/` local and ignored by Git.
+- Follow [Memory and project knowledge](/Users/thomashulihan/.codex/instructions/RULES/memory-and-project-knowledge.md). It owns Engram repository history and checkout-scoped, on-demand Graphify retrieval.
+- Keep only repository-specific code-corpus exclusions in `.graphifyignore`; Project Manager treats nested Git repositories as independent source roots.
 <!-- project-manager:graphify:end -->

@@ -7,8 +7,8 @@ This report enumerates remaining deprecated-name occurrences across active repo 
 ## Summary
 
 - `active drift`: 0
-- `compatibility-only`: 106
-- `historical/docs`: 65
+- `compatibility-only`: 111
+- `historical/docs`: 33
 
 ## Active Drift
 
@@ -32,18 +32,17 @@ No occurrences in this category.
 | `DATABASE_URL` | `TRR-APP/apps/web/scripts/run-migrations.mjs:192` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
 | `DATABASE_URL` | `TRR-APP/apps/web/scripts/run-migrations.mjs:194` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
 | `DATABASE_URL` | `TRR-APP/apps/web/src/lib/server/postgres.ts:231` | Explicit compatibility layer or regression coverage for deprecated env handling. |
-| `DATABASE_URL` | `TRR-APP/apps/web/tests/postgres-connection-string-resolution.test.ts:102` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `DATABASE_URL` | `TRR-APP/scripts/auto-categorize-flairs.ts:8` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `DATABASE_URL` | `TRR-APP/scripts/auto-categorize-flairs.ts:75` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `DATABASE_URL` | `TRR-APP/scripts/auto-categorize-flairs.ts:80` | Explicit compatibility layer or regression coverage for deprecated env handling. |
-| `DATABASE_URL` | `TRR-Backend/docs/deploy/cloud_run.md:33` | The deprecated name is referenced only to document or enforce non-preferred fallback behavior. |
+| `DATABASE_URL` | `TRR-Backend/docs/deploy/archive/cloud_run.md:33` | The deprecated name is referenced only to document or enforce non-preferred fallback behavior. |
 | `DATABASE_URL` | `TRR-Backend/scripts/README.md:37` | The deprecated name is referenced only to document or enforce non-preferred fallback behavior. |
 | `DATABASE_URL` | `TRR-Backend/scripts/_db_url.py:53` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `DATABASE_URL` | `TRR-Backend/scripts/_db_url.py:69` | Explicit compatibility layer or regression coverage for deprecated env handling. |
-| `DATABASE_URL` | `TRR-Backend/scripts/db/README.md:38` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
-| `DATABASE_URL` | `TRR-Backend/scripts/db/README.md:271` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
-| `DATABASE_URL` | `TRR-Backend/scripts/db/README.md:295` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
-| `DATABASE_URL` | `TRR-Backend/scripts/db/README.md:296` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
+| `DATABASE_URL` | `TRR-Backend/scripts/db/README.md:41` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
+| `DATABASE_URL` | `TRR-Backend/scripts/db/README.md:281` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
+| `DATABASE_URL` | `TRR-Backend/scripts/db/README.md:305` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
+| `DATABASE_URL` | `TRR-Backend/scripts/db/README.md:306` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
 | `DATABASE_URL` | `TRR-Backend/scripts/db/guard_core_schema.sql:12` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `DATABASE_URL` | `TRR-Backend/scripts/db/run_sql.sh:16` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `DATABASE_URL` | `TRR-Backend/scripts/db/run_sql.sh:110` | Explicit compatibility layer or regression coverage for deprecated env handling. |
@@ -54,12 +53,17 @@ No occurrences in this category.
 | `DATABASE_URL` | `TRR-Backend/scripts/ops/cast_screentime_stale_run_drill.py:27` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `DATABASE_URL` | `TRR-Backend/scripts/supabase/generate_schema_docs.py:93` | The deprecated name is referenced only to document or enforce non-preferred fallback behavior. |
 | `DATABASE_URL` | `TRR-Backend/scripts/sync/sync_shows_all.py:65` | Explicit compatibility layer or regression coverage for deprecated env handling. |
-| `DATABASE_URL` | `TRR-Backend/tests/db/test_connection_resolution.py:32` | Explicit compatibility layer or regression coverage for deprecated env handling. |
-| `DATABASE_URL` | `TRR-Backend/tests/db/test_connection_resolution.py:184` | Explicit compatibility layer or regression coverage for deprecated env handling. |
-| `DATABASE_URL` | `TRR-Backend/tests/db/test_connection_resolution.py:205` | Explicit compatibility layer or regression coverage for deprecated env handling. |
-| `DATABASE_URL` | `TRR-Backend/tests/scripts/test_prepare_named_secrets.py:237` | Explicit compatibility layer or regression coverage for deprecated env handling. |
-| `DATABASE_URL` | `TRR-Backend/tests/scripts/test_prepare_named_secrets.py:245` | Explicit compatibility layer or regression coverage for deprecated env handling. |
-| `DATABASE_URL` | `TRR-Backend/trr_backend/db/postgrest_cache.py:124` | Explicit compatibility layer or regression coverage for deprecated env handling. |
+| `DATABASE_URL` | `TRR-Backend/tests/conftest.py:18` | Explicit compatibility layer or regression coverage for deprecated env handling. |
+| `DATABASE_URL` | `TRR-Backend/tests/db/test_connection_resolution.py:36` | Explicit compatibility layer or regression coverage for deprecated env handling. |
+| `DATABASE_URL` | `TRR-Backend/tests/db/test_connection_resolution.py:306` | Explicit compatibility layer or regression coverage for deprecated env handling. |
+| `DATABASE_URL` | `TRR-Backend/tests/db/test_connection_resolution.py:327` | Explicit compatibility layer or regression coverage for deprecated env handling. |
+| `DATABASE_URL` | `TRR-Backend/tests/scripts/test_deploy_backend_modal.py:45` | Explicit compatibility layer or regression coverage for deprecated env handling. |
+| `DATABASE_URL` | `TRR-Backend/tests/scripts/test_deploy_backend_modal.py:59` | Explicit compatibility layer or regression coverage for deprecated env handling. |
+| `DATABASE_URL` | `TRR-Backend/tests/scripts/test_prepare_named_secrets.py:246` | Explicit compatibility layer or regression coverage for deprecated env handling. |
+| `DATABASE_URL` | `TRR-Backend/tests/scripts/test_prepare_named_secrets.py:254` | Explicit compatibility layer or regression coverage for deprecated env handling. |
+| `DATABASE_URL` | `TRR-Backend/tests/socials/instagram/test_catalog_detail_refresh_progress.py:276` | Explicit compatibility layer or regression coverage for deprecated env handling. |
+| `DATABASE_URL` | `TRR-Backend/tests/test_non_live_isolation.py:21` | Explicit compatibility layer or regression coverage for deprecated env handling. |
+| `DATABASE_URL` | `TRR-Backend/trr_backend/db/postgrest_cache.py:136` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `DATABASE_URL` | `TRR-Backend/trr_backend/db/preflight.py:123` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `DATABASE_URL` | `TRR-Backend/trr_backend/db/preflight.py:134` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `DATABASE_URL` | `TRR-Backend/trr_backend/db/preflight.py:142` | Explicit compatibility layer or regression coverage for deprecated env handling. |
@@ -67,7 +71,9 @@ No occurrences in this category.
 | `DATABASE_URL` | `TRR-Backend/trr_backend/repositories/cast_photos.py:36` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `DATABASE_URL` | `TRR-Backend/trr_backend/repositories/show_images.py:40` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `DATABASE_URL` | `TRR-Backend/trr_backend/repositories/shows.py:85` | Explicit compatibility layer or regression coverage for deprecated env handling. |
-| `DATABASE_URL` | `docs/workspace/shared-env-manifest.json:267` | Canonical env ownership manifest entry for deprecated or compatibility-only names. |
+| `DATABASE_URL` | `scripts/architecture-refactor-preflight.sh:13` | The architecture preflight explicitly removes this deprecated variable from its child environment. |
+| `DATABASE_URL` | `scripts/architecture/tests/test_check_evidence_hygiene.py:44` | Evidence-hygiene regression fixture checks that a deprecated database URL assignment is rejected. |
+| `DATABASE_URL` | `scripts/architecture/tests/test_check_evidence_hygiene.py:98` | Evidence-hygiene regression fixture checks that a deprecated database URL assignment is rejected. |
 | `DATABASE_URL` | `scripts/lib/preflight-env-drift.sh:74` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `DATABASE_URL` | `scripts/lib/preflight-env-drift.sh:75` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `DATABASE_URL` | `scripts/lib/preflight-env-drift.sh:126` | Explicit compatibility layer or regression coverage for deprecated env handling. |
@@ -77,32 +83,33 @@ No occurrences in this category.
 | `DATABASE_URL` | `scripts/lib/runtime-db-env.sh:398` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `DATABASE_URL` | `scripts/redact-env-inventory.py:22` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `DATABASE_URL` | `scripts/redact-env-inventory.py:85` | Explicit compatibility layer or regression coverage for deprecated env handling. |
-| `DATABASE_URL` | `scripts/test_env_hygiene.py:38` | Explicit compatibility layer or regression coverage for deprecated env handling. |
-| `DATABASE_URL` | `scripts/test_env_hygiene.py:87` | Explicit compatibility layer or regression coverage for deprecated env handling. |
-| `DATABASE_URL` | `scripts/test_env_hygiene.py:92` | Explicit compatibility layer or regression coverage for deprecated env handling. |
-| `DATABASE_URL` | `scripts/test_env_hygiene.py:100` | Explicit compatibility layer or regression coverage for deprecated env handling. |
-| `DATABASE_URL` | `scripts/test_env_hygiene.py:136` | Explicit compatibility layer or regression coverage for deprecated env handling. |
-| `DATABASE_URL` | `scripts/test_env_hygiene.py:150` | Explicit compatibility layer or regression coverage for deprecated env handling. |
+| `DATABASE_URL` | `scripts/test_env_hygiene.py:40` | Explicit compatibility layer or regression coverage for deprecated env handling. |
+| `DATABASE_URL` | `scripts/test_env_hygiene.py:89` | Explicit compatibility layer or regression coverage for deprecated env handling. |
+| `DATABASE_URL` | `scripts/test_env_hygiene.py:94` | Explicit compatibility layer or regression coverage for deprecated env handling. |
+| `DATABASE_URL` | `scripts/test_env_hygiene.py:102` | Explicit compatibility layer or regression coverage for deprecated env handling. |
+| `DATABASE_URL` | `scripts/test_env_hygiene.py:138` | Explicit compatibility layer or regression coverage for deprecated env handling. |
+| `DATABASE_URL` | `scripts/test_env_hygiene.py:152` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `DATABASE_URL` | `scripts/workspace/env_hygiene.py:32` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `DATABASE_URL` | `scripts/workspace/env_hygiene.py:194` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `SUPABASE_DB_URL` | `TRR-APP/apps/web/src/lib/server/postgres.ts:231` | Explicit compatibility layer or regression coverage for deprecated env handling. |
-| `SUPABASE_DB_URL` | `TRR-APP/apps/web/tests/postgres-connection-string-resolution.test.ts:102` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `SUPABASE_DB_URL` | `TRR-Backend/scripts/_db_url.py:55` | Explicit compatibility layer or regression coverage for deprecated env handling. |
-| `SUPABASE_DB_URL` | `TRR-Backend/scripts/db/README.md:39` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
-| `SUPABASE_DB_URL` | `TRR-Backend/scripts/db/README.md:270` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
+| `SUPABASE_DB_URL` | `TRR-Backend/scripts/db/README.md:42` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
+| `SUPABASE_DB_URL` | `TRR-Backend/scripts/db/README.md:280` | Tooling-only script still requires DATABASE_URL at invocation time; this is not a runtime contract. |
 | `SUPABASE_DB_URL` | `TRR-Backend/scripts/db/run_sql.sh:17` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `SUPABASE_DB_URL` | `TRR-Backend/scripts/db/run_sql.sh:115` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `SUPABASE_DB_URL` | `TRR-Backend/scripts/db/run_sql.sh:165` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `SUPABASE_DB_URL` | `TRR-Backend/scripts/modal/prepare_named_secrets.py:29` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `SUPABASE_DB_URL` | `TRR-Backend/scripts/ops/cast_screentime_stale_run_drill.py:23` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `SUPABASE_DB_URL` | `TRR-Backend/scripts/verify/verify_media_unification.py:159` | Explicit compatibility layer or regression coverage for deprecated env handling. |
-| `SUPABASE_DB_URL` | `TRR-Backend/tests/db/test_connection_resolution.py:31` | Explicit compatibility layer or regression coverage for deprecated env handling. |
-| `SUPABASE_DB_URL` | `TRR-Backend/tests/db/test_connection_resolution.py:184` | Explicit compatibility layer or regression coverage for deprecated env handling. |
-| `SUPABASE_DB_URL` | `TRR-Backend/tests/db/test_connection_resolution.py:193` | Explicit compatibility layer or regression coverage for deprecated env handling. |
-| `SUPABASE_DB_URL` | `TRR-Backend/tests/scripts/test_prepare_named_secrets.py:236` | Explicit compatibility layer or regression coverage for deprecated env handling. |
-| `SUPABASE_DB_URL` | `TRR-Backend/tests/scripts/test_prepare_named_secrets.py:244` | Explicit compatibility layer or regression coverage for deprecated env handling. |
-| `SUPABASE_DB_URL` | `TRR-Backend/tests/scripts/test_prepare_named_secrets.py:250` | Explicit compatibility layer or regression coverage for deprecated env handling. |
-| `SUPABASE_DB_URL` | `docs/workspace/shared-env-manifest.json:272` | Canonical env ownership manifest entry for deprecated or compatibility-only names. |
+| `SUPABASE_DB_URL` | `TRR-Backend/tests/conftest.py:17` | Explicit compatibility layer or regression coverage for deprecated env handling. |
+| `SUPABASE_DB_URL` | `TRR-Backend/tests/db/test_connection_resolution.py:35` | Explicit compatibility layer or regression coverage for deprecated env handling. |
+| `SUPABASE_DB_URL` | `TRR-Backend/tests/db/test_connection_resolution.py:306` | Explicit compatibility layer or regression coverage for deprecated env handling. |
+| `SUPABASE_DB_URL` | `TRR-Backend/tests/db/test_connection_resolution.py:315` | Explicit compatibility layer or regression coverage for deprecated env handling. |
+| `SUPABASE_DB_URL` | `TRR-Backend/tests/scripts/test_prepare_named_secrets.py:245` | Explicit compatibility layer or regression coverage for deprecated env handling. |
+| `SUPABASE_DB_URL` | `TRR-Backend/tests/scripts/test_prepare_named_secrets.py:253` | Explicit compatibility layer or regression coverage for deprecated env handling. |
+| `SUPABASE_DB_URL` | `TRR-Backend/tests/scripts/test_prepare_named_secrets.py:259` | Explicit compatibility layer or regression coverage for deprecated env handling. |
+| `SUPABASE_DB_URL` | `TRR-Backend/tests/test_non_live_isolation.py:20` | Explicit compatibility layer or regression coverage for deprecated env handling. |
+| `SUPABASE_DB_URL` | `scripts/architecture-refactor-preflight.sh:14` | The architecture preflight explicitly removes this deprecated variable from its child environment. |
 | `SUPABASE_DB_URL` | `scripts/lib/preflight-env-drift.sh:78` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `SUPABASE_DB_URL` | `scripts/lib/preflight-env-drift.sh:79` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `SUPABASE_DB_URL` | `scripts/lib/preflight-env-drift.sh:122` | Explicit compatibility layer or regression coverage for deprecated env handling. |
@@ -114,13 +121,11 @@ No occurrences in this category.
 | `SUPABASE_DB_URL` | `scripts/redact-env-inventory.py:85` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `SUPABASE_DB_URL` | `scripts/workspace/env_hygiene.py:32` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `SUPABASE_DB_URL` | `scripts/workspace/env_hygiene.py:194` | Explicit compatibility layer or regression coverage for deprecated env handling. |
-| `SUPABASE_SERVICE_ROLE_KEY` | `TRR-APP/apps/web/README.md:106` | The deprecated name is referenced only to document or enforce non-preferred fallback behavior. |
-| `SUPABASE_SERVICE_ROLE_KEY` | `TRR-APP/apps/web/tests/server-auth-adapter.test.ts:153` | Explicit compatibility layer or regression coverage for deprecated env handling. |
-| `SUPABASE_SERVICE_ROLE_KEY` | `docs/workspace/shared-env-manifest.json:262` | Canonical env ownership manifest entry for deprecated or compatibility-only names. |
+| `SUPABASE_SERVICE_ROLE_KEY` | `TRR-APP/apps/web/README.md:108` | The deprecated name is referenced only to document or enforce non-preferred fallback behavior. |
 | `SUPABASE_SERVICE_ROLE_KEY` | `scripts/redact-env-inventory.py:32` | Explicit compatibility layer or regression coverage for deprecated env handling. |
-| `SUPABASE_SERVICE_ROLE_KEY` | `scripts/test_env_hygiene.py:36` | Explicit compatibility layer or regression coverage for deprecated env handling. |
-| `SUPABASE_SERVICE_ROLE_KEY` | `scripts/test_env_hygiene.py:131` | Explicit compatibility layer or regression coverage for deprecated env handling. |
-| `SUPABASE_SERVICE_ROLE_KEY` | `scripts/test_env_hygiene.py:145` | Explicit compatibility layer or regression coverage for deprecated env handling. |
+| `SUPABASE_SERVICE_ROLE_KEY` | `scripts/test_env_hygiene.py:38` | Explicit compatibility layer or regression coverage for deprecated env handling. |
+| `SUPABASE_SERVICE_ROLE_KEY` | `scripts/test_env_hygiene.py:133` | Explicit compatibility layer or regression coverage for deprecated env handling. |
+| `SUPABASE_SERVICE_ROLE_KEY` | `scripts/test_env_hygiene.py:147` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `SUPABASE_SERVICE_ROLE_KEY` | `scripts/workspace/env_hygiene.py:33` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `SUPABASE_SERVICE_ROLE_KEY` | `scripts/workspace/env_hygiene.py:212` | Explicit compatibility layer or regression coverage for deprecated env handling. |
 | `SUPABASE_SERVICE_ROLE_KEY` | `scripts/workspace/env_hygiene.py:231` | Explicit compatibility layer or regression coverage for deprecated env handling. |
@@ -146,16 +151,6 @@ No occurrences in this category.
 | `DATABASE_URL` | `TRR-Backend/docs/cross-collab/TASK24/PLAN.md:66` | Historical handoff, archived material, or generated artifact retained for reference only. |
 | `DATABASE_URL` | `TRR-Backend/docs/cross-collab/TASK24/PLAN.md:80` | Historical handoff, archived material, or generated artifact retained for reference only. |
 | `DATABASE_URL` | `TRR-Backend/docs/cross-collab/TASK24/PLAN.md:81` | Historical handoff, archived material, or generated artifact retained for reference only. |
-| `DATABASE_URL` | `docs/ai/local-status/env-contract-migration-and-local-startup-recovery-2026-03-30.md:42` | Historical handoff, archived material, or generated artifact retained for reference only. |
-| `DATABASE_URL` | `docs/ai/local-status/supabase-connection-and-env-standardization-2026-03-30.md:62` | Historical handoff, archived material, or generated artifact retained for reference only. |
-| `DATABASE_URL` | `docs/ai/local-status/supabase-connection-and-env-standardization-2026-03-30.md:66` | Historical handoff, archived material, or generated artifact retained for reference only. |
-| `DATABASE_URL` | `docs/ai/local-status/supavisor-session-mode-and-egress-reduction-rollout.md:120` | Historical handoff, archived material, or generated artifact retained for reference only. |
-| `DATABASE_URL` | `docs/ai/local-status/supavisor-session-mode-and-egress-reduction-rollout.md:134` | Historical handoff, archived material, or generated artifact retained for reference only. |
-| `DATABASE_URL` | `docs/workspace/redacted-env-inventory.md:14` | Historical handoff, archived material, or generated artifact retained for reference only. |
-| `DATABASE_URL` | `docs/workspace/redacted-env-inventory.md:32` | Historical handoff, archived material, or generated artifact retained for reference only. |
-| `DATABASE_URL` | `docs/workspace/redacted-env-inventory.md:50` | Historical handoff, archived material, or generated artifact retained for reference only. |
-| `DATABASE_URL` | `docs/workspace/redacted-env-inventory.md:68` | Historical handoff, archived material, or generated artifact retained for reference only. |
-| `DATABASE_URL` | `docs/workspace/redacted-env-inventory.md:86` | Historical handoff, archived material, or generated artifact retained for reference only. |
 | `SUPABASE_DB_URL` | `TRR-APP/docs/cross-collab/TASK11/OTHER_PROJECTS.md:87` | Historical handoff, archived material, or generated artifact retained for reference only. |
 | `SUPABASE_DB_URL` | `TRR-APP/docs/cross-collab/TASK11/STATUS.md:286` | Historical handoff, archived material, or generated artifact retained for reference only. |
 | `SUPABASE_DB_URL` | `TRR-APP/docs/cross-collab/TASK14/STATUS.md:32` | Historical handoff, archived material, or generated artifact retained for reference only. |
@@ -169,31 +164,9 @@ No occurrences in this category.
 | `SUPABASE_DB_URL` | `TRR-Backend/docs/cross-collab/TASK19/STATUS.md:22` | Historical handoff, archived material, or generated artifact retained for reference only. |
 | `SUPABASE_DB_URL` | `TRR-Backend/docs/cross-collab/TASK24/PLAN.md:66` | Historical handoff, archived material, or generated artifact retained for reference only. |
 | `SUPABASE_DB_URL` | `TRR-Backend/docs/cross-collab/TASK5/PLAN.md:86` | Historical handoff, archived material, or generated artifact retained for reference only. |
-| `SUPABASE_DB_URL` | `docs/ai/local-status/shared-account-catalog-backfill-and-profile-ui.md:135` | Historical handoff, archived material, or generated artifact retained for reference only. |
-| `SUPABASE_DB_URL` | `docs/ai/local-status/supabase-read-path-stabilization-and-flashback-rpcs.md:19` | Historical handoff, archived material, or generated artifact retained for reference only. |
-| `SUPABASE_DB_URL` | `docs/ai/local-status/supavisor-session-mode-and-egress-reduction-rollout.md:120` | Historical handoff, archived material, or generated artifact retained for reference only. |
-| `SUPABASE_DB_URL` | `docs/ai/local-status/supavisor-session-mode-and-egress-reduction-rollout.md:132` | Historical handoff, archived material, or generated artifact retained for reference only. |
-| `SUPABASE_DB_URL` | `docs/ai/local-status/supavisor-session-mode-and-egress-reduction-rollout.md:151` | Historical handoff, archived material, or generated artifact retained for reference only. |
-| `SUPABASE_DB_URL` | `docs/ai/local-status/supavisor-session-mode-and-egress-reduction-rollout.md:157` | Historical handoff, archived material, or generated artifact retained for reference only. |
-| `SUPABASE_DB_URL` | `docs/ai/local-status/supavisor-session-mode-and-egress-reduction-rollout.md:229` | Historical handoff, archived material, or generated artifact retained for reference only. |
-| `SUPABASE_DB_URL` | `docs/ai/local-status/supavisor-session-mode-and-egress-reduction-rollout.md:233` | Historical handoff, archived material, or generated artifact retained for reference only. |
-| `SUPABASE_DB_URL` | `docs/ai/local-status/supavisor-session-mode-and-egress-reduction-rollout.md:241` | Historical handoff, archived material, or generated artifact retained for reference only. |
-| `SUPABASE_DB_URL` | `docs/ai/local-status/supavisor-session-mode-and-egress-reduction-rollout.md:390` | Historical handoff, archived material, or generated artifact retained for reference only. |
-| `SUPABASE_DB_URL` | `docs/ai/local-status/supavisor-session-mode-and-egress-reduction-rollout.md:503` | Historical handoff, archived material, or generated artifact retained for reference only. |
-| `SUPABASE_DB_URL` | `docs/workspace/redacted-env-inventory.md:15` | Historical handoff, archived material, or generated artifact retained for reference only. |
-| `SUPABASE_DB_URL` | `docs/workspace/redacted-env-inventory.md:33` | Historical handoff, archived material, or generated artifact retained for reference only. |
-| `SUPABASE_DB_URL` | `docs/workspace/redacted-env-inventory.md:51` | Historical handoff, archived material, or generated artifact retained for reference only. |
-| `SUPABASE_DB_URL` | `docs/workspace/redacted-env-inventory.md:69` | Historical handoff, archived material, or generated artifact retained for reference only. |
-| `SUPABASE_DB_URL` | `docs/workspace/redacted-env-inventory.md:87` | Historical handoff, archived material, or generated artifact retained for reference only. |
 | `SUPABASE_SERVICE_ROLE_KEY` | `TRR-APP/docs/cross-collab/TASK14/STATUS.md:32` | Historical handoff, archived material, or generated artifact retained for reference only. |
 | `SUPABASE_SERVICE_ROLE_KEY` | `TRR-APP/docs/cross-collab/TASK14/STATUS.md:33` | Historical handoff, archived material, or generated artifact retained for reference only. |
 | `SUPABASE_SERVICE_ROLE_KEY` | `TRR-APP/docs/cross-collab/TASK14/STATUS.md:35` | Historical handoff, archived material, or generated artifact retained for reference only. |
-| `SUPABASE_SERVICE_ROLE_KEY` | `docs/ai/local-status/supabase-connection-and-env-standardization-2026-03-30.md:24` | Historical handoff, archived material, or generated artifact retained for reference only. |
-| `SUPABASE_SERVICE_ROLE_KEY` | `docs/workspace/redacted-env-inventory.md:24` | Historical handoff, archived material, or generated artifact retained for reference only. |
-| `SUPABASE_SERVICE_ROLE_KEY` | `docs/workspace/redacted-env-inventory.md:42` | Historical handoff, archived material, or generated artifact retained for reference only. |
-| `SUPABASE_SERVICE_ROLE_KEY` | `docs/workspace/redacted-env-inventory.md:60` | Historical handoff, archived material, or generated artifact retained for reference only. |
-| `SUPABASE_SERVICE_ROLE_KEY` | `docs/workspace/redacted-env-inventory.md:78` | Historical handoff, archived material, or generated artifact retained for reference only. |
-| `SUPABASE_SERVICE_ROLE_KEY` | `docs/workspace/redacted-env-inventory.md:96` | Historical handoff, archived material, or generated artifact retained for reference only. |
 
 ## Remaining Intentional Exceptions
 
