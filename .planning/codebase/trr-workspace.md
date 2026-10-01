@@ -27,7 +27,7 @@ The root owns:
 
 From the root `Makefile`:
 
-- `make dev` starts the default local path: local app, local backend, direct DB lane, remote workers disabled, Modal dispatch disabled.
+- `make dev` delegates to `make dev-hybrid`: local app/backend use the direct DB lane while remote social workers and Modal lanes are enabled. Use `make dev-local` for the local-only path with remote workers and Modal dispatch disabled.
 - `make dev-cloud` selects explicit cloud/remote-worker behavior on the session/pooler DB lane.
 - `make dev-hybrid` runs local app/backend while enabling remote social workers and Modal lanes.
 - `make dev-portless` starts app, API, and Wordle through stable Portless HTTPS names.

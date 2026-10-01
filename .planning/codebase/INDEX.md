@@ -10,6 +10,10 @@ Scope: live mapping of `/Users/thomashulihan/Projects/TRR`, including the root w
 - [TRR-Backend map](trr-backend.md) - FastAPI, shared backend libraries, Supabase/schema ownership, Modal/job runtime, social scraping, and validation.
 - [TRR-APP map](trr-app.md) - pnpm/Next.js workspace, app routes, admin surfaces, API proxy/auth seams, generated contracts, env projection, and build safety.
 
+## Historical maps
+
+The April 2026 maps are retained under [archive/2026-04](archive/2026-04/). Same-named forwarding files preserve existing links; use the three live maps above for current code and commands.
+
 ## Provenance
 
 - Skill invoked: `get-shit-done:gsd-map-codebase`.

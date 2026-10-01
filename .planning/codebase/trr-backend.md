@@ -36,7 +36,7 @@ Key router families:
 
 High-risk API surface:
 
-- `api/routers/socials/__init__.py` is very large and mixes social ingest, analytics, worker health, cookie/auth health, queue status, and fallback behavior.
+- `api/routers/socials/__init__.py` is a compact registration module. Implementation is split across route-family modules such as `profile_reads.py`, `social_landing.py`, `analytics.py`, and `worker_health.py`; inspect the relevant child module for behavior.
 - `api/main.py` mixes router composition, startup validation, and Modal runtime scheduler ownership.
 
 ## Shared Library Ownership
@@ -131,7 +131,7 @@ Root-level checks that include backend:
 ## Confusing Ownership Points
 
 - `api/main.py` owns too many runtime concerns: route composition, startup validation, and Modal maintenance scheduling.
-- `api/routers/socials/__init__.py` is broad enough that queueing, analytics, fallback execution, and health can blur together.
+- Social route behavior spans child modules under `api/routers/socials/`; review the relevant implementation module and shared helpers rather than assuming `__init__.py` owns the logic.
 - DB access has two important surfaces: `trr_backend/db/session.py` and `trr_backend/db/pg.py`. Be explicit about whether a change is Supabase-wrapper behavior or direct SQL pool behavior.
 - `job_plane.py` and `modal_dispatch.py` both encode remote/local execution semantics, so env changes can drift if only one is updated.
 - Schema changes need both migration SQL and generated schema-doc alignment.

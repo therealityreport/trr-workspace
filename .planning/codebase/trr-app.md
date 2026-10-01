@@ -52,7 +52,7 @@ Client auth helpers:
 
 - `src/lib/admin/client-auth.ts` owns browser-side admin auth headers.
 - `src/lib/admin/useAdminGuard.ts` gates admin pages.
-- `src/lib/admin/client-access.ts` and `src/lib/admin/dev-admin-bypass.ts` expose client-facing allowlist/bypass behavior.
+- `src/lib/admin/client-access.ts` retains a client compatibility helper but no active client allowlist; admin access is checked through the server `/api/admin/check` route. `src/lib/admin/dev-admin-bypass.ts` remains a separate development bypass surface.
 
 Backend proxy seam:
 

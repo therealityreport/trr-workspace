@@ -92,7 +92,7 @@
 - Backend validation: `TRR-Backend/Makefile` `doctor`, `schema-docs-check`, `ci-local`, plus repo pytest/ruff lanes
 
 ## Operational Boundaries
-- `make dev` is the local-process-first baseline: local app, local backend, direct DB lane, remote workers disabled, Modal dispatch disabled.
+- `make dev` delegates to `make dev-hybrid`: local app/backend use the direct DB lane while remote social workers and Modal lanes are enabled. Use `make dev-local` for the local-only path with remote workers and Modal dispatch disabled.
 - `make dev-cloud` is the explicit cloud/remote-worker path on the session/pooler lane.
 - `make dev-hybrid` keeps local app/backend direct while enabling remote workers and the conservative social-safe caps.
 - Browser verification defaults to `make dev-hybrid` unless a different target is explicitly requested.
