@@ -1,5 +1,7 @@
 # Plan 002: Validate dynamically-built SQL column identifiers in the screentime `update_*` repositories
 
+> **Current-main status note (2026-09-25 source audit):** Branch completion in July does not establish current-main closure. The 2026-09-25 audit found the `cast_screentime.py` update path still interpolating unchecked column keys; recheck after integration before marking this plan complete on main.
+
 > **Executor instructions**: Follow this plan step by step. Run every
 > verification command and confirm the expected result before moving to the
 > next step. If anything in the "STOP conditions" section occurs, stop and

@@ -1,5 +1,7 @@
 # Plan 019: Remove tracked root scratch artifacts
 
+> **Current-main status note (2026-09-25 source audit):** The July local cleanup record does not describe the 2026-09-25 root main checkout: `plan.md`, `instagram-backfill-debug-report.md`, `claude-desktop-ui-mod-plan.html`, and `design-docs-agent-comparison.html` were still tracked. Do not remove them from this status note; check current references and ownership before any cleanup.
+
 > **Executor instructions**: This is repo hygiene. Do not delete untracked user
 > files; only handle tracked artifacts after confirming with `git ls-files`.
 >

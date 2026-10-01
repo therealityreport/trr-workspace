@@ -1,5 +1,7 @@
 # Plan 010: Make social job finish and run-counter updates atomic
 
+> **Current-main status note (2026-09-25 source audit):** The July local execution record is historical. At the 2026-09-25 main-source audit, a counter timeout/DB-unavailable branch rolled back the counter savepoint while allowing the terminal job update to commit. Strict atomicity remains open unless source or a named recovery invariant is proven.
+
 > **Executor instructions**: This touches the social run state machine. Keep the
 > diff narrow and preserve the characterization tests from plan 004.
 >

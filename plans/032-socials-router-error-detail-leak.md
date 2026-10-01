@@ -1,5 +1,7 @@
 # Plan 032: Stop leaking raw exception text from socials-router 500/502 responses
 
+> **Earlier owner status record (2026-09-25; retained as history):** The July advisor-branch sanitation record and the committed-main audit baseline remain historical. The audited main source still had one raw 500 path in `_to_social_read_http_exception()`. A subsequent uncommitted Backend working-tree correction now routes that unexpected error through the existing sanitized response. The source owner verified 12 targeted router tests and in-memory ASGI 500/400/503/200 probes, with one existing queue 500 test updated. That correction was delivered in Modal v52 (`3bcdc39*`) to `admin-56995 / main / trr-backend-jobs`; post-deploy readiness and health checks passed. Commit/merge and Render/public API delivery remain open. This record does not establish closure of the entire older advisor plan.
+
 > **Executor instructions**: Follow step by step. Run every verification command
 > before moving on. If a "STOP conditions" item occurs, stop and report. Update
 > the `plans/README.md` status row when done unless a reviewer maintains it.

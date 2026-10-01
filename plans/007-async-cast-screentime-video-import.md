@@ -1,5 +1,7 @@
 # Plan 007: Queue cast-screentime remote video imports instead of blocking the admin request
 
+> **Current-main status note (2026-09-25 source audit):** The July local execution record is historical. At the 2026-09-25 main-source audit, the Backend admin POST still resolved/mirrored remote media before returning, and App polling began only after that POST. Queue/quick-return acceptance and deployment remain unverified.
+
 > **Executor instructions**: Follow this plan step by step. Run every
 > verification command and confirm the expected result before moving to the
 > next step. If anything in the "STOP conditions" section occurs, stop and
