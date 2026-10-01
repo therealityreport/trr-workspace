@@ -49,11 +49,11 @@ Use these commands from `/Users/thomashulihan/Projects/TRR`.
 - `cd TRR-Backend && .venv/bin/python scripts/db/index_advisor_social_hot_paths.py --dry-run` — list social/admin hot-path `index_advisor` query labels without connecting to the database
 - Admin performance tools runbook: `/Users/thomashulihan/Projects/TRR/docs/workspace/admin-performance-tools.md`
 - Admin performance report template: `/Users/thomashulihan/Projects/TRR/docs/workspace/admin-performance-report-template.md`
-- `pnpm -C TRR-APP/apps/web run perf:admin:sitespeed:bravotv` — run sitespeed.io page-load evidence for the Bravo TV admin social profile; writes `.artifacts/perf/sitespeed/<timestamp>/` and updates `.artifacts/perf/sitespeed/latest`
-- `pnpm -C TRR-APP/apps/web run perf:admin:sitespeed:cast` — run sitespeed.io page-load evidence for `/cast` and `/summer-house/credits`
+- Bravo TV sitespeed package shortcut is not declared in `TRR-APP/apps/web/package.json`; see the direct-command guidance in `docs/workspace/admin-performance-tools.md`.
+- Cast sitespeed package shortcut is not declared in `TRR-APP/apps/web/package.json`; see the direct-command guidance in `docs/workspace/admin-performance-tools.md`.
 - `pnpm -C TRR-APP/apps/web run perf:admin:api -- --preset social-snapshot --max-p95-ms 1000 --max-p99-ms 2000` — run a low-concurrency autocannon benchmark with optional latency threshold exits; writes `.artifacts/perf/autocannon/<timestamp>/` and updates `.artifacts/perf/autocannon/latest`
-- `pnpm -C TRR-APP/apps/web run perf:bundle` — run Next.js `experimental-analyze --output`; copies analyzer output to `.artifacts/perf/bundle/<timestamp>/` and updates `.artifacts/perf/bundle/latest`
-- `pnpm -C TRR-APP/apps/web run perf:react-scan` — start the local app with dev-only React Scan enabled for client render diagnostics
+- `perf:bundle` is not declared in `TRR-APP/apps/web/package.json`; see direct bundle-analysis guidance in `docs/workspace/admin-performance-tools.md`.
+- `perf:react-scan` is not declared in `TRR-APP/apps/web/package.json`; see the direct dev-only React Scan guidance in `docs/workspace/admin-performance-tools.md`.
 - `make status` — workspace health and PID snapshot
 - `make status-json` — workspace health and PID snapshot as JSON
 - `make db-pressure-rehearsal` — local-only DB pressure capture; writes redacted before/after artifacts under `.logs/workspace/`
@@ -67,7 +67,7 @@ Use these commands from `/Users/thomashulihan/Projects/TRR`.
 - `make vercel-auth-doctor` — check local Vercel CLI access to the TRR team/project
 - `make vercel-cleanup-doctor` — scan for stale local Vercel project links such as the old nested `web` project
 - `make vercel-link-trr` — link the app checkout to the `trr-app` Vercel project
-- `make vercel-preview-ready` — check the local Vercel link, Web Analytics, Speed Insights, and latest deployment URL for preview readiness; requires local Vercel CLI access to the TRR team
+- `make vercel-preview-ready` — check the local Vercel link and latest deployment URL, and enable Web Analytics and Speed Insights if needed; requires local Vercel CLI access to the TRR team
 - `make doctor-json`
 - `make context7-repair`
 - `make chrome-repair`
@@ -240,7 +240,7 @@ The cleanup script intentionally reads `TRR_SUPABASE_ACCESS_TOKEN`. It maps that
 - `make down` — retained no-op for old local infra cleanup muscle memory
 - `make bootstrap` — one-time dependency setup
 - `make app-check` — enforce the Node 24 baseline, then run TRR-APP lint and typecheck from the repo root
-- `bash scripts/codex-config-sync.sh bootstrap` — bootstrap minimal user-level `~/.codex` files without reapplying TRR project config there
+- `bash scripts/codex-config-sync.sh bootstrap` — add workspace trust and create missing user-level `~/.codex` defaults; preserve existing personal model, effort, tools, plugins, disabled settings, and instructions
 
 ## Vercel Observability And Preview Readiness
 
@@ -262,7 +262,7 @@ make vercel-cleanup-doctor
 make vercel-link-trr
 ```
 
-Check preview readiness without deploying; the command writes a timestamped JSON artifact under `.logs/workspace/vercel-preview-ready/`, updates `latest.json`, and includes `latestDeploymentUrl` plus the raw deployment-list command output:
+Check preview readiness without deploying. This command can enable Web Analytics and Speed Insights on the Vercel project. It writes a timestamped JSON artifact under `.logs/workspace/vercel-preview-ready/`, updates `latest.json`, and includes `latestDeploymentUrl` plus the raw deployment-list command output:
 
 ```bash
 make vercel-preview-ready
@@ -303,21 +303,21 @@ It does not run broad account catalog recovery.
 Dry-run the plan:
 
 ```bash
-BRAVO_RECOVERY_ARGS='--approved-shortcodes-file TRR-Backend/docs/ai/evidence/instagram-comments/bravotv_comments_evidence_latest.json --safe-12-workers' \
+BRAVO_RECOVERY_ARGS='--approved-shortcodes-file TRR-Backend/docs/ai/evidence/instagram-comments/bravotv_comments_evidence_latest.json --safe-preset 12 --confirm-safe-12 "SAFE 12 WORKERS"' \
   make bravo-straggler-recovery
 ```
 
-Execute only after the dry-run plan is correct:
+Enqueue only after the dry-run plan is correct and launch is authorized:
 
 ```bash
-BRAVO_RECOVERY_ARGS='--approved-shortcodes-file TRR-Backend/docs/ai/evidence/instagram-comments/bravotv_comments_evidence_latest.json --safe-12-workers --execute --confirm-execute "RUN BRAVO STRAGGLER RECOVERY"' \
+BRAVO_RECOVERY_ARGS='--approved-shortcodes-file TRR-Backend/docs/ai/evidence/instagram-comments/bravotv_comments_evidence_latest.json --safe-preset 12 --confirm-safe-12 "SAFE 12 WORKERS" --enqueue --confirm-enqueue "ENQUEUE AUDIT CURSOR RETRIES"' \
   make bravo-straggler-recovery
 ```
 
 Use repeated inline shortcodes for tiny operator-approved batches:
 
 ```bash
-BRAVO_RECOVERY_ARGS='--shortcode SHORT_A --shortcode SHORT_B --safe-12-workers' \
+BRAVO_RECOVERY_ARGS='--approved-shortcode SHORT_A --approved-shortcode SHORT_B --safe-preset 12 --confirm-safe-12 "SAFE 12 WORKERS"' \
   make bravo-straggler-recovery
 ```
 
