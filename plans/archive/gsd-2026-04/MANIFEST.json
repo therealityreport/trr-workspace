@@ -1,0 +1,473 @@
+{
+  "source_revision": "52c8f503baa6c71b22bcc1db23d1af782323d248",
+  "files": [
+    {
+      "source": ".planning/milestones/v1.1-REQUIREMENTS.md",
+      "destination": "plans/archive/gsd-2026-04/milestones/v1.1-REQUIREMENTS.md",
+      "sha256": "fd5f887386f715d45e15b4ae9581e9bdf0a9ac93b24bdbabf9c31b88782752da",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/milestones/v1.1-ROADMAP.md",
+      "destination": "plans/archive/gsd-2026-04/milestones/v1.1-ROADMAP.md",
+      "sha256": "eea5cac2d4b5e02464538d82907cbd4e51581c4b3381809b2b64c2e9753e8976",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/feature-b/REQUIREMENTS.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/feature-b/REQUIREMENTS.md",
+      "sha256": "30b07f8681592bf1cb0c4892ff878469c4894c6a7bbb79ad1b6c3c2490c1e218",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/feature-b/ROADMAP.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/feature-b/ROADMAP.md",
+      "sha256": "d8bbba4077435bcc2fe26a5c3b577195e11fd0433b836fbfa6575f8c2f7dc2e9",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/feature-b/STATE.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/feature-b/STATE.md",
+      "sha256": "a02efa0c84dfc36e39092c26180c29e92d318849bc313176ab8a09913b87a297",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/feature-b/phases/06-cloud-first-validation-contract/06-01-PLAN.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/feature-b/phases/06-cloud-first-validation-contract/06-01-PLAN.md",
+      "sha256": "8c4f1a47dc092355ad53f00c3b98ca17ecc30e4de44bcca92ff3c9718ca0c68d",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/feature-b/phases/06-cloud-first-validation-contract/06-01-SUMMARY.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/feature-b/phases/06-cloud-first-validation-contract/06-01-SUMMARY.md",
+      "sha256": "73d4bfe166eb3267d1572b8993039aec9dbc06d015fcabf50341676e29eedece",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/feature-b/phases/06-cloud-first-validation-contract/06-RESEARCH.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/feature-b/phases/06-cloud-first-validation-contract/06-RESEARCH.md",
+      "sha256": "f14686bd00a06d5d0f9497e181879dc99451cb1db39ad3a63c93b4e7662c3577",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/feature-b/phases/06-cloud-first-validation-contract/06-VALIDATION.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/feature-b/phases/06-cloud-first-validation-contract/06-VALIDATION.md",
+      "sha256": "a7d5543a09b1a6d7a52eaa793a216e3357523316c1818e224c5b5ce7e420de76",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/feature-b/phases/06-cloud-first-validation-contract/06-VERIFICATION.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/feature-b/phases/06-cloud-first-validation-contract/06-VERIFICATION.md",
+      "sha256": "ba18678ec4b76581602af57d9f348c8ee5ea6bacb8493de1b35624113afc508f",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/feature-b/phases/07-workspace-defaults-and-script-alignment/07-01-PLAN.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/feature-b/phases/07-workspace-defaults-and-script-alignment/07-01-PLAN.md",
+      "sha256": "4b6a3bf7814dfce2670267e34ac09fd70cb1f7fbae2cc5d1c0bed572885de7cb",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/feature-b/phases/07-workspace-defaults-and-script-alignment/07-01-SUMMARY.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/feature-b/phases/07-workspace-defaults-and-script-alignment/07-01-SUMMARY.md",
+      "sha256": "010fcc77483fdba14e028b30333ab7ffab9dd79f0a38efba649460b0f4bbc105",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/feature-b/phases/07-workspace-defaults-and-script-alignment/07-CONTEXT.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/feature-b/phases/07-workspace-defaults-and-script-alignment/07-CONTEXT.md",
+      "sha256": "0d8241c9048f95b74e398e09236dd8c6370711fc26b019e33ce355ffb7984254",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/feature-b/phases/07-workspace-defaults-and-script-alignment/07-RESEARCH.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/feature-b/phases/07-workspace-defaults-and-script-alignment/07-RESEARCH.md",
+      "sha256": "a5beeed196b6b01f81acf93f8063e4fc67257dbe46944c4f221f7336165a0d0e",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/feature-b/phases/07-workspace-defaults-and-script-alignment/07-VALIDATION.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/feature-b/phases/07-workspace-defaults-and-script-alignment/07-VALIDATION.md",
+      "sha256": "561508d3a74e4a2cc8607be2bd513e7194f4eeae9f7576f20ee52db3eabc673c",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/feature-b/phases/07-workspace-defaults-and-script-alignment/07-VERIFICATION.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/feature-b/phases/07-workspace-defaults-and-script-alignment/07-VERIFICATION.md",
+      "sha256": "9f48553208376be1d204471552ea096da56e7fcd361cc05cff6508628d64fc9f",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/feature-b/phases/08-adoption-verification-fallback-boundaries/08-01-PLAN.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/feature-b/phases/08-adoption-verification-fallback-boundaries/08-01-PLAN.md",
+      "sha256": "c46f2df7c29ed583c7f3a7b7d40f5a696bbfb184701bb2458e60d670223f2206",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/feature-b/phases/08-adoption-verification-fallback-boundaries/08-01-SUMMARY.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/feature-b/phases/08-adoption-verification-fallback-boundaries/08-01-SUMMARY.md",
+      "sha256": "c3ac63f77d1e29acbb4e42ed4fa35e3c07ce0b786b2f62333d95f5ec0b7fb717",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/feature-b/phases/08-adoption-verification-fallback-boundaries/08-CONTEXT.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/feature-b/phases/08-adoption-verification-fallback-boundaries/08-CONTEXT.md",
+      "sha256": "5c7b78857f9c8444ae8829a737b630178277333eac58242623a6168e59c4d24b",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/feature-b/phases/08-adoption-verification-fallback-boundaries/08-RESEARCH.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/feature-b/phases/08-adoption-verification-fallback-boundaries/08-RESEARCH.md",
+      "sha256": "a8a78121d04e7bd9c21ec78e7a5ceefcc6997bd18a063d343f15bba9cb08a78d",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/feature-b/phases/08-adoption-verification-fallback-boundaries/08-VALIDATION.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/feature-b/phases/08-adoption-verification-fallback-boundaries/08-VALIDATION.md",
+      "sha256": "c33ea6ec2f56924b20ed083409e78bfb9d15c18046a2fc45b6e3c80926698446",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/feature-b/phases/08-adoption-verification-fallback-boundaries/08-VERIFICATION.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/feature-b/phases/08-adoption-verification-fallback-boundaries/08-VERIFICATION.md",
+      "sha256": "494acba89ed67f942f2eed263bf7c17289f858af552b20012651e27310244320",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/feature-b/research/ARCHITECTURE.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/feature-b/research/ARCHITECTURE.md",
+      "sha256": "3586e2b4104a88027ccb8d89adc7393296897ec786a37707949e8fd32b68646a",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/feature-b/research/FEATURES.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/feature-b/research/FEATURES.md",
+      "sha256": "123b0c6397d49e0fad504772ef1a47b7c0d6f9e9e12178b61df22b1607a10aa1",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/feature-b/research/PITFALLS.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/feature-b/research/PITFALLS.md",
+      "sha256": "60f44f56821b49539bae2ff8a0ffdd97749ae5dfb82e13c0c10968d842feaedf",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/feature-b/research/STACK.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/feature-b/research/STACK.md",
+      "sha256": "cda45c6c48ea9e14750e00e72c48ea6de6fe5e6a5e2c6c2b3fa0119e209e776b",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/feature-b/research/SUMMARY.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/feature-b/research/SUMMARY.md",
+      "sha256": "9a28adce15c0936515ceac094d8f456294c7eaf1d14c5c5cbf75defa9ee5a536",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/feature-b/v1.1-MILESTONE-AUDIT.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/feature-b/v1.1-MILESTONE-AUDIT.md",
+      "sha256": "34186cb57c609c120189f09d8739dd64bd805dbec0f7bc40a013c6c9f4acab75",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/milestone/REQUIREMENTS.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/milestone/REQUIREMENTS.md",
+      "sha256": "ab0108a561fb4217a7a31f8a14678027deeb896bfd67dde9d970f47ec24dcfba",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/milestone/ROADMAP.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/milestone/ROADMAP.md",
+      "sha256": "9da9e659bcd7799acbe56924535a042f744bdc922694ae3905d931998a699e06",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/milestone/STATE.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/milestone/STATE.md",
+      "sha256": "f4a4e2393126a601397b5310444e4733607857acec6dac23726c3cc0c2b5cbc6",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/milestone/phases/01-contract-freeze-asset-foundation/01-01-PLAN.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/milestone/phases/01-contract-freeze-asset-foundation/01-01-PLAN.md",
+      "sha256": "0cd0a1bb0d7061ea784f6604e5506f858eca6d23ef1de41198865c61b4c1c483",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/milestone/phases/01-contract-freeze-asset-foundation/01-01-SUMMARY.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/milestone/phases/01-contract-freeze-asset-foundation/01-01-SUMMARY.md",
+      "sha256": "124b6dfc855ba5e1f404f708746485972853831062b94b96ede8cf956adc884c",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/milestone/phases/01-contract-freeze-asset-foundation/01-CONTEXT.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/milestone/phases/01-contract-freeze-asset-foundation/01-CONTEXT.md",
+      "sha256": "fc47cbc6784d542bbc758bb1b2c9caeb66665712b91c4d160fb94b9ec2af5f93",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/milestone/phases/01-contract-freeze-asset-foundation/01-RESEARCH.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/milestone/phases/01-contract-freeze-asset-foundation/01-RESEARCH.md",
+      "sha256": "06e83ed3f5b1c91f4d07c0b11550dcd656b0e0e0bdb8aef4a09ae3019f8146fd",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/milestone/phases/01-contract-freeze-asset-foundation/01-VALIDATION.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/milestone/phases/01-contract-freeze-asset-foundation/01-VALIDATION.md",
+      "sha256": "3eb48a32fedf6ac45d7eddc614b6d067467bde91efa521e3198cdfbb6f154211",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/milestone/phases/01-contract-freeze-asset-foundation/01-VERIFICATION.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/milestone/phases/01-contract-freeze-asset-foundation/01-VERIFICATION.md",
+      "sha256": "bec5201e149412c1c06287cee8c684e67079db3a99d57ba395111a655aea1871",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/milestone/phases/02-identity-reset-embedding-governance/02-01-PLAN.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/milestone/phases/02-identity-reset-embedding-governance/02-01-PLAN.md",
+      "sha256": "a7db1c2dd3004f661c980a35e9d600975da81090d7f8cfb62b53a0c490f85012",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/milestone/phases/02-identity-reset-embedding-governance/02-01-SUMMARY.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/milestone/phases/02-identity-reset-embedding-governance/02-01-SUMMARY.md",
+      "sha256": "a3b3ff996a1569225bfea36803a388b86f9e98322003a011def647d91ed8a422",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/milestone/phases/02-identity-reset-embedding-governance/02-RESEARCH.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/milestone/phases/02-identity-reset-embedding-governance/02-RESEARCH.md",
+      "sha256": "862a1f6ede441461ee27a195382c74fe3ee5b1db389f5ba6571e65d1247c3248",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/milestone/phases/02-identity-reset-embedding-governance/02-VALIDATION.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/milestone/phases/02-identity-reset-embedding-governance/02-VALIDATION.md",
+      "sha256": "d38a40e338d00f97031935f08db5f4165c65f733698c61ac0a779a199e30d6b2",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/milestone/phases/02-identity-reset-embedding-governance/02-VERIFICATION.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/milestone/phases/02-identity-reset-embedding-governance/02-VERIFICATION.md",
+      "sha256": "85dc9706fe890554f63625941963ec84b500de6a3f23f77329a6223affe2143f",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/milestone/phases/03-backend-execution-port/03-01-PLAN.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/milestone/phases/03-backend-execution-port/03-01-PLAN.md",
+      "sha256": "d55023182762b4bde27e2e92aae358bd2c3675b6a21c0dc7741d00d382d6fc22",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/milestone/phases/03-backend-execution-port/03-01-SUMMARY.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/milestone/phases/03-backend-execution-port/03-01-SUMMARY.md",
+      "sha256": "70431d4c6452ae82e5054451fad450a7bd75b0428af12fca5b7c1dce904064f1",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/milestone/phases/03-backend-execution-port/03-RESEARCH.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/milestone/phases/03-backend-execution-port/03-RESEARCH.md",
+      "sha256": "353316a4f97f5ed3869f23aa5b911c23cba5ee838bb51ba6a18ec4a59ab9b09a",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/milestone/phases/03-backend-execution-port/03-VALIDATION.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/milestone/phases/03-backend-execution-port/03-VALIDATION.md",
+      "sha256": "f369ed4d65aac21ece6a12a4e2c22c4e410451292b08e737cb23850d9607aa8b",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/milestone/phases/03-backend-execution-port/03-VERIFICATION.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/milestone/phases/03-backend-execution-port/03-VERIFICATION.md",
+      "sha256": "daa1f32c70d748c7e3bad9dabcc30328dc8a5ef3e407a88fb09e8d3bd6ffe4f1",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/milestone/phases/04-canonical-review-publication-admin-cutover/04-01-PLAN.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/milestone/phases/04-canonical-review-publication-admin-cutover/04-01-PLAN.md",
+      "sha256": "54706dd5b9daa5a2bd572daca3f80082dbfc01b4886c3f62eae75dcde366aa1c",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/milestone/phases/04-canonical-review-publication-admin-cutover/04-01-SUMMARY.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/milestone/phases/04-canonical-review-publication-admin-cutover/04-01-SUMMARY.md",
+      "sha256": "7df8d887e1ba076694a0b5fca9858410067b41bcf07d73dae20f7aa66cdf6645",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/milestone/phases/04-canonical-review-publication-admin-cutover/04-RESEARCH.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/milestone/phases/04-canonical-review-publication-admin-cutover/04-RESEARCH.md",
+      "sha256": "766dfd0ff5eb0cfffc6c03430d0b64285dfea57da0168715c681df1431854cfc",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/milestone/phases/04-canonical-review-publication-admin-cutover/04-VALIDATION.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/milestone/phases/04-canonical-review-publication-admin-cutover/04-VALIDATION.md",
+      "sha256": "940213f6c7e52f93e95618e30028e926cf563d7015d78884986853ddcdddb4b6",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/milestone/phases/04-canonical-review-publication-admin-cutover/04-VERIFICATION.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/milestone/phases/04-canonical-review-publication-admin-cutover/04-VERIFICATION.md",
+      "sha256": "c42134d39addef16fa6b76b954a1cb1377469023d82290adad46875732f8b2eb",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/milestone/phases/05-runtime-retirement-cutover-cleanup/05-01-PLAN.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/milestone/phases/05-runtime-retirement-cutover-cleanup/05-01-PLAN.md",
+      "sha256": "bb00e5ca90aae160408283b2a327e0b664226470e004b6deef90da26bd6cb871",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/milestone/phases/05-runtime-retirement-cutover-cleanup/05-01-SUMMARY.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/milestone/phases/05-runtime-retirement-cutover-cleanup/05-01-SUMMARY.md",
+      "sha256": "0d85c429bd3d575217137056537885bad9072d2777472b99c98f3f9813851ad6",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/milestone/phases/05-runtime-retirement-cutover-cleanup/05-RESEARCH.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/milestone/phases/05-runtime-retirement-cutover-cleanup/05-RESEARCH.md",
+      "sha256": "0a317cddc25b1804e8f88603efe21b2ba578368f80031f114b3347c3d8677c83",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/milestone/phases/05-runtime-retirement-cutover-cleanup/05-UAT.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/milestone/phases/05-runtime-retirement-cutover-cleanup/05-UAT.md",
+      "sha256": "9220b0ddbb19f77942d119bfa347c0728f89d1f6a4996cd41745444b3b24997a",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/milestone/phases/05-runtime-retirement-cutover-cleanup/05-VALIDATION.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/milestone/phases/05-runtime-retirement-cutover-cleanup/05-VALIDATION.md",
+      "sha256": "dc7cc44b84e78588db116e9018a3206802cb5ee4f580e281e8f3912f9ebd6ce1",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/workstreams/milestone/phases/05-runtime-retirement-cutover-cleanup/05-VERIFICATION.md",
+      "destination": "plans/archive/gsd-2026-04/workstreams/milestone/phases/05-runtime-retirement-cutover-cleanup/05-VERIFICATION.md",
+      "sha256": "13b18d978dc439ba27d0a95a3623f9f1242410602f1e4f207008b66428c3c03e",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/research/ARCHITECTURE.md",
+      "destination": "plans/archive/gsd-2026-04/research/ARCHITECTURE.md",
+      "sha256": "32796f8a9808e81d8b167653c4a1e95a96fb65cfc8b7f7287cbb4f9ea996a92e",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/research/FEATURES.md",
+      "destination": "plans/archive/gsd-2026-04/research/FEATURES.md",
+      "sha256": "99a1f4a8f438b912446267b687f2f21ef9265970e36c7394f93921fb0a8e9156",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/research/PITFALLS.md",
+      "destination": "plans/archive/gsd-2026-04/research/PITFALLS.md",
+      "sha256": "68726933824095721745644d2b3fe1c22bbb11fdfd1706f6e8331c486b748506",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/research/STACK.md",
+      "destination": "plans/archive/gsd-2026-04/research/STACK.md",
+      "sha256": "37e5b4d716432c89a54ee80ad5ea6899e696b8c14feeecd420686b261075dc89",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/research/SUMMARY.md",
+      "destination": "plans/archive/gsd-2026-04/research/SUMMARY.md",
+      "sha256": "209271684f875b67ddae7e96eca34debd3487062c4b33cd0624613f017f99e30",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/research/TIKTOK_BROWSER_INTERCEPT_DRIFT_DISAMBIGUATION_2026-04-10.md",
+      "destination": "plans/archive/gsd-2026-04/research/TIKTOK_BROWSER_INTERCEPT_DRIFT_DISAMBIGUATION_2026-04-10.md",
+      "sha256": "348adb1dcb15137e7f34a1f2da6825cefab5e92acfc83631f919e82a430d2fb4",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/research/TIKTOK_BROWSER_INTERCEPT_RECOVERY_TRIAGE_2026-04-10.md",
+      "destination": "plans/archive/gsd-2026-04/research/TIKTOK_BROWSER_INTERCEPT_RECOVERY_TRIAGE_2026-04-10.md",
+      "sha256": "3fa105af8994c5ee2f80e52e71d105fbf1c47f2946cdbac89c88ba04fd75feef",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/research/TIKTOK_BROWSER_INTERCEPT_REPAIR_SESSION_MANDATE_2026-04-10.md",
+      "destination": "plans/archive/gsd-2026-04/research/TIKTOK_BROWSER_INTERCEPT_REPAIR_SESSION_MANDATE_2026-04-10.md",
+      "sha256": "9010bfb06cc193c8f6f59cb527e64cc609b1da80a4b4a9ba11bf1f38046b6eaf",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/research/TIKTOK_BROWSER_INTERCEPT_SANITY_CHECK_2026-04-10.md",
+      "destination": "plans/archive/gsd-2026-04/research/TIKTOK_BROWSER_INTERCEPT_SANITY_CHECK_2026-04-10.md",
+      "sha256": "9ee59377e56aaf3976011222e38a89fd9f1158cdd242cc76c97528295a47f626",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/research/TIKTOK_HTML_PARSER_DRIFT_SPIKE.md",
+      "destination": "plans/archive/gsd-2026-04/research/TIKTOK_HTML_PARSER_DRIFT_SPIKE.md",
+      "sha256": "87b72df1053c92fd05a2b0a139d48823cc3481b2fde82780aee9eb1cd78cb57b",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/research/TIKTOK_PATH_REPRIORITIZATION_CLOSEOUT_2026-04-10.md",
+      "destination": "plans/archive/gsd-2026-04/research/TIKTOK_PATH_REPRIORITIZATION_CLOSEOUT_2026-04-10.md",
+      "sha256": "df15fcb653951c8ca84eac34e4533f7749210fef96a7016a7f2b37f43f761b47",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/research/TIKTOK_PATH_REPRIORITIZATION_PLAN.md",
+      "destination": "plans/archive/gsd-2026-04/research/TIKTOK_PATH_REPRIORITIZATION_PLAN.md",
+      "sha256": "f36c17beb4f03a80159b5f623477aceda00b9377a73044c253ef45ef7b329d0b",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/research/TIKTOK_SCRAPE_RESILIENCE_BOARD.md",
+      "destination": "plans/archive/gsd-2026-04/research/TIKTOK_SCRAPE_RESILIENCE_BOARD.md",
+      "sha256": "f69e28810a06d2d0469c6049648b9f86064fb3ea0c7332b087b2e6291aefce4c",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/research/TIKTOK_TASK6_COMMENTS_REEVALUATION_2026-04-10.md",
+      "destination": "plans/archive/gsd-2026-04/research/TIKTOK_TASK6_COMMENTS_REEVALUATION_2026-04-10.md",
+      "sha256": "8acc6b6583b5af6847a365ee7bdeb2b7985f4076273298d2cb91378e2ed0702f",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/research/TRR_CODEBASE_CONCERN_REMEDIATION_PLAN_2026-04-11.md",
+      "destination": "plans/archive/gsd-2026-04/research/TRR_CODEBASE_CONCERN_REMEDIATION_PLAN_2026-04-11.md",
+      "sha256": "f42bda7fc76118d15cb84b45c878daebe95d85179e646a07c79c2ca551df9b6a",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/PROJECT.md",
+      "destination": "plans/archive/gsd-2026-04/PROJECT.md",
+      "sha256": "17cade5749dbef23604c4388e05edf84ed272a89f077b73e4bd9afb3a4ba7c13",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/MILESTONES.md",
+      "destination": "plans/archive/gsd-2026-04/MILESTONES.md",
+      "sha256": "d0f24c73fd7dedcece43fa847427d3cc21525375a7c0cd78280cf80afa9b18e5",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/config.json",
+      "destination": "plans/archive/gsd-2026-04/config.json",
+      "sha256": "702f2a77b77a63244d8e606a39e22ce304044bd45205b400b64e835771f024a8",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/active-workstream",
+      "destination": "plans/archive/gsd-2026-04/active-workstream",
+      "sha256": "7a406ca914cdb0c15490fea789a9a97572db59a6465d1c32b429e2a905fc4172",
+      "tracked_source": true
+    },
+    {
+      "source": ".planning/seeds/SEED-001-avoid-docker-in-workspace.md",
+      "destination": "plans/archive/gsd-2026-04/seeds/SEED-001-avoid-docker-in-workspace.md",
+      "sha256": "1929cea8d859bef2919728e4262f609b79cbd4b322420661e1e3ed3ff58bb4b9",
+      "tracked_source": true
+    }
+  ]
+}

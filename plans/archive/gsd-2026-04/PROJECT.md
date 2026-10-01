@@ -2,7 +2,7 @@
 
 ## What This Is
 
-An internal TRR engineering planning track for major backend, runtime, and workspace improvements that cut across the shared repos. The first completed milestone delivered the backend-owned screentime reset; the current milestone focuses on making workspace development and validation cloud-first so Docker is optional instead of assumed.
+An internal TRR engineering planning track for major backend, runtime, and workspace improvements that cut across the shared repos. The first completed milestone delivered the backend-owned screentime reset; the shipped v1.1 milestone made workspace development and validation cloud-first so Docker is optional instead of assumed. The next milestone has not been defined.
 
 ## Latest Shipped Milestone: v1.1 Cloud-First / No-Docker Workspace Tooling
 
@@ -43,9 +43,9 @@ Ship repo-spanning changes through workflows that are trustworthy, repeatable, a
 ## Context
 
 - Milestone v1.0 completed the backend-owned screentime reset, but verification exposed that some “fresh environment” workflows still implicitly rely on Docker-backed local Supabase or local containerized services.
-- The active workstream is `feature-b`, which is where the new milestone roadmap, requirements, and state will live.
+- The `feature-b` workstream delivered v1.1 and is archived; the next milestone roadmap, requirements, and state have not been defined.
 - A planted seed now captures the explicit workspace preference to avoid Docker when a remote or branch-based alternative answers the same validation question.
-- Current workspace tooling still references `local_docker`, `dev-local`, and Docker-gated Screenalytics infra in shared scripts and `Makefile` targets.
+- Historical v1.1 work addressed `local_docker`, `dev-local`, and Docker-gated Screenalytics assumptions; current tooling should be checked before reusing those earlier notes.
 - Existing status notes already document one viable remote-first pattern: pushing migrations to a Supabase preview or branch database and validating there instead of assuming a local Docker reset.
 
 ## Current State

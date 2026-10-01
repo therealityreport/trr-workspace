@@ -428,6 +428,9 @@ curl -sS \
 ```
 
 ## Remaining Docker-Only Cases
+
+Prefer isolated remote Supabase branches or disposable projects for development and validation when they answer the same question safely. Never run destructive validation against a shared persistent database. Docker is an explicit opt-in fallback for the narrow local reset/replay cases below, rather than the workspace default. This carries forward the April SEED-001 decision.
+
 - `TRR-Backend make schema-docs-reset-check` — backend-local replay fallback when an isolated remote validation target does not answer the reset/replay question
 - `TRR-Backend make ci-local` — Docker-backed local replay parity lane for intentionally local-only backend verification
 
