@@ -1,10 +1,10 @@
 # Memory relation correction and supported rejudgment
 
-Status: **correction documented; stored relationships unresolved**. Follow-up only; no relationship writes performed.
+Status: **completed and verified on 2026-10-02**. Sixteen stored judgments corrected through supported maintenance; original IDs and prior rationale preserved in the audit journal.
 
 On 2026-10-02, sixteen imported-memory relationships were marked compatible using an insufficient blanket rationale. Fifteen explicitly cite titles/summaries; the first names adjacent topics but still does not establish all body-level claims. This review read the full stored bodies and their dated corrections. It does not re-verify historical deployment, provider, performance or credential claims against current systems.
 
-Repository namespace: `repo-bd7647ac-9b21-48fd-8d34-681437266121`. Record numbers below mean qualified IDs `repo-bd7647ac-9b21-48fd-8d34-681437266121:<number>`; relation IDs use the same namespace prefix when passed to the adapter. All sixteen remain stored as `compatible`/`judged`. The assessments are documented proposals and qualifications, not completed database repairs.
+Repository namespace: `repo-bd7647ac-9b21-48fd-8d34-681437266121`. Record numbers below mean qualified IDs `repo-bd7647ac-9b21-48fd-8d34-681437266121:<number>`; relation IDs use the same namespace prefix when passed to the adapter. The sixteen now store seven `related`, five `scoped`, three `compatible`, and one `conflicts_with` judgments. These assessments preserve historical and partial-claim qualifications; they do not establish current deployment or provider state.
 
 ## Individual assessments
 
@@ -35,7 +35,7 @@ Repository namespace: `repo-bd7647ac-9b21-48fd-8d34-681437266121`. Record number
 ### 5. `rel-7d038eb27263c130`
 
 - Records: `repo-bd7647ac-9b21-48fd-8d34-681437266121:19` (shadgpt-runtime-pressure-2026-07-02) and `repo-bd7647ac-9b21-48fd-8d34-681437266121:18` (safe-next-build-guard-unsatisfiable-on-macos).
-- Corrected assessment: **not_conflict**.
+- Corrected assessment: **scoped to distinct causes**.
 - Reason: The build-guard note explicitly distinguishes its macOS measurement problem from MCP process accumulation and says reaping four MCP trees did not move the guard. These are different causes, not interchangeable remedies.
 
 ### 6. `rel-2bbf2ee03de6a381`
@@ -104,18 +104,27 @@ Repository namespace: `repo-bd7647ac-9b21-48fd-8d34-681437266121`. Record number
 - Corrected assessment: **related**.
 - Reason: The automation record concerns concurrent Git changes and publication; the Supabase audit records database/pacing changes and dated measurements. Sharing a project identifier does not verify migration application, deployment identity or current performance.
 
-## Deferred repair
+## Supported repair contract
 
-The adapter currently rejects judgment of a non-pending relation. Do not hand-edit SQLite, recreate pairs, or apply blanket compatibility judgments. Implement or adopt a supported rejudgment operation with exact endpoint IDs, expected relation state/revision, preserved audit history and individual rationale. Re-read each endpoint and source evidence before any future change; preserve historical dates and distinguish partial claim conflicts from whole-record supersession. Preview all intended changes, back up under writer exclusion, apply only accepted individual judgments, and read back exact relation state.
+The ordinary adapter still rejects judgment of a non-pending relation. The separately reviewed maintenance worker wraps upstream Engram 3 rejudgment with the safeguards below. Do not hand-edit SQLite, recreate pairs, or apply blanket compatibility judgments. Use the implemented supported rejudgment operation with exact endpoint IDs, expected relation state/revision, preserved audit history and individual rationale. Re-read each endpoint and source evidence before any future change; preserve historical dates and distinguish partial claim conflicts from whole-record supersession. Preview all intended changes, back up under writer exclusion, apply only accepted individual judgments, and read back exact relation state.
 
 Leave the two older pending pairs `rel-49ad6a240ad2b7f6` and `rel-9d0e3c1bf1f9363f` untouched. The three September 5 judged pairs are outside this correction batch.
 
 ## Evidence and continuity
 
-Body hashes, endpoint sync IDs and complete pair accounting: `/Users/thomashulihan/Documents/Codex/2026-10-02/aud/evidence/trr-relationship-assessments.json`. Source was the consistent rehearsal database copy, with live relationship state to be rechecked before the planned correction lesson is saved. The lesson and TRR handoff must state that stored relationships remain unresolved.
+Body hashes, endpoint sync IDs and complete pair accounting: `/Users/thomashulihan/Documents/Codex/2026-10-02/aud/evidence/trr-relationship-assessments.json`. Source was the consistent rehearsal database copy, with live relationship state to be rechecked before the planned correction lesson is saved. The lesson and TRR handoff now record verified completion.
 
 TRR-APP build: not applicable (documentation and local memory integration only). Backend/API, production SQL and Modal deployment were not changed by this follow-up.
 
-## Implementation evidence — 2026-10-02
+## Earlier implementation evidence — 2026-10-02 (before repair)
 
 Correction lesson `repo-bd7647ac-9b21-48fd-8d34-681437266121:30` revision 2 was verified by installed Project Manager editing and full stored readback. Its three new pending relations were individually reviewed as related; the original sixteen stored judgments and two older pending pairs remain unchanged. Managed Engram 3.0.0 is accepted; this does not add supported rejudgment. Status remains **correction documented; stored relationships unresolved**. Evidence: `/Users/thomashulihan/Documents/Codex/2026-10-02/aud/evidence/live-acceptance.json`.
+
+## Completed repair and acceptance — 2026-10-02
+
+- Operation `memory-e8c5a4d5-f8a5-43d9-b296-8204c117b024` completed all 16 individual judgments. Full endpoint bodies/revisions/hashes and entire relation preimages were rechecked under writer exclusion; upstream supported judgment calls were read back exactly. No SQL mutation, relation recreation or blanket judgment.
+- The eight other relations remain unchanged: two older pending pairs, three September judgments and three correction-lesson relations. Correction lesson `repo-bd7647ac-9b21-48fd-8d34-681437266121:30` advanced to revision 3; the checkout handoff advanced 9→10 with previous provider choices and remaining product obligations preserved.
+- Isolated copies passed correction, duplicate apply, partial-operation resume and audited compensation. Recovery checks current postimages; an old database must never be restored over later accepted writes.
+- Installed Project Manager build `96de6871-3c75-4715-b9f9-6c29c2e6d98c` includes Memory Dashboard and its correction history. The actual TRR graph rendered inside the app; search, node selection and Back preserving scope were verified.
+- Receipts: `/Users/thomashulihan/Documents/Codex/2026-10-02/aud/evidence/dashboard-live-trr-apply.json`, `dashboard-live-trr-verified.json`, and `dashboard-lesson-after.json`. Private prior/intended/postimage journal is retained under Project Manager knowledge-control.
+- No TRR product build, backend/API change, SQL service mutation, Modal deployment or push was performed.
