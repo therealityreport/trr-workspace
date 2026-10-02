@@ -1,5 +1,14 @@
 # Historical tooling and gate follow-up
 
+<!-- continuation-prune:2026-10-01 -->
+## Continuation review — 2026-10-01
+
+Status: PARTIAL — active. Original source: 2026-08-12; age basis: 2026-09-11 (20 days).
+
+The August access blocker has verified open issue78. Retain bounded acceptance and historical code-gate follow-up; an open issue forbids stale rejection.
+
+Evidence: `TRR-Backend/trr_backend/socials/instagram/catalog_ingest.py:2291` @ `3bcdc3925339`; `TRR-APP/apps/web/src/components/admin/SocialAccountProfilePage.tsx:497` @ `f8f7f87662ea`
+
 Status: UNVERIFIED — old failures and runtime snapshots require fresh diagnosis.
 Reviewed: 2026-10-01.
 

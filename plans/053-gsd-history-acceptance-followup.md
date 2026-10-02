@@ -1,5 +1,14 @@
 # GSD history acceptance follow-up
 
+<!-- continuation-prune:2026-10-01 -->
+## Continuation review — 2026-10-01
+
+Status: PARTIAL — active. Original source: 2026-04-09; age basis: 2026-09-11 (20 days).
+
+No-Docker policy is complete at dev-commands.md:424; isolated media parity and remaining six-phase remediation criteria are not wholly proved. App controllers/configuration have active edits; preserve these distinct obligations.
+
+Evidence: `TRR-Backend/trr_backend/socials/instagram/catalog_ingest.py:2291` @ `3bcdc3925339`; `TRR-APP/apps/web/src/components/admin/SocialAccountProfilePage.tsx:497` @ `f8f7f87662ea`
+
 Status: PARTIAL (historical acceptance remains unverified).
 Provenance: April GSD workstreams and research, archived on 2026-10-01 in [gsd-2026-04](archive/gsd-2026-04/INDEX.md).
 

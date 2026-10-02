@@ -1,5 +1,14 @@
 # Social architecture, media, and schema acceptance follow-up
 
+<!-- continuation-prune:2026-10-01 -->
+## Continuation review — 2026-10-01
+
+Status: PARTIAL — active. Original source: 2026-05-14; age basis: 2026-09-11 (20 days).
+
+Current social/control-plane and media modules retain these requirements; September main changes and affected App WeekDetailPageView edits prevent stale rejection. Superseded runtime scaffolds remain excluded.
+
+Evidence: `TRR-Backend/trr_backend/socials/instagram/catalog_ingest.py:2291` @ `3bcdc3925339`; `TRR-APP/apps/web/src/components/admin/SocialAccountProfilePage.tsx:497` @ `f8f7f87662ea`
+
 Status: UNVERIFIED — historical source matches exist; full acceptance is not established.
 Reviewed: 2026-10-01.
 

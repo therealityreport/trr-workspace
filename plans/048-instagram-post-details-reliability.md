@@ -18,6 +18,15 @@ Status at copy time (inferred from git, not verified against source):
 
 # Instagram Post Details: reliable completion and faster processing
 
+<!-- continuation-prune:2026-10-01 -->
+## Continuation review — 2026-10-01
+
+Status: PARTIAL — active. Original source: 2026-09-11; age basis: 2026-09-11 (20 days).
+
+Durable-target/reliability changes landed September 11; transport budgets, persistence/performance and exact-scope acceptance remain distinct obligations. Recent affected source excludes stale rejection; no full-plan DONE proof.
+
+Evidence: `TRR-Backend/trr_backend/socials/instagram/catalog_ingest.py:2291` @ `3bcdc3925339`; `TRR-APP/apps/web/src/components/admin/SocialAccountProfilePage.tsx:497` @ `f8f7f87662ea`
+
 Planning request, September 11, 2026. This plan covers PD-01 through PD-13 and the additional cancellation, authentication-preflight, request-coordination, and test-isolation gaps from the investigation. Implementation, production data repair, deployment, and rerunning the scrape are not authorized by this planning request.
 
 ## Outcome and boundaries

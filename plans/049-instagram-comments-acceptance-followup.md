@@ -1,5 +1,14 @@
 # Instagram comments acceptance follow-up
 
+<!-- continuation-prune:2026-10-01 -->
+## Continuation review — 2026-10-01
+
+Status: PARTIAL — active. Original source: 2026-05-06; age basis: 2026-09-11 (20 days).
+
+Comments fetch/reply-completeness and session-lane contracts remain relevant; affected backend comments/repair source is modified on the current branch and main social readers changed September 11. No full criteria proof.
+
+Evidence: `TRR-Backend/trr_backend/socials/instagram/catalog_ingest.py:2291` @ `3bcdc3925339`; `TRR-APP/apps/web/src/components/admin/SocialAccountProfilePage.tsx:497` @ `f8f7f87662ea`
+
 Status: UNVERIFIED — historical requirements retained, not a new implementation authorization.
 Reviewed: 2026-10-01.
 

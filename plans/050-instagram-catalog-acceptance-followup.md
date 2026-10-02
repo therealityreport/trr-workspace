@@ -1,5 +1,14 @@
 # Instagram catalog and auth acceptance follow-up
 
+<!-- continuation-prune:2026-10-01 -->
+## Continuation review — 2026-10-01
+
+Status: PARTIAL — active. Original source: 2026-05-21; age basis: 2026-09-11 (20 days).
+
+Catalog listing/enrichment/cancellation and launch contracts retain unique criteria beside048. September 11 refresh code and current backend shared-router edits prevent stale rejection.
+
+Evidence: `TRR-Backend/trr_backend/socials/instagram/catalog_ingest.py:2291` @ `3bcdc3925339`; `TRR-APP/apps/web/src/components/admin/SocialAccountProfilePage.tsx:497` @ `f8f7f87662ea`
+
 Status: UNVERIFIED — reconcile historical requirements before implementing.
 Reviewed: 2026-10-01.
 
