@@ -1,5 +1,9 @@
 # Historical tooling and gate follow-up
 
+## Evidence relocation — 2026-10-01
+
+Specific cited files and any missing/directory-only citations are recorded in [evidence index](archive/evidence/052/INDEX.md). Historical future-output paths are not acceptance receipts.
+
 <!-- continuation-prune:2026-10-01 -->
 ## Continuation review — 2026-10-01
 
@@ -17,7 +21,7 @@ Reviewed: 2026-10-01.
 - The May in-app-browser repair belongs to the desktop tooling owner, not TRR product code. Revalidate current browser availability before proposing signing/install changes. Historical runtime APIs, entitlements, and repair recipes are not current instructions. Preserve acquisition, tab navigation, and DOM-observation acceptance without editing plugin caches.
 - Reconcile the May top-20 remediation requirements against current numbered plans and main source before allocating repairs: source-scope compatibility, bounded catalog progress, injected scraper dependencies in tests, classified already-mirrored refreshes, worker health/timeouts, and schema performance/security follow-up. Do not duplicate plans 001/002/007/010/032/048 or their archived successors. A new issue or waiver requires current evidence, not old failure counts.
 - Reconcile the historical three-repo gate recovery: current focused backend failures, browser acceptance, manual-auth blockers, and PR scope. Historical account identities and suite totals are obsolete evidence. No full app build, auth repair, provider action, commit, or PR publication is authorized by this promoted record.
-- The August canary access blocker is retained in [workspace issue 78](https://github.com/therealityreport/trr-workspace/issues/78). Local terminal receipts are preserved in `.plan-work/plan-architect/t9-production-canary-successor-20260812`; no canary was executed by retirement.
+- The August canary access blocker is retained in [workspace issue 78](https://github.com/therealityreport/trr-workspace/issues/78). Local terminal receipts are preserved in `plans/archive/evidence/052/INDEX.md`; no canary was executed by retirement.
 
 ## Evidence and completion
 

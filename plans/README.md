@@ -1047,3 +1047,9 @@ Reviewed continuation cohort only; existing roadmap/issue owners remain in place
 | [051 — Social architecture, media, and schema acceptance follow-up](051-social-architecture-media-acceptance-followup.md) | 2026-05-14 | 2026-09-11 | PARTIAL — active; `TRR-Backend/trr_backend/socials/instagram/catalog_ingest.py:2291` @ `3bcdc3925339`; `TRR-APP/apps/web/src/components/admin/SocialAccountProfilePage.tsx:497` @ `f8f7f87662ea` |
 | [052 — Historical tooling and gate follow-up](052-historical-tooling-gate-followup.md) | 2026-08-12 | 2026-09-11 | PARTIAL — active; `TRR-Backend/trr_backend/socials/instagram/catalog_ingest.py:2291` @ `3bcdc3925339`; `TRR-APP/apps/web/src/components/admin/SocialAccountProfilePage.tsx:497` @ `f8f7f87662ea` |
 | [053 — GSD history acceptance follow-up](053-gsd-history-acceptance-followup.md) | 2026-04-09 | 2026-09-11 | PARTIAL — active; `TRR-Backend/trr_backend/socials/instagram/catalog_ingest.py:2291` @ `3bcdc3925339`; `TRR-APP/apps/web/src/components/admin/SocialAccountProfilePage.tsx:497` @ `f8f7f87662ea` |
+
+## Final pass — 2026-10-01
+
+Active numbered plan owners: 13. The cap is 20. Supplemental contracts/revisions are not separate plans. Deferred requirements remain retained; this is not rejection or completion.
+
+Cited scratch files now live in per-plan evidence indexes under `plans/archive/evidence/`; protected PLUGINS/worktree originals remain guarded. Unnamed run contents are not copied.
