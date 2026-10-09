@@ -90,6 +90,6 @@ This file owns shared TRR policy. Nested `AGENTS.md` files inherit it and add on
 <!-- project-manager:graphify:start -->
 ## Project knowledge
 
-- Follow [Memory and project knowledge](/Users/thomashulihan/.codex/instructions/RULES/memory-and-project-knowledge.md). It owns Engram repository history and checkout-scoped, on-demand Graphify retrieval.
-- Keep only repository-specific code-corpus exclusions in `.graphifyignore`; Project Manager treats nested Git repositories as independent source roots.
+- Follow [Memory and project knowledge](/Users/thomashulihan/.codex/instructions/RULES/memory-and-project-knowledge.md) for current project-memory opt-in, native-memory boundaries, and historical retrieval.
+- Use current source and existing project records for code structure and continuity. Do not restore retired Engram/Threadmap/Graphify workflows or enroll this repository automatically.
 <!-- project-manager:graphify:end -->
