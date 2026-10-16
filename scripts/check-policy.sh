@@ -144,8 +144,8 @@ check_root_agents() {
     failures=$((failures + 1))
   fi
 
-  if ! rg -q '^## MCP Invocation Matrix' "$file"; then
-    echo "[check-policy] ERROR: missing MCP matrix section in $file" >&2
+  if ! rg -q '^## Plugins And Tools' "$file"; then
+    echo "[check-policy] ERROR: missing plugins and tools section in $file" >&2
     failures=$((failures + 1))
   fi
 
@@ -159,12 +159,10 @@ check_root_agents() {
     failures=$((failures + 1))
   fi
 
-  for server in chrome-devtools github supabase figma; do
-    if ! rg -q "\`$server\`" "$file"; then
-      echo "[check-policy] ERROR: missing MCP server $server in $file" >&2
-      failures=$((failures + 1))
-    fi
-  done
+  if ! rg -q 'docs/agent-governance/mcp_inventory\.md' "$file"; then
+    echo "[check-policy] ERROR: missing tool ownership inventory reference in $file" >&2
+    failures=$((failures + 1))
+  fi
 
   word_count="$(wc -w < "$file" | tr -d ' ')"
   if [[ "$word_count" -gt 600 ]]; then
