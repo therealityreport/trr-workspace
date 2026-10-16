@@ -384,11 +384,20 @@ run_preflight_phase "codex-bootstrap" "[preflight] Reconciling Codex config..." 
 
 run_preflight_phase "check-policy" "[preflight] Checking policy drift rules..." bash "$ROOT/scripts/check-policy.sh"
 
-run_preflight_phase "chrome-devtools-mcp-status" "[preflight] Checking browser automation..." env CHROME_DEVTOOLS_MCP_STATUS_MODE=structured bash "$ROOT/scripts/chrome-devtools-mcp-status.sh"
+# Browser tools are selected by the active session. The legacy direct-MCP
+# diagnostic cannot establish readiness for plugin or native Computer Use.
+# Keep its result visible without making that one transport an app prerequisite.
+if ! run_preflight_phase "chrome-devtools-mcp-status" "[preflight] Checking browser automation..." env CHROME_DEVTOOLS_MCP_STATUS_MODE=structured bash "$ROOT/scripts/chrome-devtools-mcp-status.sh"; then
+  workspace_attention_add "$ATTENTION_FILE" \
+    "Browser tool verification is required before browser work." \
+    "Impact: the legacy Chrome MCP diagnostic could not verify the selected browser tool; application startup can continue." \
+    "Remediation: verify the active supported browser tool and the TRR profile in this session."
+  echo "[preflight] Browser readiness unverified by legacy diagnostic; startup attention recorded."
+fi
 
 if [[ -d "$ROOT/.playwright-mcp" && "${WORKSPACE_PREFLIGHT_DIAGNOSTICS:-0}" == "1" ]]; then
   echo "[preflight] NOTE: '$ROOT/.playwright-mcp' exists and is treated as legacy/local-only." >&2
-  echo "[preflight] NOTE: Workspace policy is Chrome DevTools MCP only." >&2
+  echo "[preflight] NOTE: Verify the selected supported browser tool and TRR profile before browser work." >&2
 fi
 
 echo "[preflight] OK"
