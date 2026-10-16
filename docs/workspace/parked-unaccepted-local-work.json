@@ -2,7 +2,7 @@
   "schema_version": 1,
   "manifest_id": "parked-unaccepted-local-work",
   "truth_scope": "local",
-  "captured_at": "2026-08-07T22:35:07Z",
+  "captured_at": "2026-10-04T09:04:38Z",
   "repositories": {
     "workspace": {
       "base_sha": "df55c982ecf6741808536bfb6af308cc737372cf"
@@ -16,652 +16,1511 @@
   },
   "entries": [
     {
-      "repository": "backend",
-      "path": ".tmp-backfill-monitor.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "api/routers/admin_asset_batch_jobs.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "api/routers/admin_asset_flags.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "api/routers/admin_brands.py",
-      "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "api/routers/admin_fandom_sync.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "api/routers/admin_reddit_reads.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "docs/media/com.trr.media-watcher-sync.plist.example",
+      "repository": "app",
+      "path": ".hygiene/E2E-MAP.md",
       "status": "untracked",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "independent release ownership and acceptance"
       ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+      "next_action": "Reconcile with the original owner before including this path in any release."
     },
     {
-      "repository": "backend",
-      "path": "docs/media/show-season-watcher.md",
+      "repository": "app",
+      "path": ".hygiene/REPORT.md",
       "status": "untracked",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "independent release ownership and acceptance"
       ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+      "next_action": "Reconcile with the original owner before including this path in any release."
     },
     {
-      "repository": "backend",
-      "path": "scripts/bravotv_get_images.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "scripts/dev/smoke_decodo_residential_proxy.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "scripts/media/sync_bravotv_galleries.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "scripts/media/sync_watched_media_to_desktop.py",
+      "repository": "app",
+      "path": ".hygiene/baseline.md",
       "status": "untracked",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "independent release ownership and acceptance"
       ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+      "next_action": "Reconcile with the original owner before including this path in any release."
     },
     {
-      "repository": "backend",
-      "path": "scripts/modal/deploy_sync_fixes_clean.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "scripts/socials/instagram/benchmark_posts_backfill.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "scripts/socials/instagram/probe_instagram_public_mode.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "scripts/socials/reddit/smoke_bravo_refresh.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "scripts/socials/refresh_cookies.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "scripts/socials/smoke_tiktok_youtube_posts.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "scripts/socials/sync_bravo_show_hashtag_aliases.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "scripts/sync/sync_bravotv_galleries.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "scripts/sync/sync_seasons_episodes.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "scripts/workers/admin_operations_worker.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "supabase/migrations/20260806120000_show_season_media_watchers.sql",
+      "repository": "app",
+      "path": ".hygiene/evidence/branch-preflight.json",
       "status": "untracked",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "independent release ownership and acceptance"
       ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+      "next_action": "Reconcile with the original owner before including this path in any release."
     },
     {
-      "repository": "backend",
-      "path": "supabase/migrations/20260806123000_show_season_media_watcher_fk_indexes.sql",
+      "repository": "app",
+      "path": ".hygiene/evidence/citation-qa.json",
       "status": "untracked",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "independent release ownership and acceptance"
       ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+      "next_action": "Reconcile with the original owner before including this path in any release."
     },
     {
-      "repository": "backend",
-      "path": "supabase/migrations/20260806130000_fix_show_season_media_watcher_r2_prefix_check.sql",
+      "repository": "app",
+      "path": ".hygiene/evidence/classification.json",
       "status": "untracked",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "independent release ownership and acceptance"
       ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+      "next_action": "Reconcile with the original owner before including this path in any release."
     },
     {
-      "repository": "backend",
-      "path": "tests/api/test_admin_media_watchers.py",
+      "repository": "app",
+      "path": ".hygiene/evidence/coverage/lcov.info",
       "status": "untracked",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "independent release ownership and acceptance"
       ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+      "next_action": "Reconcile with the original owner before including this path in any release."
     },
     {
-      "repository": "backend",
-      "path": "tests/clients/test_computer_use.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "tests/conftest.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "tests/db/test_pg_timeout_settings.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "tests/integrations/imdb/test_fullcredits_cast_parser.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "tests/integrations/test_bravo_jsonapi.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "tests/integrations/test_media_watcher_sources.py",
+      "repository": "app",
+      "path": ".hygiene/evidence/document-checklist.tsv",
       "status": "untracked",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "independent release ownership and acceptance"
       ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+      "next_action": "Reconcile with the original owner before including this path in any release."
     },
     {
-      "repository": "backend",
-      "path": "tests/media/bravotv/test_run_review.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "tests/media/bravotv/test_run_service.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "tests/media/watchers/test_service.py",
+      "repository": "app",
+      "path": ".hygiene/evidence/file-inventory.tsv",
       "status": "untracked",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "independent release ownership and acceptance"
       ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+      "next_action": "Reconcile with the original owner before including this path in any release."
     },
     {
-      "repository": "backend",
-      "path": "tests/pipeline/test_admin_operation_registry.py",
+      "repository": "app",
+      "path": ".hygiene/evidence/final-preservation.json",
       "status": "untracked",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "independent release ownership and acceptance"
       ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+      "next_action": "Reconcile with the original owner before including this path in any release."
     },
     {
-      "repository": "backend",
-      "path": "tests/repositories/test_build_upsert_update_clause.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "tests/repositories/test_media_watchers.py",
+      "repository": "app",
+      "path": ".hygiene/evidence/ignored-source-inventory.json",
       "status": "untracked",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "independent release ownership and acceptance"
       ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+      "next_action": "Reconcile with the original owner before including this path in any release."
     },
     {
-      "repository": "backend",
-      "path": "tests/repositories/test_reddit_flair_categorizer.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "tests/repositories/test_social_control_plane_backfill_health.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "tests/repositories/test_social_control_plane_run_reads.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "tests/repositories/test_social_control_plane_runtime.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "tests/repositories/test_social_control_plane_shared_status_reads.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "tests/repositories/test_social_control_plane_worker_health.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "tests/scripts/test_cookie_refresh_import_boundary.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "tests/scripts/test_start_remote_job_workers.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "tests/scripts/test_sync_networks_streaming_links.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "tests/scripts/test_sync_watched_media_to_desktop.py",
+      "repository": "app",
+      "path": ".hygiene/evidence/initial-state.json",
       "status": "untracked",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "independent release ownership and acceptance"
       ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "app",
+      "path": ".hygiene/evidence/metrics.json",
+      "status": "untracked",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "app",
+      "path": ".hygiene/evidence/path-checks.json",
+      "status": "untracked",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "app",
+      "path": ".hygiene/evidence/pre-copy-preservation.json",
+      "status": "untracked",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "app",
+      "path": ".hygiene/evidence/reference-searches.json",
+      "status": "untracked",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "app",
+      "path": ".hygiene/evidence/routing-failures.json",
+      "status": "untracked",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "app",
+      "path": ".hygiene/evidence/source-evidence.md",
+      "status": "untracked",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "app",
+      "path": ".hygiene/evidence/structural-audit.json",
+      "status": "untracked",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "app",
+      "path": ".hygiene/evidence/tracked-files.txt",
+      "status": "untracked",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "app",
+      "path": ".hygiene/evidence/vitest-receipt.json",
+      "status": "untracked",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "app",
+      "path": ".hygiene/evidence/vitest.json",
+      "status": "untracked",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "app",
+      "path": ".hygiene/evidence/vitest.log",
+      "status": "untracked",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "app",
+      "path": ".hygiene/inventory.md",
+      "status": "untracked",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/DEPLOY.md",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/POSTGRES_SETUP.md",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/README.md",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/SURVEYS_TABLE_SETUP.md",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/app/brands/[brandSlug]/page.tsx",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/components/admin/design-docs/ArticleDetailPage.tsx",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "app",
+      "path": "apps/web/src/components/admin/social-week/WeekDetailPageView.tsx",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "app",
+      "path": "docs/ai/MODEL_GOVERNANCE.md",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
     },
     {
       "repository": "backend",
-      "path": "tests/socials/instagram/comments_scrapling/test_worker_cap_ramp.py",
+      "path": ".claude/commands/font-sync.md",
       "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "independent release ownership and acceptance"
       ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+      "next_action": "Reconcile with the original owner before including this path in any release."
     },
     {
       "repository": "backend",
-      "path": "tests/socials/instagram/runtimes/test_dispatcher.py",
+      "path": ".claude/commands/trr-impl.md",
       "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "independent release ownership and acceptance"
       ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+      "next_action": "Reconcile with the original owner before including this path in any release."
     },
     {
       "repository": "backend",
-      "path": "tests/socials/instagram/test_instagram_public_mode.py",
+      "path": ".claude/commands/trr-wt-new.md",
       "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "independent release ownership and acceptance"
       ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+      "next_action": "Reconcile with the original owner before including this path in any release."
     },
     {
       "repository": "backend",
-      "path": "tests/socials/instagram/test_instagram_public_post_extractor.py",
+      "path": ".claude/hooks/before-bash.md",
       "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "independent release ownership and acceptance"
       ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+      "next_action": "Reconcile with the original owner before including this path in any release."
     },
     {
       "repository": "backend",
-      "path": "tests/socials/instagram/test_network_policy.py",
+      "path": ".claude/hooks/on-stop.md",
       "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "independent release ownership and acceptance"
       ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+      "next_action": "Reconcile with the original owner before including this path in any release."
     },
     {
       "repository": "backend",
-      "path": "tests/socials/test_decodo_observability.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "path": ".hygiene/REPORT.md",
+      "status": "untracked",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "independent release ownership and acceptance"
       ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": ".hygiene/baseline.md",
+      "status": "untracked",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": ".hygiene/evidence/baseline-process-status.json",
+      "status": "untracked",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": ".hygiene/evidence/branch-preflight.json",
+      "status": "untracked",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": ".hygiene/evidence/citation-qa.json",
+      "status": "untracked",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": ".hygiene/evidence/classification.json",
+      "status": "untracked",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": ".hygiene/evidence/document-checklist.tsv",
+      "status": "untracked",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": ".hygiene/evidence/file-inventory.tsv",
+      "status": "untracked",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": ".hygiene/evidence/final-preservation.json",
+      "status": "untracked",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": ".hygiene/evidence/ignored-source-inventory.json",
+      "status": "untracked",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": ".hygiene/evidence/initial-state.json",
+      "status": "untracked",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": ".hygiene/evidence/metrics.json",
+      "status": "untracked",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": ".hygiene/evidence/path-checks.json",
+      "status": "untracked",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": ".hygiene/evidence/pre-copy-preservation.json",
+      "status": "untracked",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": ".hygiene/evidence/pytest-offline-receipt.json",
+      "status": "untracked",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": ".hygiene/evidence/reference-searches.json",
+      "status": "untracked",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": ".hygiene/evidence/routing-failures.json",
+      "status": "untracked",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": ".hygiene/evidence/source-evidence.md",
+      "status": "untracked",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": ".hygiene/evidence/structural-audit.json",
+      "status": "untracked",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": ".hygiene/evidence/tracked-files.txt",
+      "status": "untracked",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": ".hygiene/evidence/unit-junit.xml",
+      "status": "untracked",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": ".hygiene/inventory.md",
+      "status": "untracked",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "CONTRIBUTING.md",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "README.md",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "api/schemas/v2/instagram_ingestion.py",
+      "status": "untracked",
+      "owner": "Concurrent ingestion work owner; outside Plan 055",
+      "reason": "Appeared during rollout; excluded from exact reviewed deployed archives.",
+      "missing_proof": [
+        "Separate workstream acceptance"
+      ],
+      "next_action": "Continue with original owner; no Plan 055 publication."
+    },
+    {
+      "repository": "backend",
+      "path": "docs/README_local.md",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "docs/Repository/README.md",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "docs/SECURITY.md",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "docs/ai/MODEL_GOVERNANCE.md",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "docs/ai/tiktok-posts-scrapling-signature-gap.md",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "docs/api/run.md",
+      "status": "modified",
+      "owner": "Plan 055 lead and assigned domain owner",
+      "reason": "Plan 055 implementation candidate; source checks do not establish build, provider or observed UI acceptance.",
+      "missing_proof": [
+        "final Plan 055 packet integration and applicable runtime acceptance"
+      ],
+      "next_action": "Complete applicable Plan 055 P10 gates and record exact candidate/runtime evidence before promotion."
+    },
+    {
+      "repository": "backend",
+      "path": "docs/architecture.md",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "docs/architecture/ingestion-engine-evaluation.md",
+      "status": "untracked",
+      "owner": "Concurrent ingestion work owner; outside Plan 055",
+      "reason": "Appeared during production rollout; excluded from the isolated reviewed release.",
+      "missing_proof": [
+        "Separate workstream acceptance"
+      ],
+      "next_action": "Continue with its owning task; do not include in Plan 055 deployment."
+    },
+    {
+      "repository": "backend",
+      "path": "docs/architecture/instagram-ingestion-rebuild.md",
+      "status": "untracked",
+      "owner": "Concurrent ingestion work owner; outside Plan 055",
+      "reason": "Appeared during production rollout; excluded from the isolated reviewed release.",
+      "missing_proof": [
+        "Separate workstream acceptance"
+      ],
+      "next_action": "Continue with its owning task; do not include in Plan 055 deployment."
+    },
+    {
+      "repository": "backend",
+      "path": "docs/architecture/integrations.md",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "docs/architecture/pipeline.md",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "docs/architecture/social-compatibility-wrapper-ledger.md",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "docs/architecture/social-platform-module-checklist.md",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "docs/architecture/social_ingest_n8n_setup.md",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "docs/cloud/quick_cloud_setup.md",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "docs/db/schema.md",
+      "status": "modified",
+      "owner": "Plan 055 lead and assigned domain owner",
+      "reason": "Plan 055 implementation candidate; source checks do not establish build, provider or observed UI acceptance.",
+      "missing_proof": [
+        "final Plan 055 packet integration and applicable runtime acceptance"
+      ],
+      "next_action": "Complete applicable Plan 055 P10 gates and record exact candidate/runtime evidence before promotion."
+    },
+    {
+      "repository": "backend",
+      "path": "docs/db/verification.md",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "docs/deploy/R2-setup.md",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "docs/deploy/archive/cloud_run.md",
+      "status": "untracked",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "docs/deploy/cloud_run.md",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "docs/deploy/render.md",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "docs/media-scraping/source-coverage-matrix.md",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "docs/runbooks/credits_v2_rollout.md",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "docs/runbooks/postgrest_schema_cache.md",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "docs/runbooks/show_import_job.md",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "docs/runbooks/social_worker_queue_ops.md",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "docs/runbooks/supabase_backup_restore.md",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "docs/runbooks/supabase_migration_history_repair.md",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "docs/runbooks/tiktok-ytdlp-degradation.md",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "docs/social/instagram-api-contract-appendix.md",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "docs/social/instagram-data-contract.md",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "docs/social/instagram-data-field-map.json",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "docs/workspace/instagram-comments-scrapling.md",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "docs/workspace/instagram-posts-scrapling.md",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/db/README.md",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/db/guard_core_schema.sql",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/db/run_sql.sh",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/ingestion_engine_eval/dbos_existing_service.py",
+      "status": "untracked",
+      "owner": "Concurrent ingestion work owner; outside Plan 055",
+      "reason": "Appeared during production rollout; excluded from the isolated reviewed release.",
+      "missing_proof": [
+        "Separate workstream acceptance"
+      ],
+      "next_action": "Continue with its owning task; do not include in Plan 055 deployment."
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/ingestion_engine_eval/dbos_worker.py",
+      "status": "untracked",
+      "owner": "Concurrent ingestion work owner; outside Plan 055",
+      "reason": "Appeared during production rollout; excluded from the isolated reviewed release.",
+      "missing_proof": [
+        "Separate workstream acceptance"
+      ],
+      "next_action": "Continue with its owning task; do not include in Plan 055 deployment."
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/ingestion_engine_eval/evidence/2026-10-16/cancel-terminal-cleanup.json",
+      "status": "untracked",
+      "owner": "Concurrent ingestion work owner; outside Plan 055",
+      "reason": "Appeared during rollout; excluded from exact reviewed deployed archives.",
+      "missing_proof": [
+        "Separate workstream acceptance"
+      ],
+      "next_action": "Continue with original owner; no Plan 055 publication."
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/ingestion_engine_eval/evidence/2026-10-16/cancel-terminal-logs.tar.gz",
+      "status": "untracked",
+      "owner": "Concurrent ingestion work owner; outside Plan 055",
+      "reason": "Appeared during rollout; excluded from exact reviewed deployed archives.",
+      "missing_proof": [
+        "Separate workstream acceptance"
+      ],
+      "next_action": "Continue with original owner; no Plan 055 publication."
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/ingestion_engine_eval/evidence/2026-10-16/cancel-terminal-manifest.json",
+      "status": "untracked",
+      "owner": "Concurrent ingestion work owner; outside Plan 055",
+      "reason": "Appeared during rollout; excluded from exact reviewed deployed archives.",
+      "missing_proof": [
+        "Separate workstream acceptance"
+      ],
+      "next_action": "Continue with original owner; no Plan 055 publication."
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/ingestion_engine_eval/evidence/2026-10-16/cancel-terminal.json",
+      "status": "untracked",
+      "owner": "Concurrent ingestion work owner; outside Plan 055",
+      "reason": "Appeared during rollout; excluded from exact reviewed deployed archives.",
+      "missing_proof": [
+        "Separate workstream acceptance"
+      ],
+      "next_action": "Continue with original owner; no Plan 055 publication."
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/ingestion_engine_eval/evidence/2026-10-16/cleanup.json",
+      "status": "untracked",
+      "owner": "Concurrent ingestion work owner; outside Plan 055",
+      "reason": "Appeared during production rollout; excluded from the isolated reviewed release.",
+      "missing_proof": [
+        "Separate workstream acceptance"
+      ],
+      "next_action": "Continue with its owning task; do not include in Plan 055 deployment."
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/ingestion_engine_eval/evidence/2026-10-16/dbos-existing-service-cleanup.json",
+      "status": "untracked",
+      "owner": "Concurrent ingestion work owner; outside Plan 055",
+      "reason": "Appeared during rollout; excluded from exact reviewed deployed archives.",
+      "missing_proof": [
+        "Separate workstream acceptance"
+      ],
+      "next_action": "Continue with original owner; no Plan 055 publication."
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/ingestion_engine_eval/evidence/2026-10-16/dbos-existing-service-logs.tar.gz",
+      "status": "untracked",
+      "owner": "Concurrent ingestion work owner; outside Plan 055",
+      "reason": "Appeared during rollout; excluded from exact reviewed deployed archives.",
+      "missing_proof": [
+        "Separate workstream acceptance"
+      ],
+      "next_action": "Continue with original owner; no Plan 055 publication."
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/ingestion_engine_eval/evidence/2026-10-16/dbos-existing-service-manifest.json",
+      "status": "untracked",
+      "owner": "Concurrent ingestion work owner; outside Plan 055",
+      "reason": "Appeared during rollout; excluded from exact reviewed deployed archives.",
+      "missing_proof": [
+        "Separate workstream acceptance"
+      ],
+      "next_action": "Continue with original owner; no Plan 055 publication."
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/ingestion_engine_eval/evidence/2026-10-16/dbos-existing-service.json",
+      "status": "untracked",
+      "owner": "Concurrent ingestion work owner; outside Plan 055",
+      "reason": "Appeared during rollout; excluded from exact reviewed deployed archives.",
+      "missing_proof": [
+        "Separate workstream acceptance"
+      ],
+      "next_action": "Continue with original owner; no Plan 055 publication."
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/ingestion_engine_eval/evidence/2026-10-16/environment.freeze.txt",
+      "status": "untracked",
+      "owner": "Concurrent ingestion work owner; outside Plan 055",
+      "reason": "Appeared during production rollout; excluded from the isolated reviewed release.",
+      "missing_proof": [
+        "Separate workstream acceptance"
+      ],
+      "next_action": "Continue with its owning task; do not include in Plan 055 deployment."
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/ingestion_engine_eval/evidence/2026-10-16/large-1000.json",
+      "status": "untracked",
+      "owner": "Concurrent ingestion work owner; outside Plan 055",
+      "reason": "Appeared during production rollout; excluded from the isolated reviewed release.",
+      "missing_proof": [
+        "Separate workstream acceptance"
+      ],
+      "next_action": "Continue with its owning task; do not include in Plan 055 deployment."
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/ingestion_engine_eval/evidence/2026-10-16/manifest.json",
+      "status": "untracked",
+      "owner": "Concurrent ingestion work owner; outside Plan 055",
+      "reason": "Appeared during production rollout; excluded from the isolated reviewed release.",
+      "missing_proof": [
+        "Separate workstream acceptance"
+      ],
+      "next_action": "Continue with its owning task; do not include in Plan 055 deployment."
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/ingestion_engine_eval/evidence/2026-10-16/matched-120.json",
+      "status": "untracked",
+      "owner": "Concurrent ingestion work owner; outside Plan 055",
+      "reason": "Appeared during production rollout; excluded from the isolated reviewed release.",
+      "missing_proof": [
+        "Separate workstream acceptance"
+      ],
+      "next_action": "Continue with its owning task; do not include in Plan 055 deployment."
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/ingestion_engine_eval/evidence/2026-10-16/partial-cancel.json",
+      "status": "untracked",
+      "owner": "Concurrent ingestion work owner; outside Plan 055",
+      "reason": "Appeared during production rollout; excluded from the isolated reviewed release.",
+      "missing_proof": [
+        "Separate workstream acceptance"
+      ],
+      "next_action": "Continue with its owning task; do not include in Plan 055 deployment."
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/ingestion_engine_eval/evidence/2026-10-16/setup-failure.json",
+      "status": "untracked",
+      "owner": "Concurrent ingestion work owner; outside Plan 055",
+      "reason": "Appeared during production rollout; excluded from the isolated reviewed release.",
+      "missing_proof": [
+        "Separate workstream acceptance"
+      ],
+      "next_action": "Continue with its owning task; do not include in Plan 055 deployment."
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/ingestion_engine_eval/evidence/2026-10-16/temporal-native-pinning.json",
+      "status": "untracked",
+      "owner": "Concurrent ingestion work owner; outside Plan 055",
+      "reason": "Appeared during production rollout; excluded from the isolated reviewed release.",
+      "missing_proof": [
+        "Separate workstream acceptance"
+      ],
+      "next_action": "Continue with its owning task; do not include in Plan 055 deployment."
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/ingestion_engine_eval/evidence/2026-10-16/versions.json",
+      "status": "untracked",
+      "owner": "Concurrent ingestion work owner; outside Plan 055",
+      "reason": "Appeared during production rollout; excluded from the isolated reviewed release.",
+      "missing_proof": [
+        "Separate workstream acceptance"
+      ],
+      "next_action": "Continue with its owning task; do not include in Plan 055 deployment."
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/ingestion_engine_eval/evidence/2026-10-16/worker-logs.tar.gz",
+      "status": "untracked",
+      "owner": "Concurrent ingestion work owner; outside Plan 055",
+      "reason": "Appeared during production rollout; excluded from the isolated reviewed release.",
+      "missing_proof": [
+        "Separate workstream acceptance"
+      ],
+      "next_action": "Continue with its owning task; do not include in Plan 055 deployment."
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/ingestion_engine_eval/requirements.txt",
+      "status": "untracked",
+      "owner": "Concurrent ingestion work owner; outside Plan 055",
+      "reason": "Appeared during production rollout; excluded from the isolated reviewed release.",
+      "missing_proof": [
+        "Separate workstream acceptance"
+      ],
+      "next_action": "Continue with its owning task; do not include in Plan 055 deployment."
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/ingestion_engine_eval/run.py",
+      "status": "untracked",
+      "owner": "Concurrent ingestion work owner; outside Plan 055",
+      "reason": "Appeared during production rollout; excluded from the isolated reviewed release.",
+      "missing_proof": [
+        "Separate workstream acceptance"
+      ],
+      "next_action": "Continue with its owning task; do not include in Plan 055 deployment."
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/ingestion_engine_eval/store.py",
+      "status": "untracked",
+      "owner": "Concurrent ingestion work owner; outside Plan 055",
+      "reason": "Appeared during production rollout; excluded from the isolated reviewed release.",
+      "missing_proof": [
+        "Separate workstream acceptance"
+      ],
+      "next_action": "Continue with its owning task; do not include in Plan 055 deployment."
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/ingestion_engine_eval/temporal_pinning.py",
+      "status": "untracked",
+      "owner": "Concurrent ingestion work owner; outside Plan 055",
+      "reason": "Appeared during production rollout; excluded from the isolated reviewed release.",
+      "missing_proof": [
+        "Separate workstream acceptance"
+      ],
+      "next_action": "Continue with its owning task; do not include in Plan 055 deployment."
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/ingestion_engine_eval/temporal_worker.py",
+      "status": "untracked",
+      "owner": "Concurrent ingestion work owner; outside Plan 055",
+      "reason": "Appeared during production rollout; excluded from the isolated reviewed release.",
+      "missing_proof": [
+        "Separate workstream acceptance"
+      ],
+      "next_action": "Continue with its owning task; do not include in Plan 055 deployment."
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/media/README.md",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "scripts/media/mirror_cast_photos_to_s3.py",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "supabase/migrations/20261016070000_instagram_ingestion_foundation.sql",
+      "status": "untracked",
+      "owner": "Concurrent ingestion work owner; outside Plan 055",
+      "reason": "Appeared during production rollout; excluded from the isolated reviewed release.",
+      "missing_proof": [
+        "Separate workstream acceptance"
+      ],
+      "next_action": "Continue with its owning task; do not include in Plan 055 deployment."
+    },
+    {
+      "repository": "backend",
+      "path": "supabase/schema_docs/INDEX.md",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/api/test_survey_submit.py",
+      "status": "modified",
+      "owner": "Plan 055 lead and assigned domain owner",
+      "reason": "Plan 055 implementation candidate; source checks do not establish build, provider or observed UI acceptance.",
+      "missing_proof": [
+        "final Plan 055 packet integration and applicable runtime acceptance"
+      ],
+      "next_action": "Complete applicable Plan 055 P10 gates and record exact candidate/runtime evidence before promotion."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/ingestion/test_domain_evidence.py",
+      "status": "untracked",
+      "owner": "Concurrent ingestion work owner; outside Plan 055",
+      "reason": "Appeared during production rollout; excluded from the isolated reviewed release.",
+      "missing_proof": [
+        "Separate workstream acceptance"
+      ],
+      "next_action": "Continue with its owning task; do not include in Plan 055 deployment."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/ingestion/test_persistence.py",
+      "status": "untracked",
+      "owner": "Concurrent ingestion work owner; outside Plan 055",
+      "reason": "Appeared during production rollout; excluded from the isolated reviewed release.",
+      "missing_proof": [
+        "Separate workstream acceptance"
+      ],
+      "next_action": "Continue with its owning task; do not include in Plan 055 deployment."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/ingestion/test_queries_contract.py",
+      "status": "untracked",
+      "owner": "Concurrent ingestion work owner; outside Plan 055",
+      "reason": "Appeared during rollout; excluded from exact reviewed deployed archives.",
+      "missing_proof": [
+        "Separate workstream acceptance"
+      ],
+      "next_action": "Continue with original owner; no Plan 055 publication."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/ingestion_engine_eval/test_fenced_adapter.py",
+      "status": "untracked",
+      "owner": "Concurrent ingestion work owner; outside Plan 055",
+      "reason": "Appeared during production rollout; excluded from the isolated reviewed release.",
+      "missing_proof": [
+        "Separate workstream acceptance"
+      ],
+      "next_action": "Continue with its owning task; do not include in Plan 055 deployment."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/integrations/tmdb/test_tmdb_tv_details_persistence.py",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/media/test_s3_mirror.py",
+      "status": "modified",
+      "owner": "Plan 055 lead and assigned domain owner",
+      "reason": "Plan 055 implementation candidate; source checks do not establish build, provider or observed UI acceptance.",
+      "missing_proof": [
+        "final Plan 055 packet integration and applicable runtime acceptance"
+      ],
+      "next_action": "Complete applicable Plan 055 P10 gates and record exact candidate/runtime evidence before promotion."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/repositories/test_credits.py",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "backend",
+      "path": "tests/socials/test_instagram_comments_scrapling_contract.py",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
     },
     {
       "repository": "backend",
@@ -701,474 +1560,313 @@
     },
     {
       "repository": "backend",
-      "path": "tests/test_modal_dispatch.py",
+      "path": "trr_backend/ingestion/__init__.py",
       "status": "modified",
-      "owner": "Post-candidate local work outside packet local-foundation-runtime-guards; excluded from T6 candidate",
-      "reason": "Current local bytes differ from the recorded committed candidate and remain unaccepted.",
+      "owner": "Concurrent ingestion work owner; outside Plan 055",
+      "reason": "Appeared during rollout; excluded from exact reviewed deployed archives.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "Separate workstream acceptance"
       ],
-      "next_action": "Assign this post-candidate local work to a bounded follow-up packet before any candidate integration."
+      "next_action": "Continue with original owner; no Plan 055 publication."
     },
     {
       "repository": "backend",
-      "path": "tests/test_non_live_isolation.py",
+      "path": "trr_backend/ingestion/domain.py",
       "status": "untracked",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Concurrent ingestion work owner; outside Plan 055",
+      "reason": "Appeared during production rollout; excluded from the isolated reviewed release.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "Separate workstream acceptance"
       ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+      "next_action": "Continue with its owning task; do not include in Plan 055 deployment."
     },
     {
       "repository": "backend",
-      "path": "tests/test_start_api_guard.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "tests/utils/test_env.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "tests/vision/test_cast_reference_face_matching.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "tests/vision/test_people_count_auto_crop.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "tests/vision/test_people_count_fast_pass.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "tests/vision/test_screen_time_face_matching.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "tests/vision/test_text_overlay_fallback.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "trr_backend/ingestion/fandom_person_scraper.py",
-      "status": "modified",
-      "owner": "Existing dirty-owner WIP protected by T5; excluded from T6 candidate",
-      "reason": "Protected concurrent backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Keep this protected path out of T6; assign a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "trr_backend/integrations/nbcumv.py",
-      "status": "modified",
-      "owner": "Task 2, Task 3, or Task 5 packet owner",
-      "reason": "Dirty architecture work is outside the nine locally accepted or migration-bearing R0 cohorts.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to the next bounded Task 2, Task 3, or Task 5 packet before candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "trr_backend/integrations/tmdb/client.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "trr_backend/media/bravotv/run_review.py",
-      "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "trr_backend/media/s3_mirror.py",
-      "status": "modified",
-      "owner": "Existing dirty-owner WIP protected by T5; excluded from T6 candidate",
-      "reason": "Protected concurrent backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Keep this protected path out of T6; assign a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "trr_backend/media/watchers/__init__.py",
+      "path": "trr_backend/ingestion/evidence.py",
       "status": "untracked",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Concurrent ingestion work owner; outside Plan 055",
+      "reason": "Appeared during production rollout; excluded from the isolated reviewed release.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "Separate workstream acceptance"
       ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+      "next_action": "Continue with its owning task; do not include in Plan 055 deployment."
     },
     {
       "repository": "backend",
-      "path": "trr_backend/modal_dispatch.py",
-      "status": "modified",
-      "owner": "Post-candidate local work outside packet local-foundation-runtime-guards; excluded from T6 candidate",
-      "reason": "Current local bytes differ from the recorded committed candidate and remain unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign this post-candidate local work to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "trr_backend/pipeline/admin_operation_bootstrap.py",
+      "path": "trr_backend/ingestion/persistence.py",
       "status": "untracked",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Concurrent ingestion work owner; outside Plan 055",
+      "reason": "Appeared during production rollout; excluded from the isolated reviewed release.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "Separate workstream acceptance"
       ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+      "next_action": "Continue with its owning task; do not include in Plan 055 deployment."
     },
     {
       "repository": "backend",
-      "path": "trr_backend/pipeline/admin_operation_registry.py",
+      "path": "trr_backend/ingestion/queries.py",
       "status": "untracked",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Concurrent ingestion work owner; outside Plan 055",
+      "reason": "Appeared during production rollout; excluded from the isolated reviewed release.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "Separate workstream acceptance"
       ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+      "next_action": "Continue with its owning task; do not include in Plan 055 deployment."
     },
     {
-      "repository": "backend",
-      "path": "trr_backend/repositories/admin_show_reads.py",
+      "repository": "workspace",
+      "path": ".codex/config.toml",
       "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "independent release ownership and acceptance"
       ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+      "next_action": "Reconcile with the original owner before including this path in any release."
     },
     {
-      "repository": "backend",
-      "path": "trr_backend/repositories/media_watchers.py",
-      "status": "untracked",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
-      "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
-      ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
-    },
-    {
-      "repository": "backend",
-      "path": "trr_backend/repositories/reddit_refresh.py",
+      "repository": "workspace",
+      "path": ".graphifyignore",
       "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "independent release ownership and acceptance"
       ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+      "next_action": "Reconcile with the original owner before including this path in any release."
     },
     {
-      "repository": "backend",
-      "path": "trr_backend/repositories/tagging_references.py",
+      "repository": "workspace",
+      "path": "Makefile",
       "status": "modified",
-      "owner": "Existing dirty-owner WIP protected by T5; excluded from T6 candidate",
-      "reason": "Protected concurrent backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Current dirty content is separate from any historical committed packet; retained without runtime acceptance.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "current bounded packet integration and applicable runtime acceptance"
       ],
-      "next_action": "Keep this protected path out of T6; assign a bounded follow-up packet before any candidate integration."
+      "next_action": "Reconcile current candidate with its owner and exact evidence before promotion."
     },
     {
-      "repository": "backend",
-      "path": "trr_backend/scraping/bravo_parser.py",
+      "repository": "workspace",
+      "path": "config/codex/user-bootstrap.toml.tmpl",
       "status": "modified",
-      "owner": "Existing dirty-owner WIP protected by T5; excluded from T6 candidate",
-      "reason": "Protected concurrent backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "independent release ownership and acceptance"
       ],
-      "next_action": "Keep this protected path out of T6; assign a bounded follow-up packet before any candidate integration."
+      "next_action": "Reconcile with the original owner before including this path in any release."
     },
     {
-      "repository": "backend",
-      "path": "trr_backend/scraping/url_image_scraper.py",
+      "repository": "workspace",
+      "path": "docs/agent-governance/mcp_inventory.md",
       "status": "modified",
-      "owner": "Existing dirty-owner WIP protected by T5; excluded from T6 candidate",
-      "reason": "Protected concurrent backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "independent release ownership and acceptance"
       ],
-      "next_action": "Keep this protected path out of T6; assign a bounded follow-up packet before any candidate integration."
+      "next_action": "Reconcile with the original owner before including this path in any release."
     },
     {
-      "repository": "backend",
-      "path": "trr_backend/socials/analytics/read_models.py",
+      "repository": "workspace",
+      "path": "docs/workspace/api-migration-ledger.md",
       "status": "modified",
-      "owner": "Existing dirty-owner WIP protected by T5; excluded from T6 candidate",
-      "reason": "Protected concurrent backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Current dirty content is separate from any historical committed packet; retained without runtime acceptance.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "current bounded packet integration and applicable runtime acceptance"
       ],
-      "next_action": "Keep this protected path out of T6; assign a bounded follow-up packet before any candidate integration."
+      "next_action": "Reconcile current candidate with its owner and exact evidence before promotion."
     },
     {
-      "repository": "backend",
-      "path": "trr_backend/socials/instagram/catalog_ingest.py",
+      "repository": "workspace",
+      "path": "docs/workspace/auth-posture.md",
       "status": "modified",
-      "owner": "Existing dirty-owner WIP protected by T5; excluded from T6 candidate",
-      "reason": "Protected concurrent backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "independent release ownership and acceptance"
       ],
-      "next_action": "Keep this protected path out of T6; assign a bounded follow-up packet before any candidate integration."
+      "next_action": "Reconcile with the original owner before including this path in any release."
     },
     {
-      "repository": "backend",
-      "path": "trr_backend/socials/instagram/network_policy.py",
+      "repository": "workspace",
+      "path": "docs/workspace/legacy-playwright.md",
       "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "independent release ownership and acceptance"
       ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+      "next_action": "Reconcile with the original owner before including this path in any release."
     },
     {
-      "repository": "backend",
-      "path": "trr_backend/socials/instagram/permalink_metadata.py",
+      "repository": "workspace",
+      "path": "docs/workspace/modal-safe-backend-deploy-set.md",
       "status": "modified",
-      "owner": "Existing dirty-owner WIP protected by T5; excluded from T6 candidate",
-      "reason": "Protected concurrent backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "independent release ownership and acceptance"
       ],
-      "next_action": "Keep this protected path out of T6; assign a bounded follow-up packet before any candidate integration."
+      "next_action": "Reconcile with the original owner before including this path in any release."
     },
     {
-      "repository": "backend",
-      "path": "trr_backend/socials/instagram/post_normalizer.py",
+      "repository": "workspace",
+      "path": "docs/workspace/preflight-doctor.md",
       "status": "modified",
-      "owner": "Existing dirty-owner WIP protected by T5; excluded from T6 candidate",
-      "reason": "Protected concurrent backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "independent release ownership and acceptance"
       ],
-      "next_action": "Keep this protected path out of T6; assign a bounded follow-up packet before any candidate integration."
+      "next_action": "Reconcile with the original owner before including this path in any release."
     },
     {
-      "repository": "backend",
-      "path": "trr_backend/socials/instagram/profile_stages.py",
+      "repository": "workspace",
+      "path": "docs/workspace/scrapling-transport-migration-guide.md",
       "status": "modified",
-      "owner": "Existing dirty-owner WIP protected by T5; excluded from T6 candidate",
-      "reason": "Protected concurrent backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "independent release ownership and acceptance"
       ],
-      "next_action": "Keep this protected path out of T6; assign a bounded follow-up packet before any candidate integration."
+      "next_action": "Reconcile with the original owner before including this path in any release."
     },
     {
-      "repository": "backend",
-      "path": "trr_backend/socials/instagram/snapshot_completion.py",
+      "repository": "workspace",
+      "path": "docs/workspace/social-profile-dashboard.md",
       "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "independent release ownership and acceptance"
       ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+      "next_action": "Reconcile with the original owner before including this path in any release."
     },
     {
-      "repository": "backend",
-      "path": "trr_backend/socials/ops/cookie_refresh.py",
+      "repository": "workspace",
+      "path": "docs/workspace/web-app-route-feature-inventory.md",
       "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "independent release ownership and acceptance"
       ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+      "next_action": "Reconcile with the original owner before including this path in any release."
     },
     {
-      "repository": "backend",
-      "path": "trr_backend/socials/pipelines/account_catalog/progress.py",
+      "repository": "workspace",
+      "path": "modal-deploy-slices/backend-model-lock-runtime.md",
       "status": "modified",
-      "owner": "Existing dirty-owner WIP protected by T5; excluded from T6 candidate",
-      "reason": "Protected concurrent backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "independent release ownership and acceptance"
       ],
-      "next_action": "Keep this protected path out of T6; assign a bounded follow-up packet before any candidate integration."
+      "next_action": "Reconcile with the original owner before including this path in any release."
     },
     {
-      "repository": "backend",
-      "path": "trr_backend/socials/post_persist_truthfulness.py",
+      "repository": "workspace",
+      "path": "scripts/check-codex.sh",
       "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "independent release ownership and acceptance"
       ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+      "next_action": "Reconcile with the original owner before including this path in any release."
     },
     {
-      "repository": "backend",
-      "path": "trr_backend/socials/read_models/account_profile/common.py",
+      "repository": "workspace",
+      "path": "scripts/check-policy.sh",
       "status": "modified",
-      "owner": "Existing dirty-owner WIP protected by T5; excluded from T6 candidate",
-      "reason": "Protected concurrent backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "independent release ownership and acceptance"
       ],
-      "next_action": "Keep this protected path out of T6; assign a bounded follow-up packet before any candidate integration."
+      "next_action": "Reconcile with the original owner before including this path in any release."
     },
     {
-      "repository": "backend",
-      "path": "trr_backend/socials/social_season_analytics_impl.py",
+      "repository": "workspace",
+      "path": "scripts/codex-config-sync.sh",
       "status": "modified",
-      "owner": "Existing dirty-owner WIP protected by T5; excluded from T6 candidate",
-      "reason": "Protected concurrent backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "independent release ownership and acceptance"
       ],
-      "next_action": "Keep this protected path out of T6; assign a bounded follow-up packet before any candidate integration."
+      "next_action": "Reconcile with the original owner before including this path in any release."
     },
     {
-      "repository": "backend",
-      "path": "trr_backend/socials/threads/media_resolver.py",
+      "repository": "workspace",
+      "path": "scripts/test_app_direct_sql_inventory.py",
       "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Current dirty content is separate from any historical committed packet; retained without runtime acceptance.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "current bounded packet integration and applicable runtime acceptance"
       ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+      "next_action": "Reconcile current candidate with its owner and exact evidence before promotion."
     },
     {
-      "repository": "backend",
-      "path": "trr_backend/utils/env.py",
+      "repository": "workspace",
+      "path": "scripts/test_check_policy.py",
       "status": "modified",
-      "owner": "Concurrent backend work owner",
-      "reason": "Current local backend work is excluded from the committed T6 candidate and remains unaccepted.",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
       "missing_proof": [
-        "bounded packet acceptance",
-        "focused local validation and independent review"
+        "independent release ownership and acceptance"
       ],
-      "next_action": "Assign the path to a bounded follow-up packet before any candidate integration."
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "workspace",
+      "path": "scripts/test_codex_config_sync.py",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "workspace",
+      "path": "scripts/test_instagram_auth_freshness.py",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
+    },
+    {
+      "repository": "workspace",
+      "path": "scripts/test_workspace_app_env_projection.py",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Current dirty content is separate from any historical committed packet; retained without runtime acceptance.",
+      "missing_proof": [
+        "current bounded packet integration and applicable runtime acceptance"
+      ],
+      "next_action": "Reconcile current candidate with its owner and exact evidence before promotion."
+    },
+    {
+      "repository": "workspace",
+      "path": "scripts/tests/trr-e8-browser-adapter.test.cjs",
+      "status": "modified",
+      "owner": "Pre-existing work owner; preserved by Plan 055",
+      "reason": "Pre-existing working-copy content is retained; Plan 055 does not grant it release acceptance.",
+      "missing_proof": [
+        "independent release ownership and acceptance"
+      ],
+      "next_action": "Reconcile with the original owner before including this path in any release."
     }
   ],
-  "excluded_non_architecture_paths": [
-    {
-      "repository": "app",
-      "path": "apps/web/src/lib/admin/design-docs-pipeline-types.ts",
-      "status": "modified",
-      "reason": "Explicit concurrent app work excluded from T6 candidate ownership."
-    },
-    {
-      "repository": "app",
-      "path": "docs/ai/HANDOFF.md",
-      "status": "modified",
-      "reason": "Explicit concurrent app work excluded from T6 candidate ownership."
-    }
-  ],
+  "excluded_non_architecture_paths": [],
   "promotion_policy": "Parked entries cannot promote or be silently absorbed into a candidate; each requires explicit packet ownership and missing proof closure."
 }
