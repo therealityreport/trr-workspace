@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+TRR_PORTLESS_STARTUP_SUPPORT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 trr_portless_agent_noninteractive() {
   [[ "${CI:-}" == "1" || "${CODEX_CI:-}" == "1" || ! -t 0 ]]
 }
@@ -12,8 +14,37 @@ trr_portless_proxy_lines() {
   pgrep -fl "portless proxy start" || true
 }
 
+trr_portless_project_manager_router_ready() {
+  python3 "$TRR_PORTLESS_STARTUP_SUPPORT_DIR/../project-manager-router-ready.py" >/dev/null 2>&1
+}
+
+trr_portless_project_manager_owner_present() {
+  local status=0
+  python3 "$TRR_PORTLESS_STARTUP_SUPPORT_DIR/../project-manager-router-ready.py" --owner-present >/dev/null 2>&1 || status=$?
+  # Only an explicit "absent" result permits generic startup; probe errors hold it.
+  [[ "$status" != "1" ]]
+}
+
+trr_portless_require_no_managed_owner() {
+  local label="${1:-portless}"
+  if ! trr_portless_project_manager_owner_present; then
+    return 0
+  fi
+  cat >&2 <<EOF
+[${label}] ERROR: Project Manager owns the shared Portless router, but it is not ready.
+[${label}] A generic proxy will not replace the managed service.
+[${label}] Restore the existing service without changing its manifest:
+  sudo launchctl kickstart -k system/local.thomashulihan.projectmanager.portless-router
+[${label}] Then rerun the command that failed.
+EOF
+  return 2
+}
+
 trr_portless_has_wildcard_proxy() {
-  pgrep -f "portless proxy start .*--wildcard" >/dev/null 2>&1
+  if pgrep -f "portless proxy start .*--wildcard" >/dev/null 2>&1; then
+    return 0
+  fi
+  trr_portless_project_manager_router_ready
 }
 
 trr_portless_has_disallowed_numeric_proxy_port() {
@@ -84,6 +115,9 @@ trr_portless_require_proxy_start_allowed() {
   if trr_portless_has_wildcard_proxy; then
     return 0
   fi
+
+  # Managed ownership remains authoritative while its runtime is stopped or unhealthy.
+  trr_portless_require_no_managed_owner "$label" || return $?
 
   if [[ "${TRR_PORTLESS_ALLOW_PROXY_START:-0}" == "1" ]]; then
     if trr_portless_agent_noninteractive && ! trr_portless_has_passwordless_sudo; then

@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 export PATH="/opt/homebrew/bin:${PATH}"
+source "$ROOT_DIR/scripts/lib/portless-startup-check.sh"
 
 status_tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/trr-portless-status.XXXXXX")"
 trap 'rm -rf "$status_tmp_dir"' EXIT
@@ -44,11 +45,17 @@ fi
 
 echo ""
 echo "[portless-status] Proxy process:"
-proxy_lines="$(pgrep -fl "portless proxy start" || true)"
+proxy_lines="$(trr_portless_proxy_lines)"
+wildcard_proxy_ready=0
+if trr_portless_has_wildcard_proxy; then
+  wildcard_proxy_ready=1
+fi
 if [[ -n "$proxy_lines" ]]; then
   printf '%s\n' "$proxy_lines" | sed 's/^/  /'
+elif [[ "$wildcard_proxy_ready" == "1" ]]; then
+  echo "  Project Manager managed router is ready on HTTPS 443 with localhost wildcard routing"
 else
-  echo "  no portless proxy process found"
+  echo "  no ready wildcard proxy found"
 fi
 
 echo ""
@@ -63,7 +70,7 @@ fi
 echo ""
 echo "[portless-status] Browser-test readiness:"
 routes="$(portless list 2>/dev/null || true)"
-if ! pgrep -f "portless proxy start .*--wildcard" >/dev/null 2>&1; then
+if [[ "$wildcard_proxy_ready" != "1" ]]; then
   echo "  blocked: wildcard proxy is not running"
 elif ! grep -Eq "https://trr[.]localhost[[:space:]]+->[[:space:]]+(localhost|127[.]0[.]0[.]1):[0-9]+" <<<"$routes"; then
   echo "  blocked: trr.localhost app route is missing"

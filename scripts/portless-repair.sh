@@ -31,12 +31,18 @@ ${existing_proxy_lines}
 EOF
   exit 2
 fi
-if pgrep -f "portless proxy start .*--wildcard" >/dev/null 2>&1; then
+if trr_portless_has_wildcard_proxy; then
   echo "[portless-repair] Portless proxy is already running in wildcard mode."
 else
   trr_portless_require_proxy_start_allowed "portless-repair" "$ROOT_DIR"
-  proxy_args=(--wildcard)
-  portless proxy start "${proxy_args[@]}"
+  # The helper may have observed a human restoring the router after our first check.
+  if trr_portless_has_wildcard_proxy; then
+    echo "[portless-repair] Portless proxy became ready; keeping the existing owner."
+  else
+    trr_portless_require_no_managed_owner "portless-repair"
+    proxy_args=(--wildcard)
+    portless proxy start "${proxy_args[@]}"
+  fi
 fi
 
 echo "[portless-repair] Removing stale static TRR aliases so managed routes own clean URLs..."
