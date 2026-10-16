@@ -1,5 +1,16 @@
 # Plan 003: Validate Getty prefetch tokens as UUIDs to close a filesystem path-traversal vector
 
+## Current source closeout — 2026-10-16
+
+**PARTIAL — source and missing regression coverage complete; release acceptance remains with Plan 055 row 3.** App local commit `b4fcbfa38b500d6ba2a8eaf34bd5b7a5f1d08246` adds `apps/web/tests/getty-prefetch-token.test.ts`. The existing production guard was preserved byte-for-byte; no route/storage/token-format change was needed.
+
+- Six focused cases pass. Four invalid shapes are rejected before any filesystem access across read/update/delete/start/hydration; invalid requested create tokens become fresh in-directory UUIDs; a legitimate trimmed UUID retains its payload and is accepted for creation.
+- Tests mock filesystem calls and do not touch shared Getty files or start jobs. Current invalid hydration throws `InvalidGettyPrefetchTokenError`; the historical plan's proposed silent-return behavior is superseded by the maintained contract.
+- Scoped eslint, nonincremental app typecheck, generated checks and app quick validation (80 checks) pass. The required production build for the broader Plan 055 candidate remains open; no current-chat approval, browser or provider proof is inferred.
+- Current branch and surrounding work retained. No blanket lint/full test suite, push or deployment was run. The historical clean-tree/branch-switch checklist below is not a request to discard existing work.
+
+See [Plan 055 row 2](055-workspace-audit-remediation.md) and [retained evidence](/Users/thomashulihan/Documents/Codex/2026-10-04/trr-055-implementation/row2-safety-2026-10-16/checks.json). The remaining original design/execution record is historical.
+
 > **Executor instructions**: Follow this plan step by step. Run every
 > verification command and confirm the expected result before moving to the next
 > step. If anything in the "STOP conditions" section occurs, stop and report —

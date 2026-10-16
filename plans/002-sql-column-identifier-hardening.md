@@ -1,5 +1,16 @@
 # Plan 002: Validate dynamically-built SQL column identifiers in the screentime `update_*` repositories
 
+## Current source closeout — 2026-10-16
+
+**PARTIAL — source repair complete and verified; release acceptance remains with Plan 055 row 3.** Backend local commit `a76cd1df86fdfc54fde1097623912118d03c7b17` includes both missing cast-screentime guards and focused regressions. Existing `validate_mapping_keys` runs before either updater constructs assignments or issues SQL; parameterized values, JSON adaptation and empty-payload lookup behavior remain. The already guarded screenalytics and subtitle updaters were retained, without a duplicate validator or DB-helper change.
+
+- Eight rejection cases reproduced unsafe SQL reachability before the fix. Existing test file now covers four invalid key shapes for both updaters plus valid/value and empty-payload behavior.
+- Affected repository run: 27 passed (25 cast, 2 screenalytics). After expressing the same validation directly at mapping iteration to retain the unchanged 1,911-line ceiling, the affected 25 cast checks and ruff passed; screenalytics evidence was reused.
+- Independent safety review found no identifier-validation defect. No schema/migration or live database write was needed. Current main/provider deployment is not claimed.
+- Current branch retained; no full backend suite, push or deployment was run. Current user test-selection/preservation policy supersedes the historical branch-switch and full-suite steps below.
+
+See [Plan 055 row 2](055-workspace-audit-remediation.md) and [retained evidence](/Users/thomashulihan/Documents/Codex/2026-10-04/trr-055-implementation/row2-safety-2026-10-16/checks.json). The remaining original design/execution record is historical; its open checkboxes do not override this scoped source closeout.
+
 > **Current-main status note (2026-09-25 source audit):** Branch completion in July does not establish current-main closure. The 2026-09-25 audit found the `cast_screentime.py` update path still interpolating unchecked column keys; recheck after integration before marking this plan complete on main.
 
 > **Executor instructions**: Follow this plan step by step. Run every

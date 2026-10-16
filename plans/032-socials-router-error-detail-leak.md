@@ -1,5 +1,16 @@
 # Plan 032: Stop leaking raw exception text from socials-router 500/502 responses
 
+## Current source closeout — 2026-10-16
+
+**PARTIAL — retained correction explicitly included and verified locally; provider delivery remains with Plan 055 row 3.** Backend commit `a76cd1df86fdfc54fde1097623912118d03c7b17` includes the pre-existing `_shared.py` unexpected-error sanitation and its exact queue-status no-reflection regression. These existing edits were preserved and selected for this safety batch, not recreated or swept in with other backend work.
+
+- Existing internal-error helper returns the fixed error contract. Existing 400/503 behavior is unchanged.
+- Error-detail/route-shape tests: 5 passed. The exact queue-status HTTP 500 regression: 1 passed; the injected error text is absent from the response. Scoped ruff passes.
+- Row 1 established that this fix is absent from the historical isolated Modal v53 snapshot. The row 2 delivery-selection manifest now pins it explicitly. Neither the source commit nor earlier v52 evidence establishes actual v53/current API/Modal delivery.
+- No push, Render/Vercel/Modal release or live production exposure check occurred. Preserve the full fenced Plan 055 overlay when preparing the row 3 successor. The entire older advisor plan is not marked merged.
+
+See [Plan 055 row 2](055-workspace-audit-remediation.md) and [delivery selection](/Users/thomashulihan/Documents/Codex/2026-10-04/trr-055-implementation/row2-safety-2026-10-16/row2-delivery-selection.json). The remaining original design/execution record is historical.
+
 > **Earlier owner status record (2026-09-25; retained as history):** The July advisor-branch sanitation record and the committed-main audit baseline remain historical. The audited main source still had one raw 500 path in `_to_social_read_http_exception()`. A subsequent uncommitted Backend working-tree correction now routes that unexpected error through the existing sanitized response. The source owner verified 12 targeted router tests and in-memory ASGI 500/400/503/200 probes, with one existing queue 500 test updated. That correction was delivered in Modal v52 (`3bcdc39*`) to `admin-56995 / main / trr-backend-jobs`; post-deploy readiness and health checks passed. Commit/merge and Render/public API delivery remain open. This record does not establish closure of the entire older advisor plan.
 
 > **Executor instructions**: Follow step by step. Run every verification command
