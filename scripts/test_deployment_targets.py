@@ -64,7 +64,7 @@ def test_deployment_target_projection_check_passes() -> None:
     assert "deployment-targets: OK" in completed.stdout
 
 
-def test_render_snapshot_checkpoint_is_metadata_only_and_open() -> None:
+def test_render_snapshot_checkpoint_is_metadata_only_and_closed() -> None:
     payload = json.loads(MANIFEST.read_text(encoding="utf-8"))
     checkpoint = payload["security_checkpoints"]["render_env_snapshot"]
 
@@ -73,10 +73,11 @@ def test_render_snapshot_checkpoint_is_metadata_only_and_open() -> None:
         == ".artifacts/env-inventory/20260330-173748/render/env-vars.json"
     )
     assert checkpoint["inspection_policy"] == "metadata_only_never_read_values"
-    assert checkpoint["status"] == "operator_review_required"
+    assert checkpoint["status"] == "closed"
     assert checkpoint["permissions_mode"] == "0600"
-    assert checkpoint["live_review_condition"] == "operator_action_required_missing_TRR_RENDER_API_KEY"
-    assert checkpoint["production_cutover"] == "blocked_until_closed"
+    assert checkpoint["live_review_condition"] == "verified_TRR_owner_service_and_live_deployment"
+    assert checkpoint["production_cutover"] == "closed"
+    assert (ROOT / checkpoint["closure_evidence"]).is_file()
 
 
 def test_render_snapshot_permissions_fail_closed_when_local_snapshot_exists(tmp_path: Path) -> None:

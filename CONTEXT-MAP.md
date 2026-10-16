@@ -53,6 +53,9 @@ Import-graph gates use `scripts/architecture/check-import-graph.py`:
 
 ## Domain and decision records
 
+- [Domain routing and product vocabulary](docs/workspace/domain-routing.md)
+- [Retained research and historical artifact disposition](docs/workspace/research-disposition.md)
+
 - Backend glossary and domain language: `TRR-Backend/CONTEXT.md`
 - Backend ADRs: `TRR-Backend/docs/adr/`
 - Adaptive Instagram scrape control plane:

@@ -108,16 +108,21 @@ def validate_manifest(payload: dict[str, Any]) -> None:
     ) or {}
     if checkpoint.get("inspection_policy") != "metadata_only_never_read_values":
         raise DeploymentTargetError("Render env snapshot must remain metadata-only")
-    if checkpoint.get("production_cutover") != "blocked_until_closed":
-        raise DeploymentTargetError(
-            "Render env snapshot checkpoint must block production cutover until closed"
-        )
     if checkpoint.get("permissions_mode") != "0600":
         raise DeploymentTargetError("Render env snapshot checkpoint must declare mode 0600")
-    if checkpoint.get("live_review_condition") != "operator_action_required_missing_TRR_RENDER_API_KEY":
-        raise DeploymentTargetError(
-            "Render env snapshot checkpoint must record the current operator action"
-        )
+    if checkpoint.get("status") == "closed":
+        if (
+            checkpoint.get("production_cutover") != "closed"
+            or checkpoint.get("live_review_condition") != "verified_TRR_owner_service_and_live_deployment"
+            or checkpoint.get("closure_evidence") != "docs/workspace/plan-055-production-release.md"
+        ):
+            raise DeploymentTargetError("Closed Render checkpoint requires its verified release receipt")
+    elif (
+        checkpoint.get("status") != "operator_review_required"
+        or checkpoint.get("production_cutover") != "blocked_until_closed"
+        or checkpoint.get("live_review_condition") != "operator_action_required_missing_TRR_RENDER_API_KEY"
+    ):
+        raise DeploymentTargetError("Unreviewed Render checkpoint must block production cutover")
 
     expected_evidence_policy = {
         "environment_values": "prohibited",

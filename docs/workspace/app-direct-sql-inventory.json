@@ -2,8 +2,8 @@
   "schema_version": 1,
   "generated_by": "scripts/app-direct-sql-inventory.py",
   "counts": {
-    "total": 133,
-    "app-local": 133,
+    "total": 135,
+    "app-local": 135,
     "admin-read-model": 0,
     "backend-shared-schema": 0
   },
@@ -1496,7 +1496,7 @@
       "id": "app-sql-01780879daf04532",
       "source": {
         "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-run-repository.ts",
-        "line": 29,
+        "line": 177,
         "symbol": "query",
         "ordinal": 1,
         "context": "getActiveRunForSurvey"
@@ -1510,7 +1510,7 @@
       "id": "app-sql-6f487127a878a986",
       "source": {
         "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-run-repository.ts",
-        "line": 51,
+        "line": 199,
         "symbol": "query",
         "ordinal": 2,
         "context": "getSurveyWithQuestions"
@@ -1524,7 +1524,7 @@
       "id": "app-sql-6042ba2612767186",
       "source": {
         "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-run-repository.ts",
-        "line": 59,
+        "line": 207,
         "symbol": "query",
         "ordinal": 3,
         "context": "getSurveyWithQuestions"
@@ -1538,7 +1538,7 @@
       "id": "app-sql-c19b5e9cab124a73",
       "source": {
         "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-run-repository.ts",
-        "line": 72,
+        "line": 220,
         "symbol": "query",
         "ordinal": 4,
         "context": "getSurveyWithQuestions"
@@ -1552,7 +1552,7 @@
       "id": "app-sql-8335b4e937eadf99",
       "source": {
         "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-run-repository.ts",
-        "line": 115,
+        "line": 263,
         "symbol": "withAuthTransaction",
         "ordinal": 1,
         "context": "getUserSubmissionCount"
@@ -1566,7 +1566,7 @@
       "id": "app-sql-34b5d9573b95e8ce",
       "source": {
         "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-run-repository.ts",
-        "line": 116,
+        "line": 264,
         "symbol": "query",
         "ordinal": 5,
         "context": "getUserSubmissionCount"
@@ -1580,7 +1580,7 @@
       "id": "app-sql-8048976fe8effd0f",
       "source": {
         "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-run-repository.ts",
-        "line": 136,
+        "line": 284,
         "symbol": "withAuthTransaction",
         "ordinal": 2,
         "context": "submitSurveyResponse"
@@ -1594,7 +1594,7 @@
       "id": "app-sql-50acce811b01752c",
       "source": {
         "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-run-repository.ts",
-        "line": 139,
+        "line": 287,
         "symbol": "query",
         "ordinal": 6,
         "context": "submitSurveyResponse"
@@ -1608,7 +1608,7 @@
       "id": "app-sql-99dde73c0ad7237c",
       "source": {
         "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-run-repository.ts",
-        "line": 145,
+        "line": 293,
         "symbol": "query",
         "ordinal": 7,
         "context": "submitSurveyResponse"
@@ -1622,7 +1622,7 @@
       "id": "app-sql-14e34b1979e8480d",
       "source": {
         "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-run-repository.ts",
-        "line": 170,
+        "line": 318,
         "symbol": "query",
         "ordinal": 8,
         "context": "submitSurveyResponse"
@@ -1636,9 +1636,37 @@
       "id": "app-sql-bd692c4828f95851",
       "source": {
         "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-run-repository.ts",
-        "line": 183,
+        "line": 332,
         "symbol": "query",
         "ordinal": 9,
+        "context": "submitSurveyResponse"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const questionsResult = await client.query<SurveyQuestion>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-5bf937da9a2d84a2",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-run-repository.ts",
+        "line": 336,
+        "symbol": "query",
+        "ordinal": 10,
+        "context": "submitSurveyResponse"
+      },
+      "classification": "app-local",
+      "risk": "medium",
+      "excerpt": "const optionsResult = await client.query<QuestionOption>(",
+      "exception": null
+    },
+    {
+      "id": "app-sql-a71b25cec3ed5850",
+      "source": {
+        "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-run-repository.ts",
+        "line": 343,
+        "symbol": "query",
+        "ordinal": 11,
         "context": "submitSurveyResponse"
       },
       "classification": "app-local",
@@ -1647,12 +1675,12 @@
       "exception": null
     },
     {
-      "id": "app-sql-5bf937da9a2d84a2",
+      "id": "app-sql-b8e2aa24154c6d03",
       "source": {
         "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-run-repository.ts",
-        "line": 193,
+        "line": 353,
         "symbol": "query",
-        "ordinal": 10,
+        "ordinal": 12,
         "context": "submitSurveyResponse"
       },
       "classification": "app-local",
@@ -1661,12 +1689,12 @@
       "exception": null
     },
     {
-      "id": "app-sql-a71b25cec3ed5850",
+      "id": "app-sql-2ed956f7d6b2b42f",
       "source": {
         "path": "TRR-APP/apps/web/src/lib/server/surveys/survey-run-repository.ts",
-        "line": 219,
+        "line": 379,
         "symbol": "query",
-        "ordinal": 11,
+        "ordinal": 13,
         "context": "getSurveyRunById"
       },
       "classification": "app-local",
