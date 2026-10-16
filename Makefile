@@ -65,7 +65,7 @@ dev-hybrid:
 	@if [ "$${PROFILE:-}" = "architecture-refactor" ]; then \
 		$(MAKE) --no-print-directory dev-architecture-refactor; \
 	else \
-		$(MAKE) --no-print-directory preflight-hybrid; \
+		$(MAKE) --no-print-directory preflight-hybrid && \
 		WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS=1 \
 		WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT=8 \
 		WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT=8 \

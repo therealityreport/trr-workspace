@@ -104,7 +104,6 @@ doctor_plugin_live_mcp_expected_name() {
     context7) echo "context7" ;;
     browser) echo "chrome-devtools" ;;
     supabase) echo "supabase" ;;
-    modal) echo "modal-ops" ;;
     scrapling) echo "ScraplingServer" ;;
     decodo) echo "decodo" ;;
     *) echo "" ;;
@@ -467,18 +466,23 @@ doctor_plugin_supabase_repair() {
 
 doctor_plugin_modal_check() {
   local label
+  local backend_python="$ROOT/TRR-Backend/.venv/bin/python"
   DOCTOR_PLUGIN_REQUIRED=1
-  if label="$(doctor_plugin_project_mcp_status modal-ops)"; then
-    DOCTOR_PLUGIN_LABEL="$label"
-  else
-    DOCTOR_PLUGIN_LABEL="$label"
+  # Modal operations use the pinned project CLI/SDK workflow. The former MCP
+  # plugin is disabled; doctor must not require or reinstall that transport.
+  if [[ ! -x "$backend_python" || ! -x "$ROOT/scripts/modal-trr.sh" ]]; then
+    DOCTOR_PLUGIN_LABEL="project Modal CLI/SDK prerequisites missing"
     DOCTOR_PLUGIN_NEEDS_REPAIR=1
-    DOCTOR_PLUGIN_REPAIR_HINT="WORKSPACE_DOCTOR_PLUGIN_REPAIR=1 bash scripts/doctor.sh"
+    DOCTOR_PLUGIN_REPAIR_HINT="restore TRR-Backend/.venv and scripts/modal-trr.sh"
+    return 0
   fi
-}
-
-doctor_plugin_modal_repair() {
-  doctor_plugin_repair_project_mcp_config modal-ops
+  if label="$(doctor_plugin_timed_command_output "$DOCTOR_PLUGIN_COMMAND_TIMEOUT_SECONDS" "$backend_python" -c 'import modal; from importlib.metadata import version; print(version("modal"))')"; then
+    DOCTOR_PLUGIN_LABEL="project CLI/SDK ready; modal=${label}; live target checked by runtime reconciliation"
+  else
+    DOCTOR_PLUGIN_LABEL="project Modal SDK unavailable"
+    DOCTOR_PLUGIN_NEEDS_REPAIR=1
+    DOCTOR_PLUGIN_REPAIR_HINT="restore Modal SDK in TRR-Backend/.venv"
+  fi
 }
 
 doctor_plugin_scrapling_check() {

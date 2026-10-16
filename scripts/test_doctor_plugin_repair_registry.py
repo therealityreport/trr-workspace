@@ -36,7 +36,7 @@ def test_doctor_plugin_repair_entries_have_check_and_repair_functions() -> None:
 def test_repairable_doctor_plugin_entries_have_repair_functions() -> None:
     text = REGISTRY.read_text(encoding="utf-8")
 
-    for plugin in ("context7", "browser", "supabase", "modal"):
+    for plugin in ("context7", "browser", "supabase"):
         assert f"doctor_plugin_{plugin}_repair()" in text
 
 
@@ -47,12 +47,43 @@ def test_doctor_plugin_registry_declares_live_mcp_mapping() -> None:
         "context7": "context7",
         "browser": "chrome-devtools",
         "supabase": "supabase",
-        "modal": "modal-ops",
         "scrapling": "ScraplingServer",
         "decodo": "decodo",
     }
     for plugin, mcp_name in expected.items():
         assert f"{plugin}) echo \"{mcp_name}\"" in text
+
+
+def test_modal_doctor_uses_project_sdk_without_mcp_or_repair(tmp_path: Path) -> None:
+    backend_python = tmp_path / "TRR-Backend/.venv/bin/python"
+    backend_python.parent.mkdir(parents=True)
+    wrapper = tmp_path / "scripts/modal-trr.sh"
+    wrapper.parent.mkdir()
+    wrapper.write_text("#!/bin/sh\nexit 99\n", encoding="utf-8")
+    wrapper.chmod(0o755)
+    backend_python.write_text("#!/bin/sh\nprintf '1.0.fixture\\n'\n", encoding="utf-8")
+    backend_python.chmod(0o755)
+
+    def check() -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            ["bash", "-c", f'''ROOT="$1"; MCP_RUNTIME_PYTHON_BIN="$2"; source "$3";
+doctor_plugin_load_live_mcp_rows() {{ echo unexpected-live-mcp >&2; exit 98; }}
+doctor_plugin_evaluate_entry modal 1
+printf '%s|%s|%s|%s|%s\\n' "$DOCTOR_PLUGIN_NEEDS_REPAIR" "$DOCTOR_PLUGIN_REPAIRABLE" "$DOCTOR_PLUGIN_REPAIR_ATTEMPTED" "$DOCTOR_PLUGIN_LIVE_MCP_STATUS" "$DOCTOR_PLUGIN_LABEL"
+''', "fixture", str(tmp_path), sys.executable, str(REGISTRY)],
+            capture_output=True, text=True, check=False,
+        )
+
+    ready = check()
+    assert ready.returncode == 0, ready.stderr
+    assert "0|0|0|not_applicable|project CLI/SDK ready; modal=1.0.fixture" in ready.stdout
+    backend_python.write_text("#!/bin/sh\nexit 1\n", encoding="utf-8")
+    missing_sdk = check()
+    assert missing_sdk.returncode == 0, missing_sdk.stderr
+    assert "1|0|0|not_applicable|project Modal SDK unavailable" in missing_sdk.stdout
+    wrapper.unlink()
+    missing_wrapper = check()
+    assert "1|0|0|not_applicable|project Modal CLI/SDK prerequisites missing" in missing_wrapper.stdout
 
 
 def test_doctor_plugin_registry_selects_cache_build_semantically(tmp_path: Path) -> None:
