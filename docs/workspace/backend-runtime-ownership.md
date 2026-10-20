@@ -60,6 +60,27 @@ the three-attempt cap. Active work retains ownership and cannot be resumed a
 second time. A subsequent new run receives a new manifest. See the
 [operator procedure](dev-commands.md#instagram-post-details-recovery).
 
+## Anonymous Instagram comment transport
+
+The backend owns anonymous HTTPX comment retrieval and native cursor evidence.
+Fresh public parent pagination uses the verified parent query sequence; resumed
+pages retain their recorded query ID and cursor. Parent continuation precedes
+pending child hydration. A natively exhausted parent lane can resume pending
+children without replaying a parent root.
+
+Native reply counts are nullable. Missing or null is unknown; an explicit zero
+is known zero. Unknown counts remain unknown in the scraper DTO and retained
+source/checkpoint reconstruction and do not suppress a child probe. Observed
+reply rows are a separate lower bound, not a fabricated reported total. Numeric
+legacy persistence/topology fields remain compatible; their zero fallback is
+not native exhaustion evidence. The app's existing nullable Instagram comment
+types remain compatible; this internal repair does not change its saved-row API.
+
+Parent success does not establish child availability. A native child rejection
+remains unresolved even if the parent operation succeeds in the same guest
+session. Full-history acceptance still requires native parent and child
+exhaustion. Deploy/runtime health does not establish source retrieval success.
+
 ## Redis Runtime Contract
 
 Local single-process FastAPI may run without Redis by using the in-memory
