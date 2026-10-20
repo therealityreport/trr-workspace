@@ -202,7 +202,7 @@ fi
 if [[ -z "$NODE_MAJOR" ]] || ! [[ "$NODE_MAJOR" =~ ^[0-9]+$ ]] || (( NODE_MAJOR < REQUIRED_NODE_MAJOR )); then
   echo "[doctor] Node version check failed: $(trr_node_version_string)" >&2
   echo "[doctor] Node ${REQUIRED_NODE_MAJOR}.x+ is required for workspace JS tooling." >&2
-  echo "[doctor] TRR-APP CI still runs a Node 22 compatibility lane, but local baseline is Node ${REQUIRED_NODE_MAJOR}.x." >&2
+  echo "[doctor] TRR-APP requires Node ${REQUIRED_NODE_MAJOR}.x; Node 26 is a non-blocking CI preview." >&2
   echo "[doctor] Tried nvm auto-switch but baseline is still unmet." >&2
   echo "[doctor] Remediation:" >&2
   echo "[doctor]   source ~/.nvm/nvm.sh && nvm use ${REQUIRED_NODE_DEFAULT_ALIAS}" >&2
