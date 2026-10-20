@@ -339,7 +339,7 @@
       "classification": "existing_hotspot",
       "line_ceiling": 2358,
       "target_lines": 1000,
-      "reason": "Modal images/functions, schedules, executor heartbeats and social/media dispatch entry points. P8 now explicitly registers the social provider before heartbeat/auth entry points; retain decorated function names, image bindings and bootstrap order while maintenance orchestration moves. Reviewed 2389 lines against unchanged ceiling 2358; source sha256 293225ca41803571. Authority: authored. Row 3 review 2026-10-16: retained exact source and measured size independently checked by architecture_gate; existing ownership/extraction seam retained for this bounded delivery, next review 2026-10-23 or first source edit.",
+      "reason": "Reviewed October 20, 2026: retain the exact 2461-line modal_jobs.py snapshot for bounded vision delivery and current-source governance. Bound: sha256 04b6b8f0fb469ad60eb37d043d285e1d2bc29c786a72c08c45fe1de173f91f19, maximum 2461 lines (unchanged ceiling 2358, overage 103). The previous 2389-line binding was stale: 66 lines preceded this vision repair, and this repair adds six image-provisioning lines. Preserve the Operations / backend Modal placement maintainer owner, 1000-line target and runtime-maintenance extraction seam. No further growth or unrelated runtime publication is approved. Authorization ends October 23, 2026 or at first source edit.",
       "review_by": "2026-10-23",
       "removal_plan": "Move heartbeat_remote_executors and purge_stale_social_worker_heartbeats orchestration into a runtime-maintenance service; retain decorated Modal functions and explicit provider bootstrap at their composition entry. Revisit on first edit to this seam or 2026-10-23; preserve public/compatibility contracts and historical inputs, then remeasure before retiring any wrapper."
     },
@@ -1542,10 +1542,10 @@
     {
       "name": "plan055-modal-jobs-30-2026-10-23",
       "path": "TRR-Backend/trr_backend/modal_jobs.py",
-      "approver": "Plan 055 row 3 lead, 2026-10-16",
-      "independent_reviewer": "architecture_gate / 01a1435c-8131-72d1-aad7-152b698d367d, 2026-10-16",
+      "approver": "InsightFace repair lead, 2026-10-20",
+      "independent_reviewer": "architecture_gate / 01a1435c-8131-72d1-aad7-152b698d367d, 2026-10-20",
       "expires_on": "2026-10-23",
-      "reason": "Snapshot-only retention for Operations / backend Modal placement maintainer: Modal images/functions, schedules, executor heartbeats and social/media dispatch entry points. P8 now explicitly registers the social provider before heartbeat/auth entry points; retain decorated function names, image bindings and bootstrap order while maintenance orchestration moves. Bound: sha256 293225ca41803571fd5851fc3b4b799431ae15608510ac6ab7ccd354ddfd8e92, maximum 2389 lines (ceiling 2358, overage 31). No further growth is approved; any hash change requires renewed owner/independent review. Close by: Move heartbeat_remote_executors and purge_stale_social_worker_heartbeats orchestration into a runtime-maintenance service; retain decorated Modal functions and explicit provider bootstrap at their composition entry. Revisit at first seam edit or 2026-10-23; preserve source/API/compatibility identity. Fresh row 3 decision: retain this exact verified implementation for delivery instead of coupling the listed extraction to safety publication. Independent current hash/maximum check and path-specific seam assessment retained in row3 architecture review; authorization ends at first source edit or expiry."
+      "reason": "Reviewed October 20, 2026: retain the exact 2461-line modal_jobs.py snapshot for bounded vision delivery and current-source governance. Bound: sha256 04b6b8f0fb469ad60eb37d043d285e1d2bc29c786a72c08c45fe1de173f91f19, maximum 2461 lines (unchanged ceiling 2358, overage 103). The previous 2389-line binding was stale: 66 lines preceded this vision repair, and this repair adds six image-provisioning lines. Preserve the Operations / backend Modal placement maintainer owner, 1000-line target and runtime-maintenance extraction seam. No further growth or unrelated runtime publication is approved. Authorization ends October 23, 2026 or at first source edit."
     },
     {
       "name": "plan055-reddit-refresh-38-2026-10-23",
