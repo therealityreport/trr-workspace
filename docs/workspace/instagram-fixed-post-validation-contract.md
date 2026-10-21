@@ -41,3 +41,35 @@ backend/operator change.
 
 See the dated backend record:
 `TRR-Backend/docs/deploy/2026-10-20-instagram-fixed-post-validation.md`.
+
+
+## Public exhaustion settlement candidate (2026-10-21)
+
+Backend candidate `71841b4e` adds durable comment settlement with `basis`,
+`expected_total`, `observed_total` and `count_gap`. The gap is
+`max(expected_total - observed_total, 0)`. Existing count parity includes counts
+above the reported total. Public-native exhaustion may settle a positive gap
+only for version-1 public Relay with durable root-start proof, native exhaustion,
+complete child lanes, valid reply counts and topology, and the existing source,
+retained-evidence, cutoff and ownership guards. Root-proven resume remains
+eligible; missing root proof and authenticated REST gaps remain unresolved.
+Settlement is saved atomically in the checkpoint and commit receipt. Inspection
+reads it from the same fresh receipt used by existing validation checks; legacy
+receipts may report null. New committed comment targets include settlement.
+
+`retrieval_passed` means the frozen targets met this retrieval policy with fresh
+matching evidence. It does not establish universal comment coverage.
+`is_missing` means absent from the qualifying scan's visibility, not proven
+deleted from Instagram. Residual gaps may reflect visibility differences or
+unresolved count semantics; neither explanation is established for every gap.
+The live multi-page child criterion remains unverified.
+
+This candidate is **not deployed or locally installed**. Diagnostic-only Modal
+v90 (`ig-auth-proof-0b6cceeb`) is deployed to
+`admin-56995/trr-backend-jobs/main` and passed strict worker readiness. Its one-shot
+probe returned `credential_snapshot_unavailable`, with zero Instagram requests.
+All six required IDs remain unproved under the pinned `livestnation` identity.
+The settlement rollout and fresh fixed-post run remain held until that proof
+passes or the user explicitly revises the prerequisite. The local worker remains
+on `c38d0717` with its LaunchAgent unloaded. Production stays anonymous and the
+full-history gate stays closed. No schema or public app API change is required.
