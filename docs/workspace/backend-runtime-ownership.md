@@ -81,6 +81,30 @@ remains unresolved even if the parent operation succeeds in the same guest
 session. Full-history acceptance still requires native parent and child
 exhaustion. Deploy/runtime health does not establish source retrieval success.
 
+The alternate child query `36239935742272683` remains first for fresh lanes:
+the October 20 exact-thread control returned a real anonymous reply. Saved
+query/cursor identities remain pinned; a rejected saved primary query can try
+the alternate from its root. `SOCIAL_INSTAGRAM_PUBLIC_CHILD_ALT_DOC_TRUSTED=false`
+revokes trust in empty alternate results on parents whose reply counts are unknown.
+
+Native child-only access rejection does not fail parent collection or open the
+shared identity cooldown. The attempt stops further child probes after repeated
+rejections, retains failure evidence, and records pending reply lanes separately.
+After parent exhaustion, those replies stay unresolved and retry on a target-only
+5, 10, 20, 40, then 60 minute backoff. HTTP rate limits, authentication failures
+and server retry instructions retain their safeguards. Generic public rate
+rejections without a server delay use a short increasing pause rather than the
+former two-hour default.
+
+Fixed-post validation retains one exclusive request ledger, with no local daily
+or per-tranche request-count cap (explicit user decision, October 20). Request
+timeouts and the existing 15-minute tranche deadline remain execution safeguards.
+The reply-access diagnostic is one-shot, preserves the frozen original run,
+and enables its pinned-login arm only after every anonymous comparison arm has
+conclusive child-access failure evidence without returning replies. Network or
+bootstrap failures remain indeterminate and do not enable login. It is not scheduled and is not an ingestion
+completion receipt.
+
 ## Redis Runtime Contract
 
 Local single-process FastAPI may run without Redis by using the in-memory
