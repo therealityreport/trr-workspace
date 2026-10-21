@@ -100,3 +100,56 @@ remain visibly unresolved until cross-platform reference safety is established.
 - Task-created production source snapshot and failed empty snapshot moved to actual
   Trash after deployment and browser verification; committed source and Vercel
   rollback deployment retain recovery. No temporary branches/worktrees remain.
+
+
+## RHOSLC Season 7 bounded production capture — 2026-10-21
+
+- Requested scope: a small production sample for Season 7 so far; schedules and AI remain disabled.
+- Verified target: Supabase `vwxfvzutyufrkhfgoeaa`; Modal `admin-56995/main/trr-backend-jobs`.
+- Community: `r/rhoslc` (`a9bb355f-4cdd-4d8d-94dd-06a55ae303f2`);
+  Season 7: `20c4cc05-0ab1-433f-b2fd-848f0d46a250`.
+- Discovery run `86422c24-8fe8-419f-a4ab-9f216cb1896a`: partial, 100 posts,
+  one chronological listing page, two committed discovery targets. Requested window
+  2026-09-16T04:00:00Z through 2026-10-21T22:48:15.140961Z; observed timestamps
+  2026-10-15T11:48:37Z through 2026-10-21T21:56:30Z. Evidence correctly reports
+  `page_budget_exhausted` and `chronological_boundary_proven=false`. This is a
+  temporal community sample, not a complete season archive or a semantic S7-only set.
+- Detail run `65ae388d-50c5-46dc-bf3c-f697d66ece13`: completed for selected posts
+  `1xc0q1q` and `1x9csx1`. Saved 8 + 11 comments with no unresolved child IDs;
+  six detected media assets committed. All ten detail targets committed (two comment,
+  two parent media and six asset targets). Discovery coverage is correctly
+  `not_requested` for this detail-only run.
+- Repository settings readback after completion: schedule_enabled=false,
+  ai_enabled=false, scheduled_analysis_enabled=false. No settings row was created,
+  and no schedule or AI activation was performed.
+- Browser verification found missing explicit undated-season selection and broken
+  season/community aliases. App commit `277e87c969581eb98718b02b9663e677fd9e94b1`
+  preserves explicit season selection, supports both admin community URL forms,
+  and routes bare season aliases into the admin workspace on single-host production.
+- Focused validation: 19 proxy tests, 13 community-view tests, 3 actual manager
+  tests, targeted ESLint, typecheck and generated API inventory check passed.
+- Local browser on the existing `make dev-hybrid` workspace confirmed the requested
+  `/rhoslc/season-7` opens Season 7 and the community page retains both UUIDs,
+  shows the new runs, and leaves settings disabled. Season metadata remains a
+  placeholder with no episode air dates; capture did not modify show metadata.
+- Production app deployment `dpl_7AiLPurG2DkH6pXAoCCxg5CdPbnc` is READY from
+  the committed source snapshot. Compilation, TypeScript and 104 static pages passed.
+  Reassigned `trr-app.vercel.app` and confirmed provider readback points to this release.
+  Rollback remains available as `dpl_3aWe6NR7KqBwoWt6HFmuZNtv7fAu` (including
+  restoration of the short alias).
+- Production browser acceptance on the TRR Chrome profile: `/social/reddit` loads
+  and selects rhoslc; `/rhoslc/season-7` resolves to the Season 7 workspace; the
+  Reddit season selector retains S7; the community link opens
+  `/social/reddit/rhoslc/rhoslc/s7` with the correct season and community.
+- Both coverage disclosures match stored boundaries/reasons. All ten detail target
+  disclosures opened; comment saved counts are 11 and 8, unresolved IDs None,
+  no pending continuations/errors, and parent media targets each report 3 assets.
+  The UI shows zero unresolved targets and all three schedule/AI switches off.
+- Backend/API: existing deployed capture worker completed both requested phases;
+  all four post/phase state rows committed with successful timestamps. No backend
+  source, schema or direct-SQL ownership changes, so no new Modal deploy was needed.
+- Both discovery target disclosures also passed: listing and page targets committed;
+  listing stopping reason `page_budget_exhausted` and no scheduled retry.
+- Production browser left open on expanded coverage. Screenshots saved for season,
+  coverage and target evidence. Task-created deployment snapshot moved to actual
+  Trash after its eight task files matched committed source; rollback release retained.
