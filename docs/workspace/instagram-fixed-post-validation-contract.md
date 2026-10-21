@@ -82,3 +82,21 @@ settlement metadata. Actual counts and final audit results are in the dated
 backend record.
 Production stays anonymous and the full-history gate stays closed. No schema or
 public app API change is required.
+
+## Bounded capability acceptance follow-up (2026-10-21)
+
+The subsequent anonymous pass remains incomplete. Older account listing returned
+HTTP 401 before any accepted native page; `public:local` entered backoff until
+2026-10-21 22:26:25 UTC. A native 169-reply parent was identified for the normal
+12-item child page size, but live multi-page proof is held by that cooldown.
+The two known GIF comments remain saved with media URLs and no text, with fresh
+accepted-run provenance; both still have zero hosted URLs.
+
+The exact-photo media-only guard returned `held/local_public_lane_cooldown`
+before creating a run. Review also identified generic-public media fallback
+gates that do not share the local public lane; that source finding is not yet
+fixed in the deployed runtime. Admin display was unverified after a filtered
+post query timed out and the shared dev stack restarted. Passing recovery
+and fresh fixed-post evidence is reused. Full-history stays closed pending
+review and completion of the missing live evidence. Details are recorded in
+backend commit `3f6d13ed` and the dated backend validation record.
