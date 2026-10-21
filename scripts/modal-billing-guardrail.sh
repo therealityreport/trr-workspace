@@ -43,8 +43,7 @@ env_file_value() {
   if [[ ! -f "$SOURCE_ENV" ]]; then
     return 0
   fi
-  python3 - "$SOURCE_ENV" "$key" <<'PY'
-from __future__ import annotations
+  python3 -c 'from __future__ import annotations
 
 import shlex
 import sys
@@ -66,9 +65,8 @@ for raw_line in path.read_text(encoding="utf-8").splitlines():
     try:
         print(shlex.split(value, comments=True, posix=True)[0] if value.strip() else "")
     except Exception:
-        print(value.strip().strip("'\""))
-    break
-PY
+        print(value.strip().strip("'"'"'\""))
+    break' "$SOURCE_ENV" "$key"
 }
 
 check_always_on_value() {
