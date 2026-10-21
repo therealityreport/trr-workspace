@@ -1,0 +1,80 @@
+# Reddit capture contract v2
+
+Implementation authority: the approved six-release plan in the current chat.
+Scope: future runs only; legacy repair/cleanup require an explicit operator action.
+Schedules and AI analysis ship disabled. Existing routes and manual assignments remain.
+
+## Ownership and interfaces
+
+Postgres owns manifests, targets, claims, retry schedules, dispatch and analysis.
+FastAPI owns admin contracts; Modal executes; Next.js only proxies and renders.
+
+`reddit_capture.py` owns the core persistence boundary. `reddit_transport.py` owns
+HTTP and comments; `reddit_workflows.py` owns schedules, lifecycle, reclassification
+and analysis. Existing `reddit_refresh.py` remains the compatibility facade.
+
+Core tables: `social.reddit_run_manifests`, `reddit_work_targets`,
+`reddit_capture_state`, `reddit_assets`, `reddit_asset_links`,
+`reddit_dispatch_outbox`, `reddit_request_budgets`, `reddit_request_leases`.
+Run columns: `contract_version` (legacy 1, new 2), `config_hash`,
+`control_state` (active/paused/cancel_requested/cancelled), `parent_run_id`, `priority`.
+
+Target states: pending/running/retry_wait/committed/source_unavailable/failed/cancelled.
+Satisfied = committed + source_unavailable. Unresolved = every other state.
+Run completion requires zero unresolved required targets and no known coverage gap.
+Legacy capture evidence is unknown, never inferred from old completed flags.
+
+Core public functions (keyword arguments unless shown):
+- `enabled() -> bool`: REDDIT_PIPELINE_V2_ENABLED; off by default; enabled in the verified 2026-10-21 rollout.
+- `manifest_for_run(run_id) -> dict | None`.
+- `assert_owner(run_id, claim_token, conn=None)`: row-lock and verify current
+  running, active owner and lease; raises LostClaim or RunPaused/RunCancelled.
+- `ensure_target(run_id, kind, target_key, post_id=None, checkpoint=None, conn=None) -> dict`.
+- `start_target(run_id, kind, target_key, claim_token) -> dict | None`: None for
+  satisfied/not-due/exhausted targets; increments attempts only for due work.
+- `finish_target(run_id, kind, target_key, claim_token, state, result=None,
+  checkpoint=None, error=None, retry_after=None, conn=None)`; owner checked.
+- `capture_due(post_ids, phase, policy='missing', stale_after_seconds=86400) -> set[str]`.
+- `record_capture(post_id, phase, state, run_id, source_revision=None,
+  evidence=None, conn=None)`; successful timestamps advance only on commit.
+- `run_contract(run_id) -> dict`: contract_version, control_state, outcomes,
+  requested/satisfied/unresolved, coverage, retry_at; legacy returns unknown.
+- `control_run(run_id, action) -> dict`: pause/resume/cancel; retry uses a linked new run.
+- `list_targets(run_id, limit=100, offset=0) -> list[dict]`.
+- `request_guard(identity, lane='default')` context manager; distributed limiter.
+- `observe_response(identity, status, headers)` records provider cooldown/limits.
+
+App API base is `/api/admin/reddit`, backend `/api/v1/admin/socials/reddit`.
+Existing run creation gains refresh_policy missing/stale/force, selected_post_ids,
+requested_phases (discovery/comments/media), force_rescrape alias. Server hashes all
+normalized inputs. Unknown legacy state remains readable.
+
+New operator endpoints under backend base:
+- GET runs/{id}/targets; POST runs/{id}/control {action:pause|resume|cancel|retry}.
+- GET communities/{id}/coverage?season_id=; GET runs/{id}/compare?baseline_id=.
+- POST communities/{id}/reclassify {season_id, apply:false|true, preview_id?}.
+- GET/PATCH communities/{id}/settings?season_id= (schedule and analysis settings).
+- GET communities/{id}/legacy-inventory?season_id=.
+- POST communities/{id}/lifecycle {season_id, legacy:false|true, post_ids?}.
+- POST communities/{id}/analysis {season_id, kind:deterministic|ai, post_ids?}.
+- GET jobs/{id} for workflow/analysis results.
+
+Settings require exact airtime/timezone for scheduling. AI requires explicit model,
+per_run_token_cap, daily_token_budget and enabled=true. Defaults are disabled.
+Neither settings reads nor inventory reads enqueue any work.
+
+## Validation and rollout
+
+Each owner runs focused tests. Lead owns integration, source checks, review,
+target-specific live verification and final acceptance. No live requests in unit tests.
+Do not apply migrations, activate flags, run paid analysis or deploy from a helper.
+Default target is Supabase vwxfvzutyufrkhfgoeaa; Modal admin-56995/main/trr-backend-jobs;
+verify live identity before mutation. Full app production build requires approval.
+
+Canonical response models: `TRR-Backend/trr_backend/repositories/reddit_contract.py`.
+The app consumes generated OpenAPI types from `reddit-capture.openapi.json` and
+`reddit-capture.d.ts`; use `generate:reddit-capture-contract` to refresh them.
+
+Deployment evidence and operator procedures:
+- [Rollout record](../../TRR-Backend/docs/deploy/2026-10-21-reddit-capture-v2.md)
+- [Operator guide](../../TRR-Backend/docs/reddit-capture-v2-operations.md)
