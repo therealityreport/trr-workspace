@@ -99,6 +99,9 @@ former two-hour default.
 Fixed-post validation retains one exclusive request ledger, with no local daily
 or per-tranche request-count cap (explicit user decision, October 20). Request
 timeouts and the existing 15-minute tranche deadline remain execution safeguards.
+Explicit public source lanes also retain request timestamps without enforcing
+the former 180-request/660-second identity quota. Server-directed waits, failure
+backoff, cancellation, and exclusive recovery probes still apply.
 The reply-access diagnostic is one-shot, preserves the frozen original run,
 and enables its pinned-login arm only after every anonymous comparison arm has
 conclusive child-access failure evidence without returning replies. Network or
