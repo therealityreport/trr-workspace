@@ -42,9 +42,12 @@ Source checks: focused backend unit and isolated PostgreSQL regression batches,
 app route/component tests, quick validation, typecheck, generated contract checks,
 and the explicitly approved production build passed. Independent review fixes
 were checked in focused follow-up tests. Browser verified capture status, run selection, targets and disabled settings with
-`make dev-hybrid` and the TRR profile. Later expandable evidence UI passed eight
-focused component tests, ESLint and final typecheck. The browser connection dropped
-during a subsequent network change.
+`make dev-hybrid` and the TRR profile. Follow-up browser verification on 2026-10-21 confirmed expanded requested/observed
+boundaries, completion reasons, and all four detail-target disclosures. Empty lists
+now show “None”; unavailable fields show “Not recorded”; absent retry times show
+“Not scheduled”. The eight focused component tests and scoped ESLint passed after
+this display fix. Live canaries had no unresolved children; that branch remains
+covered by the component regression fixture.
 
 Operator runbook: `TRR-Backend/docs/reddit-capture-v2-operations.md`.
 AI quality: four synthetic fixture checks and four injected regressions; live model
