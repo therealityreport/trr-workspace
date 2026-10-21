@@ -43,9 +43,9 @@ See the dated backend record:
 `TRR-Backend/docs/deploy/2026-10-20-instagram-fixed-post-validation.md`.
 
 
-## Public exhaustion settlement candidate (2026-10-21)
+## Public exhaustion settlement (2026-10-21)
 
-Backend candidate `71841b4e` adds durable comment settlement with `basis`,
+Backend implementation `71841b4e` adds durable comment settlement with `basis`,
 `expected_total`, `observed_total` and `count_gap`. The gap is
 `max(expected_total - observed_total, 0)`. Existing count parity includes counts
 above the reported total. Public-native exhaustion may settle a positive gap
@@ -64,12 +64,21 @@ deleted from Instagram. Residual gaps may reflect visibility differences or
 unresolved count semantics; neither explanation is established for every gap.
 The live multi-page child criterion remains unverified.
 
-This candidate is **not deployed or locally installed**. Diagnostic-only Modal
-v90 (`ig-auth-proof-0b6cceeb`) is deployed to
-`admin-56995/trr-backend-jobs/main` and passed strict worker readiness. Its one-shot
-probe returned `credential_snapshot_unavailable`, with zero Instagram requests.
-All six required IDs remain unproved under the pinned `livestnation` identity.
-The settlement rollout and fresh fixed-post run remain held until that proof
-passes or the user explicitly revises the prerequisite. The local worker remains
-on `c38d0717` with its LaunchAgent unloaded. Production stays anonymous and the
-full-history gate stays closed. No schema or public app API change is required.
+The user explicitly removed the authenticated six-ID prerequisite on 2026-10-21.
+Acceptance now uses the anonymous public retrieval policy above. Authenticated
+retrieval is not required for this rollout; the earlier unavailable-credential
+diagnostic supplies no comment-coverage evidence.
+
+Settlement source is deployed as Modal v91 (`ig-public-settle-c1c15970`) on
+`admin-56995/trr-backend-jobs/main`, from byte-verified source
+`c1c159705b36860914817daedc647ef274fa15fd`. Strict worker readiness and a
+state-free settlement smoke passed; all five schedules are unchanged. The
+matching local release is installed with its LaunchAgent unloaded and `c38d0717`
+retained for rollback. Fresh fixed-post run
+`9ab92d4f-578d-4a42-b2d4-153d1ca6a478` uses a new manifest/state and the existing
+shared request ledger. It completed with `retrieval_passed`: all six targets have
+fresh matching receipts, and all three comment checkpoints match their receipt
+settlement metadata. Actual counts and final audit results are in the dated
+backend record.
+Production stays anonymous and the full-history gate stays closed. No schema or
+public app API change is required.
