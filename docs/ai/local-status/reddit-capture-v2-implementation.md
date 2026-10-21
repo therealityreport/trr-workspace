@@ -67,7 +67,36 @@ remain visibly unresolved until cross-platform reference safety is established.
   `docs/deploy/2026-10-21-reddit-capture-v2*`.
 - Temporary deployment candidate and empty failed candidate moved to actual Trash
   after matching their source against committed files. No task branch/worktree was created.
-- Existing unrelated edits remain unstaged. No push or production app deployment.
+- Existing unrelated edits remain unstaged. No Git push. Production app deployment
+  completed in the explicitly authorized follow-up below.
 - Hybrid workspace remains running for the user.
 - Helper routing telemetry could not reconcile the native launch record; source/test
   acceptance uses the independently checked work and passing tests, not that telemetry.
+
+## Production UI follow-up — 2026-10-21
+
+- User explicitly authorized production deployment and browser verification.
+- App source: `0e673fd11c1df1737dd5f094571afdfeae71e2a2`, exported from committed
+  source; all 41 Reddit files matched the verified checkout. Unrelated local edits excluded.
+- Vercel project `trr-app` (`prj_MHpStkwr26rV5kjt0f80zqhwZpAs`), team
+  `team_EUsG2kN9TAvVDGOu4yZVEoCX`, environment `production`.
+- Deployment: `dpl_3aWe6NR7KqBwoWt6HFmuZNtv7fAu`, READY.
+  URL: https://trr-i3bg35x6q-the-reality-reports-projects.vercel.app
+- Cloud production build passed compilation, TypeScript, all 104 static pages and
+  output deployment. Prior focused tests were reused on unchanged source.
+- The short production alias initially retained the old deployment. Reassigned
+  `trr-app.vercel.app` to the new deployment and verified provider readback.
+- Browser proof: friendly TRR Chrome profile, authenticated production page
+  https://trr-app.vercel.app/summer-house/s10/social/reddit . All three coverage
+  disclosures and four detail target disclosures opened successfully. Requested
+  and observed boundaries, boundary_reached, six comments, two detected assets,
+  None/Not recorded/Not scheduled labels and disabled schedule/AI settings verified.
+- Live targets have no unresolved children; unresolved-child rendering retains the
+  component fixture evidence. No new capture, maintenance or AI jobs were submitted.
+- Rollback target retained: `dpl_3xUuchVT3jtTRYe9b6xKX7SiSpLW`; restore the short
+  production alias as well as the project release if rollback is needed.
+- No backend or SQL changes; existing Modal deployment remains applicable.
+- Production browser tab left open with expanded evidence.
+- Task-created production source snapshot and failed empty snapshot moved to actual
+  Trash after deployment and browser verification; committed source and Vercel
+  rollback deployment retain recovery. No temporary branches/worktrees remain.
