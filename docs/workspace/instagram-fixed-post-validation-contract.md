@@ -100,3 +100,33 @@ post query timed out and the shared dev stack restarted. Passing recovery
 and fresh fixed-post evidence is reused. Full-history stays closed pending
 review and completion of the missing live evidence. Details are recorded in
 backend commit `3f6d13ed` and the dated backend validation record.
+
+### 2026-10-21 repair and bounded rerun
+
+Media fallback gates now use their actual public network lane. The installed
+local release already contains that repair. Backend commits `86777542` and
+`f3d26caa` repair searched and unfiltered comment-profile reads; both paths were
+verified in the TRR admin UI. The unfiltered request returned HTTP 200 in 15.6
+seconds after previously timing out. Workspace `06ad556` fixes the reproduced
+Bash 5.3 billing-guard startup hang without changing billing policy.
+
+Fresh native multi-page child proof now exists for `C_aw2xGs-Uf`, parent
+`17900330799028205`: two productive pages, 20 distinct replies, exact native
+cursor continuation, and child exhaustion. The diagnostic stopped with the whole
+post still partial. No canonical or evidence rows were written by that probe.
+
+Acceptance is still incomplete: anonymous older-post listing returned HTTP 401
+with `public_access_backoff`; the selected media-only comments expose known
+placeholder URLs and have no real hosted GIF assets. The media-only run ended
+`media_source_placeholder`. Do not claim older discovery or GIF display passed.
+No authentication, proxy, cooldown reset or full-history run was used. The frozen
+original is unchanged, no active unresolved owners or uncertain dispatches
+remain, and every new budget tranche is closed. See the backend validation
+record's evening repair section and private `repair-rerun` evidence.
+
+Final deployment: Modal v97, tag `ig-acceptance-f3d26caa`, explicitly
+`admin-56995 / trr-backend-jobs / main`. Health, readiness and source-only runtime
+smoke passed. The final frozen manifest preserves the maintained source already
+present in v96; six module hashes match, Reddit v2 remains enabled, and both
+public lane keys are correct. Archives and preceding deployment are retained.
+No SQL migration or app source/build change was required.
