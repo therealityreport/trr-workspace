@@ -131,6 +131,17 @@ values. Oversized legacy identities retain exact membership through JSONB index
 rechecks. The additive migration is backfilled in bounded batches before reader
 deployment. These changes preserve the app response contract, authorization,
 Redis payload TTL, connection lifecycle, and existing resource limits.
+
+Catalog header aggregates read `social.instagram_profile_catalog_summary`, a
+compact row per catalog post maintained in the source transaction. It preserves
+native counter types and exact caption and hashtag inputs without reading the
+wide source heap. The protected `profile_summary_catalog_ready` marker separates
+maintained rows from the legacy fallback. Unbackfilled or malformed rows retain
+their original read behavior. Source updates, ID changes, and deletion maintain
+the compact relation; its RLS and grants keep it private to backend access.
+Backfill selects only NULL markers in bounded batches with `SKIP LOCKED`.
+The additive relation can remain during a reader rollback.
+
 Lite recent-run summaries batch child run statuses and media follow-ups on the
 same profile connection. Known missing child rows remain authoritative misses
 for that read; explicit media job IDs take precedence over run-derived jobs.
