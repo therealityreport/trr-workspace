@@ -121,9 +121,16 @@ at read time.
 FastAPI reads this projection for the Instagram lite header. Older schemas,
 unbackfilled rows, and malformed legacy inputs use the original calculation.
 The additive schema can remain in place during an application rollback.
-The Instagram catalog summary uses equivalent direct identity comparisons that
-can stop after a native owner match, before reading raw JSON. These changes do
-not alter the app response contract, authorization, or Redis payload TTL.
+Postgres also maintains the catalog's `profile_summary_accounts` as an exact
+JSONB array of normalized owner/coauthor identities. Its `jsonb_ops` GIN index
+supports membership without expanding every catalog row's JSON. Separate,
+disjoint query branches cover indexed rows and SQL-NULL rows awaiting backfill;
+the latter retain the original predicate. Empty arrays mean no matching account.
+The trigger refreshes every source identity change and rejects supplied derived
+values. Oversized legacy identities retain exact membership through JSONB index
+rechecks. The additive migration is backfilled in bounded batches before reader
+deployment. These changes preserve the app response contract, authorization,
+Redis payload TTL, connection lifecycle, and existing resource limits.
 
 ## Modal API warm capacity
 
