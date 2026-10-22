@@ -22,6 +22,8 @@ def _run_guardrail(**env_overrides: str) -> subprocess.CompletedProcess[str]:
         "TRR_MODAL_SOURCE_ENV",
     ):
         env.pop(key, None)
+    # Do not inherit a developer's billing acknowledgement from the real .env.
+    env["TRR_MODAL_SOURCE_ENV"] = os.devnull
     env.update(env_overrides)
     return subprocess.run(
         ["bash", str(SCRIPT)],
@@ -131,7 +133,7 @@ def test_guardrail_checks_explicit_backend_deploy_tree(tmp_path: Path) -> None:
                 "TRR_MODAL_ALWAYS_ON_SCHEDULES_ENABLED=0",
                 "TRR_MODAL_RUNTIME_SCHEDULER_ENABLED=1",
                 "TRR_MODAL_MAINTENANCE_OWNER_REQUIRED=1",
-                "TRR_MODAL_API_MIN_CONTAINERS=0",
+                "TRR_MODAL_API_MIN_CONTAINERS=1",
                 "TRR_MODAL_ADMIN_KEEP_WARM=0",
             ]
         )
@@ -141,7 +143,7 @@ def test_guardrail_checks_explicit_backend_deploy_tree(tmp_path: Path) -> None:
     (backend_dir / "trr_backend" / "modal_jobs.py").write_text(
         "\n".join(
             [
-                'os.getenv("TRR_MODAL_API_MIN_CONTAINERS", "0")',
+                'os.getenv("TRR_MODAL_API_MIN_CONTAINERS", "1")',
                 'os.getenv("TRR_MODAL_ADMIN_KEEP_WARM", "0")',
                 '_env_flag("TRR_MODAL_ALWAYS_ON_SCHEDULES_ENABLED", default=False)',
                 '_env_flag("TRR_MODAL_RUNTIME_SCHEDULER_ENABLED", default=False)',

@@ -183,6 +183,12 @@ def render_preflight_summary(artifact: dict[str, Any]) -> str:
 
 def run_runtime_reconcile() -> dict[str, Any]:
     artifact = default_artifact()
+    if os.getenv("WORKSPACE_RUNTIME_RECONCILE_ENABLED", "1").strip().lower() in {"0", "false", "no", "off"}:
+        for name in ("db", "modal", "render", "decodo"):
+            artifact[name].update(state="advisory", skipped=True, reason="runtime_reconcile_disabled")
+        artifact["overall_state"] = "advisory"
+        artifact["summary"] = "runtime_reconcile_disabled"
+        return artifact
     workspace_mode = (os.getenv("WORKSPACE_DEV_MODE") or "local").strip() or "local"
 
     db_rc, db_payload = _run_backend_script("scripts/dev/reconcile_runtime_db.py")

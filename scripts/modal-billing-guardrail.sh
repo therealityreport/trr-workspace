@@ -164,9 +164,9 @@ check_exactly_one_modal_owner \
 require_file_contains "$BACKEND_ENV_EXAMPLE" "TRR_MODAL_ALWAYS_ON_SCHEDULES_ENABLED=0" "TRR-Backend/.env.example"
 require_file_contains "$BACKEND_ENV_EXAMPLE" "TRR_MODAL_RUNTIME_SCHEDULER_ENABLED=1" "TRR-Backend/.env.example"
 require_file_contains "$BACKEND_ENV_EXAMPLE" "TRR_MODAL_MAINTENANCE_OWNER_REQUIRED=1" "TRR-Backend/.env.example"
-require_file_contains "$BACKEND_ENV_EXAMPLE" "TRR_MODAL_API_MIN_CONTAINERS=0" "TRR-Backend/.env.example"
+require_file_contains "$BACKEND_ENV_EXAMPLE" "TRR_MODAL_API_MIN_CONTAINERS=1" "TRR-Backend/.env.example"
 require_file_contains "$BACKEND_ENV_EXAMPLE" "TRR_MODAL_ADMIN_KEEP_WARM=0" "TRR-Backend/.env.example"
-require_file_contains "$MODAL_JOBS" 'os.getenv("TRR_MODAL_API_MIN_CONTAINERS", "0")' "trr_backend/modal_jobs.py"
+require_file_contains "$MODAL_JOBS" 'os.getenv("TRR_MODAL_API_MIN_CONTAINERS", "1")' "trr_backend/modal_jobs.py"
 require_file_contains "$MODAL_JOBS" 'os.getenv("TRR_MODAL_ADMIN_KEEP_WARM", "0")' "trr_backend/modal_jobs.py"
 require_file_contains "$MODAL_JOBS" '_env_flag("TRR_MODAL_ALWAYS_ON_SCHEDULES_ENABLED", default=False)' "trr_backend/modal_jobs.py"
 require_file_contains "$MODAL_JOBS" '_env_flag("TRR_MODAL_RUNTIME_SCHEDULER_ENABLED", default=False)' "trr_backend/modal_jobs.py"
@@ -181,4 +181,4 @@ if [[ "${#failures[@]}" -gt 0 ]]; then
   exit 1
 fi
 
-echo "[modal-billing] Guardrail OK: deployed schedules and warm containers are off by default."
+echo "[modal-billing] Guardrail OK: approved API warm minimum is one; deployed cron and admin warming default to off."

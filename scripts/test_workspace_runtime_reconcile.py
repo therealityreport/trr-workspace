@@ -5,6 +5,24 @@ import json
 from scripts import workspace_runtime_reconcile as cli
 
 
+def test_disabled_runtime_reconcile_calls_no_remote_helpers(monkeypatch) -> None:
+    def unexpected_call(script_relpath: str):
+        raise AssertionError(f"disabled reconciliation called {script_relpath}")
+
+    monkeypatch.setenv("WORKSPACE_DEV_MODE", "hybrid")
+    monkeypatch.setenv("WORKSPACE_RUNTIME_RECONCILE_ENABLED", "0")
+    monkeypatch.setattr(cli, "_run_backend_script", unexpected_call)
+
+    artifact = cli.run_runtime_reconcile()
+
+    assert artifact["overall_state"] == "advisory"
+    assert artifact["summary"] == "runtime_reconcile_disabled"
+    for name in ("db", "modal", "render", "decodo"):
+        assert artifact[name]["skipped"] is True
+        assert artifact[name]["state"] == "advisory"
+    assert artifact["modal"]["deployed"] is False
+
+
 def test_load_json_file_defaults_when_artifact_missing(tmp_path) -> None:
     artifact = cli.load_json_file(tmp_path / "missing.json")
 
@@ -82,6 +100,7 @@ def test_runtime_reconcile_skips_modal_in_local_mode(monkeypatch) -> None:
         raise AssertionError(f"unexpected helper call: {script_relpath}")
 
     monkeypatch.setenv("WORKSPACE_DEV_MODE", "local")
+    monkeypatch.setenv("WORKSPACE_RUNTIME_RECONCILE_ENABLED", "1")
     monkeypatch.setattr(cli, "_run_backend_script", fake_run)
 
     artifact = cli.run_runtime_reconcile()
@@ -99,6 +118,7 @@ def test_runtime_reconcile_runs_modal_in_hybrid_mode(monkeypatch) -> None:
         return 0, {"state": "ok"}
 
     monkeypatch.setenv("WORKSPACE_DEV_MODE", "hybrid")
+    monkeypatch.setenv("WORKSPACE_RUNTIME_RECONCILE_ENABLED", "1")
     monkeypatch.setattr(cli, "_run_backend_script", fake_run)
 
     cli.run_runtime_reconcile()
@@ -120,6 +140,7 @@ def test_runtime_reconcile_allows_hybrid_remote_only_history(monkeypatch) -> Non
         return 0, {"state": "ok"}
 
     monkeypatch.setenv("WORKSPACE_DEV_MODE", "hybrid")
+    monkeypatch.setenv("WORKSPACE_RUNTIME_RECONCILE_ENABLED", "1")
     monkeypatch.setattr(cli, "_run_backend_script", fake_run)
 
     artifact = cli.run_runtime_reconcile()
