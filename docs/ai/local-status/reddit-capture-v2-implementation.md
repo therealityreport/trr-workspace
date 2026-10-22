@@ -7,8 +7,8 @@ handoff:
   include: true
   state: recent
   last_updated: 2026-10-22
-  current_phase: "Period and Episode 1 fixes complete; production API and browser verification passed"
-  next_action: "None; preserve disabled schedules and AI processing"
+  current_phase: "Manual preseason-gap capture and Episode 6 refresh completed and verified"
+  next_action: "None; schedules and AI processing remain disabled"
   detail: self
 ```
 
@@ -581,3 +581,86 @@ intended dates, and keep Reddit schedules and AI processing off.
   `browser-settings-off.png` in the private release directory below.
 - Release manifest, provider snapshots, commands and API receipts:
   `~/.codex/tmp/trr-reddit-periods-01a16033/`.
+
+
+## Manual preseason gap and Episode 6 refresh — 2026-10-22
+
+User authorization: manually capture the missing preseason dates, bring Episode 6
+up to date, verify coverage, and keep schedules and AI processing off. This is
+explicit manual historical capture authority; it does not activate automatic repair,
+scheduling, lifecycle deletion, or analysis.
+
+- Lead owns runtime submissions and the existing task record in the current
+  checkouts. Existing branches, source edits and index state are preserved.
+- Live preflight verified Supabase `vwxfvzutyufrkhfgoeaa` in a read-only transaction,
+  and Modal `admin-56995/main/trr-backend-jobs` readiness passes. The current runtime
+  is v120, `tiktok-public-posts-3d8d96c5e674`; this operator task changes no source
+  or deployment. All three schedule/AI flags are false and no scoped capture runs
+  were active before submission. Baseline: 484 posts and 36,826 saved comment IDs.
+- Missing preseason interval: `2026-09-10T00:00:00Z` through
+  `2026-09-16T04:00:00Z`; combine its native discovery evidence with existing proof
+  through `2026-09-16T23:00:00Z`. Use canonical preseason key, missing policy,
+  discovery/comments/media, and chronological listing without search backfill.
+- Episode 6 capture: `2026-10-21T04:00:00Z` through the frozen current cutoff
+  `2026-10-22T18:36:22.520417Z` (October 22, 14:36:22 America/New_York).
+  Keep its displayed end `2026-10-28T04:00:00Z`. Capture with stale policy and
+  60-second freshness; the future-ending displayed window remains partial.
+- Both canonical match scopes were empty before launch, so new matches are
+  correctly assigned without including unrelated existing scope. Current source
+  preserves old assignments. Therefore refresh the 12 previously saved Episode 6
+  posts separately, grouped by their actual period keys: one post under
+  `rhoslc-s7-full-production-20261021` and eleven under
+  `rhoslc-s7-small-production-20261021`. These selected detail runs request comments
+  and media only and cannot create discovery coverage proof.
+- Source investigation confirmed interval union, key and selection semantics,
+  freshness controls, and completion criteria. Native run completion must have
+  zero unresolved required targets; discovery needs a proven chronological boundary.
+  Search results or a terminal label alone do not establish complete coverage.
+- First native preseason run: `f8c3ed64-7ceb-40d1-8fcd-06a23f18db1c`. Its successful
+  HTTP 200 response was retained and reconciled after the receipt parser expected
+  `id` instead of the returned `run_id`; it was not resubmitted.
+- All four native submissions were accepted in `main`: preseason
+  `f8c3ed64-7ceb-40d1-8fcd-06a23f18db1c`; Episode 6
+  `5225c66c-1a65-48de-84b1-67067c4cc717`; existing-post detail batches
+  `32e67a79-44b6-442b-9090-e3343a252c23` and
+  `0c08f0ad-711c-47d1-8391-1bd3411dfeb9`. Disabled flags were checked before
+  every submission and after the batch. Both listing passes have complete
+  chronological boundary evidence; all four native runs finished successfully.
+  Frozen payloads, baseline IDs, readiness, intent/response receipts and run ledger:
+  `~/.codex/tmp/trr-reddit-window-topup-20261022/`.
+
+
+### Manual capture acceptance
+
+- All four native runs completed on `main` with 230/230 required targets committed,
+  zero unresolved work, no retry/error state, and no remaining active scoped runs.
+  Required outcomes: 9 discovery targets, 60 comment targets and 161 media targets
+  (post phases plus individual asset associations). Monitoring exited normally.
+- Added 35 preseason posts and 13 Episode 6 posts to the season. Refreshed comments
+  and media for the 12 existing Episode 6 posts as well. Final scope: 532 posts and
+  38,852 saved comments, an increase of 48 posts and 2,026 comments. All 484 prior
+  post IDs and all 36,826 prior comment IDs are preserved.
+- Eleven final verification checks pass, including native target pagination,
+  immutable discovery bounds and chronological proof, intended-window coverage,
+  elapsed Episode 6 coverage, preserved baseline IDs and existing assignments,
+  fresh comments/media for all 60 affected posts (120 phase rows), and metadata
+  for all 101 distinct affected assets mirrored. Media success follows comment
+  success for every affected post. Settings compare exactly to the preflight
+  snapshot: schedule, AI and scheduled analysis remain false.
+- Authenticated backend and app summaries both show 6 covered, 1 partial, 7 upcoming,
+  0 stale and 0 unknown. The full intended preseason interval (September 9 at 20:00
+  through September 16 at 19:00 America/New_York) is covered by the union of the new
+  gap run and prior evidence. Episode 6's elapsed interval is fully covered through
+  `2026-10-22T18:36:22.520417Z` (October 22 at 14:36:22 New York time). Its displayed
+  October 28 end is preserved, so the future-ending window correctly stays partial.
+- App stored-post routes return HTTP 200 with 35 preseason posts and 25 Episode 6
+  posts. Production browser readback matches: 6/1/7, preseason marked covered,
+  and Episode 6 marked partial through 14:36:22. No loading timeout was present.
+  Screenshots: `browser-coverage.png` and `browser-preseason-covered.png` in the
+  task's private artifact directory. Browser target was cloud production; no local
+  startup or new app build was needed for these operator actions.
+- No schedules or AI were enabled, no analysis was requested, no prior assignments
+  were moved, and no source/schema/deployment changes were made. The only repository
+  edit is this existing task record. Native intent/response receipts, full target
+  snapshots, API/DB verification, and `completion-receipt.json` are retained under
+  `~/.codex/tmp/trr-reddit-window-topup-20261022/`.
