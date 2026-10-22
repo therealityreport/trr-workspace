@@ -78,3 +78,27 @@ The app consumes generated OpenAPI types from `reddit-capture.openapi.json` and
 Deployment evidence and operator procedures:
 - [Rollout record](../../TRR-Backend/docs/deploy/2026-10-21-reddit-capture-v2.md)
 - [Operator guide](../../TRR-Backend/docs/reddit-capture-v2-operations.md)
+
+
+## Window discovery coverage
+
+Window status is derived from discovery evidence for the effective date ranges
+shown to the operator. A missing window-specific run is not proof of stale data.
+Season-wide runs with arbitrary period keys may establish coverage of several
+windows. Comments-only jobs and selected-post jobs cannot establish interval
+discovery coverage.
+
+Accept only same-community, same-season v2 manifests that record complete window
+coverage with a proven chronological boundary, valid requested bounds and
+committed required discovery targets. Use requested bounds rather than the oldest
+or newest observed post. Combine valid overlapping intervals without filling gaps.
+A later failed retry does not erase earlier qualifying evidence.
+
+The summary accepts a bounded, validated optional set of effective canonical
+window ranges from the app and returns normalized bounds and provenance. This
+preserves displayed overrides instead of silently using different date cutovers.
+Coverage distinguishes covered, partial, uncovered, upcoming and unknown states.
+Upcoming windows do not count as recovered or stale. Partial windows show the
+proven cutoff; they do not imply coverage through the present. Historical failure
+diagnostics remain separate from discovery proof. Reads enqueue no work and do
+not change schedules, AI settings, period memberships or run history.

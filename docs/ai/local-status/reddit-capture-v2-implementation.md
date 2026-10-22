@@ -7,8 +7,8 @@ handoff:
   include: true
   state: recent
   last_updated: 2026-10-21
-  current_phase: "RHOSLC S7 bounded comment recovery complete and verified"
-  next_action: "No recovery work remains for the completed exposed-frontier pass; keep schedules and AI disabled"
+  current_phase: "Correcting window coverage status and investigating deeper accessible comments"
+  next_action: "Implement evidence-based window status; run bounded deeper search; verify production with schedules and AI disabled"
   detail: self
 ```
 
@@ -405,3 +405,105 @@ remain visibly unresolved until cross-platform reference safety is established.
 - `/tmp/trr-rhoslc-asset-audit.json`
 - `/tmp/trr-rhoslc-gap-public-delivery.json`
 - `/tmp/trr-rhoslc-gap-api-verification.json`
+
+
+## Window-status correction and deeper search — completed 2026-10-22
+
+- User authorized fixing the stale-window badge and investigating additional
+  accessible comments, with schedules and AI kept disabled.
+- Current read-only baseline: 484 posts, 36,820 comments, 80 posts with positive
+  reported-minus-saved differences totalling 130; no active capture runs.
+- Lead owns integration, this record, bounded source investigation and deployment.
+  Existing helper owns the coupled backend status/API and app consumer changes.
+  Work stays in current checkouts and branches; unrelated edits remain untouched.
+- Backend baseline `f06b63c8`, root baseline `2bdd399`; current app baseline
+  `b01eb3d0`. Predeployment refresh found accepted Modal runtime v106,
+  `main`, `admin-56995`, `trr-backend-jobs`. Its full 2,588-file frozen source
+  manifest was verified and preserved before adding the six task files.
+- Acceptance: classify the actual displayed intervals using committed discovery
+  evidence; distinguish covered, partial, upcoming and unknown windows; preserve
+  date overrides; show the real season capture and cutoff; keep recovery controls
+  consistent. No fabricated canonical runs or historical match rewrites.
+- Deeper source checks must retain exact post/parent validation, shared request
+  limits and privacy filtering. Compare new IDs to this task's fresh baseline;
+  persist any validated additions through normal fenced workers and reconcile
+  their media. Report bounded search limits explicitly.
+- Reuse passing prior storage and source checks for unchanged inputs. Verify
+  changed behavior through focused tests, explicit-target deployment, live API
+  and browser checks, and final disabled-setting readback.
+
+### Coverage release evidence
+
+- Backend commit `e1196217`; Modal v107, tag
+  `reddit-window-coverage-f06b63c8`, explicit `main` environment. Guarded
+  deployment completed, required readiness passed, and API health returned 200.
+- All 38 provider function bindings and five existing platform maintenance
+  schedules are unchanged. RHOSLC workflow schedule, AI and scheduled analysis
+  remain false. These are separate from the platform maintenance schedules.
+- Authenticated production summary with the actual displayed date overrides
+  returns 5 covered, 2 partial, 7 upcoming, 0 stale, 0 unknown and 0 uncovered.
+  Proven cutoff remains `2026-10-21T23:06:47.895435Z`.
+- The new backend SQL query passed against `trr-core` in a read-only transaction;
+  it found the two qualifying discovery runs. No schema migration or app direct
+  SQL ownership changed. Existing app inventory evidence remains applicable.
+- Validation: 35 focused backend tests, 11 focused app tests, quick validation
+  (82 checks), TypeScript, scoped ESLint/Ruff and diff checks passed.
+- App commit `ea63cdb6`, built from base `b01eb3d0` plus exactly eight task
+  files. Production `dpl_9aud5X9R9xP2JV3KaSV7Uk17PHDX` is READY and aliased
+  to `trr-app.vercel.app`. The guarded full production build passed.
+  Initial snapshot deployment omitted its Sentry release identifier; the
+  unchanged source was redeployed with a scoped build/runtime release override.
+  Node.js, Edge and Client source-map uploads all succeeded.
+  Prior app `dpl_9J4UJLQQECJMS7rpLTtWvJykNfPA` and backend v106 remain rollback
+  targets.
+- Final production page currently renders 6 covered, 1 partial and 7 upcoming,
+  and the authenticated API matches those displayed ranges with zero stale.
+  The existing period-data request timed out: its unchanged fallback sets
+  preseason start to September 16 midnight, whereas the earlier loaded period
+  started September 9 at 20:00. The longer range correctly tests as partial
+  (5 covered, 2 partial, 7 upcoming). No date setting was changed and the shorter
+  fallback must not be used as proof for September 9–16. Episode 1's explicit
+  19:01:01/19:01:10 cutovers remain displayed. This preexisting period-context
+  timeout is separate from discovery-provenance classification.
+- Browser verification uses cloud production in the friendly TRR profile; no
+  local startup target was used.
+- Private release receipts: `~/.codex/tmp/trr-reddit-window-01a16033/`.
+
+### Deeper-search result and native persistence
+
+- Completed the bounded pass in 17 minutes 38 seconds: 85 selected posts
+  (80 positive-deficit posts plus 5 samples), 717 primary batches, 14 exact
+  focal samples and 768 actual HTTP attempts including OAuth/retries/closure.
+  There were no access errors, holds, budget holds or open exposed queues.
+- Added six source-validated records through native run
+  `2383b7c5-1cf1-4b49-aa21-73693ccf9d2d` on `main`: five older deleted/removed
+  placeholders across three posts and one readable comment posted after the
+  prior capture. No additional older readable text was found in this pass.
+- The import used the unchanged 484-post scope and original fixed post window,
+  paused/no-claim checkpoint staging, content locks, privacy filtering and the
+  normal worker commit path. Existing canonical rows took precedence over
+  source snapshots. No historical discovery interval or schedule was changed.
+- All 12 import verification checks passed: all 36,820 baseline IDs preserved,
+  exactly six additions, parent/depth integrity, committed target provenance,
+  privacy compliance, frozen input hashes and disabled schedule/AI flags.
+- Final totals: 484 posts, 36,826 comments, 1,035 mirrored assets. All 484
+  comment and media phases remain committed; no capture runs are active.
+  All 13 media references on the four affected posts are mirrored. All 1,035
+  asset metadata receipts are unchanged, so prior storage verification was
+  reused; no new storage HEAD requests were required.
+- The search is not exhaustive: 1,179 known anchors remain unproven after the
+  bounded requests. A completed exposed-frontier pass is not proof that Reddit
+  has disclosed every comment or that its displayed count is an exact target.
+- Search summary SHA-256:
+  `b620e21a36251de3c88ea8b66cbfb0e07613d47117df2877268f1811f4afb86d`.
+  Private search, import plan/run ledger, verification and media receipts are
+  under `/tmp/trr-rhoslc-deeper-search/`; prior recovery receipts are preserved.
+- Browser checkbox readback confirmed schedule, AI and daily AI all unchecked
+  and enabled for editing; no setting was edited. Screenshot:
+  `~/.codex/visualizations/2026/10/21/01a16033-1d49-7613-9356-7b6344b93322/reddit-window-coverage-final.png`.
+  Existing period-context and Episode 1 cache-read timeouts remain visible;
+  the corrected window badge and capture settings were independently verified.
+- Final authenticated production post-detail API readback returned HTTP 200 for
+  all four affected posts and delivered all six new IDs (164, 195, 139 and 17
+  comments respectively). Receipt: `api-new-comments-verification.json` in the
+  private deeper-search directory.
