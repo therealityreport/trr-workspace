@@ -6,9 +6,9 @@
 handoff:
   include: true
   state: recent
-  last_updated: 2026-10-21
-  current_phase: "Correcting window coverage status and investigating deeper accessible comments"
-  next_action: "Implement evidence-based window status; run bounded deeper search; verify production with schedules and AI disabled"
+  last_updated: 2026-10-22
+  current_phase: "Period and Episode 1 fixes deployed; intended-date API verification passed"
+  next_action: "Visual production readback awaits reconnection of the user-selected TRR Chrome window"
   detail: self
 ```
 
@@ -507,3 +507,66 @@ remain visibly unresolved until cross-platform reference safety is established.
   all four affected posts and delivered all six new IDs (164, 195, 139 and 17
   comments respectively). Receipt: `api-new-comments-verification.json` in the
   private deeper-search directory.
+
+
+## Period and Episode 1 loading repair — 2026-10-22
+
+Request: fix period loading and Episode 1 timeouts, verify coverage against the
+intended dates, and keep Reddit schedules and AI processing off.
+
+- Backend commit `674862feefb2ff5440dbd942a0a85c4c6edcc2ed` adds an
+  authenticated calendar-only endpoint. It resolves the published analytics
+  provider without importing the legacy provider early, reads canonical windows,
+  and preserves existing inclusive bounds. It does not request content analytics,
+  sentiment, capture, or analysis work.
+- App commit `d8dae43f8d3c84f5a68eb95a63f7735b59071164` uses that endpoint,
+  waits for calendar and episode context, blocks fallback-date coverage and
+  reports metadata failures. Same-season metadata reuse remains allowed.
+  Episode 1's authenticated stored-post reader now has a scoped 25-second budget.
+  The exact prior warning came from the five-second primary-content reader, not
+  the discovery cache. An initially investigated discovery-cache refactor was
+  removed before validation and release.
+- Focused validation: five backend endpoint/provider tests, five component tests,
+  three app proxy tests and one stored-window reader test pass. Quick validation
+  passes all generated checks and 79 tests; TypeScript and scoped ESLint/Ruff pass.
+  Independent source review found no blockers. The existing unrelated import-graph
+  baseline failure in the modified analytics provider remains outside this change.
+- Modal v118, tag `reddit-periods-674862fe`, deployed to explicit
+  `admin-56995/main/trr-backend-jobs`. Before release, the newest accepted v117
+  snapshot was verified across all 2,642 files and preserved, with only the five
+  task files applied. This retains the Instagram/TikTok/header work and the API
+  concurrency update. Required readiness and the health canary pass (HTTP 200).
+  All 38 function bindings and five platform-maintenance schedules are unchanged.
+  Rollback: v117, `ig-no-local-cooldown-api-e6c04618e3a7`.
+- Live backend reads: calendar HTTP 200 with 16 periods in 626 ms; Episode 1
+  HTTP 200 with 94 posts in 591 ms; intended-window summary HTTP 200 in 1.63 s.
+  These are observed requests, not a matched cold-start performance comparison.
+  Intended coverage is 5 covered, 2 partial, 7 upcoming and 0 stale. The proven
+  cutoff stays `2026-10-21T23:06:47.895435Z`.
+- The intended preseason is September 9, 2026 at 20:00 through September 16 at
+  19:00 America/New_York (`2026-09-10T00:00:00Z` through
+  `2026-09-16T23:00:00Z`). It remains partial. Episode 1's explicit cutovers
+  remain September 16 at 19:01:01 through September 23 at 19:01:10.
+- Live settings return `schedule_enabled=false`, `ai_enabled=false`, and
+  `scheduled_analysis_enabled=false`. No capture or analysis job was started,
+  no database/schema or app direct-SQL ownership changed, and no date override
+  was edited. Existing captures and totals remain unchanged by this repair.
+- App production `dpl_DMvd5MzHay9ztvxSoCbJZJvgC2Mk` is READY and serves
+  `trr-app.vercel.app`. The guarded production build passed, including TypeScript
+  and Node.js/Edge/Client Sentry source-map uploads. It includes the maintained
+  navigation/context-read repairs through `a491d06e` plus this task's six files.
+  Frozen app source: 1,698 files, SHA-256
+  `7b3c011a6de3bb8d5aea397bf20a597d6b2cbcda35fbd4d6e0480810daf05452`.
+  Rollback app: `dpl_JEBUYe3MZxCpnsmC6pB4xrEn9ckG`.
+- Authenticated production app readback passes all four checks: calendar HTTP 200
+  with 16 periods in 2.84 s; Episode 1 HTTP 200 with 94 posts in 741 ms; coverage
+  HTTP 200 in 1.28 s with the intended 5/2/7/0 classification; settings HTTP 200
+  with all three flags false. Timings are individual observed requests.
+- Visual browser readback remains pending. The user-selected Chrome window
+  (identified by its Upstash tab) disconnected and did not return. The native
+  Window menu confirms only the other RHOSLC window is available. An asynchronous
+  request to reconnect or authorize that window is pending; no replacement profile
+  was used. Production is the verification target; no local startup was needed.
+  No screenshot is claimed for this repair.
+- Release manifest, provider snapshots, commands and API receipts:
+  `~/.codex/tmp/trr-reddit-periods-01a16033/`.

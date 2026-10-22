@@ -102,3 +102,22 @@ Upcoming windows do not count as recovered or stale. Partial windows show the
 proven cutoff; they do not imply coverage through the present. Historical failure
 diagnostics remain separate from discovery proof. Reads enqueue no work and do
 not change schedules, AI settings, period memberships or run history.
+
+
+## Period metadata loading
+
+The Reddit operator loads canonical calendar metadata from backend
+`GET /api/v1/admin/socials/seasons/{season_id}/analytics/periods`, through app
+`GET /api/admin/trr-api/shows/{showId}/seasons/{seasonNumber}/social/analytics/periods`.
+The response contains `season_id`, `timezone`, `source_scope` and `weekly` rows
+with `week_index`, `label`, `week_type`, `episode_number`, `start` and `end`.
+It uses the analytics calendar provider and preserves its inclusive end bounds.
+This endpoint does not aggregate posts or comments, run sentiment, or enqueue jobs.
+
+Coverage waits for period metadata and episode context. Same-season metadata
+may be reused, but a different season or a fabricated fallback date cannot establish
+coverage. A failed metadata read shows a retry warning. Existing episode date
+cutovers remain authoritative. Stored-window primary content reads have a scoped
+25-second backend timeout to allow cold starts; small polling reads keep their
+existing budgets. Both reads require administrator authorization and change no
+schedule or AI settings.
