@@ -131,6 +131,11 @@ values. Oversized legacy identities retain exact membership through JSONB index
 rechecks. The additive migration is backfilled in bounded batches before reader
 deployment. These changes preserve the app response contract, authorization,
 Redis payload TTL, connection lifecycle, and existing resource limits.
+Lite recent-run summaries batch child run statuses and media follow-ups on the
+same profile connection. Known missing child rows remain authoritative misses
+for that read; explicit media job IDs take precedence over run-derived jobs.
+Connection acquisition, summary phases, and cache read/publication durations
+are logged separately without cache keys, credentials, or payload contents.
 
 ## Modal API warm capacity
 
@@ -141,6 +146,13 @@ remains eight containers, with 16 concurrent inputs per container and an
 autoscaling target of eight inputs. Database pool limits and worker warm-capacity
 settings are unchanged. The environment example and named-secret preparation
 defaults use the same one-container API minimum.
+
+The API uses broad US placement (`region="us"`) so an unconstrained container
+cannot land across the Pacific from the US East database. The user approved
+Modal's 1.15x regional compute pricing on October 22, 2026. This preserves all
+container, concurrency, CPU/memory, pool, worker, timeout, and cache limits.
+Broad US placement can include western regions; verify concurrent uncached
+profile latency after deployments instead of treating placement as a guarantee.
 
 ## Redis Runtime Contract
 
