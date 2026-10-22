@@ -42,12 +42,23 @@ native lanes are exhausted. The receipt reports the expected count, observed
 count, and gap. This settlement does not apply to authenticated retrieval.
 Unresolved authenticated gaps or child lanes remain incomplete.
 
+## Request waits
+
+Instagram does not create or enforce local penalty cooldowns after failures or
+rejected replies. Old mixed cooldown timestamps and obsolete cooldown environment
+settings do not hold a run. Only an actual source `Retry-After` response creates
+a timed request hold, stored separately as `server_retry_after_until`. The stored
+wait can extend but a later short response cannot shorten it. Explicit checkpoint
+and authentication blockers, request spacing, finite attempts, budgets, ownership,
+and cancellation checks still apply. A rejected or incomplete page does not prove
+source exhaustion or completion.
+
 ## Local operation
 
 Create a fresh local run through the production command service with an explicit
 supported profile. Use the account policy for a bounded month; the separate
 canary policy accepts only its configured calendar-year window. Keep the normal
-capacity, request, cooldown, ownership, cancellation, and placement checks.
+capacity, request, server Retry-After, ownership, cancellation, and placement checks.
 
 The local worker uses the same durable scheduler and activity implementation.
 Modal and local consumers honor the stored execution placement. During a
