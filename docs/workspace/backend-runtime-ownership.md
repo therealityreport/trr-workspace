@@ -125,6 +125,16 @@ The Instagram catalog summary uses equivalent direct identity comparisons that
 can stop after a native owner match, before reading raw JSON. These changes do
 not alter the app response contract, authorization, or Redis payload TTL.
 
+## Modal API warm capacity
+
+The Modal API defaults to one warm container through
+`TRR_MODAL_API_MIN_CONTAINERS=1`. Deployment must retain this value so the first
+uncached profile request can reuse an initialized API process. The API maximum
+remains eight containers, with 16 concurrent inputs per container and an
+autoscaling target of eight inputs. Database pool limits and worker warm-capacity
+settings are unchanged. The environment example and named-secret preparation
+defaults use the same one-container API minimum.
+
 ## Redis Runtime Contract
 
 Local single-process FastAPI may run without Redis by using the in-memory
