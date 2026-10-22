@@ -7,8 +7,8 @@ handoff:
   include: true
   state: recent
   last_updated: 2026-10-21
-  current_phase: "Full RHOSLC S7 production capture complete and verified"
-  next_action: "No capture work remains; keep schedules and AI disabled"
+  current_phase: "RHOSLC S7 bounded comment recovery complete and verified"
+  next_action: "No recovery work remains for the completed exposed-frontier pass; keep schedules and AI disabled"
   detail: self
 ```
 
@@ -287,3 +287,121 @@ remain visibly unresolved until cross-platform reference safety is established.
   Final accepted source snapshots and release manifests remain available for
   recovery. An empty failed snapshot and a finished diagnostic helper were cleaned
   up; unrelated root/backend/app changes and shared release snapshots were preserved.
+
+## Comment-count discrepancy follow-up — 2026-10-21
+
+- Completed the requested investigation and recovery, with schedules and AI disabled.
+  The lead owned only this status record in the existing root `main` checkout.
+  No backend/app source, schema, environment, or deployment changed in this follow-up;
+  unrelated edits, index state, branches, and other tasks' commits were preserved.
+- The original 483-post baseline was 35,861 saved comment IDs and 36,496 reported
+  comments. The net 635 comprised 689 positive differences across 209 posts,
+  offset by 54 excess saved rows across 35 posts. It was not an inventory of 635
+  identifiable missing comment texts. Initial fresh OAuth metadata read 36,550;
+  source counters and saved rows were captured at different times.
+- A limit-1 root listing exposed IDs omitted by the larger listing, mostly
+  deletion/removal placeholders. Exact IDs and same-post ancestors were validated,
+  exposed child and continuation queues were closed, and normal native workers
+  imported privacy-filtered checkpoints. No removed text was reconstructed.
+- The deep known-anchor experiment remains partial. It is retained as diagnostic
+  evidence and is not the final coverage proof. Final accepted scope is the bounded
+  exposed-frontier pass across all 484 posts, with no held source errors or pending
+  child IDs/continuations. It does not claim exhaustive enumeration of every
+  comment Reddit could expose through every known-anchor query.
+- Normal metadata refresh `207580d2-1bdb-492b-a526-cb6d14d5d819` completed five pages
+  with `boundary_reached` and a proven chronological boundary. The fixed post window
+  remains `2026-09-16T04:00:00Z` through `2026-10-21T23:06:47.895435Z`.
+  Reddit newly exposed post `1xc1j7n`, posted `2026-10-21T22:30:39Z`, inside that
+  cutoff. The frozen scope preserves the original 483 posts and adds this one post;
+  period memberships are 100 small-production and 384 full-production posts.
+
+### Accepted results
+
+| Scope | Saved comments | Added readable comments | Added removed/deleted placeholders |
+|---|---:|---:|---:|
+| Original 483 posts | 36,804 | 73 | 870 |
+| Newly exposed post | 16 | 13 | 3 |
+| Total 484 posts | 36,820 | 86 | 873 |
+
+- All 35,861 original IDs are preserved. All 73 readable additions on the original
+  posts were created after each post's previous successful capture. The new post's
+  16 comments have no original-capture baseline and are counted separately. No
+  additions have null, empty, or whitespace-only bodies.
+- All 913 recovery-ledger IDs and all 36,774 IDs in the 484 bounded source
+  checkpoints exist canonically under the correct posts. Another 46 canonical IDs
+  are newer readable comments proven by committed fresh native checkpoints.
+- All 18 recovery jobs completed, with 285/285 comment targets committed and zero
+  unresolved targets. Seven fresh jobs completed across 253 distinct posts.
+  Four redundant queued fresh jobs were paused, checked for no claim/start/attempts
+  or targets, and cancelled through native controls. Their zero-target outcomes
+  remain explicit; they are not presented as completed captures.
+- Native calls that lose the period claim can return `queued`; the independent
+  dispatcher retries them. After checking all period owners were idle, the final
+  25-post recovery `2fe3617f-cd11-43e0-81ae-d4701f04088e` was resumed through the
+  normal `admin-56995/main/trr-backend-jobs` worker. The original per-period claim
+  fence, privacy locks, and provider budgets remained active.
+- The full recapture was stopped as redundant after the bounded source proof was
+  established. Acceptance instead requires every source-checkpoint ID to be saved,
+  original-ID preservation, provenance for fresh additions, completed recovery jobs,
+  current committed phases, valid parents, media reconciliation, and live checks.
+  Focused independent review found no remaining blocker in those prerequisites.
+- Final read-only DB proof at `2026-10-22T02:27:38.484702Z` passed all 23 checks.
+  Parent references, cross-post parents, missing depths, and depth inconsistencies
+  are all zero. All 484 current comments phases are committed with empty queues.
+  Privacy scanning covered 1,302 checkpoints and 224,988 identity nodes with no
+  tombstone matches. Current tombstone sets are empty, so this does not prove
+  behavior against an actual deletion.
+- Final reconciliation at `2026-10-22T02:30:26.777549Z` found 36,820 saved rows versus
+  36,591 stored reported comments, a net reported-minus-saved difference of -229.
+  Eighty posts still have saved totals below their reported counters. All exposed
+  queues and current phases are complete; counter equality is not a completion gate.
+  [Reddit Help](https://support.reddithelp.com/hc/en-us/articles/204580009-Why-are-there-missing-comments-in-the-thread-I-m-in)
+  explains that hidden removed comments can remain counted. This supports a possible
+  source-count difference, not identification or recoverability of every absent ID.
+
+### Media and live verification
+
+- Media completion jobs `28a2d5da-5f51-4caa-ace0-e4321da70846` (two posts) and
+  `cbd8ceee-e66c-49f2-992c-d507b6393692` (one post) completed all 12 targets.
+  The final inventory has 1,038 source associations and 1,035 unique mirrored assets,
+  with zero missing/dangling/unmirrored links or committed assets without links.
+  All 484 comments and media phases and latest parent targets are committed.
+- Storage HEAD checks verified the two new files and reused the unchanged 1,033
+  asset proofs. All 1,035 assets have verified size/type and valid hosted metadata.
+  Browser-style public HTTP 206 reads verified the new 33,111-byte JPEG and
+  2,777,447-byte GIF signatures and ranges. Default urllib received a client-profile
+  Cloudflare 403; compatible requests succeeded. No CDN/security setting changed.
+- Native production counts, season summary, settings, and exact-scope coverage all
+  returned HTTP 200. Counts are 484 tracked posts, 484/484 detail and comments,
+  288/484 posts with media, all 288 mirrored (59.5% incidence). Media incidence is
+  separate from completion of each post's media phase.
+- The friendly TRR Chrome profile verified the cloud production page
+  `https://trr-app.vercel.app/social/reddit/rhoslc/rhoslc/s7`. The initial catalog
+  error cleared on reload; capture tools finished loading and showed successful
+  recovery/media run cards with zero unresolved work. Native data and rendered
+  checkboxes both confirm schedule, AI, and scheduled analysis are false.
+  The separate `14 stale windows` badge still reflects per-window history; the
+  manual recovery used the two explicit season capture periods.
+- No local startup target was used: verification targeted cloud production.
+  No Modal deployment was required; jobs used the existing main worker.
+  TRR-APP build: not applicable (data recovery; no app source or contract change).
+  No direct-SQL ownership or schema change occurred.
+- Production screenshot: this chat's visualization directory,
+  `rhoslc-comment-gap-recovery-final.jpg`. Private source checkpoints, SQL receipts,
+  hashes, and native run receipts are retained under `/tmp` for audit/recovery;
+  they contain no credentials in delivered summaries.
+
+### Evidence
+
+- `/tmp/trr-rhoslc-gap-final-scope.json`
+- `/tmp/trr-rhoslc-comment-gap-sweep/frontier-only-summary.json`
+  (SHA-256 `149f4304a065764088c236e7751931197e771b2298ccda5c86a36701b7c7b238`)
+- `/tmp/trr-rhoslc-gap-recovery-runs.json`
+- `/tmp/trr-rhoslc-gap-fresh-capture.json`
+- `/tmp/trr-rhoslc-gap-cancel-redundant.json`
+- `/tmp/trr-rhoslc-gap-db-verification.json`
+- `/tmp/trr-rhoslc-gap-final-reconciliation.json`
+- `/tmp/trr-rhoslc-gap-media-completion.json`
+- `/tmp/trr-rhoslc-asset-audit.json`
+- `/tmp/trr-rhoslc-gap-public-delivery.json`
+- `/tmp/trr-rhoslc-gap-api-verification.json`
