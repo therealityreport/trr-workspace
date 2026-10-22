@@ -7,8 +7,8 @@ handoff:
   include: true
   state: recent
   last_updated: 2026-10-22
-  current_phase: "Period and Episode 1 fixes deployed; intended-date API verification passed"
-  next_action: "Visual production readback awaits reconnection of the user-selected TRR Chrome window"
+  current_phase: "Period and Episode 1 fixes complete; production API and browser verification passed"
+  next_action: "None; preserve disabled schedules and AI processing"
   detail: self
 ```
 
@@ -562,11 +562,22 @@ intended dates, and keep Reddit schedules and AI processing off.
   with 16 periods in 2.84 s; Episode 1 HTTP 200 with 94 posts in 741 ms; coverage
   HTTP 200 in 1.28 s with the intended 5/2/7/0 classification; settings HTTP 200
   with all three flags false. Timings are individual observed requests.
-- Visual browser readback remains pending. The user-selected Chrome window
-  (identified by its Upstash tab) disconnected and did not return. The native
-  Window menu confirms only the other RHOSLC window is available. An asynchronous
-  request to reconnect or authorize that window is pending; no replacement profile
-  was used. Production is the verification target; no local startup was needed.
-  No screenshot is claimed for this repair.
+- Visual production verification completed at `2026-10-22T18:09:52Z` after the
+  user authorized the connected RHOSLC Chrome window. The current production
+  alias still serves `dpl_DMvd5MzHay9ztvxSoCbJZJvgC2Mk` in READY state.
+  The season page shows 5 covered, 2 partial and 7 upcoming, the intended
+  September 9 at 20:00 preseason start, and Episode 1's saved 19:01:01/19:01:10
+  cutovers. No period-loading warning or timeout warning is present.
+- Opened Episode 1 through View All Posts (94). Its dashboard rendered 94 tracked,
+  94 matched and 94 fetched posts, with 94 View Details links and no timeout.
+  Opened the capture tools and waited for saved settings to finish loading:
+  schedule, AI analysis and daily AI analysis are all unchecked, with enabled
+  controls. No setting was edited/saved and no capture or analysis action ran.
+  Capture tools were collapsed and the tab returned to the season overview.
+- Browser target: cloud production; no local startup. Reused passing source/build
+  checks because no application code changed. Screenshot and DOM evidence:
+  `browser-verification.json`, `browser-coverage-final.png`,
+  `browser-intended-dates.png`, `browser-episode1-loaded.png`, and
+  `browser-settings-off.png` in the private release directory below.
 - Release manifest, provider snapshots, commands and API receipts:
   `~/.codex/tmp/trr-reddit-periods-01a16033/`.
