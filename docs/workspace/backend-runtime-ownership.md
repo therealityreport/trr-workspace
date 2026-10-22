@@ -108,6 +108,23 @@ conclusive child-access failure evidence without returning replies. Network or
 bootstrap failures remain indeterminate and do not enable login. It is not scheduled and is not an ingestion
 completion receipt.
 
+## Social profile summary projections
+
+Postgres maintains `social.instagram_posts.profile_summary_header` from the same
+row's owner/coauthor fields, raw data, native comment counts, and media arrays.
+The value contains exact account identities and scalar comment/media counts.
+The trigger recomputes it on insert and on every change to an input or to the
+derived column. Source fields remain authoritative. This is per-post derived
+data, not an account-level cached response; comment-rollup counts remain joined
+at read time.
+
+FastAPI reads this projection for the Instagram lite header. Older schemas,
+unbackfilled rows, and malformed legacy inputs use the original calculation.
+The additive schema can remain in place during an application rollback.
+The Instagram catalog summary uses equivalent direct identity comparisons that
+can stop after a native owner match, before reading raw JSON. These changes do
+not alter the app response contract, authorization, or Redis payload TTL.
+
 ## Redis Runtime Contract
 
 Local single-process FastAPI may run without Redis by using the in-memory
