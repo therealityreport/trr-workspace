@@ -70,3 +70,10 @@ python scripts/db/social_profile_dashboard_explain.py --platform instagram --han
 ```
 
 Live EXPLAIN output is written under `TRR-Backend/tmp/social-profile-dashboard-explain/` and exits nonzero if an obvious large-table sequential scan is detected.
+
+
+## TikTok catalog policy (2026-10-23)
+
+TikTok backfill selects `post_details` and `media`. Comments remain disabled; explicit comment selection is rejected by both backfill launch paths with `TIKTOK_COMMENTS_DISABLED`. Previously queued catalog configs cannot enable comment fetching. Instagram task selection and behavior are unchanged.
+
+The shared TikTok catalog uses anonymous native-browser listing with per-page durable checkpoints. Retry checkpoints are limited to the same run and compatible task/date settings. The worker retains the advertised full-history denominator and reports `catalog_incomplete` when listing stops without qualified coverage. A queued response is not completion evidence. Media enqueue counts are not proof that hosted assets exist; verify media worker results separately.
