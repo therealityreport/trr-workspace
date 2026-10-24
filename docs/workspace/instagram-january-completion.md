@@ -48,7 +48,18 @@ The local worker's optional January recovery binding is selected by
 `TRR_INSTAGRAM_JANUARY_RECOVERY_RUN_ID`,
 `TRR_INSTAGRAM_JANUARY_RECOVERY_INTENT_HASH` and
 `TRR_INSTAGRAM_JANUARY_RECOVERY_SOURCE_REVISION`. At a drained completion boundary
-it reopens one eligible source gap, then continues ordinary durable scheduling.
+it first reparses retained public responses for every settled post under the exact
+checkpoint and parser fingerprint. Audits stream retained payloads without page
+checkpoints. Historical observations can recover native IDs and attachments but
+cannot advance current traversal proof or undo newer missing/deleted observations.
+Only a complete offline audit can precede a fresh source comparison. A matched
+zero-gap inventory does not trigger a root rescan.
+
+Productive exhausted attempts receive journaled extensions of twelve attempts
+when immutable page evidence proves progress in the last owner generation. Active
+or uncertain owners, source blocks, backoff, checkpoints and counters remain
+protected. Two complete recovery passes with no improvement still stop rescans.
+The worker reopens one eligible source gap and continues durable scheduling.
 A replayed completion choice cannot finish over newly unresolved work.
 
 After ordinary work and bounded recovery settle or a stage remains blocked, the same worker can invoke the
