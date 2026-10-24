@@ -51,11 +51,11 @@ The local worker's optional January recovery binding is selected by
 it reopens one eligible source gap, then continues ordinary durable scheduling.
 A replayed completion choice cannot finish over newly unresolved work.
 
-After ordinary work and bounded recovery settle, the same worker can invoke the
+After ordinary work and bounded recovery settle or a stage remains blocked, the same worker can invoke the
 maintained `scripts/ingestion/certify_january.py` through its explicit January
 binding/storage-binding/output environment settings. Certification runs in one
 owned process group; abort and timeout terminate and reap certifier/decoder
-children. Existing private artifacts are never overwritten.
+children. Existing complete private artifacts are never overwritten. Interrupted empty output is archived, and worker startup resumes missing certification under its coordinator lease.
 
 Certification inventories all stage target keys. Known count gaps produce
 `final_acceptance=false` without expensive retained-page scans or byte reads. The
