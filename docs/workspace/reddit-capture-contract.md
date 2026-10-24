@@ -121,3 +121,20 @@ cutovers remain authoritative. Stored-window primary content reads have a scoped
 25-second backend timeout to allow cold starts; small polling reads keep their
 existing budgets. Both reads require administrator authorization and change no
 schedule or AI settings.
+
+
+## Independent post and comment lifecycle
+
+An explicit post deletion/removal redacts only the post and its post-level media.
+It retains public comments, their IDs, parent/depth relationships, author fields,
+and comment-level media. Comment deletion/removal requires an explicit observation
+for that comment; it retains the canonical record and a tombstone while clearing
+its content and identity. A deleted parent is not comment-deletion evidence and
+does not block saving public comments. Nested reply copies and diagnostic snapshots
+are cleared to prevent reintroducing separately deleted content.
+
+Existing enrolled threads continue lifecycle checks after parent deletion/removal
+so their surviving comments still receive independent checks. The parent remains
+marked deleted/removed. This does not enable capture schedules or AI. Historical
+blanket tombstones require a separately authorized, exact-ID recovery from fresh
+public source evidence; they are not automatically removed.
