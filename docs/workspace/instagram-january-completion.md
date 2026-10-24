@@ -68,11 +68,19 @@ binding/storage-binding/output environment settings. Certification runs in one
 owned process group; abort and timeout terminate and reap certifier/decoder
 children. Existing complete private artifacts are never overwritten. Interrupted empty output is archived, and worker startup resumes missing certification under its coordinator lease.
 
-Certification inventories all stage target keys. Known count gaps produce
-`final_acceptance=false` without expensive retained-page scans or byte reads. The
-no-gap path independently audits listing, post fields, all comment IDs/parentage,
-media slot order, selected profiles and canonical records in two read-only
-snapshots. Source/binding/evidence fingerprints must remain unchanged. Complete
+Certification inventories all stage target keys. During unfinished traversal,
+known count gaps produce an interim `final_acceptance=false` without expensive
+retained-page scans or byte reads. Terminal runs proceed through the deep audits
+so a source-count limitation does not hide independent media and byte results.
+The complete observed media path requires exact full key coverage, passing post
+proof, known counts, and verified native pages, IDs, parents, clocks, canonical
+rows and attachment bindings. Only the positive public-native-exhaustion count
+parity diagnostic is permitted there. Unknown or incomplete inventories still
+block media/byte acceptance. Count parity and aggregate comments remain blocked
+when a gap exists, so successful known-media checks cannot produce final
+acceptance. Deep audits independently inspect listing, post fields, all comment
+IDs/parentage, media slot order, selected profiles and canonical records in two
+read-only snapshots. Source/binding/evidence fingerprints must remain unchanged. Complete
 hosted bodies are streamed, hashed and decoded, including animation frames and
 video/audio streams; there is no silent 50 MiB object exclusion. Public locations
 must match an explicitly verified account/bucket/key/URL binding.
