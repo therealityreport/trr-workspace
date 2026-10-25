@@ -38,9 +38,39 @@ attempts, future retry deadlines and source/identity blocks. Lock order is media
 target before post advisory/row locks. Comment writes and comment replay invoke
 that invalidation before their canonical writer acquires the post lock.
 
-The local worker drains each comment batch before requesting one proved media
-candidate. Existing admission and six-comment policy remain effective. Explicit
+The local worker gives ready media a turn in a free activity slot. A due turn
+waits for one comment child to finish before reservation; up to five other comment
+activities may continue. Total active activities remain at most six. Due state
+survives partial batches, admission waits and partition continuation. Other phase
+changes and finalization still drain all children. Existing admission and explicit
 execution selections remain authoritative.
+
+Changed post renditions use deterministic SHA-256 sibling keys when an immutable
+existing key contains different bytes. Original objects remain intact. Exact
+resolved keys flow through the existing result/receipt format. Prior role
+provenance is retained separately with a current archival retention clock and
+unchanged original clocks inside its payload. This auxiliary evidence cannot
+stand in for completion proof. Comment attachments and avatars retain their
+strict existing conflict rules.
+
+Public avatar discovery and expired-URL refresh use the same bounded observation
+path. A saved native ID is only a lookup hint; a fresh response must pass strict
+native identity, exact handle and provenance checks. Sources allow one legacy
+request or the reviewed bootstrap plus GraphQL POST, with explicit request
+permits. Fresh signed download URLs stay in private memory and must match the
+canonical source reference. Evidence, registry rows and replay contain canonical
+references. A changed current avatar cannot silently replace a required older
+asset. Partial progress is preserved under the current media owner.
+
+Media inherits the parent process's absolute source deadline and cleanup reserve.
+CDN timeouts use the remaining budget after admission. Each production R2 SDK
+operation runs in a child process within the existing media activity group.
+The owner enforces the absolute deadline and kills and reaps that child on
+cancellation. Child deadline and parent-liveness guards cover abrupt parent loss.
+Conditional writes and content-versioned keys preserve existing bytes; a lost
+upload response is reconciled through the existing object check on retry.
+Expected deadlines and local control/database failures remain technical outcomes,
+not public-source rejection evidence.
 
 ## Completion lifecycle and certification
 
@@ -97,3 +127,75 @@ host aliases or rewrite URLs without object proof.
 Public API shape and app contracts are unchanged. No app production build or SQL
 schema migration is required. Operational progress must distinguish traversal,
 source-count gaps, preserved media, and final acceptance.
+
+## Bounded reply transport candidate
+
+`SOCIAL_INSTAGRAM_PUBLIC_REPLY_CONCURRENCY` accepts only `1` or `2`, default `1`.
+It applies to strict public reply traversal. One serialized owner runs each
+parent branch's parser, evidence callback, canonical write, receipt and checkpoint
+transition. HTTP tasks receive immutable request descriptors and independent
+anonymous cookie jars. Each request starts from the latest owner-validated
+snapshot; response cookies never carry automatically into another request.
+
+Two slots means two total outstanding uncommitted pages, including pacing,
+in-flight transport, completed responses and the current commit. A parent cannot
+send its next cursor until its prior response has been processed. Completed
+responses are consumed without waiting for an earlier slow parent. Existing
+global and per-fetcher pacing, page sizes and retry budgets remain authoritative.
+Six post workers therefore admit at most twelve outstanding reply pages.
+
+Waiting bodies use anonymous disk files. Raw transport, bounded gzip/deflate
+decompression and JSON parsing use 64 KiB raw chunks; parsed native objects,
+including complete large strings, belong to the single owner. Oversized
+bodies are not truncated. Trailing garbage, failed reads and malformed pagination
+cannot prove exhaustion. Shutdown cancels and awaits HTTP tasks and drains
+shielded pacing callbacks before closing clients or leaving ownership.
+
+The optional `SOCIAL_INSTAGRAM_PUBLIC_REPLY_CANARY_TARGET`,
+`SOCIAL_INSTAGRAM_PUBLIC_REPLY_CANARY_GENERATION`,
+`SOCIAL_INSTAGRAM_PUBLIC_REPLY_CANARY_RUN_ID` and
+`SOCIAL_INSTAGRAM_PUBLIC_REPLY_CANARY_RUN_GENERATION` must be supplied together. Only
+that exact run, target and generation pair can use the configured concurrency;
+other attempts remain serial. This makes a limited canary a normal continuation
+of one existing attempt, with no duplicate traversal. The optional local
+`TRR_INSTAGRAM_REPLY_TELEMETRY_DIR` stores fixed numeric timing receipts and public
+target/owner-generation identity, with no credentials, headers or comment text.
+
+Source validation and offline benchmark success do not activate the candidate.
+Independent review, packaged-source verification, deployment readiness and a
+bounded live canary remain prerequisites to enabling concurrency two broadly.
+
+## Technical public reply failures
+
+Generic failed public child requests retain their native error envelope and a
+versioned top-level `public_reply_failures` entry. This technical metadata stays
+outside native lane/page proof. The write requires the live run, exact owner
+generation and unchanged checkpoint. It creates no successful page receipt,
+canonical row, cursor advance, count or native-exhaustion proof.
+
+Other parents and the existing supported child-document alternatives can
+continue. Resume visits healthy parents before failed ones. A repeated technical
+request uses 60/120/240-second scheduling delays, capped at 900 seconds, and a
+technical hold after three identical failures. Stronger server waits still stop
+requests globally. Auth, rate, root, parser and ownership/control failures retain
+their existing stop behavior. Only a genuinely parsed and committed page clears
+its own parent's failure. Any outstanding technical failure blocks settlement.
+
+Recovery commands replay an accepted journal entry before admission. Both command
+and run/account root admission use nonblocking locks. The shared limit counts
+four unresolved recovery roots even after a restart marker is consumed. Busy or
+full admission defers the finalizer, and abort cannot fall through to completion.
+
+## Public storage client identity
+
+The hosted reader declares `TRR-January-Media-Audit/1.0`. The verified managed R2
+binding and original keys/bytes remain unchanged. A controlled October 25 check
+found Cloudflare 403/1010 for urllib's library-default user agent while the same
+object passed S3/public equality and full decode with explicit TRR identification.
+The maintained requests client also passed before the identification change.
+
+The reader records only bounded safe HTTP status, provider code and CF-Ray
+diagnostics on failure. A 1010 client-signature denial is distinct from missing
+bytes, source unavailability and rate limiting; it is not blindly retried. The
+existing 429 shared stop and Retry-After behavior remain authoritative. This
+object-level delivery proof does not certify the complete January media inventory.
