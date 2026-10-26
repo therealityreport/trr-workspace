@@ -36,6 +36,12 @@ Media admission still requires exact agreement between the supporting current
 comment receipt and active canonical inventory. Historical replay preserves
 saved data but cannot union older roots into current coverage.
 
+At recovery completion boundaries, known deficits with remaining recovery
+allowance take priority. A fresh root requires that target's current durable
+retained audit; unrelated parity or exhausted targets do not hold it behind a
+cohort-wide audit. Those targets retain their offline audits when no eligible
+deficit remains. Ownership, count and source-budget gates still apply.
+
 `scripts/ingestion/refresh_count_witnesses.py` previews up to five explicit
 January posts by default. `--apply` uses the supported public adapter, at most
 three sends per target and a maximum 90-second operation plus bounded cleanup.
