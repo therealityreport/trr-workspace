@@ -60,6 +60,10 @@ Optional process-local limits preserve ordinary persistent behavior when unset:
 | `TRR_INSTAGRAM_LOCAL_WORKER_PARENT_PID` | Actual positive parent PID; requires a deadline and stops work on reparenting. |
 
 A handover must observe the old process and grant absent before replacement.
+At a bounded recovery cutoff, stopping its process alone does not prevent a
+persistent worker from resuming queued work. Use the existing fenced cancel and
+hold commands after drain qualification, preserving the original checkpoints,
+receipts, source accounting and retry holds before restoring ordinary dispatch.
 Source readiness, installed code, active ownership, and full-run certification
 remain separate acceptance facts. Follow the current deployment record for
 runtime identities and outstanding January gaps.
