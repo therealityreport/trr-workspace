@@ -233,3 +233,34 @@ Source `5619f5569cc8` is active in Modal v166 and local package
 saved records and accounting unchanged. The backend deployment record owns the
 bounded matched results and runtime/rollback receipts. These changes do not
 certify January or authorize a new recovery window.
+
+## Explicit one-hour January recovery
+
+The maintained operator is `TRR-Backend/scripts/ingestion/recover_january_window.py`.
+Its default prepares read-only; `--execute` is used only for the user's explicit
+one-hour continuation. The original January run/intent and public local placement
+stay fixed. An internal journaled command releases only the expired-window hold,
+increments the generation and records one database-clock start/deadline exactly
+3,600 seconds apart. Replaying acceptance returns that original deadline.
+
+The bounded worker pins run, generation, source and window. Scheduling, admission,
+reservations, source accounting and child lifetime enforce the window. Runnable
+comments/replies take priority; media may proceed when comment work has no
+immediately available dispatch. Each eligible count-gap target gets its current
+retained audit before source recovery. Audits have a reaped private process and
+a 60-second limit, with input-bound deferral and durable-summary reconciliation
+after lost acknowledgment. Preparation never consumes a partition decision ordinal.
+Six comment workers, two reply slots, four recovery roots, shared source pacing,
+saved cursors, technical holds and two unchanged completed passes remain binding.
+
+The operator stops/reaps, proves coordinator drain, cancels the exact generation,
+restores the durable hold and verifies target/receipt preservation before restoring
+the ordinary native service. Lost grant/bootout acknowledgments are reconciled;
+signal errors cannot bypass reaping. No automatic extension, restart, cohort audit
+or full certifier is part of the window.
+
+Before/after reports separate fresh-source comments/replies, retained replay,
+previously known/tombstoned identities, count-observation changes, logical media
+slots and distinct fully read hosted objects. These operational results do not
+certify full January completeness. Backend deployment records own activation and
+measured recovery outcomes.
