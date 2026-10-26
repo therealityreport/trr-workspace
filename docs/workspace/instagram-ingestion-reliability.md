@@ -13,6 +13,9 @@ admin proxy preserves that route family and command idempotency keys.
   resume, rebalance, auth repair/follow-up, public recovery, and guarded restart
   return `409` with `instagram_v2_owns_launches`. Read-only preview and existing
   job cancellation remain available.
+- Internal comments and catalog new-run helpers enforce the same configured v2
+  ownership before probes or persistence, including deferred and CLI callers.
+  Already accepted job execution keeps its existing path.
 - Progress accepts optional nullable `execution_hold_reason`, a bounded operator
   code. A hold disables actions and remains visible. Diagnostics prioritize
   unresolved targets within the existing 100-record limit and refresh when the
