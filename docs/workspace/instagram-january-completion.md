@@ -242,6 +242,10 @@ one-hour continuation. The original January run/intent and public local placemen
 stay fixed. An internal journaled command releases only the expired-window hold,
 increments the generation and records one database-clock start/deadline exactly
 3,600 seconds apart. Replaying acceptance returns that original deadline.
+This explicit continuation checks actual active/uncertain execution capacity:
+queued/running runs, live or unknown-expiry owners, and recent unreceipted sends.
+Historical cancelled diagnostic rows alone do not occupy capacity and are not
+modified. Generic new-launch/canary limits remain unchanged.
 
 The bounded worker pins run, generation, source and window. Scheduling, admission,
 reservations, source accounting and child lifetime enforce the window. Runnable
@@ -264,3 +268,28 @@ previously known/tombstoned identities, count-observation changes, logical media
 slots and distinct fully read hosted objects. These operational results do not
 certify full January completeness. Backend deployment records own activation and
 measured recovery outcomes.
+
+The October 26 execution ran from 17:16:09 to 18:16:09 New York, using Modal
+v169 and local package `ig-window-d39036e05067`. It added 226 fresh-source native
+IDs (17 top-level comments, 209 replies), with no retained-replay additions or
+previously missing IDs restored. DTnNosUDuqf gained 11 comments/62 replies;
+DTnbjYyk4vl gained 6 comments/147 replies. Additional accounting was 5,424 source
+requests, 4,613 retained comment pages and 72 immutable receipts. No new hosted
+media slots or objects were recovered. No old native IDs, parent links,
+page/evidence identities, immutable receipts or hosted URLs were lost.
+
+The fixed-cohort canonical count shortfall against unchanged baseline expected
+totals fell from 4,651 to 4,425, distinct from current-scan coverage gaps. Four
+reopened scans have no final settlement, so their prior gaps must not disappear
+from the recovery report. Full January acceptance remains false. The large
+post's 166/166 budget and six branch failures (four technical holds) are unchanged;
+another post has an exhausted 13/13 budget and one failed branch. Three scans
+stopped on bounded attempt deadlines with their progress saved.
+
+Recovery worker 45515 exited zero after 3,600.006 seconds. The exact generation
+was cancelled and durably held as generation 4 before ordinary native worker
+68665 was restored from the qualified package with one coordinator grant and
+the bounded settings removed. No extension or restart was issued. The reporter's
+structured-storage-binding edge case was repaired and checked after restoration;
+the final report was rebuilt from the frozen snapshots without reopening work.
+The private evidence directory is `~/.codex/tmp/ig-recovery-window-01a1798c/run-3/`.
