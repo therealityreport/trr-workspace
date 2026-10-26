@@ -73,3 +73,28 @@ receipts, source accounting and retry holds before restoring ordinary dispatch.
 Source readiness, installed code, active ownership, and full-run certification
 remain separate acceptance facts. Follow the current deployment record for
 runtime identities and outstanding January gaps.
+
+
+## Performance without reducing coverage
+
+Production comment pages transfer changed checkpoint entries and compare an
+opaque SHA-256 from the last committed PostgreSQL checkpoint. Initial writes
+still compare the complete checkpoint. PostgreSQL reconstructs the full state
+and stores it in both the target and immutable page receipt in one transaction.
+Root restart deletions, evidence, parent links and ownership fences are retained.
+Custom writers and arbitrary checkpoints retain the full-snapshot write path.
+
+Strict public reply traversal keeps one serialized writer in a dedicated thread
+with a persistent context. The event loop can progress existing transport while
+a page commits. Each next cursor still waits for its prior commit; the two-page
+outstanding limit, pacing, server waits and parent selection are unchanged.
+Cancellation joins the current owner transition before response/generator close.
+
+Media hosting reuses identical avatars within one snapshot using the exact
+signed delivery URL, normalized handle, cache proof and provenance. Every role,
+source reference and observation clock remains. Identical registry versions
+write once; contradictory duplicate proofs fail before any write. Attachment
+refresh indexing and an empty-inventory fast path remove redundant local work.
+
+Short controlled comparisons establish component improvements only. They do not
+certify full January coverage or promise a full-run completion time.
