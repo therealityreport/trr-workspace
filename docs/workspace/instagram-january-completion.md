@@ -199,3 +199,37 @@ diagnostics on failure. A 1010 client-signature denial is distinct from missing
 bytes, source unavailability and rate limiting; it is not blindly retried. The
 existing 429 shared stop and Retry-After behavior remain authoritative. This
 object-level delivery proof does not certify the complete January media inventory.
+
+
+## Actual-start pacing and atomic source admission
+
+Strict public bootstrap, root and reply sends use one shared dispatch turn through
+admission until HTTP starts. The configured source key, maximum local/global
+spacing, server waits and deadlines remain authoritative; unused turns do not
+reserve catch-up credit. Reply admission stays on the single serialized owner.
+Queued turns receive cancellation before drain. Exact unused permits are refunded
+through an idempotent journal; a per-admission state prevents double local
+correction if cleanup retries after an uncertain commit or turn-close failure.
+Persistent failures retain an explicit recovery descriptor and release unused
+leases without inventing a send or source-health failure.
+
+Production admission fences lane → run → target and counts the source send in its
+final atomic SQL transaction. Normal evidence/page persistence shares one owner
+fence and transaction. Its post-evidence savepoint retains source evidence on
+parse or canonical-write failure; complete checkpoints, hash comparisons and
+immutable receipt bindings remain mandatory. Custom callers retain compatibility.
+
+The same native-proof classification governs resume and generator construction.
+A complete embedded connection requires its explicit count and all unique native
+IDs; sparse previews cannot replace a saved query-bound cursor. Unknown counts,
+positive gaps, technical failures and authorized recovery remain pending. Default
+page size is still 12; 50 remains unqualified. Only a genuinely new, explicitly
+configured root can downgrade before its first accepted page after HTTP 400.
+Snapshot-local exact attachment-byte reuse preserves every destination key,
+slot, original clock and hosted-object check, with an 8 MiB total cache ceiling.
+
+Source `5619f5569cc8` is active in Modal v166 and local package
+`ig-dispatch-5619f5569cc8`. January remains generation 2 cancelled/held with its
+saved records and accounting unchanged. The backend deployment record owns the
+bounded matched results and runtime/rollback receipts. These changes do not
+certify January or authorize a new recovery window.
