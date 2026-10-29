@@ -1,0 +1,56 @@
+# Resolve Instagram comment recovery and verify gaps for any date range
+
+Replaces the conversation plan “Resolve January Instagram comment recovery and verify remaining gaps”. January 2026 is a retained example dataset, not a product, worker, account restriction, or implicit collection target.
+
+## Outcome and ownership
+
+One ordinary Instagram ingestion workflow accepts an account and immutable date range, runs selected stages, resumes interrupted work, and reports evidence-backed completeness. The lead owns backend integration, app follow-through, expensive checks, deployment, and acceptance in this chat. Keep the existing working branches and unrelated dirty files. Do not create a comments-only worker.
+
+Consolidation: workspace retains main; backend and app retain main and chore/repo-hygiene-2026-09-25. Reviewed merged history is pushed to both retained refs. Old branch histories remain recoverable in verified bundles outside the repositories. Uncommitted unrelated changes are preserved and are not advertised as merged or shipped.
+
+## Run contract and authorization
+
+- Launch uses existing v2 account, source profile, selected tasks and timezone-aware date_start/date_end fields. Date intervals are start-inclusive/end-exclusive; calendar UI conversion remains at the existing boundary. Never substitute January dates or a fixed run/account.
+- Existing administrator authorization is sufficient for normal start, resume and retry. Runtime generation, placement, source-version, lease and retry checks are machine safeguards, not additional human permission steps.
+- Normal local runs use the same API controls as Modal runs, with an online compatible local worker required. The command uses a store bound to the persisted placement, checked again under the transaction lock. It must not move work to another placement or bypass source-profile restrictions.
+- A bounded recovery lineage is distinct from an ordinary paused run. Preserve its historical clocks and holds; a generic resume must never erase them. Use one durable recovery command keyed by run, predecessor generation, intent and requested source. Retried submissions return the same receipt; stale or duplicate requests cannot issue another grant.
+- A changed-source repair may request one new opportunity through the normal recovery operation, within already authorized task scope. Record its reason and exact predecessor. New opportunity and continuation are explicit machine states, not inferred from absence of files. Persist clock and emergency deadline before launching a worker. Continue failures with the same clock; an elapsed clock stops work.
+- Default bounded recovery stops after 900 seconds without useful progress and has a six-hour emergency ceiling. Source waits remain waits. Request/page counts or alternating historical identities do not reset useful progress. Completed comment phases remain closed on continuation. A deliberate new recovery is a new generation, never a rewrite of the old phase.
+- Generic recovery configuration uses TRR_INSTAGRAM_RECOVERY_* and generic certification/binding names. Accept legacy JANUARY aliases for existing installed packages; reject conflicting values. New launchers emit generic names. Historical receipts and certificate field names remain readable.
+
+## Six required repairs and workflows
+
+1. **Failed reply branches:** classify retained envelopes per parent/query/cursor as request/parser defect, explicit restriction/rate limit, incomplete traversal, or unknown. Preserve raw evidence privately. Error envelopes, including HTTP 200 errors, never prove empty/deleted replies. Fix demonstrated defects with response regressions. Unknown eligible branches get at most one diagnostic attempt within the run budget. Release a technical hold only through an audited checkpoint-bound repair that addresses its cause; retain all unrelated holds and server backoff.
+2. **Attempt exhaustion:** keep historical counters. Grant at most one extra attempt to an exhausted target when a verified repair or unfinished productive traversal justifies it. Bind the receipt to target, checkpoint, generation and source; duplicate or stale grants fail or replay without additional attempts. Existing productive extensions require real committed progress. Exhausted unchanged failures remain blocked.
+3. **Interrupted scans:** reconcile current target owners, reservations and dispatches before continuation. Resume valid cursors and accepted-page evidence. An invalid cursor uses the guarded fresh-root mechanism with held parents preserved; never merge historical observations into fresh-scan completeness proof. Report completed, source-blocked, exhausted and interrupted outcomes separately.
+4. **What is missing:** capture stable before/after snapshots. Report saved-count shortfall, latest-scan coverage gap and unknown expected totals separately, per post. Exact missing identities require evidence; count differences are not proof of retrievable comments. Separate new roots, replies, retained replay, restored missing flags and traversal-only progress. Record expectation changes explicitly and compare preserved IDs/parents/flags.
+5. **Coordinator failures:** retain bounded scheduling, heartbeat, checkpoint and shutdown timings without secrets. Keep the full-capacity checkpoint optimization. Reproduce demonstrated scheduling/ownership failures in focused tests; do not relax lease/watchdog deadlines. Reconcile and rehold after failure, preserve receipts, repair safely, and resume only remaining authorized budget.
+6. **Acceptance:** drain work and certify a stable final dataset for the actual account/date interval. Check post membership, root/reply traversal exhaustion, parent links, canonical uniqueness, expected totals and unchanged evidence. Comment completeness and whole-run/media completeness are separate. final_acceptance stays false for any unresolved required gate. Every blocker includes evidence and an exact next action.
+
+## Implementation sequence and interfaces
+
+1. Complete and verify repository consolidation before source changes are published; preserve dirty/index state.
+2. Implement ordinary local control correction, generic configuration and date-derived certification. Keep existing API shapes. Queries must advertise only controls the service will accept, including held/bounded distinctions.
+3. Generalize operator entry points to recover_run and certify_run. Require explicit run/account/intent/generation/package identity. Derive interval from the immutable run; no fixed environment-file path or retained example run. Keep legacy wrappers solely for compatibility.
+4. Implement durable generic recovery authorization and receipts in the existing command store; do not introduce a new schema unless existing command records cannot express the required atomicity. Prove the new-opportunity/continuation/crash boundary before executing collection.
+5. Apply reply, exhaustion, scan and reporting repairs only where current evidence shows a remaining defect. Existing passing hold/frontier/drain fixes are reused, not rewritten.
+6. Update app controls and API documentation for ordinary local resume and truthful hold/recovery status. Reuse the existing account/range launcher. No separate January or comment-only launch surface.
+
+## Verification and release gates
+
+- Regression matrix: non-January interval, cross-year interval, leap day, single-day interval, invalid/reversed/naive interval; exact intent/hash/account binding; generic/legacy config agreement and conflict.
+- API/DB matrix: ordinary local resume and targeted retry, offline/incompatible worker, placement race, repeated idempotency key, held/bounded history, exhaustion, identity block and preserved checkpoints/backoff. Verify advertised actions match accepted commands.
+- Recovery matrix: fresh repair consumed once; crash before and after grant; two successive failures; expired timer; ended phase; stale owner; duplicate dispatch; branch-specific hold; HTTP 200 error; invalid cursor; count-only progress; source wait.
+- Use isolated PostgreSQL and stubbed source transport for regressions. No live source calls in qualification probes. Test full connected launch/control/scheduler behavior and representative app controls.
+- Serialize heavy work with codex-heavy, at most two test workers, 4 GiB RSS per process, bounded run time. Save each stage outcome in the task evidence directory; reuse unaffected passes. Review the complete change batch once; fix findings together and recheck only fixes.
+- Verify live TRR Modal account/environment/app before release; expected admin-56995 / main / trr-backend-jobs is a candidate, not an inferred default. Qualify loaded hashes and targeted behavior, run verify_modal_readiness.py --env with the same verified environment, and prove dispatch consumers use it. Preserve the prior verified release.
+- Activate local package only after fresh idleness/ownership evidence. Do not interrupt active jobs or remove active packages. App contract changes require quick validation and the project's production-build approval gate if triggered.
+- Final report distinguishes source-tested, committed/pushed, cloud-deployed, local-loaded, collected and accepted. Never equate a source check, recovery count or successful HTTP response with data completeness.
+
+## Current execution ledger (2026-10-29)
+
+- Consolidation and remote branch retirement completed; existing dirty work retained.
+- Source candidate: ordinary local resume/retry, generic recovery config aliases, run-derived certification range, explicit generic operator inputs. Not yet a deployed/accepted runtime.
+- Five configuration/range regressions and two isolated-PostgreSQL local-control checks passed. Broader affected checks and independent review are required before release.
+- Durable generic fresh-repair authorization, all six issue acceptance, app follow-through and live deployment/collection remain explicit acceptance gates; do not describe this ledger as completed implementation.
+- The earlier one-time recovery authorization remains unused. No automatic source collection follows from consolidation or plan publication; the selected run and evidence must be reconciled first.
