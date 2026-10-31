@@ -165,6 +165,26 @@ container, concurrency, CPU/memory, pool, worker, timeout, and cache limits.
 Broad US placement can include western regions; verify concurrent uncached
 profile latency after deployments instead of treating placement as a guarantee.
 
+## Modal maintenance coordination
+
+Exactly one maintenance owner must be enabled. With API runtime scheduling,
+the API launches Reddit dispatch, media-watch polling, executor heartbeats,
+and social recovery on their existing clocks. The heartbeat does not repeat
+Reddit dispatch or media polling in this mode. With Modal singleton cron
+ownership, the minute heartbeat retains those two coordination duties.
+
+The heartbeat interval remains 60 seconds and social recovery remains 120
+seconds. The recovery sweeper keeps its active execution timeout and waits
+for its coordinator subprocess to finish; its five-second scale-down window
+only shortens idle container retention. Heartbeat idle retention and its
+process-local authentication cache remain unchanged. Database claims,
+recovery, cancellation, and final pool cleanup retain their existing owners.
+
+Deployments must preserve the verified live maintenance owner explicitly.
+Local dotenv ownership settings can differ from the deployed named secret
+and are not evidence of production ownership. These internal coordination
+changes preserve the API and Next.js contracts.
+
 ## Redis Runtime Contract
 
 Local single-process FastAPI may run without Redis by using the in-memory
