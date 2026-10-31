@@ -180,7 +180,18 @@ only shortens idle container retention. Heartbeat idle retention and its
 process-local authentication cache remain unchanged. Database claims,
 recovery, cancellation, and final pool cleanup retain their existing owners.
 
-Deployments must preserve the verified live maintenance owner explicitly.
+Production uses Modal singleton cron ownership: deploy with
+`TRR_MODAL_ALWAYS_ON_SCHEDULES_ENABLED=1` and
+`TRR_MODAL_RUNTIME_SCHEDULER_ENABLED=0`. Function-level environment values bind
+the API and maintenance functions to the same deployment inputs used to build
+the provider schedules, overriding stale ownership values in named secrets.
+The deployment wrapper rejects missing or duplicate ownership and verifies the
+effective runtime configuration plus provider schedules after deployment.
+
+API-owned scheduling is a fallback only with explicit API minimum and maximum
+both set to one. Local deployment/import guards reject API ownership with zero
+warm containers or multiple replicas; remote workers do not run this deployment
+scaling guard. Cron ownership retains API minimum one and maximum eight.
 Local dotenv ownership settings can differ from the deployed named secret
 and are not evidence of production ownership. These internal coordination
 changes preserve the API and Next.js contracts.
