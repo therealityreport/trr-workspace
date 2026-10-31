@@ -7,15 +7,15 @@ handoff:
   state: recent
   last_updated: 2026-10-31
   current_phase: "Storage implementation, deployment and data reconciliation delivered"
-  next_action: "Authenticated browser acceptance and production app build remain deferred"
+  next_action: "Frontend release and final production acceptance in progress"
   detail: self
 ```
 
 ## Scope and ownership
 
-The user authorized implementation of the corrected storage plan, deferred Google Auth, required old buckets to remain untouched, and explicitly skipped the production app build. TRR-Backend owns storage, survey submission transactions, ingestion and retained screentime processing. TRR-APP owns UI, Firebase identity verification, drafts and API adapters. The archived SCREENALYTICS repository is not required.
+The user authorized implementation of the corrected storage plan, then verified Google Auth and explicitly authorized the production build, push, merge, frontend deployment and production checks on October 31. Old buckets remain untouched and two-account testing stays deferred. TRR-Backend owns storage, survey submission transactions, ingestion and retained screentime processing. TRR-APP owns UI, Firebase identity verification, drafts and API adapters. The archived SCREENALYTICS repository is not required.
 
-Existing shared checkouts and branches were retained. Unrelated edits remain untouched. Backend task commit: `bb9ded3936d27dde58df4670e18c414d4d815fd3`. App task commit: `c3d04facf1812c8248dea9e628cdcf868913180b`. Insert-only importer commit: `cf784740`. None was pushed.
+Existing shared checkouts and branches were retained. Unrelated edits remain untouched. Backend task commit: `bb9ded3936d27dde58df4670e18c414d4d815fd3`. App task commit: `c3d04facf1812c8248dea9e628cdcf868913180b`. Insert-only importer commit: `cf784740`. Scoped release branches were pushed; backend PR #199 is merged. Final frontend and workspace release evidence appears below.
 
 ## Delivered runtime and data
 
@@ -31,13 +31,13 @@ Existing shared checkouts and branches were retained. Unrelated edits remain unt
 
 Focused backend video/runtime/subtitle checks: 47 passed. Private-storage, checkpoint/recovery, survey contract and app tests passed; affected review fixes were tested once and independently cleared. App survey regression batch: 11 passed. Lightweight app validation, TypeScript, focused lint and contract/inventory checks passed. Existing passing checks were reused for unchanged inputs.
 
-Browser startup used `make dev-hybrid`, Chrome friendly profile TRR, `https://admin.trr.localhost`. Existing run history and the new source-video control render. Playback reports `Not authenticated` in the current browser; authenticated UI playback and two-user browser acceptance remain unverified. Google sign-in was not changed. TRR-APP production build: skipped at the user's explicit request. No production frontend deployment was performed.
+Google Auth acceptance later passed for the existing admin account on the local `make dev-hybrid` stack and production. Local private video playback advanced successfully; production sign-in, reload persistence and logout were verified. The explicitly approved production app build passed with two workers and a 3 GB heap; subsequent app edits are test-only CI repairs. Two-account testing remains deferred. Final frontend release evidence is recorded below.
 
 ## Survey reconciliation
 
-Read-only aggregate reconciliation found three completed legacy Survey X records absent from PostgreSQL, one completed episode response absent from PostgreSQL, and one older Firestore season-rating answer that differs from a newer PostgreSQL answer. Ranking order matches on that shared record. Preserve PostgreSQL's submitted answer and the legacy recovery source; do not overwrite either to manufacture agreement. One existing PostgreSQL owner is absent from current Firebase Auth and remains preserved for provenance review.
+Read-only aggregate reconciliation found three completed legacy Survey X records and one completed episode response absent from PostgreSQL. An initial RHOP rating-conflict interpretation was superseded: RHOP has no PostgreSQL season_rating column, and the initial comparison incorrectly compared the legacy answer with a synthetic SQL NULL. Schema-aware comparison confirms its supported ranking fields match. The original Firestore rating remains preserved. One existing PostgreSQL owner is absent from current Firebase Auth and remains preserved for provenance review.
 
-The insert-only importer applied three Survey X/profile pairs and one RHOSLC episode response on October 31 at 08:09 UTC. Original timestamps, answer payload provenance and source revision hashes were retained in PostgreSQL; Firestore writes were zero. A subsequent read-only dry run reports all five candidates as existing/matching, with no eligible missing rows. RHOP comparison uses its supported submitted fields (ranking); the legacy rating discrepancy remains preserved in its original stores and was not overwritten. The importer has 13 passing focused tests, including concurrent-insert rollback and exact Firestore source-revision checks. It is an operator CLI, not a change to deployed request or worker behavior.
+The insert-only importer applied three Survey X/profile pairs and one RHOSLC episode response on October 31 at 08:09 UTC. Original timestamps, answer payload provenance and source revision hashes were retained in PostgreSQL; Firestore writes were zero. A subsequent read-only dry run reports all five candidates as existing/matching, with no eligible missing rows. RHOP comparison uses its supported submitted fields (ranking); the legacy RHOP rating remains preserved in Firestore and was not overwritten. The importer has 13 passing focused tests, including concurrent-insert rollback and exact Firestore source-revision checks. It is an operator CLI, not a change to deployed request or worker behavior.
 
 ## Recovery and retained material
 
@@ -46,3 +46,13 @@ Durable task evidence resides at `.artifacts/storage-ownership-20261031`. The te
 Do not blindly roll back all runtime code to v177 after this cutover: older readers may not understand private references or compact receipts. Keep compatible private-storage readers and compact-proof readers during any writer rollback. Reference reversal requires concurrent-change checks and must not weaken the selected private delivery policy. No historical retirement or old-object removal is authorized by this implementation.
 
 Shared handoff-index generation is blocked by the unrelated `reddit-anchor-recovery-2026-10-23.md`, which lacks its required Handoff Snapshot section. This task handoff parses successfully. The closeout wrapper stopped before policy checks; no unrelated handoff was edited.
+
+## Production release acceptance
+
+Backend PR [#199](https://github.com/therealityreport/trr-backend/pull/199) merged as `d78f2716d291d0246441c22350b145b282ef0976`. Required tests, Ruff, Pyright and secret checks passed. Import-order and test-type repairs passed 22 affected tests and an independent fixes-only review.
+
+Current Modal runtime is `v180`, deployed October 31 at 15:13 EDT by the maintenance owner. Readiness passed against `main`, and Vercel production points to its API. Eight storage runtime modules match the release byte-for-byte; the ninth differs only in reviewed import ordering. No behavioral backend change or runtime rollback was introduced during Git release.
+
+A smoke executed inside the deployed container used real PostgreSQL persistence in a rollback-only transaction: two compact v2 page receipts, two canonical comments, legacy and compact recovery, tamper rejection, and release/re-reserve continuation passed. Both receipts were 426 JSON bytes. Rollback absence was verified; zero Instagram sends or media jobs occurred. This proves deployed persistence and resume, not live Instagram retrieval or queue dispatch.
+
+Frontend PR [#140](https://github.com/therealityreport/trr-app/pull/140) includes the storage UI and seven pre-existing social-profile test fixture/selector repairs. The seven affected cases passed. Current-head CI and production deployment are in progress.
