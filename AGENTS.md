@@ -87,3 +87,7 @@ This file owns shared TRR policy. Nested `AGENTS.md` files inherit it and add on
 - Follow [Memory and project knowledge](/Users/thomashulihan/.codex/instructions/RULES/memory-and-project-knowledge.md) for current project-memory opt-in, native-memory boundaries, and historical retrieval.
 - Use current source and existing project records for code structure and continuity. Do not enroll this repository automatically.
 <!-- project-manager:project-knowledge:end -->
+
+## Shared local service controls
+- `portless.project-manager.json` owns this project's service names, routes, run modes, and supported actions for PM and Menu Bar. Keep it aligned when changing a local launcher.
+- Use the declared HTTPS URLs for browser work. Inspect current service and router state before repair; do not substitute a numbered URL or take over another service's route.

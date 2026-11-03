@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 2,
+  "project": {
+    "name": "TRR",
+    "detail": "User, Admin, and backend API routes."
+  },
+  "services": [
+    {
+      "id": "trr-dev-portless",
+      "name": "trr",
+      "label": "TRR Dev",
+      "detail": "Default hybrid social scraping runtime.",
+      "launcher": {
+        "kind": "make-target",
+        "target": "dev-hybrid"
+      },
+      "routing": "self-managed",
+      "runModes": [
+        {
+          "id": "dev-hybrid",
+          "label": "Default",
+          "detail": "Hybrid runtime with named local URLs.",
+          "launcher": {
+            "kind": "make-target",
+            "target": "dev-hybrid"
+          }
+        },
+        {
+          "id": "dev-hybrid-media-safe",
+          "label": "Media Safe",
+          "detail": "Media-safe hybrid runtime.",
+          "launcher": {
+            "kind": "make-target",
+            "target": "dev-hybrid-media-safe"
+          }
+        }
+      ],
+      "stop": {
+        "kind": "make-target",
+        "target": "stop"
+      },
+      "repair": {
+        "kind": "make-target",
+        "target": "portless-repair"
+      },
+      "routes": [
+        {
+          "id": "admin.trr",
+          "label": "Admin",
+          "url": "https://admin.trr.localhost",
+          "expectedMode": "wildcard"
+        },
+        {
+          "id": "trr",
+          "label": "User",
+          "url": "https://trr.localhost",
+          "expectedMode": "managed"
+        },
+        {
+          "id": "api.trr",
+          "label": "Backend",
+          "url": "https://api.trr.localhost/health/live",
+          "expectedMode": "managed",
+          "health": {
+            "path": "/health/live",
+            "status": 200
+          }
+        }
+      ]
+    }
+  ]
+}

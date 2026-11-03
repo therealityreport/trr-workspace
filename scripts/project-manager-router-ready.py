@@ -74,7 +74,7 @@ def _trusted_tls_probe(ca_certificate: Path) -> bool:
         # The request therefore checks the router without contacting any app.
         connection.request("HEAD", "/", headers={"Host": "trr-router-readiness.invalid"})
         response = connection.getresponse()
-        return response.status == 404 and response.getheader("X-Portless") == "1"
+        return response.status in (404, 421) and response.getheader("X-Portless") == "1"
     finally:
         connection.close()
 

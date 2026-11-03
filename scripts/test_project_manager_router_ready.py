@@ -136,7 +136,7 @@ class ProjectManagerRouterReadyTests(unittest.TestCase):
 
     def test_tls_probe_is_bounded_verified_and_cannot_reach_an_app(self) -> None:
         connection = Mock()
-        connection.getresponse.return_value = SimpleNamespace(status=404, getheader=lambda name: "1" if name == "X-Portless" else None)
+        connection.getresponse.return_value = SimpleNamespace(status=421, getheader=lambda name: "1" if name == "X-Portless" else None)
         with patch.object(router.ssl, "create_default_context", return_value="verified-context") as context, patch.object(router.http.client, "HTTPSConnection", return_value=connection) as https:
             self.assertTrue(router._trusted_tls_probe(self.state / "ca.pem"))
         context.assert_called_once_with(cafile=str(self.state / "ca.pem"))

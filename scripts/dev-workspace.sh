@@ -1605,7 +1605,7 @@ start_trr_backend() {
   local social_stage_comments="$WORKSPACE_SOCIAL_WORKER_COMMENTS"
   local social_stage_media_mirror="$WORKSPACE_SOCIAL_WORKER_MEDIA_MIRROR"
   local social_stage_comment_media_mirror="$WORKSPACE_SOCIAL_WORKER_COMMENT_MEDIA_MIRROR"
-  local backend_exec_command="exec env PORTLESS_WILDCARD=1 portless api.trr --force --app-port \"$TRR_BACKEND_PORT\" -- \"$BASH_BIN\" ./start-api.sh"
+  local backend_exec_command="exec env PORTLESS_WILDCARD=1 portless api.trr --app-port \"$TRR_BACKEND_PORT\" -- \"$BASH_BIN\" ./start-api.sh"
   local social_queue_enabled
   social_queue_enabled="$(workspace_social_queue_enabled)"
 
@@ -1739,7 +1739,7 @@ start_trr_app() {
   if [[ "$WORKSPACE_TRR_APP_DEV_BUNDLER" == "webpack" ]]; then
     trr_app_dev_flag="--webpack"
   fi
-  app_exec_command="exec env PORTLESS_WILDCARD=1 portless trr --force --app-port \"$TRR_APP_PORT\" -- ./node_modules/.bin/next dev ${trr_app_dev_flag} -p \"$TRR_APP_PORT\" --hostname \"$TRR_APP_HOST\""
+  app_exec_command="exec env PORTLESS_WILDCARD=1 portless trr --app-port \"$TRR_APP_PORT\" -- ./node_modules/.bin/next dev ${trr_app_dev_flag} -p \"$TRR_APP_PORT\" --hostname \"$TRR_APP_HOST\""
   trr_app_postgres_pool_max="$(workspace_projected_app_postgres_pool_max)"
   trr_app_postgres_max_concurrent_operations="$(workspace_projected_app_postgres_max_concurrent_operations)"
 

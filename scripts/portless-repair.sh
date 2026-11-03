@@ -46,13 +46,7 @@ else
 fi
 
 echo "[portless-repair] Removing stale static TRR aliases so managed routes own clean URLs..."
-for route in trr admin.trr api.trr wordle.trr; do
-  if portless alias --remove "$route" >/dev/null 2>&1; then
-    echo "[portless-repair] Removed static alias: $route"
-  else
-    echo "[portless-repair] No static alias to remove: $route"
-  fi
-done
+python3 "$ROOT_DIR/scripts/portless-repair-aliases.py"
 
 if [[ "${PORTLESS_SYNC_HOSTS:-1}" == "0" ]]; then
   echo "[portless-repair] Skipping hosts sync because PORTLESS_SYNC_HOSTS=0."
@@ -71,32 +65,8 @@ EOF
   exit 2
 fi
 if ! grep -Eq 'https://trr[.]localhost[[:space:]]+->[[:space:]]+localhost:[0-9]+' <<<"$routes"; then
-  if [[ "${PORTLESS_REPAIR_ALLOW_NO_ACTIVE_ROUTES:-0}" == "1" ]]; then
-    cat <<EOF
-[portless-repair] No active trr.localhost app route is running yet.
-[portless-repair] Portless itself is ready. The TRR app has not connected to Portless yet.
-[portless-repair] Proxy, stale aliases, and hosts were prepared for a managed cold start.
-[portless-repair] Start the workspace when you are ready:
-  cd "$ROOT_DIR" && make dev-hybrid
-EOF
-    exit 0
-  fi
-
-  cat >&2 <<EOF
-[portless-repair] ERROR: no active trr.localhost app route is running.
-[portless-repair] Portless itself is ready, but the TRR app has not connected to Portless yet.
-[portless-repair] In plain terms: the clean web address exists, but there is no running app behind it.
-
-[portless-repair] Start the normal TRR hybrid workspace:
-  cd "$ROOT_DIR" && make dev-hybrid
-
-[portless-repair] Then rerun:
-  cd "$ROOT_DIR" && make portless-repair
-
-[portless-repair] Current Portless routes:
-${routes:-  <none>}
-EOF
-  exit 2
+  echo "[portless-repair] Router is ready; TRR is stopped. Start it separately with make dev-hybrid."
+  exit 0
 fi
 
 echo "[portless-repair] Admin host routing is preserved through wildcard fallback; no admin.trr static alias is created."
