@@ -103,7 +103,7 @@ doctor_plugin_live_mcp_expected_name() {
   case "$1" in
     context7) echo "context7" ;;
     browser) echo "chrome-devtools" ;;
-    supabase) echo "supabase" ;;
+    supabase) echo "supabase_trr" ;;
     scrapling) echo "ScraplingServer" ;;
     decodo) echo "decodo" ;;
     *) echo "" ;;
@@ -288,6 +288,24 @@ with config_path.open("rb") as handle:
 
 servers = data.get("mcp_servers") or {}
 server = servers.get(server_name)
+if server_name == "supabase" and not isinstance(server, dict):
+    import json
+    import os
+    owner = (data.get("plugins") or {}).get("supabase-projects@local-plugins", {})
+    selected = owner.get("mcp_servers", {})
+    if selected.get("supabase_trr", {}).get("enabled") is not True or selected.get("supabase_thb_bbl", {}).get("enabled") is not False:
+        print("Supabase Projects must select TRR and disable THB-BBL in this workspace")
+        raise SystemExit(1)
+    plugin_root = pathlib.Path(os.environ.get("CODEX_HOME", str(pathlib.Path.home() / ".codex"))) / "plugins/cache/local-plugins/supabase-projects/local"
+    try:
+        manifest = json.loads((plugin_root / ".codex-plugin/plugin.json").read_text())
+        relative = manifest["mcpServers"]
+        if not isinstance(relative, str) or not relative.startswith("./") or ".." in pathlib.Path(relative).parts:
+            raise ValueError("invalid declaration path")
+        server = json.loads((plugin_root / relative).read_text())["mcpServers"]["supabase_trr"]
+    except (OSError, ValueError, KeyError, TypeError):
+        print("Supabase Projects TRR declaration is missing or invalid")
+        raise SystemExit(1)
 if not isinstance(server, dict):
     print(f"missing [mcp_servers.{server_name}]")
     raise SystemExit(1)
@@ -295,7 +313,9 @@ if not isinstance(server, dict):
 if server_name == "supabase":
     url = server.get("url")
     token_env = server.get("bearer_token_env_var")
-    if not isinstance(url, str) or "project_ref=vwxfvzutyufrkhfgoeaa" not in url:
+    from urllib.parse import urlparse, parse_qs
+    parsed = urlparse(url) if isinstance(url, str) else None
+    if parsed is None or parsed.scheme != "https" or parsed.netloc != "mcp.supabase.com" or parse_qs(parsed.query).get("project_ref") != ["vwxfvzutyufrkhfgoeaa"]:
         print("supabase MCP URL missing TRR project_ref")
         raise SystemExit(1)
     if token_env != "TRR_SUPABASE_ACCESS_TOKEN":

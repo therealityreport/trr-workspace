@@ -46,7 +46,7 @@ def test_doctor_plugin_registry_declares_live_mcp_mapping() -> None:
     expected = {
         "context7": "context7",
         "browser": "chrome-devtools",
-        "supabase": "supabase",
+        "supabase": "supabase_trr",
         "scrapling": "ScraplingServer",
         "decodo": "decodo",
     }
@@ -320,3 +320,17 @@ default_tools_approval_mode = "approve"
     assert result.returncode == 0, result.stderr
     assert "profile=admin-56995; app=trr-backend-jobs" in result.stdout
     assert 'default_tools_approval_mode = "approve"' in config.read_text(encoding="utf-8")
+
+
+def test_supabase_plugin_binding_accepts_trr_and_rejects_wrong_project(tmp_path: Path) -> None:
+    import json
+    config = tmp_path / ".codex/config.toml"
+    config.parent.mkdir()
+    config.write_text('[plugins."supabase-projects@local-plugins".mcp_servers.supabase_trr]\nenabled = true\n[plugins."supabase-projects@local-plugins".mcp_servers.supabase_thb_bbl]\nenabled = false\n')
+    plugin = tmp_path / "codex/plugins/cache/local-plugins/supabase-projects/local"
+    (plugin / ".codex-plugin").mkdir(parents=True)
+    (plugin / ".codex-plugin/plugin.json").write_text(json.dumps({"mcpServers": "./servers.json"}))
+    for project, expected in [("vwxfvzutyufrkhfgoeaa", 0), ("aywqykmrlgzgdhaysajr", 1)]:
+        (plugin / "servers.json").write_text(json.dumps({"mcpServers": {"supabase_trr": {"url": f"https://mcp.supabase.com/mcp?project_ref={project}", "bearer_token_env_var": "TRR_SUPABASE_ACCESS_TOKEN"}}}))
+        result = subprocess.run(["bash", "-c", 'ROOT="$1"; MCP_RUNTIME_PYTHON_BIN="$2"; source "$3"; doctor_plugin_project_mcp_status supabase', "fixture", str(tmp_path), sys.executable, str(REGISTRY)], env={**os.environ, "CODEX_HOME": str(tmp_path / "codex")}, capture_output=True, text=True)
+        assert result.returncode == expected, result.stdout + result.stderr
