@@ -9,29 +9,20 @@
       "id": "trr-dev-portless",
       "name": "trr",
       "label": "TRR Dev",
-      "detail": "Default hybrid social scraping runtime.",
+      "detail": "TRR app, admin, and API through one workspace launcher.",
       "launcher": {
         "kind": "make-target",
-        "target": "dev-hybrid"
+        "target": "dev"
       },
       "routing": "self-managed",
       "runModes": [
         {
           "id": "dev-hybrid",
-          "label": "Default",
-          "detail": "Hybrid runtime with named local URLs.",
+          "label": "TRR",
+          "detail": "Normal TRR workspace.",
           "launcher": {
             "kind": "make-target",
-            "target": "dev-hybrid"
-          }
-        },
-        {
-          "id": "dev-hybrid-media-safe",
-          "label": "Media Safe",
-          "detail": "Media-safe hybrid runtime.",
-          "launcher": {
-            "kind": "make-target",
-            "target": "dev-hybrid-media-safe"
+            "target": "dev"
           }
         }
       ],

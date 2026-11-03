@@ -1,5 +1,5 @@
 .PHONY: \
-	dev dev-lite dev-cloud dev-hybrid dev-architecture-refactor architecture-refactor-check dev-hybrid-bg dev-hybrid-media-safe dev-hybrid-media-safe-posts dev-hybrid-media-safe-comments dev-hybrid-media-safe-bravotv dev-hybrid-social-safe dev-portless stop-portless portless-status portless-repair open-admin dev-local dev-full dev-redis \
+	dev dev-cloud dev-hybrid dev-architecture-refactor architecture-refactor-check dev-hybrid-bg dev-hybrid-media-safe dev-hybrid-media-safe-posts dev-hybrid-media-safe-comments dev-hybrid-media-safe-bravotv dev-portless stop-portless portless-status portless-repair open-admin dev-local dev-redis \
 	preflight preflight-local preflight-cloud preflight-hybrid preflight-strict preflight-diagnostics env-contract env-contract-report env-hygiene architecture-contracts-check architecture-durable-contracts-check architecture-durable-candidate-check architecture-evidence-hygiene-check architecture-git-roots-check architecture-guard-tests architecture-hotspots-check architecture-release-manifests-check architecture-release-manifests-clean-candidate-check openapi-v2-contract-generate openapi-v2-contract-check runtime-capacity-check deployment-targets-check modal-invocation-check check-policy codex-check git-branch-report handoff-check handoff-sync smoke browser-smoke-admin-details status status-json backend-restart-diagnose stop logs logs-prune cleanup-disk help \
 	app-direct-sql-inventory redacted-env-inventory vercel-project-guard vercel-auth-doctor vercel-cleanup-doctor vercel-link-trr vercel-preview-ready migration-ownership-lint rls-grants-snapshot db-pressure-rehearsal supabase-mcp-access supabase-advisor-snapshot supabase-preview-branch-cleanup \
 	bootstrap doctor doctor-json app-check app-validate-quick test test-fast test-full test-changed test-env-sensitive test-e8-browser-adapter \
@@ -48,11 +48,6 @@ dev:
 dev-redis:
 	@$(MAKE) --no-print-directory redis-up
 	@$(MAKE) --no-print-directory dev-local PROFILE=local-redis
-
-# Compatibility alias for the canonical default path.
-dev-lite:
-	@echo "[workspace] NOTE: 'make dev-lite' is deprecated; running 'make dev'."
-	@$(MAKE) --no-print-directory dev PROFILE="$${PROFILE:-default}"
 
 # Explicit cloud/remote path.
 dev-cloud:
@@ -340,19 +335,9 @@ social-queue-snapshot:
 	cd TRR-Backend && eval ./.venv/bin/python scripts/socials/queue_snapshot.py "$$args" | tee "../$$log_file"; \
 	echo "[workspace] Queue snapshot log: $$log_file" >&2
 
-# Compatibility alias for older social-safe muscle memory.
-dev-hybrid-social-safe:
-	@echo "[workspace] NOTE: 'make dev-hybrid-social-safe' is now an alias for 'make dev-hybrid'."
-	@$(MAKE) --no-print-directory dev-hybrid PROFILE="$${PROFILE:-local-cloud}"
-
 dev-local:
 	@$(MAKE) --no-print-directory preflight
 	@WORKSPACE_USE_PORTLESS_URLS=1 PROFILE="$${PROFILE:-default}" WORKSPACE_DEV_MODE=local bash scripts/dev-workspace.sh
-
-# Deprecated compatibility alias retained for older local muscle memory.
-dev-full:
-	@echo "[workspace] NOTE: 'make dev-full' is deprecated; running 'make dev'."
-	@$(MAKE) --no-print-directory dev PROFILE="$${PROFILE:-default}"
 
 preflight:
 	@WORKSPACE_DEV_MODE=local bash scripts/preflight.sh
@@ -628,17 +613,7 @@ help:
 	@echo "  make dev          - default hybrid social scraping runtime with Modal workers and Portless app/admin/API URLs"
 	@echo "  make status       - workspace health and PID snapshot (STATUS_ARGS=--json for JSON)"
 	@echo "  make status-json  - workspace health and PID snapshot as JSON"
-	@echo "  make dev-local    - local-only TRR-APP + TRR-Backend, direct DB lane, remote workers disabled"
-	@echo "  make dev-redis    - start local Redis, then run make dev-local with PROFILE=local-redis"
-	@echo "  make dev-cloud    - explicit cloud/remote worker path using session/pooler DB"
-	@echo "  make dev-hybrid   - explicit name for make dev"
-	@echo "  make dev-hybrid-media-safe - post-recovery hybrid social mode with media=2 and comment media=2"
-	@echo "  make dev-hybrid-media-safe-posts - post-recovery hybrid mode biased toward post media lanes"
-	@echo "  make dev-hybrid-media-safe-comments - post-recovery hybrid mode biased toward comment media lanes"
-	@echo "  make dev-hybrid-media-safe-bravotv - Bravo pending-media drain preset with media=4, posts=0"
-	@echo "  make dev-hybrid-bg - starts Modal-capable make dev-hybrid detached, writing .logs/workspace/dev-hybrid-background.log"
-	@echo "  make dev-hybrid-social-safe - alias for make dev-hybrid"
-	@echo "  make dev-portless - Wordle/separate-session Portless launcher; make dev already uses Portless"
+	@echo "  make dev-hybrid-bg - run the same workspace in the background"
 	@echo "  make stop-portless - stop managed Portless app/API/Wordle sessions"
 	@echo "  make portless-status - print read-only Portless proxy, route, and Browser-test readiness"
 	@echo "  make portless-repair - ensure Portless wildcard routing and remove stale TRR static aliases"
@@ -680,8 +655,6 @@ help:
 	@echo "  make redis-down   - stop local Redis via docker-compose.redis.yml"
 	@echo "  make down         - deprecated no-op retained for compatibility"
 	@echo "  make chrome-dock-clean - remove Google Chrome entries from macOS Dock recents"
-	@echo "Legacy aliases:"
-	@echo "  make dev-full     - deprecated alias for make dev"
 
 chrome-devtools-mcp-status:
 	@bash scripts/chrome-devtools-mcp-status.sh

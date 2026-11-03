@@ -202,10 +202,10 @@ class WorkspaceAppEnvProjectionTests(unittest.TestCase):
         self.assertIn("dev-hybrid", dev_target)
         self.assertIn('PROFILE="$${PROFILE:-local-cloud}"', dev_target)
 
-        dev_redis = text[text.index("\ndev-redis:") : text.index("\n# Compatibility alias", text.index("\ndev-redis:"))]
+        dev_redis = text[text.index("\ndev-redis:") : text.index("\n# Explicit cloud/remote path.", text.index("\ndev-redis:"))]
         self.assertIn("dev-local PROFILE=local-redis", dev_redis)
 
-        dev_local = text[text.index("\ndev-local:") : text.index("\n# Deprecated compatibility alias", text.index("\ndev-local:"))]
+        dev_local = text[text.index("\ndev-local:") : text.index("\npreflight:", text.index("\ndev-local:"))]
         self.assertIn("preflight", dev_local)
         self.assertIn("WORKSPACE_DEV_MODE=local", dev_local)
 
@@ -259,7 +259,7 @@ class WorkspaceAppEnvProjectionTests(unittest.TestCase):
 
     def test_dev_hybrid_adopts_social_safe_make_overrides(self) -> None:
         text = MAKEFILE.read_text(encoding="utf-8")
-        dev_hybrid = text[text.index("\ndev-hybrid:") : text.index("\n# Compatibility alias", text.index("\ndev-hybrid:"))]
+        dev_hybrid = text[text.index("\ndev-hybrid:") : text.index("\ndev-architecture-refactor:", text.index("\ndev-hybrid:"))]
         self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_WORKERS=1", dev_hybrid)
         self.assertIn("WORKSPACE_TRR_REMOTE_SOCIAL_DISPATCH_LIMIT=8", dev_hybrid)
         self.assertIn("WORKSPACE_TRR_MODAL_SOCIAL_JOB_CONCURRENCY_LIMIT=8", dev_hybrid)
@@ -309,15 +309,10 @@ class WorkspaceAppEnvProjectionTests(unittest.TestCase):
         self.assertIn("WORKSPACE_DEV_MODE=hybrid", comments_media_safe)
 
         snapshot_target = text[
-            text.index("\nsocial-queue-snapshot:") : text.index("\n# Compatibility alias", text.index("\nsocial-queue-snapshot:"))
+            text.index("\nsocial-queue-snapshot:") : text.index("\ndev-local:", text.index("\nsocial-queue-snapshot:"))
         ]
         self.assertIn(".logs/workspace/social-queue-snapshots", snapshot_target)
         self.assertIn("tee", snapshot_target)
-
-        social_safe_alias = text[
-            text.index("\ndev-hybrid-social-safe:") : text.index("\n# Deprecated compatibility alias", text.index("\ndev-hybrid-social-safe:"))
-        ]
-        self.assertIn("dev-hybrid PROFILE=", social_safe_alias)
 
     def test_modal_instagram_auth_status_target_is_bounded(self) -> None:
         text = MAKEFILE.read_text(encoding="utf-8")

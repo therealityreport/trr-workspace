@@ -2,25 +2,33 @@
 
 Use these commands from `/Users/thomashulihan/Projects/TRR`.
 
-## Preferred Contract
-- `make dev` is the default social-scraping runtime: local `TRR-APP` and `TRR-Backend`, Modal/remote social workers enabled, and Portless app/admin/API URLs.
-- All workspace `make dev*` launchers publish the app, admin, and API through Portless. `local`, `cloud`, `hybrid`, Redis, and media-safe variants change worker and DB behavior only; they do not create separate portful browser URLs.
-- `make dev-local` is the local-only worker escape hatch: local `TRR-APP`, local `TRR-Backend`, direct DB lane, remote workers disabled, Modal dispatch disabled, and the same Portless app/admin/API URLs.
-- `make dev-cloud` is the explicit cloud/remote-worker path and remains on the session/pooler DB lane with the same Portless app/admin/API URLs.
-- `make dev-hybrid` is the explicit name for the default `make dev` path: local app/backend on the direct DB lane while allowing Modal/remote workers on the session/pooler lane, with the social-safe worker caps applied by default, and app/admin/API exposed through Portless clean URLs.
-- Codex browser verification with `[@Browser](plugin://browser-use@openai-bundled)` defaults to `make dev-hybrid` unless the user specifies another startup target.
-- `make dev-portless` is only the Wordle/separate-session launcher. It is not the normal TRR dev alternative; `make dev` already uses Portless.
-- `make stop-portless` stops the managed Portless app/API/Wordle sessions.
-- `make portless-repair` ensures the Portless proxy is in wildcard mode, removes stale static TRR aliases, syncs hosts, and prints the clean routes.
-- `make open-admin` opens the clean Portless admin dashboard at `https://admin.trr.localhost`.
-- `make next-devtools-mcp-status` checks the TRR-local Next.js DevTools MCP registration. Runtime diagnostics require a running Next.js dev server, normally from `make dev-hybrid` or `make dev-portless`.
-- `make vercel-auth-doctor` checks whether the local Vercel CLI account can see the TRR team and `trr-app`.
-- `make vercel-cleanup-doctor` scans the TRR app checkout for stale local Vercel links, including the old nested `web` project.
-- `make vercel-link-trr` links `TRR-APP` to the `trr-app` Vercel project of record.
-- `make vercel-preview-ready` checks the local Vercel project link, checks/enables Web Analytics and Speed Insights, and writes the latest deployment URL for the `trr-app` project without deploying. The local Vercel CLI must be logged into the TRR team scope.
-- `local-cloud` is the canonical profile behind `make dev`. `default`, `local-lite`, and `local-full` remain compatibility profiles only.
+## Normal setup
 
-## Daily Commands
+Use `make dev` to start TRR and `make stop` to stop it. Project Manager and
+Menu Bar use this same launcher, with no runtime selection menu.
+
+The workspace provides three addresses:
+- App: `https://trr.localhost`
+- Admin: `https://admin.trr.localhost`
+- API: `https://api.trr.localhost`
+
+`make status` checks the workspace. `make portless-repair` repairs URL routing;
+it does not start a database or a second workspace. Docker is not required for
+the normal hybrid setup. An explicitly selected architecture-refactor profile
+still keeps its local-only safeguards; it is not silently changed by cleanup.
+
+`make dev-hybrid` remains the compatibility name used by existing tooling.
+The retired aliases `dev-lite`, `dev-full`, and `dev-hybrid-social-safe` should
+be replaced with `make dev`.
+
+## Specialized operator commands
+
+These commands exist for specific worker, recovery, or isolation tasks. They are
+not additional runtimes to start alongside the normal workspace. Use them only
+when the task requires their different behavior. The separate Wordle launcher
+must not run alongside the normal TRR app/API launcher.
+
+### Command reference
 - `make dev` — recommended default workspace startup for social scraping tests with Modal/Scrapling behavior; exposes app/admin/API at `https://trr.localhost`, `https://admin.trr.localhost`, and `https://api.trr.localhost`
 - `make dev-local` — local-only app/backend startup with direct DB lane, Modal/remote workers disabled, and app/admin/API exposed through Portless
 - `make dev-redis` — start local Redis, then run local-only app/backend with `PROFILE=local-redis`, `REDIS_URL=redis://127.0.0.1:6379/0`, two FastAPI workers, and app/admin/API exposed through Portless
@@ -31,7 +39,6 @@ Use these commands from `/Users/thomashulihan/Projects/TRR`.
 - `make dev-hybrid-media-safe-posts` — Portless media-safe startup biased toward post media mirror lanes; uses post media mirror `3` and comment media mirror `1`
 - `make dev-hybrid-media-safe-comments` — Portless media-safe startup biased toward comment media mirror lanes; uses post media mirror `1` and comment media mirror `3`
 - `make dev-hybrid-media-safe-bravotv` — Portless Bravo pending-media drain preset; blocks on stale media claims, then starts post discovery `0`, comments `2`, post media mirror `4`, and comment media mirror `1`
-- `make dev-hybrid-social-safe` — compatibility alias for `make dev-hybrid`
 - `make dev-portless` — start the Next.js app, FastAPI backend, and Wordle through separate Portless-managed sessions (`https://trr.localhost`, admin at `https://admin.trr.localhost`, backend at `https://api.trr.localhost`, Wordle at `https://wordle.trr.localhost`)
 - `make stop-portless` — stop the managed Portless web/API/Wordle sessions
 - `make portless-repair` — repair clean local URL routing by removing stale TRR static aliases and preserving admin routing through Portless wildcard forwarding
