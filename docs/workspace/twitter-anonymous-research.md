@@ -80,3 +80,39 @@ only its own context, checks that a separate sentinel context and cookie remain,
 then closes its test-owned browser. It imports no browser state and makes no live
 provider request. This bridge skips the Next.js proxy; the focused Vitest test
 exercises that actual handler separately. It is not deployed Next.js UI proof.
+
+## Release acceptance — 2026-11-04
+
+- Backend commit `8750227d150ed404c9201a69f00e891a0f6d93df` deployed through
+  the guarded `admin-56995/main/trr-backend-jobs` procedure, tag
+  `twitter-anonymous-8750227d`. Readiness, maintenance configuration and API
+  health passed. The remote search returned 10 records with zero calls to the
+  authentication loader or persistence functions.
+- App commit `f7afe661562f431974027930e768e9c423b1335a` passed the approved
+  production build. Production deployment `dpl_7WV4NgFG2sZSKgJu8rDj87KTqabW`
+  is READY at https://trr-app.vercel.app. Explicit SENTRY_RELEASE metadata fixed
+  the initial source-map upload warning; Node.js, Edge and Client uploads passed.
+- The deployed panel returned 20 live posts for a narrow nebula query through
+  the actual UI, proxy and backend. A NASA result matched independently checked
+  first-party evidence. This check preceded the metadata-only redeployment of
+  identical app source. Only task-owned browser tabs were closed.
+- Backend affected checks passed (82 tests). App focused checks passed (9 tests),
+  as did 79 lightweight tests and five generated checks. Fixture browser tests
+  covered partial and unavailable results and sentinel-context preservation.
+- last30days `3.34.1+codex.20261104`, commit `98492204`, passed scoped refresh,
+  installed-source parity, fresh host discovery, actual HTTPS MCP research and
+  two clean-environment CLI queries returning 40 records each. Its mvanhorn
+  identity is unchanged.
+- Bounded FxTwitter branch expansion returned 67 unique posts in five requests.
+  Selected new posts and parent relationships matched first-party responses.
+  Thread completeness remains unknown; this does not prove full-thread coverage.
+
+Detailed receipts and sample outputs remain in
+`~/.local/share/trr-twitter-validation/20261104/` and
+`~/.local/share/last30days-mirror-validation/anonymous-installed/`.
+`acceptance.json` records the final deployment and cleanup. Disposable release
+exports were moved to actual Trash after acceptance. Source commits, manifests,
+logs, samples, previous deployments, the last30days service rollback and plugin
+cache versions required by active sessions remain available. Recovery material
+can be retired only after its replacement and dependent sessions are verified.
+No active chat or existing browser session was restarted.
