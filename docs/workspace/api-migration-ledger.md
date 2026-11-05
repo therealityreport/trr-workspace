@@ -85,3 +85,32 @@ browser and deployed API proof are separate release gates.
 |---|---|---|---|---|
 | `TRR-Backend/supabase/migrations/20260716050000_core_show_slug_normalized_unique.sql` | Make case/whitespace-normalized show-slug ownership unique and align the exact-slug query with the same `lower(btrim(slug))` expression. The migration fails before index creation when duplicates exist and never rewrites or deletes show rows. | Repo-configured Supabase count query on 2026-07-16: 6 populated slugs, 0 non-normalized rows, 0 normalized duplicate groups. No row values were retrieved. | `pytest -q tests/migrations/test_core_show_slug_normalized_unique.py tests/repositories/test_show_slug_reads.py tests/api/routers/test_v2_admin_show_slugs.py`; `make migration-ownership-lint` | Authored only; not applied to preview or production. Requires the named Gate 4B data approval, pending-set proof, lock/timeout evidence, and post-apply index/checksum verification. |
 | `TRR-Backend/supabase/migrations/20260716133000_admin_season_cast_survey_roles.sql` | Canonically promote the skipped TRR-APP `022_create_admin_season_cast_survey_roles.sql` contract into the backend chain without changing its composite show/season/person identity, roles, indexes, trigger, grants, or later RLS/default-deny posture. | Static reconciliation covers the app backlog DDL, backend RLS/function-hardening migrations, backend repository conflict key, guarded destructive rollback, and an aggregate/catalog-only verification script. No live schema or row query was performed in this packet. Current ordering avoids an out-of-order live apply; immutable April/June history still means fresh-zero backend-only replay needs a future approved baseline/squash. | `pytest -q tests/migrations/test_admin_season_cast_survey_roles.py tests/repositories/test_season_cast_survey_roles.py tests/api/routers/test_v2_admin_season_cast_survey_roles.py`; `make migration-ownership-lint`; `git diff --check` | Authored only; not applied to preview or production. Gate 4B requires pending-set/checksum proof; read-only column/constraint/index/trigger/RLS/policy/privilege snapshots; aggregate invalid/null/duplicate counts; preview apply under the bounded timeouts; explicit live approval; and post-apply migration/schema/endpoint verification. Do not backdate this migration or rewrite applied checksums. |
+
+## Storage ownership implementation — October 31, 2026
+
+Submitted Survey X, global profile, and show-specific responses are owned by
+`TRR-Backend/trr_backend/services/survey_submissions.py`. The Next `/api/surveys/x`,
+`global-profile`, and `show-responses` routes are thin v2 adapters. The app verifies
+Firebase identity and signs a 60-second `survey:own` assertion with a distinct
+backend audience. Body fields never supply the owner UID. Survey X and related
+profile viewing fields share one PostgreSQL transaction and existing unique keys.
+Firestore `drafts/<uid>` documents are editable drafts; legacy response documents
+are recovery input only and cannot prove submission or completion. Firebase auth,
+profiles and games retain their existing owners. No SQL migration is required.
+
+Video originals use versioned provider/bucket/key/access fields in existing
+`source_json` on both `ml.analysis_media_assets` and `screenalytics.video_assets`.
+TRR-Backend owns runtime and storage; TRR-APP owns authenticated playback. The
+archived SCREENALYTICS repository is not an active dependency. Processing uses
+stored bucket references, with legacy compatibility; artifact delivery is separate.
+The existing `admin.private_video_object_migration_*` ledger tracks copy, SHA-256
+verification and conditional reference switching. Old objects and buckets remain
+untouched. Ordinary playback does not query migration history.
+
+Instagram immutable comment-page receipts use compact version-2 proofs. Current
+target checkpoints remain full and resumable; old receipts remain supported.
+Canonical writes, page proofs and target advancement retain one transaction and
+ownership fence. Historical checkpoint retirement requires a separate reviewed
+manifest; this implementation does not delete or rewrite historical rows.
+
+Source validation and live deployment/migration acceptance are separate gates.
