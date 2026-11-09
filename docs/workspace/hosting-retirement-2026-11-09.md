@@ -148,3 +148,55 @@ superseded Render guide introduction. Keep them until those separate documentati
 edits are integrated or deliberately retired. Deployment source is reproducible
 from the recorded revision and committed source hashes; its temporary export can
 be removed after the verified deployment. No temporary branch or worktree was created.
+
+## Follow-up: remaining stale operations and publication
+
+The user authorized cleanup of the other 78 stale operations after confirming
+none were still running, and publication of all three repositories.
+
+Eligibility checks on 2026-11-09 established:
+
+- 71 pending show-refresh operations (11 parentless and 60 children) had no
+  attempt, start, event, worker, claim token, or lease.
+- Five running show-refresh operations and one running Bravo image operation
+  used the Modal admin worker paths. Both `run_admin_operation` and
+  `run_admin_operation_v2` had zero running inputs, zero backlog, and zero
+  runners at **07:21:56 UTC**, immediately before cleanup.
+- One `social_catalog_gap_analysis` operation used an API process-local thread
+  pool. Its last heartbeat was **2026-05-28 05:21:16.770199 UTC**. That thread
+  pool is not restored from database rows on startup. All observed live Modal
+  containers started on November 9; no matching local API executor was present.
+  The former Render API was verified suspended again. Its original May thread
+  cannot remain active on those owners.
+- All 78 rows had no worker, token, or lease. No retained Modal call IDs were
+  available for the individual historical rows. Eligibility used live provider
+  input/queue counts, process ownership, and unchanged database snapshots.
+
+An independent review found no blocking issue in the scoped cleanup SQL.
+PostgreSQL EXPLAIN passed without mutation. The actual statement required all
+78 explicit IDs to match their complete row hashes and latest event sequences,
+locked them in ID order, and atomically cancelled them with terminal audit events.
+It would skip the entire update on a changed row, or roll back on an audit conflict.
+
+Cleanup completed at **2026-11-09 07:22:02.934843 UTC**:
+
+- Expected, matched, cancelled, and audited counts were all **78**.
+- Returned IDs exactly matched the approved set. Readback verified all 78
+  cancellations, completion timestamps, cleared ownership, and matching audit events.
+- Existing rows and event history were preserved. No schema changed.
+- Production Vercel operations health at **07:22:29 UTC** reported
+  **0 active, 0 stale, and 0 cancelling operations**.
+
+Publication targets are `origin/main` for the workspace and
+`origin/chore/repo-hygiene-2026-09-25` for Backend and App. The backend commit is
+`c8e305c5a941c675d9e491bff4f58b3bf588d8dc`; the app commit is
+`7dacb80b6d79db7a61e7cf2284187adc4599b34c`. Both remote tips were read back.
+The workspace publication merges the newer remote Node pin and storage release
+acceptance record while preserving the existing shared checkout and its dirty files.
+No application runtime code or app build changed in this follow-up.
+
+Private cleanup snapshots, exact SQL, provider counts, and readback are retained at
+`/Users/thomashulihan/.codex/tmp/command-guard/42cddbc5-d2a0-40df-b0ad-fcad5a75977a`.
+Keep these bounded audit/recovery records for the production cleanup. The temporary
+integration checkout and its branch can be retired once their merge is preserved
+on the workspace remote main branch.
