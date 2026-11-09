@@ -195,8 +195,8 @@ or `blocked` plus the source/date.
 | Supabase internal/service current usage | pending | `pg_stat_activity` grouped by `application_name` / role / state. |
 | TRR-APP max instances/concurrency | pending | Vercel project settings or Observability snapshot. |
 | TRR-APP session pool max | verified repo default: `2` production, `1` preview/local | `TRR-APP/apps/web/src/lib/server/postgres.ts`, reviewed 2026-04-27. |
-| TRR-Backend replicas | pending | Render/backend deployment settings. |
-| TRR-Backend workers per replica | pending | Render/backend deployment settings or runtime env. |
+| TRR-Backend replicas | pending | Modal API deployment settings. |
+| TRR-Backend workers per replica | pending | Modal API deployment settings or runtime env. |
 | TRR-Backend default pool max | verified repo default: `2` | Workspace capacity contract, reviewed 2026-04-27; production override still pending. |
 | TRR-Backend social profile pool max | verified local profile default: `4`; production pending | Workspace capacity contract, reviewed 2026-04-27. |
 | TRR-Backend social control pool max | verified local profile default: `2`; production pending | Workspace capacity contract, reviewed 2026-04-27. |

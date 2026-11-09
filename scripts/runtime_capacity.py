@@ -116,7 +116,6 @@ def validate_manifest(payload: dict[str, Any]) -> None:
         "database_apply": False,
         "runtime_reconcile": False,
         "modal_deploy": False,
-        "render_mutation": False,
         "vercel_mutation": False,
         "remote_workers": False,
     }

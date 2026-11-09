@@ -17,7 +17,7 @@ def test_disabled_runtime_reconcile_calls_no_remote_helpers(monkeypatch) -> None
 
     assert artifact["overall_state"] == "advisory"
     assert artifact["summary"] == "runtime_reconcile_disabled"
-    for name in ("db", "modal", "render", "decodo"):
+    for name in ("db", "modal", "decodo"):
         assert artifact[name]["skipped"] is True
         assert artifact[name]["state"] == "advisory"
     assert artifact["modal"]["deployed"] is False
@@ -27,7 +27,7 @@ def test_load_json_file_defaults_when_artifact_missing(tmp_path) -> None:
     artifact = cli.load_json_file(tmp_path / "missing.json")
 
     assert artifact["overall_state"] == "ok"
-    assert artifact["render"]["verify_only"] is True
+    assert "render" not in artifact
     assert artifact["decodo"]["verify_only"] is True
 
 
@@ -35,8 +35,8 @@ def test_compute_overall_state_prefers_blocked() -> None:
     artifact = cli.default_artifact()
     artifact["db"]["state"] = "blocked"
     artifact["db"]["reason"] = "remote_only_history"
-    artifact["render"]["state"] = "advisory"
-    artifact["render"]["reason"] = "render_contract_mismatch"
+    artifact["decodo"]["state"] = "advisory"
+    artifact["decodo"]["reason"] = "decodo_contract_mismatch"
 
     result = cli.compute_overall_state(artifact)
 
@@ -46,15 +46,15 @@ def test_compute_overall_state_prefers_blocked() -> None:
 
 def test_compute_overall_state_keeps_advisory_non_blocking() -> None:
     artifact = cli.default_artifact()
-    artifact["render"]["state"] = "advisory"
-    artifact["render"]["reason"] = "render_contract_mismatch"
+    artifact["decodo"]["state"] = "advisory"
+    artifact["decodo"]["reason"] = "decodo_contract_mismatch"
 
     result = cli.compute_overall_state(artifact)
 
     assert result["overall_state"] == "advisory"
-    assert result["summary"] == "render_contract_mismatch"
+    assert result["summary"] == "decodo_contract_mismatch"
     assert cli.render_preflight_summary(result) == (
-        "[preflight] Runtime reconcile ADVISORY (render_contract_mismatch; see make status)"
+        "[preflight] Runtime reconcile ADVISORY (decodo_contract_mismatch; see make status)"
     )
 
 
@@ -167,3 +167,32 @@ def test_main_writes_artifact_and_returns_nonzero_for_blocked(tmp_path, monkeypa
     saved = json.loads(artifact_path.read_text(encoding="utf-8"))
     assert saved["overall_state"] == "blocked"
     assert saved["summary"] == "remote_only_history"
+
+
+def test_old_artifact_discards_retired_provider_and_summary(tmp_path) -> None:
+    path = tmp_path / "runtime-reconcile.json"
+    path.write_text(json.dumps({
+        "overall_state": "blocked",
+        "summary": "retired_provider_mismatch",
+        "render": {"state": "blocked", "reason": "retired_provider_mismatch"},
+        "decodo": {"state": "advisory", "reason": "decodo_contract_mismatch"},
+    }))
+    artifact = cli.load_json_file(path)
+    assert "render" not in artifact
+    assert artifact["overall_state"] == "advisory"
+    assert artifact["summary"] == "decodo_contract_mismatch"
+
+
+def test_runtime_reconcile_consumes_decodo_only_external_contract(monkeypatch) -> None:
+    def fake_run(script_relpath: str):
+        if script_relpath == "scripts/dev/verify_external_runtime_contracts.py":
+            return 0, {"state": "advisory", "reason": "decodo_contract_mismatch",
+                       "decodo": {"state": "advisory", "reason": "decodo_contract_mismatch"}}
+        return 0, {"state": "ok"}
+    monkeypatch.setenv("WORKSPACE_DEV_MODE", "hybrid")
+    monkeypatch.setenv("WORKSPACE_RUNTIME_RECONCILE_ENABLED", "1")
+    monkeypatch.setattr(cli, "_run_backend_script", fake_run)
+    artifact = cli.run_runtime_reconcile()
+    assert "render" not in artifact
+    assert artifact["overall_state"] == "advisory"
+    assert artifact["summary"] == "decodo_contract_mismatch"

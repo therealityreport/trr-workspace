@@ -880,6 +880,8 @@ def validate_packet_semantics(packet: Mapping[str, Any], path: Path) -> None:
     backend_sha = packet["repositories"]["backend"]["candidate_sha"]
     app_sha = packet["repositories"]["app"]["candidate_sha"]
     for provider in ("render", "modal"):
+        if provider not in packet["deployments"]:
+            continue  # Render is optional legacy evidence. Modal is required by schema.
         deployment_sha = packet["deployments"][provider]["candidate_sha"]
         if deployment_sha is not None and deployment_sha != backend_sha:
             raise ManifestValidationError(
@@ -2665,7 +2667,17 @@ def _successor_without_historical_claims(
         },
         "rls_grants": {**source["migrations"]["rls_grants"], "evidence_ids": []},
     }
-    successor["rollback"] = {**source["rollback"], "evidence_ids": []}
+    successor["rollback"] = {
+        **source["rollback"],
+        "backend_commands": [
+            command for command in source["rollback"]["backend_commands"]
+            if not any(
+                Path(argument).name in {"render", "render-trr.sh", "render_trr.py"}
+                for argument in command
+            )
+        ],
+        "evidence_ids": [],
+    }
     successor["observation"] = {
         **source["observation"],
         "baselines": [
@@ -2679,15 +2691,6 @@ def _successor_without_historical_claims(
         "status": "not_started",
     }
     successor["deployments"] = {
-        **source["deployments"],
-        "render": {
-            **source["deployments"]["render"],
-            "status": "pending_gate_4",
-            "candidate_sha": candidate_commits["backend_sha"],
-            "deployment_id": None,
-            "previous_deployment_id": None,
-            "evidence_ids": [],
-        },
         "modal": {
             **source["deployments"]["modal"],
             "status": "pending_gate_4",

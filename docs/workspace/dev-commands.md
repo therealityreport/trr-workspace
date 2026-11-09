@@ -107,9 +107,18 @@ The "Resume unfinished Post Details" control calls the existing authenticated
 `source_scope`, and `dispatch_immediately: true`. It omits `retry_targets` and
 does not send new dates or tasks. A missing manifest binding disables resume.
 
+Official production hosting uses Vercel for the app, Modal for the API and jobs,
+and Supabase `trr-core` for persistent state. Use the stable app alias
+`https://trr-app.vercel.app`; immutable deployment URLs belong in dated receipts.
+Render deployment tooling is retired. Old release packets retain optional legacy
+Render evidence; new packets require Modal and Vercel. New successors discard
+retired Render rollback commands. Add verified Modal rollback commands before
+completing a release.
+
 For release, verify the identities in `deployment-targets.json` live:
 Supabase `vwxfvzutyufrkhfgoeaa`; Modal `admin-56995` / `main` /
-`trr-backend-jobs`; Render `srv-d6phk5vkijhs73fcsk7g` (`trr-backend-api`);
+`trr-backend-jobs` (API function `serve_backend_api` at
+`https://admin-56995--trr-backend-api.modal.run`);
 Vercel `prj_MHpStkwr26rV5kjt0f80zqhwZpAs` (`trr-app`). Apply additive backend
 migrations, promote compatible API readers, then worker writers and app
 consumers. Follow `modal-safe-backend-deploy-set.md`; deploy the reviewed clean
@@ -476,9 +485,9 @@ For migration or schema validation, prefer an isolated Supabase branch or dispos
 
 Shared-schema migration ownership is documented in `/Users/thomashulihan/Projects/TRR/docs/workspace/migration-ownership-policy.md`; check new app migrations with `make migration-ownership-lint`.
 
-`make dev` includes a startup runtime-reconcile phase before app/backend launch. It validates direct DB identity before any migration apply or repair decision, can auto-apply only a bounded allowlisted Supabase migration suffix, and does not auto-run `supabase migration repair`, schema-doc checks, Render deploys, or tracked-doc refreshes.
+`make dev` includes a startup runtime-reconcile phase before app/backend launch. It validates direct DB identity before any migration apply or repair decision, can auto-apply only a bounded allowlisted Supabase migration suffix, and does not auto-run `supabase migration repair`, schema-doc checks or tracked-doc refreshes.
 
-If runtime reconcile blocks on Supabase history drift, use `/Users/thomashulihan/Projects/TRR/TRR-Backend/docs/runbooks/supabase_migration_history_repair.md`. If runtime reconcile blocks on Modal, inspect `python TRR-Backend/scripts/modal/verify_modal_readiness.py --json --probe-remote-auth instagram` for blocking readiness, then add `--probe-getty-remote-access` when you want advisory Getty transport diagnostics. `make status` now surfaces the nested Getty probe under the Modal runtime section. Render and Decodo checks remain advisory-only and are surfaced there as well.
+If runtime reconcile blocks on Supabase history drift, use `/Users/thomashulihan/Projects/TRR/TRR-Backend/docs/runbooks/supabase_migration_history_repair.md`. If runtime reconcile blocks on Modal, inspect `python TRR-Backend/scripts/modal/verify_modal_readiness.py --json --probe-remote-auth instagram` for blocking readiness, then add `--probe-getty-remote-access` when you want advisory Getty transport diagnostics. `make status` now surfaces the nested Getty probe under the Modal runtime section. Decodo checks remain advisory-only and are surfaced there as well.
 
 When running Modal readiness from `TRR-Backend`, prefer `.venv/bin/python scripts/modal/verify_modal_readiness.py --env main --json` with `MODAL_PROFILE=admin-56995`. The readiness entrypoint also re-execs into `TRR-Backend/.venv/bin/python` when launched with system `python3.11`, so dependency loading stays tied to the repo environment.
 

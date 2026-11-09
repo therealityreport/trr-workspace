@@ -324,7 +324,7 @@ run_preflight_phase "doctor" "[preflight] Running workspace doctor..." python3 "
 
 runtime_reconcile_output=""
 runtime_reconcile_rc=0
-run_preflight_phase_capture runtime_reconcile_output "runtime-reconcile" "[preflight] Reconciling runtime contracts (db, Modal, Render, Decodo; this can pause briefly while readiness probes run)..." env WORKSPACE_DEV_MODE="$WORKSPACE_DEV_MODE" python3 "$ROOT/scripts/workspace-runtime-reconcile.py" || runtime_reconcile_rc="$?"
+run_preflight_phase_capture runtime_reconcile_output "runtime-reconcile" "[preflight] Reconciling runtime contracts (db, Modal, Decodo; this can pause briefly while readiness probes run)..." env WORKSPACE_DEV_MODE="$WORKSPACE_DEV_MODE" python3 "$ROOT/scripts/workspace-runtime-reconcile.py" || runtime_reconcile_rc="$?"
 if [[ "$runtime_reconcile_rc" != "0" ]]; then
   printf '%s\n' "$runtime_reconcile_output"
   exit "$runtime_reconcile_rc"

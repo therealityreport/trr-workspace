@@ -46,7 +46,7 @@ Do not use secret-bearing values as application names. The value appears in
 
 | Variable | Lane | Selection rule | Notes |
 |---|---|---|---|
-| `TRR_DB_DIRECT_URL` | Direct local Postgres | Required explicit source for local app/backend in `make dev`, `make dev-hybrid`, and `make dev-local`, unless a validated direct URI can be derived. | Local-only. Never commit, print, or pass to Modal/Render/Cloud Run/Vercel. |
+| `TRR_DB_DIRECT_URL` | Direct local Postgres | Required explicit source for local app/backend in `make dev`, `make dev-hybrid`, and `make dev-local`, unless a validated direct URI can be derived. | Local-only. Never commit, print, or pass to Modal/Vercel. |
 | `TRR_DB_SESSION_URL` | Supavisor session/local | Preferred session source for `make dev-cloud`, remote workers, and hybrid remote surfaces. | Use `pooler.supabase.com:5432` for hosted Supabase. |
 | `TRR_DB_URL` | Compatibility session/local | Used when `TRR_DB_SESSION_URL` is absent or set only inside a tightly scoped local child-process env for legacy direct-lane compatibility. | Do not globally overwrite this with the direct URL. |
 | `TRR_DB_TRANSACTION_URL` | Supavisor transaction | Used only when `TRR_DB_RUNTIME_LANE=transaction` and `TRR_DB_TRANSACTION_FLIGHT_TEST=1`. | Use `pooler.supabase.com:6543`; route-by-route flight tests only. |
@@ -148,10 +148,9 @@ When a runtime check fails, classify it by the first concrete lane named in logs
 | `WORKSPACE_RUNTIME_DB_AUTO_APPLY_ENABLED` | `1` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Allow startup to auto-apply a bounded allowlisted Supabase migration suffix. |
 | `WORKSPACE_RUNTIME_DB_MAX_AUTO_APPLY` | `3` | integer | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Maximum number of allowlisted pending migrations startup may auto-apply. |
 | `WORKSPACE_RUNTIME_DECODO_VERIFY_ONLY` | `1` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Keep Decodo credential checks advisory-only during startup. |
-| `WORKSPACE_RUNTIME_EXTERNAL_VERIFY_ENABLED` | `1` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable verify-only checks for external hosted contracts such as Render and Decodo. |
+| `WORKSPACE_RUNTIME_EXTERNAL_VERIFY_ENABLED` | `1` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable verify-only checks for external Decodo contracts. |
 | `WORKSPACE_RUNTIME_MODAL_AUTO_DEPLOY` | `1` | string | `scripts/dev-workspace.sh`, `Makefile` | `common` | Allow startup to auto-apply Modal secrets and redeploy the app when readiness or fingerprint drift is detected. |
-| `WORKSPACE_RUNTIME_RECONCILE_ENABLED` | `1` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable the startup runtime reconcile phase that checks hosted DB, Modal, Render, and Decodo contracts. |
-| `WORKSPACE_RUNTIME_RENDER_VERIFY_ONLY` | `1` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Keep Render checks advisory-only during startup. |
+| `WORKSPACE_RUNTIME_RECONCILE_ENABLED` | `1` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `common` | Enable the startup runtime reconcile phase that checks hosted DB, Modal, and Decodo contracts. |
 | `WORKSPACE_SOCIAL_WORKER_COMMENTS` | `1` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_SOCIAL_WORKER_COMMENT_MEDIA_MIRROR` | `0` | string | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |
 | `WORKSPACE_SOCIAL_WORKER_ENABLED` | `0` | `0` or `1` | `scripts/dev-workspace.sh`, `Makefile` | `advanced` | Workspace runtime variable consumed by `scripts/dev-workspace.sh`. |

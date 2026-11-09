@@ -230,9 +230,10 @@
     "deployments": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["render", "modal", "vercel"],
+      "required": ["modal", "vercel"],
       "properties": {
         "render": {
+          "description": "Optional legacy Render evidence retained for historical release packets; not a current deployment requirement.",
           "$ref": "#/$defs/renderDeployment"
         },
         "modal": {

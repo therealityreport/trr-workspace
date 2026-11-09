@@ -1206,6 +1206,48 @@ def test_valid_packet_and_evidence_pass(tmp_path: Path) -> None:
     assert counts == (1, 1)
 
 
+
+def test_current_packet_without_legacy_render_passes(tmp_path: Path) -> None:
+    module = load_module()
+    current = packet()
+    del current["deployments"]["render"]
+    current["rollback"]["backend_commands"] = [["python3.11", "scripts/modal/deploy_backend.py", "--env", "main"]]
+    packet_path, evidence_path = write_workspace(tmp_path, current, evidence())
+    assert module.validate_manifests(
+        tmp_path, [packet_path], [evidence_path], require_packets=True
+    ) == (1, 1)
+
+
+
+def test_current_successor_omits_legacy_render_deployment() -> None:
+    module = load_module()
+    source = packet()
+    revisions = {
+        name: {**revision, "candidate_sha": character * 40}
+        for (name, revision), character in zip(source["repositories"].items(), "abc")
+    }
+    successor = module._successor_without_historical_claims(
+        source, scope="preview", revisions=revisions, approval=None,
+        source_sha256="d" * 64,
+    )
+    assert set(successor["deployments"]) == {"modal", "vercel"}
+    assert successor["deployments"]["modal"]["candidate_sha"] == revisions["backend"]["candidate_sha"]
+    assert "render" in source["deployments"]  # Preserve the historical source packet.
+    assert successor["rollback"]["backend_commands"] == []
+    assert source["rollback"]["backend_commands"] == [["render", "rollback"]]
+
+@pytest.mark.parametrize("provider", ["modal", "vercel"])
+def test_current_packet_requires_active_hosting_provider(tmp_path: Path, provider: str) -> None:
+    module = load_module()
+    current = packet()
+    del current["deployments"]["render"]
+    del current["deployments"][provider]
+    packet_path, evidence_path = write_workspace(tmp_path, current, evidence())
+    with pytest.raises(module.ManifestValidationError, match="required"):
+        module.validate_manifests(
+            tmp_path, [packet_path], [evidence_path], require_packets=True
+        )
+
 def test_cli_candidate_promotion_is_a_dry_run_by_default(tmp_path: Path) -> None:
     packet_path, candidate_sha = write_promotable_packet(tmp_path)
     before = packet_path.read_bytes()
@@ -1590,7 +1632,7 @@ def accept_fresh_e13_preview(
         }
     )
     preview["deployments"]["render"] = {
-        **preview["deployments"]["render"],
+        **packet()["deployments"]["render"],  # Explicit legacy evidence fixture.
         "status": "rolled_back",
         "deployment_id": "dep-e13-preview-render-20260818",
         "previous_deployment_id": "dep-e13-preview-render-prior-20260818",

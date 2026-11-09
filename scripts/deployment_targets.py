@@ -4,7 +4,6 @@ from __future__ import annotations
 import argparse
 import ast
 import json
-import re
 import stat
 import sys
 from pathlib import Path
@@ -25,18 +24,6 @@ EXPECTED = {
         "project_id": "prj_MHpStkwr26rV5kjt0f80zqhwZpAs",
         "project_name": "trr-app",
         "production_aliases": ["https://trr-app.vercel.app"],
-        "direct_deployment_urls": [
-            "https://trr-4c2watu7j-the-reality-reports-projects.vercel.app"
-        ],
-    },
-    "render": {
-        "owner_id": "tea-d6pglsu3jp1c73cctvf0",
-        "service_id": "srv-d6phk5vkijhs73fcsk7g",
-        "service_name": "trr-backend-api",
-        "repo": "therealityreport/trr-backend",
-        "branch": "main",
-        "direct_url": "https://trr-backend-api.onrender.com",
-        "credential_env": "TRR_RENDER_API_KEY",
     },
     "modal": {
         "profile": "admin-56995",
@@ -44,6 +31,8 @@ EXPECTED = {
         "environment": "main",
         "app_name": "trr-backend-jobs",
         "app_ref": "trr_backend.modal_jobs",
+        "api_function": "serve_backend_api",
+        "api_url": "https://admin-56995--trr-backend-api.modal.run",
     },
 }
 
@@ -96,6 +85,9 @@ def validate_manifest(payload: dict[str, Any]) -> None:
                 f"{plane} target tuple does not match the approved TRR identity"
             )
 
+    if "render" in payload:
+        raise DeploymentTargetError("Render is retired and cannot be an active deployment target")
+
     serialized = json.dumps(payload).lower()
     for forbidden in ("bearer ", "password", "service_role", "private_key"):
         if forbidden in serialized:
@@ -104,25 +96,21 @@ def validate_manifest(payload: dict[str, Any]) -> None:
             )
 
     checkpoint = (payload.get("security_checkpoints") or {}).get(
-        "render_env_snapshot"
+        "retained_env_snapshot"
     ) or {}
     if checkpoint.get("inspection_policy") != "metadata_only_never_read_values":
-        raise DeploymentTargetError("Render env snapshot must remain metadata-only")
+        raise DeploymentTargetError("Retained env snapshot must remain metadata-only")
     if checkpoint.get("permissions_mode") != "0600":
-        raise DeploymentTargetError("Render env snapshot checkpoint must declare mode 0600")
+        raise DeploymentTargetError("Retained env snapshot checkpoint must declare mode 0600")
     if checkpoint.get("status") == "closed":
         if (
             checkpoint.get("production_cutover") != "closed"
             or checkpoint.get("live_review_condition") != "verified_TRR_owner_service_and_live_deployment"
             or checkpoint.get("closure_evidence") != "docs/workspace/plan-055-production-release.md"
         ):
-            raise DeploymentTargetError("Closed Render checkpoint requires its verified release receipt")
-    elif (
-        checkpoint.get("status") != "operator_review_required"
-        or checkpoint.get("production_cutover") != "blocked_until_closed"
-        or checkpoint.get("live_review_condition") != "operator_action_required_missing_TRR_RENDER_API_KEY"
-    ):
-        raise DeploymentTargetError("Unreviewed Render checkpoint must block production cutover")
+            raise DeploymentTargetError("Closed retained snapshot checkpoint requires its verified release receipt")
+    else:
+        raise DeploymentTargetError("Retained snapshot checkpoint must remain closed")
 
     expected_evidence_policy = {
         "environment_values": "prohibited",
@@ -141,20 +129,20 @@ def validate_manifest(payload: dict[str, Any]) -> None:
 
 def validate_snapshot_permissions(payload: dict[str, Any], root: Path = ROOT) -> None:
     checkpoint = (payload.get("security_checkpoints") or {}).get(
-        "render_env_snapshot"
+        "retained_env_snapshot"
     ) or {}
     relative_path = checkpoint.get("path")
     if not isinstance(relative_path, str) or not relative_path.strip():
-        raise DeploymentTargetError("Render env snapshot checkpoint path is required")
+        raise DeploymentTargetError("Retained env snapshot checkpoint path is required")
     snapshot = root / relative_path
     if not snapshot.exists():
         return
     if not snapshot.is_file():
-        raise DeploymentTargetError("Render env snapshot checkpoint path is not a file")
+        raise DeploymentTargetError("Retained env snapshot checkpoint path is not a file")
     mode = stat.S_IMODE(snapshot.stat().st_mode)
     if mode & 0o077:
         raise DeploymentTargetError(
-            f"Render env snapshot permissions are too broad: {mode:04o}"
+            f"Retained env snapshot permissions are too broad: {mode:04o}"
         )
 
 
@@ -198,35 +186,14 @@ def validate_projections(payload: dict[str, Any], root: Path = ROOT) -> None:
                 f"Modal guard {key} differs from deployment target"
             )
 
-    render_yaml = (root / "TRR-Backend" / "render.yaml").read_text(encoding="utf-8")
-    for expected_line in (
-        f"name: {payload['render']['service_name']}",
-        "repo: https://github.com/therealityreport/trr-backend.git",
-        f"branch: {payload['render']['branch']}",
-        "autoDeploy: false",
+    api_source = root / "TRR-Backend" / "trr_backend" / "modal_jobs.py"
+    api_tree = ast.parse(api_source.read_text(encoding="utf-8"), filename=str(api_source))
+    if not any(
+        isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+        and node.name == payload["modal"]["api_function"]
+        for node in api_tree.body
     ):
-        if expected_line not in render_yaml:
-            raise DeploymentTargetError(
-                f"render.yaml missing target projection: {expected_line}"
-            )
-
-    render_wrapper = root / "scripts" / "render_trr.py"
-    if not render_wrapper.is_file():
-        raise DeploymentTargetError(
-            "missing guarded Render implementation: scripts/render_trr.py"
-        )
-    wrapper_text = render_wrapper.read_text(encoding="utf-8")
-    for value in (
-        payload["render"]["owner_id"],
-        payload["render"]["service_id"],
-        payload["render"]["service_name"],
-        payload["render"]["repo"],
-        payload["render"]["branch"],
-    ):
-        if not re.search(re.escape(value), wrapper_text):
-            raise DeploymentTargetError(
-                f"Render wrapper does not pin target value: {value}"
-            )
+        raise DeploymentTargetError("Modal API function differs from deployment target")
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:

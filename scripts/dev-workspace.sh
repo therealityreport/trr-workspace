@@ -85,7 +85,6 @@ if [[ "$PROFILE" == "architecture-refactor" ]]; then
   WORKSPACE_RUNTIME_DB_MAX_AUTO_APPLY="0"
   WORKSPACE_RUNTIME_MODAL_AUTO_DEPLOY="0"
   WORKSPACE_RUNTIME_EXTERNAL_VERIFY_ENABLED="0"
-  WORKSPACE_RUNTIME_RENDER_VERIFY_ONLY="1"
   WORKSPACE_RUNTIME_DECODO_VERIFY_ONLY="1"
 fi
 
@@ -217,7 +216,7 @@ assert_architecture_refactor_no_side_effects() {
       return 1
     fi
   done
-  echo "[workspace] architecture-refactor command plan: local_backend=enabled local_app=enabled db_host_class=${WORKSPACE_ARCHITECTURE_DB_HOST_CLASS} db_source=${WORKSPACE_ARCHITECTURE_DB_SOURCE} db_apply=off reconcile=off modal_deploy=off render_mutation=off vercel_mutation=off remote_workers=off"
+  echo "[workspace] architecture-refactor command plan: local_backend=enabled local_app=enabled db_host_class=${WORKSPACE_ARCHITECTURE_DB_HOST_CLASS} db_source=${WORKSPACE_ARCHITECTURE_DB_SOURCE} db_apply=off reconcile=off modal_deploy=off vercel_mutation=off remote_workers=off"
 }
 
 if [[ "$PROFILE" == "architecture-refactor" ]]; then
@@ -2048,7 +2047,6 @@ write_backend_watchdog_state
   echo "WORKSPACE_RUNTIME_DB_MAX_AUTO_APPLY=${WORKSPACE_RUNTIME_DB_MAX_AUTO_APPLY}"
   echo "WORKSPACE_RUNTIME_MODAL_AUTO_DEPLOY=${WORKSPACE_RUNTIME_MODAL_AUTO_DEPLOY}"
   echo "WORKSPACE_RUNTIME_EXTERNAL_VERIFY_ENABLED=${WORKSPACE_RUNTIME_EXTERNAL_VERIFY_ENABLED}"
-  echo "WORKSPACE_RUNTIME_RENDER_VERIFY_ONLY=${WORKSPACE_RUNTIME_RENDER_VERIFY_ONLY}"
   echo "WORKSPACE_RUNTIME_DECODO_VERIFY_ONLY=${WORKSPACE_RUNTIME_DECODO_VERIFY_ONLY}"
   echo "PROFILE=\"${PROFILE}\""
   echo "TRR_BACKEND_WORKERS=${TRR_BACKEND_WORKERS}"

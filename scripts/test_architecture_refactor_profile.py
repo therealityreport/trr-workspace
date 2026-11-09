@@ -64,7 +64,6 @@ def test_architecture_refactor_assertion_intercepts_no_remote_or_mutation_comman
     assert "db_source=TRR_DB_DIRECT_URL" in completed.stdout
     assert "reconcile=off" in completed.stdout
     assert "modal_deploy=off" in completed.stdout
-    assert "render_mutation=off" in completed.stdout
     assert "vercel_mutation=off" in completed.stdout
     assert "remote_workers=off" in completed.stdout
     assert not log.exists(), f"intercepted prohibited command(s): {log.read_text()}"

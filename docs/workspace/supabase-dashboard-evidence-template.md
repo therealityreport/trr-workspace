@@ -56,7 +56,7 @@ connection strings.
 | Postgres `max_connections` | pending | SQL editor or psql `SHOW max_connections` | workspace-ops | Number only. |
 | Grouped holders | pending | `pg_stat_activity` grouped by `application_name` | workspace-ops | Use query in `docs/workspace/supabase-capacity-budget.md`. |
 | Vercel instance/concurrency assumption | pending | Vercel project settings | workspace-ops | Shape only. |
-| Backend replica/worker count | pending | Render/backend deployment settings | backend-shared-schema | Shape only. |
+| Backend replica/worker count | pending | Modal API deployment settings | backend-shared-schema | Shape only. |
 | Remote worker concurrency | pending | Modal settings | backend-shared-schema | Shape only. |
 
 ## Pool-Size Change Gate

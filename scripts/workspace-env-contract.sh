@@ -304,7 +304,7 @@ description_for() {
       echo "Enable or disable the Modal social lane in the remote execution contract; this is not a worker-count knob."
       ;;
     WORKSPACE_RUNTIME_RECONCILE_ENABLED)
-      echo "Enable the startup runtime reconcile phase that checks hosted DB, Modal, Render, and Decodo contracts."
+      echo "Enable the startup runtime reconcile phase that checks hosted DB, Modal, and Decodo contracts."
       ;;
     WORKSPACE_RUNTIME_DB_AUTO_APPLY_ENABLED)
       echo "Allow startup to auto-apply a bounded allowlisted Supabase migration suffix."
@@ -316,10 +316,7 @@ description_for() {
       echo "Allow startup to auto-apply Modal secrets and redeploy the app when readiness or fingerprint drift is detected."
       ;;
     WORKSPACE_RUNTIME_EXTERNAL_VERIFY_ENABLED)
-      echo "Enable verify-only checks for external hosted contracts such as Render and Decodo."
-      ;;
-    WORKSPACE_RUNTIME_RENDER_VERIFY_ONLY)
-      echo "Keep Render checks advisory-only during startup."
+      echo "Enable verify-only checks for external Decodo contracts."
       ;;
     WORKSPACE_RUNTIME_DECODO_VERIFY_ONLY)
       echo "Keep Decodo credential checks advisory-only during startup."
@@ -480,7 +477,7 @@ generate_contract() {
     echo
     echo "| Variable | Lane | Selection rule | Notes |"
     echo "|---|---|---|---|"
-    echo "| \`TRR_DB_DIRECT_URL\` | Direct local Postgres | Required explicit source for local app/backend in \`make dev\`, \`make dev-hybrid\`, and \`make dev-local\`, unless a validated direct URI can be derived. | Local-only. Never commit, print, or pass to Modal/Render/Cloud Run/Vercel. |"
+    echo "| \`TRR_DB_DIRECT_URL\` | Direct local Postgres | Required explicit source for local app/backend in \`make dev\`, \`make dev-hybrid\`, and \`make dev-local\`, unless a validated direct URI can be derived. | Local-only. Never commit, print, or pass to Modal/Vercel. |"
     echo "| \`TRR_DB_SESSION_URL\` | Supavisor session/local | Preferred session source for \`make dev-cloud\`, remote workers, and hybrid remote surfaces. | Use \`pooler.supabase.com:5432\` for hosted Supabase. |"
     echo "| \`TRR_DB_URL\` | Compatibility session/local | Used when \`TRR_DB_SESSION_URL\` is absent or set only inside a tightly scoped local child-process env for legacy direct-lane compatibility. | Do not globally overwrite this with the direct URL. |"
     echo "| \`TRR_DB_TRANSACTION_URL\` | Supavisor transaction | Used only when \`TRR_DB_RUNTIME_LANE=transaction\` and \`TRR_DB_TRANSACTION_FLIGHT_TEST=1\`. | Use \`pooler.supabase.com:6543\`; route-by-route flight tests only. |"

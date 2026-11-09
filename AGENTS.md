@@ -51,6 +51,12 @@ This file owns shared TRR policy. Nested `AGENTS.md` files inherit it and add on
 - Use `TRR_CLOUDFLARE_API_TOKEN`; never store Cloudflare secrets in repo files.
 - Keep inherited capabilities unless disabled.
 
+## Official hosting
+- Vercel project `trr-app` serves the app at `https://trr-app.vercel.app`.
+- Modal profile/workspace `admin-56995`, environment `main`, app `trr-backend-jobs` owns the API and jobs. Its API function is `serve_backend_api`, at `https://admin-56995--trr-backend-api.modal.run`.
+- Supabase `trr-core` (`vwxfvzutyufrkhfgoeaa`) persists application state.
+- `docs/workspace/deployment-targets.json` owns the nonsecret target tuple. Render references in dated receipts are historical evidence, not deployment instructions.
+
 ## Portless URLs
 - Use `https://admin.trr.localhost`, `https://trr.localhost`, and `https://api.trr.localhost`; never browser port 3000 or numbered Portless URLs. Loopback ports are diagnostic only.
 

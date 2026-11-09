@@ -24,25 +24,16 @@ def test_deployment_target_tuple_is_exact_and_secret_free() -> None:
         "project_id": "prj_MHpStkwr26rV5kjt0f80zqhwZpAs",
         "project_name": "trr-app",
         "production_aliases": ["https://trr-app.vercel.app"],
-        "direct_deployment_urls": [
-            "https://trr-4c2watu7j-the-reality-reports-projects.vercel.app"
-        ],
     }
-    assert payload["render"] == {
-        "owner_id": "tea-d6pglsu3jp1c73cctvf0",
-        "service_id": "srv-d6phk5vkijhs73fcsk7g",
-        "service_name": "trr-backend-api",
-        "repo": "therealityreport/trr-backend",
-        "branch": "main",
-        "direct_url": "https://trr-backend-api.onrender.com",
-        "credential_env": "TRR_RENDER_API_KEY",
-    }
+    assert "render" not in payload
     assert payload["modal"] == {
         "profile": "admin-56995",
         "workspace": "admin-56995",
         "environment": "main",
         "app_name": "trr-backend-jobs",
         "app_ref": "trr_backend.modal_jobs",
+        "api_function": "serve_backend_api",
+        "api_url": "https://admin-56995--trr-backend-api.modal.run",
     }
 
     serialized = json.dumps(payload).lower()
@@ -64,9 +55,9 @@ def test_deployment_target_projection_check_passes() -> None:
     assert "deployment-targets: OK" in completed.stdout
 
 
-def test_render_snapshot_checkpoint_is_metadata_only_and_closed() -> None:
+def test_retained_snapshot_checkpoint_is_metadata_only_and_closed() -> None:
     payload = json.loads(MANIFEST.read_text(encoding="utf-8"))
-    checkpoint = payload["security_checkpoints"]["render_env_snapshot"]
+    checkpoint = payload["security_checkpoints"]["retained_env_snapshot"]
 
     assert (
         checkpoint["path"]
@@ -80,12 +71,12 @@ def test_render_snapshot_checkpoint_is_metadata_only_and_closed() -> None:
     assert (ROOT / checkpoint["closure_evidence"]).is_file()
 
 
-def test_render_snapshot_permissions_fail_closed_when_local_snapshot_exists(tmp_path: Path) -> None:
+def test_retained_snapshot_permissions_fail_closed_when_local_snapshot_exists(tmp_path: Path) -> None:
     snapshot = tmp_path / "snapshot.json"
     snapshot.write_text("{}\n", encoding="utf-8")
     payload = {
         "security_checkpoints": {
-            "render_env_snapshot": {"path": "snapshot.json"}
+            "retained_env_snapshot": {"path": "snapshot.json"}
         }
     }
 
@@ -112,3 +103,25 @@ def test_deployment_evidence_policy_never_records_environment_values() -> None:
         ],
         "credential_output": "never",
     }
+
+
+@pytest.mark.parametrize("field", ["api_function", "api_url", "environment", "workspace"])
+def test_modal_target_drift_fails_closed(field: str) -> None:
+    payload = deployment_targets.load_manifest()
+    payload["modal"][field] = "unexpected-target"
+    with pytest.raises(deployment_targets.DeploymentTargetError, match="modal target tuple"):
+        deployment_targets.validate_manifest(payload)
+
+
+def test_retired_render_target_fails_closed() -> None:
+    payload = deployment_targets.load_manifest()
+    payload["render"] = {"service_name": "retired"}
+    with pytest.raises(deployment_targets.DeploymentTargetError, match="Render is retired"):
+        deployment_targets.validate_manifest(payload)
+
+
+def test_reopening_retained_snapshot_checkpoint_fails_closed() -> None:
+    payload = deployment_targets.load_manifest()
+    payload["security_checkpoints"]["retained_env_snapshot"]["status"] = "operator_review_required"
+    with pytest.raises(deployment_targets.DeploymentTargetError, match="must remain closed"):
+        deployment_targets.validate_manifest(payload)

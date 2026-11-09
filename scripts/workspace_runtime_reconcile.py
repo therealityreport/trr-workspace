@@ -31,10 +31,9 @@ def default_component(
 def default_artifact() -> dict[str, Any]:
     return {
         "overall_state": "ok",
-        "summary": "db=ok, modal=ok, render=ok, decodo=ok",
+        "summary": "db=ok, modal=ok, decodo=ok",
         "db": default_component(applied_versions=[]),
         "modal": default_component(deployed=False, fingerprint_changed=False),
-        "render": default_component(verify_only=True),
         "decodo": default_component(verify_only=True),
     }
 
@@ -56,14 +55,12 @@ def load_json_file(path: Path) -> dict[str, Any]:
     if not isinstance(loaded, dict):
         return default_artifact()
     merged = default_artifact()
-    for key in ("db", "modal", "render", "decodo"):
+    for key in ("db", "modal", "decodo"):
         value = loaded.get(key)
         if isinstance(value, dict):
             merged[key].update(value)
-    for key in ("overall_state", "summary"):
-        if isinstance(loaded.get(key), str):
-            merged[key] = loaded[key]
-    return merged
+    # Recompute summaries so a retained artifact cannot surface retired providers.
+    return compute_overall_state(merged)
 
 
 def _run_backend_script(script_relpath: str) -> tuple[int, dict[str, Any]]:
@@ -116,7 +113,6 @@ def compute_overall_state(artifact: dict[str, Any]) -> dict[str, Any]:
     components = {
         "db": artifact.get("db") or {},
         "modal": artifact.get("modal") or {},
-        "render": artifact.get("render") or {},
         "decodo": artifact.get("decodo") or {},
     }
     blocked = [name for name, component in components.items() if component.get("state") == "blocked"]
@@ -145,7 +141,7 @@ def compute_overall_state(artifact: dict[str, Any]) -> dict[str, Any]:
         return artifact
 
     artifact["overall_state"] = "ok"
-    artifact["summary"] = "db=ok, modal=ok, render=ok, decodo=ok"
+    artifact["summary"] = "db=ok, modal=ok, decodo=ok"
     return artifact
 
 
@@ -184,7 +180,7 @@ def render_preflight_summary(artifact: dict[str, Any]) -> str:
 def run_runtime_reconcile() -> dict[str, Any]:
     artifact = default_artifact()
     if os.getenv("WORKSPACE_RUNTIME_RECONCILE_ENABLED", "1").strip().lower() in {"0", "false", "no", "off"}:
-        for name in ("db", "modal", "render", "decodo"):
+        for name in ("db", "modal", "decodo"):
             artifact[name].update(state="advisory", skipped=True, reason="runtime_reconcile_disabled")
         artifact["overall_state"] = "advisory"
         artifact["summary"] = "runtime_reconcile_disabled"
@@ -201,8 +197,6 @@ def run_runtime_reconcile() -> dict[str, Any]:
 
     artifact["db"].update(db_payload)
     artifact["modal"].update(modal_payload)
-    if isinstance(external_payload.get("render"), dict):
-        artifact["render"].update(external_payload["render"])
     if isinstance(external_payload.get("decodo"), dict):
         artifact["decodo"].update(external_payload["decodo"])
 

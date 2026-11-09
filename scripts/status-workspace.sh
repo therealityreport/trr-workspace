@@ -424,7 +424,7 @@ except Exception:
 
 print(f"  overall_state: {payload.get('overall_state') or 'unknown'}")
 print(f"  summary: {payload.get('summary') or 'n/a'}")
-for name in ("db", "modal", "render", "decodo"):
+for name in ("db", "modal", "decodo"):
     component = payload.get(name) or {}
     print(f"  {name}: {component.get('state') or 'n/a'}")
     if component.get("reason"):

@@ -77,7 +77,6 @@
         "database_apply": false,
         "runtime_reconcile": false,
         "modal_deploy": false,
-        "render_mutation": false,
         "vercel_mutation": false,
         "remote_workers": false
       }
