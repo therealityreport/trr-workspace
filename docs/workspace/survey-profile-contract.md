@@ -117,7 +117,13 @@ code changed. Nothing was pushed or deployed.
 
 Temporary Next.js include entries and `next-env.d.ts` imports were restored to
 their pre-build development paths. The running `.next` output and unrelated
-checkout edits remain intact. These disposable task outputs moved to actual
+checkout edits remain intact. After removing the temporary build, the development
+CSS compiler retained an invalid escaped selector and returned HTTP 500. A CSS
+compiler refresh cleared it; the temporary refresh comment was removed,
+`globals.css` matched its original content, and `/auth/register` returned HTTP
+200. No persistent CSS repair or server restart was needed.
+
+These disposable task outputs moved to actual
 `/Users/thomashulihan/.Trash/` after verification:
 
 | Original task output | Trash directory | Measured size |
