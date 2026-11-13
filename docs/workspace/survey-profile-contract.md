@@ -100,7 +100,38 @@ removing the redundant server registration decision and testing client recovery.
   profile fields loaded, and the active normalized `rhoslc-s7` player rendered.
   No live profile update, survey submission, or admin mutation was performed.
 
-Hosted database role/policy behavior, production build, and production
-activation are separate from these results. The app/rules pair requires release
-authorization and target-specific checks before activation. No backend-owned
-contract or Modal code changed.
+- The user approved the full local production build in this chat. The first
+  attempt compiled but exhausted the 2 GB TypeScript heap. The same candidate
+  passed with a 3 GB heap (the wrapper default) and two workers: TypeScript,
+  104 static pages, optimization, and route generation completed. Build ID:
+  `zZGzk7PXMgW_xpOuM031O`. The build included the preserved unrelated checkout
+  edits. A Sentry/OpenTelemetry `require-in-the-middle` static-dependency warning
+  remained. No application checks were disabled.
+
+Hosted database role/policy behavior and production activation are separate from
+these results. The app/rules pair requires release authorization and
+target-specific checks before activation. No backend-owned contract or Modal
+code changed. Nothing was pushed or deployed.
+
+### Closeout
+
+Temporary Next.js include entries and `next-env.d.ts` imports were restored to
+their pre-build development paths. The running `.next` output and unrelated
+checkout edits remain intact. These disposable task outputs moved to actual
+`/Users/thomashulihan/.Trash/` after verification:
+
+| Original task output | Trash directory | Measured size |
+| --- | --- | --- |
+| Temporary `trr-profile-emulator-1y8vu0tr` directory | `trr-profile-emulator-20261113-01a1d68d` | 898,411 bytes |
+| Temporary `improve-codebase/session-digest-2026-11-07_2026-11-13-both-TRR` | `trr-survey-profile-session-digest-20261113-01a1d68d` | 1,644,285 bytes |
+| `TRR-APP/apps/web/.next-survey-profile-repair-f705619b` | `trr-survey-profile-build-f705619b-20261113` | 1,998,188 KiB |
+
+The build was for verification only and has no pending activation consumer.
+Committed source, focused tests, this receipt, and the existing running app
+retain the required evidence and recovery path. Trash was not emptied.
+
+Both repositories were fetched with pruning. The merged workspace branch
+`claude/upbeat-lalande-8dc526` was deleted. Existing dependency worktree branches
+were retained for their other checkout; release branches were retained because
+their local tips differ from the merged pull-request head IDs. No worktree was
+created, removed, or switched for this repair.
