@@ -141,3 +141,60 @@ Both repositories were fetched with pruning. The merged workspace branch
 were retained for their other checkout; release branches were retained because
 their local tips differ from the merged pull-request head IDs. No worktree was
 created, removed, or switched for this repair.
+
+## Production release — 2026-11-13
+
+The user explicitly authorized pushing the repair, activating the app and
+Firestore rules together, and verifying production. App branch
+`chore/repo-hygiene-2026-09-25` was pushed through
+`7f41787c718b0e16d10a866f59b1869f79ebbb2d`. It includes repair `f705619b`
+and the existing dependency refresh from main (`45930f42`, `bda5f429`,
+cherry-picked as `1c771974`, `7f41787c`). Production source comparison showed
+those dependencies were already deployed; retaining them avoids a downgrade.
+Unrelated uncommitted files were excluded through an exact Git source export.
+
+- Vercel: team `team_EUsG2kN9TAvVDGOu4yZVEoCX`, project
+  `prj_MHpStkwr26rV5kjt0f80zqhwZpAs`, deployment
+  `dpl_FFKbuMkS325kjsuP1FXPkwP3otGU`, canonical URL
+  `https://trr-app.vercel.app`. The production build, TypeScript, and 104 static
+  pages passed. Source maps uploaded with the exact commit as `SENTRY_RELEASE`.
+- Firestore: project `trr-web-25d2e`, active ruleset
+  `a44cbe8b-d409-4b4a-8fd1-9fea14adb0d7`, activated at
+  `2026-11-13T21:10:52.158859Z`. Source SHA-256:
+  `1fdca09ca950a271506a064c98d84e2d24b8dc0a8d4c0f7db1e05c9a4a71c9d7`.
+  The app was promoted first, followed immediately by the precompiled rules;
+  both provider identities were verified after activation.
+- With the production dependency versions: 84 focused tests (including five
+  actual Firebase emulator cases), 79 routing tests, all six generated-contract
+  checks, and focused lint passed. A memory-pressure guard held the first lint
+  attempt; the later admitted attempt passed without an override.
+- Twelve production API checks passed using temporary test accounts and survey
+  fixtures: unauthenticated rejection, competing username claims, partial edits
+  and creation-time preservation, location cleanup, invalid-write retention,
+  denial of direct username writes/private claim reads, old-claim release,
+  signed-out eligibility, limits of one and two, per-account counts, matrix and
+  spreadsheet-safe CSV, parent mismatch rejection, and protected run deletion.
+- Native Chrome's verified `TRR` profile loaded saved profile/editor values.
+  The production UI showed "Username on file". Two synthetic survey responses
+  verified explicit repeat submission, answer reset only on request, final
+  completion at the limit, unavailable-results text, and working navigation to
+  `/hub/surveys`. No real profile fields were edited. Failure injection and
+  fresh third-party OAuth sign-in were covered by local tests, not forced in
+  production.
+
+Temporary Firebase users, profiles, and claims were removed. The empty secondary
+survey was removed through its API. The survey with four synthetic responses
+correctly encountered PostgreSQL's restrictive foreign key during whole-survey
+cleanup; a narrowly guarded transaction in verified `trr-core`
+(`vwxfvzutyufrkhfgoeaa`) deleted those fixture responses and their survey.
+The query confirmed zero remaining verification surveys. No schema or ownership
+change was made, and no Modal deployment was needed.
+
+Release evidence and recovery source are retained under
+`/Users/thomashulihan/Documents/Codex/2026-11-13/survey-profile-release/`.
+`candidate-source.tar` is the exact committed release source. The previous app
+deployment and previous rules are recorded for comparison; do not restore the
+old direct-username-write policy. Recovery must retain this server-owned profile
+write path and restrictive claims policy. The first staged deployment
+`dpl_64FddP1WgAypX9A9s6JqoriH37UM` was canceled before activation because its
+source-map release ID was empty. Its diagnostic log is retained.
