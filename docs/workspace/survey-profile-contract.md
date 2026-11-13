@@ -198,3 +198,30 @@ old direct-username-write policy. Recovery must retain this server-owned profile
 write path and restrictive claims policy. The first staged deployment
 `dpl_64FddP1WgAypX9A9s6JqoriH37UM` was canceled before activation because its
 source-map release ID was empty. Its diagnostic log is retained.
+
+## App main integration — 2026-11-13
+
+At the user's request, app repair branch `chore/repo-hygiene-2026-09-25`
+was merged into `main` and pushed as
+`4da2fcabd062f8d64e389033ad7453de55228c97`. The merge preserves both parent
+histories. Compared with tested release `7f41787c`, only the existing main
+CI workflow and social-profile test fixes differ. Application source,
+dependencies, deployment configuration, and Firestore rules are unchanged.
+All 45 prior dirty/untracked file states and the index were verified unchanged;
+the working checkout remains on its repair branch to preserve ongoing edits.
+
+The push triggered a successful Vercel production build and Firestore rules
+workflow (GitHub Actions run `43509813420`). Production alias
+`https://trr-app.vercel.app` now resolves to READY deployment
+`dpl_DFsbcy4wVuBmDc1MecXuNU7fCzBt`, from GitHub `main` at `4da2fcab`.
+Compilation, TypeScript, and 104 static pages passed. Active Firestore ruleset
+`a44cbe8b-d409-4b4a-8fd1-9fea14adb0d7` retained the exact tested SHA-256
+`1fdca09ca950a271506a064c98d84e2d24b8dc0a8d4c0f7db1e05c9a4a71c9d7`.
+Post-deployment HTTP checks passed: homepage 200, unauthenticated profile API
+401 with `profile/unauthorized`, and active `rhoslc-s7` survey API 200 with
+`sign-in-required` and `canSubmit: false`. Earlier authenticated production
+verification remains applicable to the unchanged application source.
+
+The merged local app branch `release/storage-20261031` was retired after proving
+its ancestry in main. The checked-out repair branch and the dependency branch
+used by another checkout remain. No additional Modal or SQL change was needed.
